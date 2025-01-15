@@ -1,0 +1,20 @@
+# Virtual environments
+venv/
+env/
+Lib/
+
+# IDE-specific files
+.idea/
+.vscode/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Installed packages
+*.dist-info/
+site-packages/
+
+# System files
+.DS_Store
