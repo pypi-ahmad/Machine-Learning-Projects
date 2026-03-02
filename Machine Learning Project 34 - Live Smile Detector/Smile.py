@@ -3,9 +3,9 @@ import cv2
 # Grab Webcam fee
 webcam = cv2.VideoCapture(0)
 
-# pretrained file
-frontal_face = r"C:\Users\jgaur\OpenCv\frontal_face.xml"
-smile_face = r"C:\Users\jgaur\OpenCv\smile.xml"
+# Use OpenCV's built-in Haar cascade files
+frontal_face = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+smile_face = cv2.data.haarcascades + "haarcascade_smile.xml"
 
 # Face Classifier
 face_detector = cv2.CascadeClassifier(frontal_face)

@@ -1,0 +1,400 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We will be using Euron spam dataset for spam email classification problem. The euron datasets ar present at the below location:\n",
+    "http://nlp.cs.aueb.gr/software_and_datasets/Enron-Spam/index.html\n",
+    "* Readme about the data is also present at the above location which explains details about it."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import collections\n",
+    "import nltk\n",
+    "from nltk.classify import NaiveBayesClassifier, accuracy\n",
+    "# nltk.download('punkt')\n",
+    "import random\n",
+    "from sklearn.utils import shuffle"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Define few stop words\n",
+    "stop_words = {\n",
+    "    'ourselves', 'hers', 'between', 'yourself', 'but', 'again', \n",
+    "    'there', 'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they',\n",
+    "    'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into', \n",
+    "    'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who', 'as',\n",
+    "    'from', 'him', 'each', 'the', 'themselves', 'until', 'below', 'are', 'we',\n",
+    "    'these', 'your', 'his', 'through', 'don', 'nor', 'me', 'were', 'her', 'more',\n",
+    "    'himself', 'this', 'down', 'should', 'our', 'their', 'while', 'above',\n",
+    "    'both', 'up', 'to', 'ours', 'had', 'she', 'all', 'no', 'when', 'at', 'any',\n",
+    "    'before', 'them', 'same', 'and', 'been', 'have', 'in', 'will', 'on', 'does',\n",
+    "    'yourselves', 'then', 'that', 'because', 'what', 'over', 'why', 'so', 'can',\n",
+    "    'did', 'not', 'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where',\n",
+    "    'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few', 'whom', 't',\n",
+    "    'being', 'if', 'theirs', 'my', 'against', 'a', 'by', 'doing', 'it', 'how',\n",
+    "    'further', 'was', 'here', 'than'}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The Euron dataset contains spam (malicious email) and ham (non-malicious email) two folders \n",
+    "inside the big folder. Each folder spam and ham then again contain many text files. Let's load the data of the files to a list."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def load_files(dir):\n",
+    "    full_data = []\n",
+    "    for file_name in os.listdir(dir):\n",
+    "        with open(dir + '/' + file_name, 'r', encoding='ISO-8859-1') as f:\n",
+    "            full_data.append(f.read())\n",
+    "    return full_data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "positive_samples = load_files('./data/enron1/spam')\n",
+    "negative_samples = load_files('./data/enron1/ham')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[\"Subject: what up , , your cam babe\\nwhat are you looking for ?\\nif your looking for a companion for friendship , love , a date , or just good ole '\\nfashioned * * * * * * , then try our brand new site ; it was developed and created\\nto help anyone find what they ' re looking for . a quick bio form and you ' re\\non the road to satisfaction in every sense of the word . . . . no matter what\\nthat may be !\\ntry it out and youll be amazed .\\nhave a terrific time this evening\\ncopy and pa ste the add . ress you see on the line below into your browser to come to the site .\\nhttp : / / www . meganbang . biz / bld / acc /\\nno more plz\\nhttp : / / www . naturalgolden . com / retract /\\ncounterattack aitken step preemptive shoehorn scaup . electrocardiograph movie honeycomb . monster war brandywine pietism byrne catatonia . encomia lookup intervenor skeleton turn catfish .\\n\"]"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "positive_samples[:1]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[\"Subject: ena sales on hpl\\njust to update you on this project ' s status :\\nbased on a new report that scott mills ran for me from sitara , i have come up\\nwith the following counterparties as the ones to which ena is selling gas off\\nof hpl ' s pipe .\\naltrade transaction , l . l . c . gulf gas utilities company\\nbrazoria , city of panther pipeline , inc .\\ncentral illinois light company praxair , inc .\\ncentral power and light company reliant energy - entex\\nces - equistar chemicals , lp reliant energy - hl & p\\ncorpus christi gas marketing , lp southern union company\\nd & h gas company , inc . texas utilities fuel company\\nduke energy field services , inc . txu gas distribution\\nentex gas marketing company union carbide corporation\\nequistar chemicals , lp unit gas transmission company inc .\\nsince i ' m not sure exactly what gets entered into sitara , pat clynes\\nsuggested that i check with daren farmer to make sure that i ' m not missing\\nsomething ( which i did below ) . while i am waiting for a response from him\\nand / or mary smith , i will begin gathering the contractual volumes under the\\nabove contracts .\\n- - - - - - - - - - - - - - - - - - - - - - forwarded by cheryl dudley / hou / ect on 05 / 10 / 2000 07 : 56\\nam - - - - - - - - - - - - - - - - - - - - - - - - - - -\\ncheryl d king\\n05 / 08 / 2000 04 : 11 pm\\nsent by : cheryl dudley\\nto : daren j farmer / hou / ect @ ect , mary m smith / hou / ect @ ect\\ncc :\\nsubject : ena sales on hpl\\ni am working on a project for brenda herod & was wondering if one of you\\ncould tell me if i ' m on the right track & if this will get everything for\\nwhich she is looking .\\nshe is trying to draft a long - term transport / storage agreement between ena &\\nhplc which will allow ena to move the gas to their markets . in order to\\naccomplish this , she needs to know all of the sales to customers that ena is\\ndoing off of hpl ' s pipe .\\ni had scott mills run a report from sitara showing all ena buy / sell activity\\non hpl since 7 / 99 . if i eliminate the buys & the desk - to - desk deals , will\\nthis give me everything that i need ?\\nare there buy / sell deals done with ena on hpl ' s pipe that wouldn ' t show up in\\nsitara ? someone mentioned something about deals where hpl transports the gas\\non it ' s own behalf then ena sells it to a customer at that same spot - -\\n? ? ? ? ? do deals like that happen ? would they show up in sitara ?\\nis there anything else that i ' m missing ? i ' m not real familiar with how some\\nof these deals happen nowadays so am very receptive to any\\nideas / suggestions / help that you can offer ! ! !\\nthanks in advance .\"]"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "negative_samples[:1]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Preprocessing the data includes lemmatization, tokenization and stop word removal\n",
+    "def preprocess_sentence(sentence):\n",
+    "    lemmatizer = nltk.WordNetLemmatizer()\n",
+    "    tokens = nltk.word_tokenize(sentence)\n",
+    "    tokens = [w.lower() for w in tokens]\n",
+    "    # find least common elements\n",
+    "    word_counts = collections.Counter(tokens)\n",
+    "    uncommon_words = word_counts.most_common()[:-10:-1]\n",
+    "    # filter tokens based on the following\n",
+    "    tokens = [w for w in tokens if w not in stop_words]\n",
+    "    tokens = [w for w in tokens if w not in uncommon_words]\n",
+    "    #lemmatize\n",
+    "    tokens = [lemmatizer.lemmatize(w) for w in tokens] \n",
+    "    return tokens"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Subject: what up , , your cam babe\n",
+      "what are you looking for ?\n",
+      "if your looking for a companion for friendship , love , a date , or just good ole '\n",
+      "fashioned * * * * * * , then try our brand new site ; it was developed and created\n",
+      "to help anyone find what they ' re looking for . a quick bio form and you ' re\n",
+      "on the road to satisfaction in every sense of the word . . . . no matter what\n",
+      "that may be !\n",
+      "try it out and youll be amazed .\n",
+      "have a terrific time this evening\n",
+      "copy and pa ste the add . ress you see on the line below into your browser to come to the site .\n",
+      "http : / / www . meganbang . biz / bld / acc /\n",
+      "no more plz\n",
+      "http : / / www . naturalgolden . com / retract /\n",
+      "counterattack aitken step preemptive shoehorn scaup . electrocardiograph movie honeycomb . monster war brandywine pietism byrne catatonia . encomia lookup intervenor skeleton turn catfish .\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Let us have a look at an email\n",
+    "for email in positive_samples[:1]:\n",
+    "    print(email)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# preprocess sentences \n",
+    "positive_samples = [preprocess_sentence(email) for email in positive_samples]\n",
+    "negative_samples = [preprocess_sentence(email) for email in negative_samples]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# label samples\n",
+    "positive_samples = [(email, 1) for email in positive_samples]\n",
+    "negative_samples = [(email, 0) for email in negative_samples]\n",
+    "all_samples = positive_samples + negative_samples\n",
+    "random.shuffle(all_samples)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5172 emails processed\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(f\"{len(all_samples)} emails processed\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Feature extraction\n",
+    "def feature_extraction(tokens):\n",
+    "    # Each word will be a feature and feature value will be word count\n",
+    "    return dict(collections.Counter(tokens))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# features = [(feature_extraction(corpus), label) for corpus, label in all_samples]\n",
+    "features = [(feature_extraction(corpus), label)\n",
+    "              for corpus, label in all_samples]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[({'#': 1,\n",
+       "   ',': 6,\n",
+       "   '-': 53,\n",
+       "   '.': 17,\n",
+       "   '/': 16,\n",
+       "   '00': 5,\n",
+       "   '01': 1,\n",
+       "   '09': 3,\n",
+       "   '1': 1,\n",
+       "   '11': 3,\n",
+       "   '13': 3,\n",
+       "   '133010': 2,\n",
+       "   '16': 1,\n",
+       "   '176': 1,\n",
+       "   '2000': 3,\n",
+       "   '30': 2,\n",
+       "   '33': 1,\n",
+       "   '6879': 4,\n",
+       "   '9': 1,\n",
+       "   ':': 11,\n",
+       "   '?': 1,\n",
+       "   '@': 3,\n",
+       "   '\\\\': 1,\n",
+       "   'added': 1,\n",
+       "   'aimee': 2,\n",
+       "   'al': 1,\n",
+       "   'aug': 1,\n",
+       "   'cc': 2,\n",
+       "   'chart': 1,\n",
+       "   'contract': 3,\n",
+       "   'd': 1,\n",
+       "   'daren': 4,\n",
+       "   'day': 2,\n",
+       "   'deal': 8,\n",
+       "   'ect': 7,\n",
+       "   'end': 2,\n",
+       "   'enter': 1,\n",
+       "   'evergreen': 3,\n",
+       "   'farmer': 3,\n",
+       "   'flow': 1,\n",
+       "   'forwarded': 1,\n",
+       "   'get': 1,\n",
+       "   'go': 1,\n",
+       "   'heatherloch': 1,\n",
+       "   'hou': 4,\n",
+       "   'j': 3,\n",
+       "   'julie': 3,\n",
+       "   'know': 2,\n",
+       "   'lannou': 2,\n",
+       "   'let': 2,\n",
+       "   'meter': 4,\n",
+       "   'meyers': 1,\n",
+       "   'municipal': 1,\n",
+       "   'nothing': 1,\n",
+       "   'please': 2,\n",
+       "   'primary': 1,\n",
+       "   'put': 1,\n",
+       "   'question': 1,\n",
+       "   're': 1,\n",
+       "   'review': 1,\n",
+       "   'right': 1,\n",
+       "   'rolled': 1,\n",
+       "   'sept': 4,\n",
+       "   'september': 2,\n",
+       "   'set': 1,\n",
+       "   'show': 1,\n",
+       "   'subject': 3,\n",
+       "   'taken': 1,\n",
+       "   'term': 1,\n",
+       "   'thanks': 1,\n",
+       "   'therefore': 1,\n",
+       "   'utility': 1},\n",
+       "  0)]"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "features[:1]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# train test split\n",
+    "def train_test_split(dataset, train_size=0.8):\n",
+    "    num_train_samples = int(len(dataset) * train_size)\n",
+    "    return dataset[:num_train_samples], dataset[num_train_samples:]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "training_set, test_set = train_test_split(features, train_size=0.7)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Model training complete. Accuracy on training set: 0.9604972375690608\n",
+      "Accuracy on test set: 0.9407216494845361\n"
+     ]
+    }
+   ],
+   "source": [
+    "model = nltk.classify.NaiveBayesClassifier.train(training_set)\n",
+    "training_error = nltk.classify.accuracy(model, training_set)\n",
+    "print(f'Model training complete. Accuracy on training set: {training_error}')\n",
+    "\n",
+    "testing_error = nltk.classify.accuracy(model, test_set)\n",
+    "print(f'Accuracy on test set: {testing_error}')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

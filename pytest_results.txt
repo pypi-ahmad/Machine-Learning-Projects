@@ -1,0 +1,49 @@
+........................................................................ [  4%]
+........ssssss.........ssss.......................................ssssss [  9%]
+ssss.................................................................... [ 13%]
+s.sssss..sssss..sssss....................ssss..ssss......ssss.ssss...... [ 18%]
+ssss...............sssss..sssssssss...............s........sssss.ssss... [ 22%]
+...............................ssss......ssss...ssss..sss......ssss..... [ 27%]
+.............................s...........................sssssss........ [ 31%]
+........................................................................ [ 36%]
+........................................................................ [ 41%]
+........ssss........................ssss................................ [ 45%]
+...........ssss.........ssss.....ssss.....ssss.....ssss.ssss.ssss.....ss [ 50%]
+ss...................................................................... [ 54%]
+..ssss.......................................ssssss..................... [ 59%]
+..............................s................ssss..................... [ 63%]
+........................................................................ [ 68%]
+........................................................................ [ 73%]
+........................................................................ [ 77%]
+........................ssss..ssss...................................... [ 82%]
+........................................................................ [ 86%]
+.......................................................................s [ 91%]
+sss..........................ssss....................ssss............... [ 95%]
+..................................sss.ssss...............ssss....        [100%]
+============================== warnings summary ===============================
+tests/test_p132_building_recommanded_system_in_hour.py::TestDataLoading::test_load_without_error
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p132_building_recommanded_system_in_hour.py:37: DtypeWarning: Columns (0: Year-Of-Publication) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "BX-Books.csv", sep=";", encoding="latin-1", on_bad_lines="skip")
+
+tests/test_p132_building_recommanded_system_in_hour.py::TestDataLoading::test_dataframe_not_empty
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p132_building_recommanded_system_in_hour.py:47: DtypeWarning: Columns (0: Year-Of-Publication) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "BX-Books.csv", sep=";", encoding="latin-1", on_bad_lines="skip")
+
+tests/test_p132_building_recommanded_system_in_hour.py::TestDataLoading::test_no_all_null_columns
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p132_building_recommanded_system_in_hour.py:58: DtypeWarning: Columns (0: Year-Of-Publication) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "BX-Books.csv", sep=";", encoding="latin-1", on_bad_lines="skip")
+
+tests/test_p157_tokyo_2020_monitor_tweets_frequency.py::TestDataLoading::test_load_without_error
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p157_tokyo_2020_monitor_tweets_frequency.py:37: DtypeWarning: Columns (0: id, 1: user_followers, 2: user_friends, 3: user_favourites) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "tokyo_2020_tweets.csv")
+
+tests/test_p157_tokyo_2020_monitor_tweets_frequency.py::TestDataLoading::test_dataframe_not_empty
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p157_tokyo_2020_monitor_tweets_frequency.py:47: DtypeWarning: Columns (0: id, 1: user_followers, 2: user_friends, 3: user_favourites) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "tokyo_2020_tweets.csv")
+
+tests/test_p157_tokyo_2020_monitor_tweets_frequency.py::TestDataLoading::test_no_all_null_columns
+  D:\Workspace\Github\Machine-Learning-Projects\tests\test_p157_tokyo_2020_monitor_tweets_frequency.py:58: DtypeWarning: Columns (0: id, 1: user_followers, 2: user_friends, 3: user_favourites) have mixed types. Specify dtype option on import or set low_memory=False.
+    df = pd.read_csv(DATA_DIR / "tokyo_2020_tweets.csv")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1384 passed, 193 skipped, 6 warnings in 515.25s (0:08:35)
