@@ -57,6 +57,9 @@ saved_model/
 checkpoints/
 
 # ── Large Data Files (>90MB GitHub limit) ──
+# Centralized data directory (6.7 GB — each project has its own dataset copy)
+data/
+
 # Block by extension
 *.zip
 *.tar.gz
@@ -68,17 +71,14 @@ checkpoints/
 *.feather
 *.arrow
 
-# Block specific large data directories known to exceed 90MB
-data/recommender_systems_the_fundamentals/
-data/mercari_price_suggestion_lightgbm/
-data/twitter_sentiment_analysis_nlp/
-data/conceptual_text_classification_keras/
-data/consumer_complaints/
-data/text_classification_keras_consumer_complaints/
-data/advanced_credit_card_fraud_detection/
-data/creadi_card_fraud_problem_handling_imbalanced_dataset/
-data/lstm_time_series_power_consumption/
-data/million_songs_dataset_recommendation_engine/
+# ── Audit & Internal Tooling ──
+audit_phase1/
+audit_phase2/
+audit_phase3/
+audit_phase5/
+audit_phase6/
+audit_phase8/
+audit_scripts/
 
 # ── Logs ──
 *.log
