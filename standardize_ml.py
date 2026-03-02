@@ -23,7 +23,6 @@ import argparse
 import copy
 import csv
 import json
-import os
 import re
 import shutil
 import sys
@@ -150,8 +149,8 @@ def classify_project(p2: dict, ml_type_hint: str = "") -> dict | None:
 
 # ── Cell classification ─────────────────────────────────────────────────────
 
-# Patterns that indicate a cell is MODEL code
-MODEL_PATTERNS = [
+# Patterns that indicate a cell is MODEL code (pre-compiled for performance)
+MODEL_PATTERNS = [re.compile(p) for p in [
     r"\.fit\s*\(",                                    # .fit(
     r"\.predict\s*\(",                                # .predict(
     r"\.predict_proba\s*\(",                          # .predict_proba(
@@ -189,10 +188,10 @@ MODEL_PATTERNS = [
     r"Ridge\s*\(",
     r"Lasso\s*\(",
     r"ElasticNet\s*\(",
-]
+]]
 
-# Patterns that indicate EVALUATION code
-EVAL_PATTERNS = [
+# Patterns that indicate EVALUATION code (pre-compiled)
+EVAL_PATTERNS = [re.compile(p) for p in [
     r"accuracy_score\s*\(",
     r"classification_report\s*\(",
     r"confusion_matrix\s*\(",
@@ -209,10 +208,10 @@ EVAL_PATTERNS = [
     r"GridSearchCV\s*\(",
     r"RandomizedSearchCV\s*\(",
     r"\.score\s*\(\s*X_test",          # model.score(X_test, ...)
-]
+]]
 
-# Patterns that indicate PREPROCESSING (should be kept)
-PREPROCESS_PATTERNS = [
+# Patterns that indicate PREPROCESSING (should be kept, pre-compiled)
+PREPROCESS_PATTERNS = [re.compile(p) for p in [
     r"train_test_split\s*\(",
     r"StandardScaler|MinMaxScaler|RobustScaler",
     r"LabelEncoder|OneHotEncoder|OrdinalEncoder",
@@ -226,20 +225,20 @@ PREPROCESS_PATTERNS = [
     r"\.apply\s*\(",
     r"CountVectorizer|TfidfVectorizer",
     r"SimpleImputer",
-]
+]]
 
-# Patterns that indicate DATA LOADING
-DATA_LOAD_PATTERNS = [
+# Patterns that indicate DATA LOADING (pre-compiled)
+DATA_LOAD_PATTERNS = [re.compile(p) for p in [
     r"pd\.read_csv\s*\(",
     r"pd\.read_excel\s*\(",
     r"pd\.read_json\s*\(",
     r"pd\.read_table\s*\(",
     r"pd\.read_parquet\s*\(",
     r"load_\w+\s*\(",              # sklearn load_iris() etc.
-]
+]]
 
-# Pure EDA patterns (just viewing data, no transform)
-EDA_PATTERNS = [
+# Pure EDA patterns (just viewing data, no transform, pre-compiled)
+EDA_PATTERNS = [re.compile(p) for p in [
     r"\.head\s*\(",
     r"\.tail\s*\(",
     r"\.describe\s*\(",
@@ -255,7 +254,7 @@ EDA_PATTERNS = [
     r"\.plot\s*\(",
     r"\.hist\s*\(",
     r"\.corr\s*\(",
-]
+]]
 
 # Imports that are MODEL-related (should be removed in standardized version)
 MODEL_IMPORT_MODULES = {
@@ -278,11 +277,11 @@ def classify_cell(source: str) -> str:
         return "other"
 
     # Check for model patterns first (most specific)
-    is_model = any(re.search(p, source) for p in MODEL_PATTERNS)
-    is_eval = any(re.search(p, source) for p in EVAL_PATTERNS)
-    is_preprocess = any(re.search(p, source) for p in PREPROCESS_PATTERNS)
-    is_data_load = any(re.search(p, source) for p in DATA_LOAD_PATTERNS)
-    is_eda = any(re.search(p, source) for p in EDA_PATTERNS)
+    is_model = any(p.search(source) for p in MODEL_PATTERNS)
+    is_eval = any(p.search(source) for p in EVAL_PATTERNS)
+    is_preprocess = any(p.search(source) for p in PREPROCESS_PATTERNS)
+    is_data_load = any(p.search(source) for p in DATA_LOAD_PATTERNS)
+    is_eda = any(p.search(source) for p in EDA_PATTERNS)
 
     # If cell has .fit() or model class instantiation → MODEL
     if is_model and not is_preprocess:
@@ -700,14 +699,23 @@ plt.show()"""
         "Install with: `pip install pycaret`"
     ))
 
-    if task == "classification":
+    # ── PyCaret code generation (shared logic for clf/reg) ──
+    _PYCARET_MODULES = {
+        "classification": ("pycaret.classification", "clf_setup", "Accuracy",
+                           ["confusion_matrix", "auc", "feature"]),
+        "regression": ("pycaret.regression", "reg_setup", "R2",
+                        ["residuals", "error", "feature"]),
+    }
+
+    if task in _PYCARET_MODULES:
+        module, var_name, sort_metric, eval_plots = _PYCARET_MODULES[task]
         if needs_reconstruction:
             pycaret_setup_code = f"""import sys
 import pandas as pd
 
 # PyCaret setup
 try:
-    from pycaret.classification import setup, compare_models, finalize_model, predict_model, save_model, plot_model
+    from {module} import setup, compare_models, finalize_model, predict_model, save_model, plot_model
 except ImportError:
     print("PyCaret not installed. Install with: pip install pycaret")
     print("Requires Python 3.9-3.11")
@@ -733,7 +741,7 @@ df_test['__target__'] = y_test
 _full_df = pd.concat([df_train, df_test], ignore_index=True)
 
 # Configure PyCaret session
-clf_setup = setup(
+{var_name} = setup(
     data=_full_df,
     target='__target__',
     session_id={random_state},
@@ -747,14 +755,14 @@ print("PyCaret setup complete.")"""
 
 # PyCaret setup
 try:
-    from pycaret.classification import setup, compare_models, finalize_model, predict_model, save_model, plot_model
+    from {module} import setup, compare_models, finalize_model, predict_model, save_model, plot_model
 except ImportError:
     print("PyCaret not installed. Install with: pip install pycaret")
     print("Requires Python 3.9-3.11")
     raise SystemExit("PyCaret required for STEP 2")
 
 # Configure PyCaret session
-clf_setup = setup(
+{var_name} = setup(
     data={df_var},
     target='{target_col}',
     session_id={random_state},
@@ -763,104 +771,22 @@ clf_setup = setup(
 )
 print("PyCaret setup complete.")"""
 
-        pycaret_compare_code = """# Compare all models
-best_model = compare_models(sort='Accuracy', n_select=1)
-print(f"\\nBest model: {best_model}")"""
+        pycaret_compare_code = f"""# Compare all models
+best_model = compare_models(sort='{sort_metric}', n_select=1)
+print(f"\\nBest model: {{best_model}}")"""
 
         pycaret_finalize_code = """# Finalize the best model (retrain on full dataset)
 final_model = finalize_model(best_model)
 print(f"Finalized model: {final_model}")"""
 
-        pycaret_eval_code = """# Model evaluation plots
+        plot_lines = "\n".join(
+            f"    plot_model(best_model, plot='{p}', save=True)" for p in eval_plots
+        )
+        pycaret_eval_code = f"""# Model evaluation plots
 try:
-    plot_model(best_model, plot='confusion_matrix', save=True)
-    plot_model(best_model, plot='auc', save=True)
-    plot_model(best_model, plot='feature', save=True)
+{plot_lines}
 except Exception as e:
-    print(f"Plot generation note: {e}")"""
-
-        pycaret_save_code = """# Save the final pipeline
-save_model(final_model, 'final_model_pipeline')
-print("Model saved as 'final_model_pipeline.pkl'")"""
-
-    elif task == "regression":
-        if needs_reconstruction:
-            pycaret_setup_code = f"""import sys
-import pandas as pd
-
-# PyCaret setup
-try:
-    from pycaret.regression import setup, compare_models, finalize_model, predict_model, save_model, plot_model
-except ImportError:
-    print("PyCaret not installed. Install with: pip install pycaret")
-    print("Requires Python 3.9-3.11")
-    raise SystemExit("PyCaret required for STEP 2")
-
-# Safety check — target variable must exist
-assert y_train is not None, "y_train is None — cannot proceed"
-
-# Reconstruct DataFrame for PyCaret (needs column-named target)
-# IMPORTANT: Do NOT mutate original X_train / y_train
-if isinstance(X_train, pd.DataFrame):
-    df_train = X_train.copy()
-else:
-    df_train = pd.DataFrame(X_train)
-df_train['__target__'] = y_train
-
-if isinstance(X_test, pd.DataFrame):
-    df_test = X_test.copy()
-else:
-    df_test = pd.DataFrame(X_test)
-df_test['__target__'] = y_test
-
-_full_df = pd.concat([df_train, df_test], ignore_index=True)
-
-# Configure PyCaret session
-reg_setup = setup(
-    data=_full_df,
-    target='__target__',
-    session_id={random_state},
-    silent=True,
-    verbose=False,
-    fold=5,
-)
-print("PyCaret setup complete.")"""
-        else:
-            pycaret_setup_code = f"""import sys
-
-# PyCaret setup
-try:
-    from pycaret.regression import setup, compare_models, finalize_model, predict_model, save_model, plot_model
-except ImportError:
-    print("PyCaret not installed. Install with: pip install pycaret")
-    print("Requires Python 3.9-3.11")
-    raise SystemExit("PyCaret required for STEP 2")
-
-# Configure PyCaret session
-reg_setup = setup(
-    data={df_var},
-    target='{target_col}',
-    session_id={random_state},
-    verbose=False,
-    fold=5,
-)
-print("PyCaret setup complete.")"""
-
-        pycaret_compare_code = """# Compare all models
-best_model = compare_models(sort='R2', n_select=1)
-print(f"\\nBest model: {best_model}")"""
-
-        pycaret_finalize_code = """# Finalize the best model (retrain on full dataset)
-final_model = finalize_model(best_model)
-print(f"Finalized model: {final_model}")"""
-
-        pycaret_eval_code = """# Model evaluation plots
-try:
-    plot_model(best_model, plot='residuals', save=True)
-    plot_model(best_model, plot='error', save=True)
-    plot_model(best_model, plot='feature', save=True)
-except Exception as e:
-    print(f"Plot generation note: {e}")"""
+    print(f"Plot generation note: {{e}}")"""
 
         pycaret_save_code = """# Save the final pipeline
 save_model(final_model, 'final_model_pipeline')

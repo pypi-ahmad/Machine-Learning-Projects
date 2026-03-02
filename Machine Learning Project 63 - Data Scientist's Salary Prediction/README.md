@@ -1,44 +1,142 @@
-![DSSP](readme-resources/data-scientist-salary-banner.png)
-![Dataset](https://img.shields.io/badge/Dataset-Ken_Jee-blue.svg) ![Python 3.6](https://img.shields.io/badge/Python-3.6-brightgreen.svg) ![library](https://img.shields.io/badge/Library-sklearn-orange.svg)
+# Data Scientist's Salary Prediction
 
-## Project Overview
-• Created a machine learning model that **estimates salary of data scientist based on the features like rating, company_founded, etc.**<br/>
-• Engineered features from the text of each job description to quantify the value companies put on python, excel, tableau and sql
+## 1. Project Overview
 
-## How will this project help?
-• This project **helps data scientist/analyst to negotiate their income for an existing or a new job**
+This project implements a **Regression** pipeline for **Data Scientist's Salary Prediction**. The target variable is `salary`.
 
-## Resources Used
-• Packages: **pandas, numpy, sklearn, matplotlib, seaborn.**<br/>
-• Dataset by **Ken Jee**: https://github.com/PlayingNumbers/ds_salary_proj
+| Property | Value |
+|----------|-------|
+| **ML Task** | Regression |
+| **Target Variable** | `salary` |
+| **Dataset Status** | OK LOCAL |
+| **Standardized Pipeline** | Yes (LazyPredict + PyCaret) |
 
-## Exploratory Data Analysis (EDA) and Data Cleaning
-• **Removed unwanted columns**: 'Unnamed: 0'<br/>
-• **Plotted bargraphs and countplots** for numerical and categorical features respectively for EDA<br/>
-• **Numerical Features** (Rating, Founded): **Replaced NaN or -1 values with mean or meadian based on their distribution**<br/>
-![rating](readme-resources/rating.png) ![rating1](readme-resources/rating1.png)<br/>
-• **Categorical Features: Replaced NaN or -1 values with 'Other'/'Unknown' category**<br/>
-• **Removed unwanted alphabet/special characters from Salary feature**<br/>
-• **Converted the Salary column into one scale** i.e from (per hour, per annum, employer provided salary) to (per annum)
+## 2. Dataset
 
-## Feature Engineering
-• **Creating new features** from existing features e.g. **job_in_headquaters from (job_location, headquarters)**, etc.<br/>
-![jih](readme-resources/jih.png)<br/>
-• Trimming columns i.e. **Trimming features having more than 10 categories to reduce the dimensionality**<br/>
-• **Handling ordinal and nominal categorical features**<br/>
-• Feature Selection using **information gain (mutual_info_regression) and correlation matrix**<br/>
-![infogain](readme-resources/infogain.png)<br/>
-![corr1](readme-resources/corr1.png)<br/>
-• Feature Scaling using **StandardScalar**
+**Data sources detected in code:**
 
-## Model Building and Evaluation
-Metric: Negative Root Mean Squared Error (NRMSE)<br/>
-• Multiple Linear Regression: -27.523<br/>
-• Lasso Regression: -27.993<br/>
-• **Random Forest: -17.637**<br/>
-• Gradient Boosting: -24.429<br/>
-• Voting (Random Forest + Gradient Boosting): -19.136<br/>
-_**Note: Evaluation scores are obtained using cross validation.**_
+- `glassdoor_jobs.csv`
 
-## Model Prediction
-![Prediction](readme-resources/prediction.PNG)
+**Files in project directory:**
+
+- `glassdoor_jobs.csv`
+
+**Standardized data path:** `data/data_scientists_salary_prediction/`
+
+## 3. Pipeline Overview
+
+### Original Notebook Pipeline
+
+**Preprocessing:**
+- Drop columns/rows
+- Handle missing values (fillna)
+- Data type conversion
+- Lowercasing
+- Label mapping (function)
+- One-hot encoding (pd.get_dummies)
+- Feature scaling (StandardScaler)
+
+### Standardized Pipeline (added)
+
+- **LazyRegressor**: Automated comparison of multiple models in a single call
+- **PyCaret Regression**: Full AutoML pipeline (setup → compare → tune → evaluate → finalize)
+
+## 4. ML Workflow
+
+```mermaid
+flowchart TD
+    A[Load glassdoor_jobs.csv] --> B[Drop columns/rows]
+    B[Drop columns/rows] --> C[Handle missing values]
+    C[Handle missing values] --> D[Data type conversion]
+    D[Data type conversion] --> E[Lowercasing]
+    E[Lowercasing] --> F[Label mapping]
+    F[Label mapping] --> G[One-hot encoding]
+    G[One-hot encoding] --> H[Feature scaling]
+    H[Feature scaling] --> I[LazyRegressor Benchmark]
+    I[LazyRegressor Benchmark] --> J[PyCaret Regression]
+    J[PyCaret Regression] --> K[Evaluate]
+```
+
+## 5. Notebook Summary
+
+| Metric | Value |
+|--------|-------|
+| Total cells | 112 |
+| Code cells | 91 |
+| Markdown cells | 21 |
+| Original cells | 99 |
+| Standardized cells (added) | 13 |
+| Original model training | None — preprocessing/EDA only |
+
+**⚠️ Deprecated APIs detected:**
+
+- `sns.distplot()` is deprecated — use `sns.displot()` or `sns.histplot()`
+
+## 6. Model Details
+
+### LazyRegressor (Standardized)
+
+Compares 20+ regressors, ranked by RMSE/R².
+
+### PyCaret Regression (Standardized)
+
+AutoML pipeline: `setup()` → `compare_models()` → `tune_model()` → `finalize_model()`
+
+> ⚠️ Requires Python ≤ 3.11.
+
+## 7. Project Structure
+
+```
+Data Scientist's Salary Prediction/
+├── Data Scientist's Salary Prediction.ipynb
+├── glassdoor_jobs.csv
+├── readme-resources
+└── README.md
+```
+
+## 8. Setup & Installation
+
+`pip install -r requirements.txt` from the workspace root.
+
+**Key dependencies:**
+
+- `lazypredict`
+- `matplotlib`
+- `numpy`
+- `pandas`
+- `pycaret`
+- `scikit-learn`
+- `seaborn`
+
+## 9. How to Run
+
+Open and run the notebook(s) sequentially:
+
+```bash
+jupyter notebook
+```
+
+- Open `Data Scientist's Salary Prediction.ipynb` and run all cells
+
+## 10. Testing
+
+Automated tests are available in `tests/test_p063_*.py`:
+
+```bash
+python -m pytest tests/test_p063_*.py -v
+```
+
+Tests validate data loading and model instantiation.
+
+## 11. Limitations
+
+- PyCaret cells require Python ≤ 3.11 — they will fail on Python 3.12+
+- `sns.distplot()` is deprecated — use `sns.displot()` or `sns.histplot()`
+- No original model training exists — only auto-generated LazyPredict/PyCaret cells
+
+## 12. Cleanup Notes
+
+Cells added during workspace standardization:
+
+- **LazyRegressor** benchmark cell
+- **PyCaret Regression** pipeline cell

@@ -1,41 +1,123 @@
-![FISP](readme-resources/first-innings-banner.png)
-![Dataset](https://img.shields.io/badge/Dataset-Shivam_Mitra-blue.svg) ![Python](https://img.shields.io/badge/Python-3.6-brightgreen.svg) ![sklearn](https://img.shields.io/badge/Library-sklearn-orange.svg)
+# First Innings Score Prediction - IPL
 
-## Project Overview
-• Created a model that predicts the score (in terms of range) of IPL matches<br/>
-• Optimized Multiple-Linear, Decision Tree, Random Forest, and AdaBoost regression models using GridsearchCV
+## 1. Project Overview
 
-## How will this project help?
-• This project is for the fantasy cricket fans out there, helping them to earn extra fantasy points for Dream11 IPL 2020
+This project implements a **Regression** pipeline for **First Innings Score Prediction - IPL**. The target variable is `total`.
 
-## Resources Used
-• Packages: pandas, numpy, sklearn, matplotlib, seaborn<br/>
-• Dataset by **Shivam Mitra**: https://github.com/codophobia/CricketScorePredictor
+| Property | Value |
+|----------|-------|
+| **ML Task** | Regression |
+| **Target Variable** | `total` |
+| **Dataset Status** | OK LOCAL |
+| **Standardized Pipeline** | Yes (LazyPredict + PyCaret) |
 
-## Data Cleaning and Preprocessing
-• **Removing unwanted columns**<br/>
-• **Keeping only consistent teams**<br/>
-![ct](readme-resources/consistent_teams.PNG)<br/>
-• **Removing the first 5 overs data in every match**<br/>
-• **Converting the column 'date' from string into datetime object**<br/>
-• **Handling categorical features**
+## 2. Dataset
 
-## Model Building and Evaluation
-Evaluation metric: Root Mean Squared Error (RMSE)<br/>
-• Multiple Linear Regression - 15.843 <br/>
-• Decision Tree - 23.044<br/>
-• Random Forest - 18.171<br/>
-• **Adaptive Boosting (AdaBoost) - 15.798**
+**Data sources detected in code:**
 
-## Model Prediction
-![pred](readme-resources/prediction.PNG)<br/>
+- `ipl.csv`
 
-## Future Scope
-• Add columns in dataset of top batsmen and bowlers of all the teams.<br/>
-• Add columns that consists of striker and non-striker's strike rates.<br/>
-• Implement this problem statement using Artificial Neural Network (ANN).<br/>
+**Standardized data path:** `data/first_innings_score_prediction_-_ipl/`
 
-## Deployed Web App
-If you want to view the deployed model, then follow  the links mentioned below:<br/>
-• GitHub: _https://github.com/anujvyas/IPL-First-Innings-Score-Prediction-Deployment_<br/>
-• Web App: _https://ipl-first-innings-score.herokuapp.com/_
+## 3. Pipeline Overview
+
+### Original Notebook Pipeline
+
+**Preprocessing:**
+- Drop columns/rows
+- One-hot encoding (pd.get_dummies)
+
+### Standardized Pipeline (added)
+
+- **LazyRegressor**: Automated comparison of multiple models in a single call
+- **PyCaret Regression**: Full AutoML pipeline (setup → compare → tune → evaluate → finalize)
+
+## 4. ML Workflow
+
+```mermaid
+flowchart TD
+    A[Load ipl.csv] --> B[Drop columns/rows]
+    B[Drop columns/rows] --> C[One-hot encoding]
+    C[One-hot encoding] --> D[LazyRegressor Benchmark]
+    D[LazyRegressor Benchmark] --> E[PyCaret Regression]
+    E[PyCaret Regression] --> F[Evaluate]
+```
+
+## 5. Notebook Summary
+
+| Metric | Value |
+|--------|-------|
+| Total cells | 40 |
+| Code cells | 29 |
+| Markdown cells | 11 |
+| Original cells | 27 |
+| Standardized cells (added) | 13 |
+| Original model training | None — preprocessing/EDA only |
+
+## 6. Model Details
+
+### LazyRegressor (Standardized)
+
+Compares 20+ regressors, ranked by RMSE/R².
+
+### PyCaret Regression (Standardized)
+
+AutoML pipeline: `setup()` → `compare_models()` → `tune_model()` → `finalize_model()`
+
+> ⚠️ Requires Python ≤ 3.11.
+
+## 7. Project Structure
+
+```
+First Innings Score Prediction - IPL/
+├── First Innings Score Prediction - IPL.ipynb
+├── dataset
+├── readme-resources
+└── README.md
+```
+
+## 8. Setup & Installation
+
+`pip install -r requirements.txt` from the workspace root.
+
+**Key dependencies:**
+
+- `lazypredict`
+- `matplotlib`
+- `numpy`
+- `pandas`
+- `pycaret`
+- `scikit-learn`
+- `seaborn`
+
+## 9. How to Run
+
+Open and run the notebook(s) sequentially:
+
+```bash
+jupyter notebook
+```
+
+- Open `First Innings Score Prediction - IPL.ipynb` and run all cells
+
+## 10. Testing
+
+Automated tests are available in `tests/test_p066_*.py`:
+
+```bash
+python -m pytest tests/test_p066_*.py -v
+```
+
+Tests validate data loading and model instantiation.
+
+## 11. Limitations
+
+- PyCaret cells require Python ≤ 3.11 — they will fail on Python 3.12+
+- No original model training exists — only auto-generated LazyPredict/PyCaret cells
+
+## 12. Cleanup Notes
+
+Cells added during workspace standardization:
+
+- **LazyRegressor** benchmark cell
+- **PyCaret Regression** pipeline cell

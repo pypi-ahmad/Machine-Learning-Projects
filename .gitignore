@@ -1,20 +1,97 @@
-# Virtual environments
+# ══════════════════════════════════════════════════════════════
+#  .gitignore — Machine Learning Projects
+# ══════════════════════════════════════════════════════════════
+
+# ── Virtual Environments ──
 venv/
 env/
+.env/
+.venv/
 Lib/
 
-# IDE-specific files
-.idea/
-.vscode/
-
-# Python cache files
+# ── Python Cache ──
 __pycache__/
 *.pyc
 *.pyo
-
-# Installed packages
+*.pyd
+*.egg-info/
+*.egg
+dist/
+build/
 *.dist-info/
 site-packages/
 
-# System files
+# ── Jupyter Notebook ──
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# ── IDE / Editor ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ── OS Files ──
 .DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# ── Model Artifacts & Serialized Objects ──
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.sav
+*.joblib
+*.pb
+*.pth
+*.pt
+*.onnx
+*.tflite
+saved_model/
+checkpoints/
+
+# ── Large Data Files (>90MB GitHub limit) ──
+# Block by extension
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+*.gz
+*.parquet
+*.feather
+*.arrow
+
+# Block specific large data directories known to exceed 90MB
+data/recommender_systems_the_fundamentals/
+data/mercari_price_suggestion_lightgbm/
+data/twitter_sentiment_analysis_nlp/
+data/conceptual_text_classification_keras/
+data/consumer_complaints/
+data/text_classification_keras_consumer_complaints/
+data/advanced_credit_card_fraud_detection/
+data/creadi_card_fraud_problem_handling_imbalanced_dataset/
+data/lstm_time_series_power_consumption/
+data/million_songs_dataset_recommendation_engine/
+
+# ── Logs ──
+*.log
+logs/
+logs.log
+
+# ── pytest Cache ──
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Miscellaneous ──
+*.tmp
+*.bak
+*.orig
