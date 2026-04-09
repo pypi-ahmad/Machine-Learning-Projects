@@ -2,8 +2,11 @@
 Modern Tabular Classification Pipeline (April 2026)
 Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime — no local files needed
+
+Compute: GPU recommended (CatBoost/LightGBM/XGBoost use CUDA, TabM uses torch.cuda).
+         CPU fallback is automatic. ~2-10 min per dataset on RTX 4060.
 """
-import os, sys, warnings
+import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -11,7 +14,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.metrics import (
     accuracy_score, classification_report, f1_score,
-    roc_auc_score, confusion_matrix
+    roc_auc_score, average_precision_score, confusion_matrix,
+    brier_score_loss,
 )
 import matplotlib
 matplotlib.use("Agg")
@@ -64,13 +68,16 @@ def preprocess(df):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
-    results = {}
+    results = {}      # name -> y_pred
+    probas  = {}      # name -> probability array (for ROC-AUC / PR-AUC / calibration)
+    timings = {}      # name -> wall-clock seconds
     n_classes = y_train.nunique()
     is_binary = n_classes == 2
 
     # ── CatBoost (GPU) ──
     try:
         from catboost import CatBoostClassifier
+        t0 = time.perf_counter()
         cb = CatBoostClassifier(
             iterations=1000, learning_rate=0.05, depth=8,
             task_type="GPU", devices="0",
@@ -79,28 +86,34 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             auto_class_weights="Balanced",
         )
         cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = cb.predict(X_test).flatten()
-        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+        probas["CatBoost"] = cb.predict_proba(X_test)
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}  ({timings['CatBoost']:.1f}s)")
     except Exception as e:
         print(f"✗ CatBoost: {e}")
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
+        t0 = time.perf_counter()
         m = lgb.LGBMClassifier(
             n_estimators=1000, learning_rate=0.05, max_depth=8,
             device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
               callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
-        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+        probas["LightGBM"] = m.predict_proba(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}  ({timings['LightGBM']:.1f}s)")
     except Exception as e:
         print(f"✗ LightGBM: {e}")
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBClassifier
+        t0 = time.perf_counter()
         m = XGBClassifier(
             n_estimators=1000, learning_rate=0.05, max_depth=8,
             device="cuda", tree_method="hist",
@@ -108,8 +121,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             early_stopping_rounds=50, verbosity=1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
-        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+        probas["XGBoost"] = m.predict_proba(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}  ({timings['XGBoost']:.1f}s)")
     except Exception as e:
         print(f"✗ XGBoost: {e}")
 
@@ -117,13 +132,19 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from autogluon.tabular import TabularPredictor
         import tempfile
+        t0 = time.perf_counter()
         train_ag = X_train.copy(); train_ag["traffic_situation"] = y_train.values
         test_ag = X_test.copy(); test_ag["traffic_situation"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="traffic_situation", path=tmp, verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["traffic_situation"])).values
-            print(f"\n✓ AutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}")
+            try:
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["traffic_situation"])).values
+            except Exception:
+                pass
+            timings["AutoGluon"] = time.perf_counter() - t0
+            print(f"\n✓ AutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}  ({timings['AutoGluon']:.1f}s)")
     except Exception as e:
         print(f"✗ AutoGluon: {e}")
 
@@ -131,10 +152,16 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from tabpfn import TabPFNClassifier
         if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            t0 = time.perf_counter()
             m = TabPFNClassifier(device="cuda", N_ensemble_configurations=32)
             m.fit(X_train.values, y_train.values)
+            timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
-            print(f"\n✓ TabPFN-v2 Accuracy: {accuracy_score(y_test, results['TabPFN-v2']):.4f}")
+            try:
+                probas["TabPFN-v2"] = m.predict_proba(X_test.values)
+            except Exception:
+                pass
+            print(f"\n✓ TabPFN-v2 Accuracy: {accuracy_score(y_test, results['TabPFN-v2']):.4f}  ({timings['TabPFN-v2']:.1f}s)")
         else:
             print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
@@ -170,6 +197,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 self.head = nn.Linear(256, d_out)
             def forward(self, x): return self.head(self.blocks(self.embed(x)))
 
+        t0 = time.perf_counter()
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
         loss_fn = nn.CrossEntropyLoss()
@@ -177,35 +205,50 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad():
-            results["TabM"] = torch.argmax(model(Xv), dim=-1).cpu().numpy()
-        print(f"\n✓ TabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}")
+            logits = model(Xv)
+            results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
+            probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
+        timings["TabM"] = time.perf_counter() - t0
+        print(f"\n✓ TabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}  ({timings['TabM']:.1f}s)")
     except Exception as e:
         print(f"✗ TabM: {e}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
+        t0 = time.perf_counter()
         automl = AutoML()
         automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
-        print(f"\n✓ FLAML ({automl.best_estimator}) Accuracy: {accuracy_score(y_test, results['FLAML']):.4f}")
+        try:
+            probas["FLAML"] = automl.predict_proba(X_test)
+        except Exception:
+            pass
+        print(f"\n✓ FLAML ({automl.best_estimator}) Accuracy: {accuracy_score(y_test, results['FLAML']):.4f}  ({timings['FLAML']:.1f}s)")
     except Exception as e:
         print(f"✗ FLAML: {e}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
         from lazypredict.Supervised import LazyClassifier
+        t0 = time.perf_counter()
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
-        print(f"\n✓ LazyPredict — Top 5 classifiers:")
+        timings["LazyPredict"] = time.perf_counter() - t0
+        print(f"\n✓ LazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
         print(f"✗ LazyPredict: {e}")
 
-    return results
+    return results, probas, timings
 
 
-def report(results, y_test, save_dir="."):
+def report(results, probas, timings, y_test, save_dir="."):
+    n_classes = len(set(y_test))
+    is_binary = n_classes == 2
+    metrics_out = {}
+
     print("\n" + "=" * 60)
     print("MODEL COMPARISON")
     print("=" * 60)
@@ -213,17 +256,69 @@ def report(results, y_test, save_dir="."):
     for name, y_pred in results.items():
         acc = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred, average="weighted")
-        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        row = {"accuracy": round(acc, 4), "f1_weighted": round(f1, 4)}
+
+        extra = ""
+        if name in probas:
+            p = probas[name]
+            try:
+                if is_binary:
+                    p1 = p[:, 1] if p.ndim == 2 else p
+                    row["roc_auc"] = round(roc_auc_score(y_test, p1), 4)
+                    row["pr_auc"] = round(average_precision_score(y_test, p1), 4)
+                    row["brier"] = round(brier_score_loss(y_test, p1), 4)
+                    extra = f"  ROC-AUC: {row['roc_auc']:.4f}  PR-AUC: {row['pr_auc']:.4f}"
+                else:
+                    row["roc_auc_ovr"] = round(roc_auc_score(
+                        y_test, p, multi_class="ovr", average="weighted"
+                    ), 4)
+                    extra = f"  ROC-AUC(OVR): {row['roc_auc_ovr']:.4f}"
+            except Exception:
+                pass
+
+        if name in timings:
+            row["time_s"] = round(timings[name], 1)
+
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}{extra}")
         print(classification_report(y_test, y_pred, zero_division=0))
         if acc > best_acc:
             best_acc, best_name = acc, name
+        metrics_out[name] = row
+
         cm = confusion_matrix(y_test, y_pred)
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
         ax.set_title(f"{name} Confusion Matrix")
         fig.savefig(os.path.join(save_dir, f"cm_{name.lower().replace(' ', '_')}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
+
+    # ── Calibration plot (binary only) ──
+    if is_binary and probas:
+        try:
+            from sklearn.calibration import calibration_curve
+            fig, ax = plt.subplots(figsize=(7, 6))
+            ax.plot([0, 1], [0, 1], "k--", label="Perfectly calibrated")
+            for name, p in probas.items():
+                p1 = p[:, 1] if p.ndim == 2 else p
+                prob_true, prob_pred = calibration_curve(y_test, p1, n_bins=10, strategy="uniform")
+                ax.plot(prob_pred, prob_true, "s-", label=name)
+            ax.set_xlabel("Mean predicted probability")
+            ax.set_ylabel("Fraction of positives")
+            ax.set_title("Calibration Plot (Reliability Diagram)")
+            ax.legend(loc="lower right", fontsize=8)
+            fig.savefig(os.path.join(save_dir, "calibration_plot.png"), dpi=100, bbox_inches="tight")
+            plt.close(fig)
+            print("\n✓ Calibration plot saved")
+        except Exception:
+            pass
+
     print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\n✓ Metrics saved → {out_path}")
 
 
 def main():
@@ -233,9 +328,9 @@ def main():
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)
-    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    results, probas, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, probas, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":

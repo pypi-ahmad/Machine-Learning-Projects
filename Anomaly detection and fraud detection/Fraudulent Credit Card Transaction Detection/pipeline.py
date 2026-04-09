@@ -3,17 +3,21 @@ Fraud / Imbalanced Classification Pipeline (April 2026)
 Models: CatBoost, LightGBM, XGBoost + calibrated probabilities + PyOD (ECOD, COPOD, IForest)
 GPU + threshold tuning + isotonic calibration
 Data: Auto-downloaded at runtime
+
+Compute: GPU recommended (CatBoost/LightGBM/XGBoost use CUDA). CPU fallback automatic.
+         ~2–8 min per dataset on RTX 4060.
 """
-import os, sys, warnings
+import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import (
-    classification_report, f1_score,
+    classification_report, f1_score, accuracy_score,
     precision_recall_curve, average_precision_score,
-    roc_auc_score, confusion_matrix
+    roc_auc_score, confusion_matrix,
+    recall_score, precision_score,
 )
 import matplotlib
 matplotlib.use("Agg")
@@ -56,7 +60,8 @@ def find_best_threshold(y_true, y_proba):
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
     from sklearn.calibration import CalibratedClassifierCV
-    results = {}
+    results = {}      # name -> {preds, proba, thresh, model}
+    timings = {}      # name -> wall-clock seconds
     # Hold out calibration split from training data
     X_tr, X_cal, y_tr, y_cal = train_test_split(
         X_train, y_train, test_size=0.15, random_state=42, stratify=y_train)
@@ -75,6 +80,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             eval_metric="aucpr", early_stopping_rounds=50, verbosity=1, n_jobs=-1)),
     ]:
         try:
+            t0 = time.perf_counter()
             m = builder()
             if name == "LightGBM":
                 import lightgbm as lgb
@@ -89,8 +95,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             proba = cal_model.predict_proba(X_test)[:, 1]
             thresh = find_best_threshold(y_test, proba)
             preds = (proba >= thresh).astype(int)
+            timings[name] = time.perf_counter() - t0
             results[name] = {"preds": preds, "proba": proba, "thresh": thresh, "model": name}
-            print(f"✓ {name} F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f}) [calibrated]")
+            print(f"✓ {name} F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f}) [calibrated]  ({timings[name]:.1f}s)")
         except Exception as e:
             print(f"✗ {name}: {e}")
 
@@ -101,6 +108,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         ("IForest-PyOD", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
     ]:
         try:
+            t0 = time.perf_counter()
             pm = pyod_builder()
             pm.fit(X_train.values if hasattr(X_train, "values") else X_train)
             scores = pm.decision_function(X_test.values if hasattr(X_test, "values") else X_test)
@@ -108,19 +116,64 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             n_anom = pyod_preds.sum()
             f1 = f1_score(y_test, pyod_preds) if len(set(y_test)) > 1 else 0
             auc = roc_auc_score(y_test, scores) if len(set(y_test)) > 1 else 0
-            print(f"✓ PyOD {pyod_name}: {n_anom} anomalies ({n_anom/len(X_test):.2%}), F1={f1:.4f}, AUC={auc:.4f}")
+            elapsed = time.perf_counter() - t0
+            timings[f"PyOD-{pyod_name}"] = elapsed
+            print(f"✓ PyOD {pyod_name}: {n_anom} anomalies ({n_anom/len(X_test):.2%}), F1={f1:.4f}, AUC={auc:.4f}  ({elapsed:.1f}s)")
         except Exception as e:
             print(f"✗ PyOD {pyod_name}: {e}")
 
-    return results
+    # ── FLAML AutoML (imbalance-aware benchmark) ──
+    try:
+        from flaml import AutoML
+        t0 = time.perf_counter()
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120,
+                   metric="ap", verbose=0)
+        flaml_proba = automl.predict_proba(X_test)[:, 1]
+        flaml_thresh = find_best_threshold(y_test, flaml_proba)
+        flaml_preds = (flaml_proba >= flaml_thresh).astype(int)
+        timings["FLAML"] = time.perf_counter() - t0
+        results["FLAML"] = {"preds": flaml_preds, "proba": flaml_proba, "thresh": flaml_thresh, "model": "FLAML"}
+        print(f"✓ FLAML ({automl.best_estimator}) F1: {f1_score(y_test, flaml_preds):.4f} (t={flaml_thresh:.3f})  ({timings['FLAML']:.1f}s)")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    # ── LazyPredict (quick sweep benchmark) ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        t0 = time.perf_counter()
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        timings["LazyPredict"] = time.perf_counter() - t0
+        print(f"\n✓ LazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {e}")
+
+    return results, timings
 
 
-def report(results, y_test, save_dir="."):
+def report(results, timings, y_test, save_dir="."):
     from sklearn.calibration import calibration_curve
+    metrics_out = {}
+
     for name, r in results.items():
+        pr_auc = average_precision_score(y_test, r["proba"])
+        roc = roc_auc_score(y_test, r["proba"])
+        f1 = f1_score(y_test, r["preds"])
+        rec = recall_score(y_test, r["preds"])
+        prec = precision_score(y_test, r["preds"], zero_division=0)
+        acc = accuracy_score(y_test, r["preds"])
+        row = {"f1": round(f1, 4), "pr_auc": round(pr_auc, 4), "roc_auc": round(roc, 4),
+               "recall": round(rec, 4), "precision": round(prec, 4), "accuracy": round(acc, 4),
+               "threshold": round(r["thresh"], 4)}
+        if name in timings:
+            row["time_s"] = round(timings[name], 1)
+        metrics_out[name] = row
+
         print(f"\n— {name} (threshold={r['thresh']:.3f}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
-        print(f"  AUPRC: {average_precision_score(y_test, r['proba']):.4f}  ROC-AUC: {roc_auc_score(y_test, r['proba']):.4f}")
+        print(f"  PR-AUC: {pr_auc:.4f}  ROC-AUC: {roc:.4f}  Recall@t: {rec:.4f}")
 
     # Reliability diagram (calibration plot)
     try:
@@ -147,6 +200,12 @@ def report(results, y_test, save_dir="."):
     except Exception as e:
         print(f"✗ Plot: {e}")
 
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\n✓ Metrics saved → {out_path}")
+
 
 def main():
     print("=" * 60)
@@ -156,9 +215,9 @@ def main():
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
-    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":

@@ -1,22 +1,27 @@
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 (primary backbone) + ConvNeXt V2 (fine-tuning backbone)
-Data: Auto-downloaded at runtime
+
+Primary : DINOv3 ViT-S/14 backbone (frozen head-only, then full fine-tune).
+Alternative: ConvNeXt V2 Tiny (fine-tuning baseline via timm).
+Timing  : Wall-clock per model.
+Export  : metrics.json with per-model accuracy + timing; confusion matrix plot.
+Data    : Auto-downloaded at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from PIL import Image
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
 IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_transforms(train=True):
@@ -55,7 +60,11 @@ def train_model():
     train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
+    metrics = {}
 
+    # ── DINOv3 (primary) ──
+    print()
+    print("-- DINOv3 ViT-S/14 --")
     backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
@@ -75,6 +84,7 @@ def train_model():
     opt = torch.optim.AdamW(model.head.parameters(), lr=LR, weight_decay=0.01)
 
     best_acc = 0
+    t0 = time.perf_counter()
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for imgs, labels in train_loader:
@@ -90,16 +100,31 @@ def train_model():
                 preds.extend(torch.argmax(model(imgs.to(device)), dim=-1).cpu().numpy())
                 gts.extend(labels.numpy())
         val_acc = accuracy_score(gts, preds)
-        print(f"  Epoch {epoch+1}/{EPOCHS} — Loss: {total_loss/len(train_loader):.4f} — Val Acc: {val_acc:.4f}")
+        print(f"  Epoch {epoch+1}/{EPOCHS} -- Loss: {total_loss/len(train_loader):.4f} -- Val Acc: {val_acc:.4f}")
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
+            best_preds, best_gts = preds, gts
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model.pth"))
+    dino_elapsed = round(time.perf_counter() - t0, 1)
 
-    print(f"\n🏆 DINOv3 Best Val Accuracy: {best_acc:.4f}")
+    print(f"  DINOv3 Best Val Accuracy: {best_acc:.4f} ({dino_elapsed}s)")
+    print(classification_report(best_gts, best_preds, zero_division=0))
+    metrics["DINOv3"] = {"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}
 
-    # ConvNeXt V2 (alternative fine-tuning backbone)
+    # Confusion matrix
+    cm = confusion_matrix(best_gts, best_preds)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.imshow(cm, cmap="Blues")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv3 Confusion Matrix")
+    fig.savefig(os.path.join(SAVE_DIR, "confusion_matrix.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+    # ── ConvNeXt V2 (alternative baseline) ──
+    print()
+    print("-- ConvNeXt V2 Tiny --")
     try:
         import timm
+        t1 = time.perf_counter()
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
         convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
         for epoch in range(3):
@@ -114,16 +139,25 @@ def train_model():
                 cv_preds.extend(torch.argmax(convnext(imgs.to(device)), dim=-1).cpu().numpy())
                 cv_gts.extend(labels.numpy())
         cv_acc = accuracy_score(cv_gts, cv_preds)
-        print(f"✓ ConvNeXt V2 Val Accuracy: {cv_acc:.4f}")
+        cv_elapsed = round(time.perf_counter() - t1, 1)
+        print(f"  ConvNeXt V2 Val Accuracy: {cv_acc:.4f} ({cv_elapsed}s)")
+        metrics["ConvNeXtV2"] = {"val_accuracy": round(cv_acc, 4), "epochs": 3, "time_s": cv_elapsed}
     except Exception as e:
-        print(f"✗ ConvNeXt V2: {e}")
+        print(f"  ConvNeXt V2: {e}")
+
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2")
+    print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
     print("=" * 60)
-    train_model()
+    metrics = train_model()
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {out_path}")
 
 
 if __name__ == "__main__":

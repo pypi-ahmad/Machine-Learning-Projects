@@ -23,9 +23,10 @@ Compute requirements:
   - FLAML: CPU-only, budget-capped at 60s
 
 Metrics: RMSE, MAE, MAPE (where denominator is non-zero)
+Export : metrics.json + metrics.csv + forecast.png
 Data: Auto-downloaded at runtime
 """
-import os, warnings, time
+import os, json, warnings, time
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -36,6 +37,7 @@ warnings.filterwarnings("ignore")
 
 TARGET = "traffic_volume"
 HORIZON = 30
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def mape_score(y_true, y_pred):
@@ -82,29 +84,29 @@ def forecast(df, target):
 
     # ═══ PRIMARY: AutoGluon TimeSeries ═══
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
         ts_df = pd.DataFrame({"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train})
         ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
         predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
-                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
+                                         path=os.path.join(SAVE_DIR, "ag_ts"))
         predictor.fit(ts_data, time_limit=180, presets="best_quality")
         ag_preds = predictor.predict(ts_data)
         y_pred = ag_preds["mean"].values[:len(test)]
         results["AutoGluon-TS"] = y_pred
-        print(f"✓ AutoGluon-TS ({time.time()-t0:.1f}s)")
+        print(f"  AutoGluon-TS ({time.perf_counter()-t0:.1f}s)")
         score("AutoGluon-TS", test, y_pred, metrics)
         lb = predictor.leaderboard(ts_data)
         print("  Leaderboard (top 5):")
         for line in lb.head().to_string().splitlines():
             print(f"    {line}")
-    except Exception as e: print(f"✗ AutoGluon-TS: {e}")
+    except Exception as e: print(f"  AutoGluon-TS failed: {e}")
 
     # ═══ FOUNDATION MODELS ═══
 
     # Chronos-Bolt (fast zero-shot)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import torch
         from chronos import ChronosPipeline
         pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
@@ -112,13 +114,13 @@ def forecast(df, target):
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
         results["Chronos-Bolt"] = y_pred
-        print(f"✓ Chronos-Bolt ({time.time()-t0:.1f}s)")
+        print(f"  Chronos-Bolt ({time.perf_counter()-t0:.1f}s)")
         score("Chronos-Bolt", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
+    except Exception as e: print(f"  Chronos-Bolt failed: {e}")
 
     # Chronos-2 (universal forecasting)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import torch
         from chronos import ChronosPipeline
         pipe2 = ChronosPipeline.from_pretrained("amazon/chronos-2-base",
@@ -126,43 +128,43 @@ def forecast(df, target):
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe2.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
         results["Chronos-2"] = y_pred
-        print(f"✓ Chronos-2 ({time.time()-t0:.1f}s)")
+        print(f"  Chronos-2 ({time.perf_counter()-t0:.1f}s)")
         score("Chronos-2", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Chronos-2: {e}")
+    except Exception as e: print(f"  Chronos-2 failed: {e}")
 
     # TimesFM (Google foundation model)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import timesfm
         tfm = timesfm.TimesFm(
             hparams=timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=32,
                                             horizon_len=HORIZON),
             checkpoint=timesfm.TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch"))
-        freq = [0] * 1  # freq=0 → daily
+        freq = [0] * 1  # freq=0 -> daily
         y_pred, _ = tfm.forecast([train], freq)
         y_pred = y_pred[0][:len(test)]
         results["TimesFM"] = y_pred
-        print(f"✓ TimesFM ({time.time()-t0:.1f}s)")
+        print(f"  TimesFM ({time.perf_counter()-t0:.1f}s)")
         score("TimesFM", test, y_pred, metrics)
-    except Exception as e: print(f"✗ TimesFM: {e}")
+    except Exception as e: print(f"  TimesFM failed: {e}")
 
     # ═══ CLASSICAL BASELINES (comparison only) ═══
 
     # ARIMA (statsmodels)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from statsmodels.tsa.arima.model import ARIMA
         model = ARIMA(train, order=(5, 1, 0))
         fitted = model.fit()
         y_pred = fitted.forecast(steps=HORIZON)[:len(test)]
         results["ARIMA(5,1,0)"] = y_pred
-        print(f"✓ ARIMA(5,1,0) baseline ({time.time()-t0:.1f}s)")
+        print(f"  ARIMA(5,1,0) baseline ({time.perf_counter()-t0:.1f}s)")
         score("ARIMA(5,1,0)", test, y_pred, metrics)
-    except Exception as e: print(f"✗ ARIMA: {e}")
+    except Exception as e: print(f"  ARIMA failed: {e}")
 
     # Prophet (Meta)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from prophet import Prophet
         p_df = pd.DataFrame({"ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
         m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=False)
@@ -171,9 +173,9 @@ def forecast(df, target):
         fc = m.predict(future)
         y_pred = fc["yhat"].values[-HORIZON:][:len(test)]
         results["Prophet"] = y_pred
-        print(f"✓ Prophet baseline ({time.time()-t0:.1f}s)")
+        print(f"  Prophet baseline ({time.perf_counter()-t0:.1f}s)")
         score("Prophet", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Prophet: {e}")
+    except Exception as e: print(f"  Prophet failed: {e}")
 
     # ═══ TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ═══
     lags = [1, 2, 3, 5, 7, 14, 21]
@@ -206,19 +208,19 @@ def forecast(df, target):
                 device="cuda", tree_method="hist", verbosity=0, n_jobs=-1)),
         ]:
             try:
-                t0 = time.time()
+                t0 = time.perf_counter()
                 m = builder()
                 m.fit(X_lag_tr, y_lag_tr)
                 y_pred = m.predict(X_lag_te)[:len(test)]
                 results[name] = y_pred
-                print(f"✓ {name} ({time.time()-t0:.1f}s)")
+                print(f"  {name} ({time.perf_counter()-t0:.1f}s)")
                 score(name, y_lag_te.values[:len(y_pred)], y_pred, metrics)
             except Exception as e:
-                print(f"✗ {name}: {e}")
+                print(f"  {name} failed: {e}")
 
         # FLAML AutoML on lag features (tabularized forecasting only)
         try:
-            t0 = time.time()
+            t0 = time.perf_counter()
             from flaml import AutoML
             flaml_model = AutoML()
             flaml_model.fit(X_lag_tr, y_lag_tr, task="regression", time_budget=60,
@@ -226,22 +228,22 @@ def forecast(df, target):
             y_pred = flaml_model.predict(X_lag_te)[:len(test)]
             results["FLAML-Lag"] = y_pred
             best = flaml_model.best_estimator
-            print(f"✓ FLAML-Lag [best: {best}] ({time.time()-t0:.1f}s)")
+            print(f"  FLAML-Lag [best: {best}] ({time.perf_counter()-t0:.1f}s)")
             score("FLAML-Lag", y_lag_te.values[:len(y_pred)], y_pred, metrics)
         except Exception as e:
-            print(f"✗ FLAML-Lag: {e}")
+            print(f"  FLAML-Lag failed: {e}")
 
     # ═══ METRICS SUMMARY ═══
     if metrics:
-        print("")
+        print()
         print("=" * 65)
         print("METRICS SUMMARY")
         print("=" * 65)
         summary = pd.DataFrame(metrics).sort_values("RMSE")
         print(summary.to_string(index=False))
-        summary.to_csv(os.path.join(os.path.dirname(__file__), "metrics.csv"), index=False)
+        summary.to_csv(os.path.join(SAVE_DIR, "metrics.csv"), index=False)
         best_model = summary.iloc[0]["Model"]
-        print(f"  → Best model by RMSE: {best_model}")
+        print(f"  Best model by RMSE: {best_model}")
 
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
@@ -250,19 +252,24 @@ def forecast(df, target):
     for name, y_pred in results.items():
         ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
     ax.legend(); ax.set_title("Forecast Comparison")
-    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    fig.savefig(os.path.join(SAVE_DIR, "forecast.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
-    return results
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("TIME SERIES FORECASTING — April 2026")
+    print("TIME SERIES FORECASTING | April 2026")
     print("Primary: AutoGluon-TS, Chronos-Bolt, Chronos-2, TimesFM")
     print("Baselines: ARIMA, Prophet, LightGBM/CatBoost/XGBoost Lag, FLAML")
     print("=" * 60)
     df, target = load_data()
-    forecast(df, target)
+    metrics = forecast(df, target)
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {out_path}")
 
 
 if __name__ == "__main__":

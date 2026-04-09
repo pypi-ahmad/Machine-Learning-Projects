@@ -1,13 +1,19 @@
 """
 Modern OCR Pipeline (April 2026)
-Model: PaddleOCR + PaddleOCR-VL-1.5 (GPU, multilingual)
-Data: Auto-downloads sample document images at runtime
+
+Primary : PaddleOCR (text detection + recognition, GPU, multilingual).
+Extended: PaddleOCR-VL-1.5 (vision-language document parsing).
+Timing  : Wall-clock per model stage.
+Export  : metrics.json with file-level results + aggregate stats + timing.
+Data    : Auto-downloads sample document images at runtime.
 """
-import os, json, warnings
+import os, json, time, warnings
 from pathlib import Path
 import urllib.request
 
 warnings.filterwarnings("ignore")
+
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_URLS = [
     "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img_12.jpg",
@@ -16,7 +22,7 @@ SAMPLE_URLS = [
 
 
 def download_samples():
-    save_dir = Path(os.path.dirname(__file__)) / "ocr_samples"
+    save_dir = Path(SAVE_DIR) / "ocr_samples"
     save_dir.mkdir(exist_ok=True)
     paths = []
     for url in SAMPLE_URLS:
@@ -24,52 +30,97 @@ def download_samples():
         if not fname.exists():
             urllib.request.urlretrieve(url, str(fname))
         paths.append(fname)
-    # Also gather any local images
     for ext in (".jpg", ".jpeg", ".png", ".bmp", ".tiff"):
-        paths.extend([p for p in Path(os.path.dirname(__file__)).rglob(f"*{ext}") if p not in paths])
+        paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{ext}") if p not in paths])
     print(f"{len(paths)} images available for OCR")
     return paths
 
 
-def run_ocr(files):
+def run_paddleocr(files):
+    """PaddleOCR -- primary text detection + recognition."""
     from paddleocr import PaddleOCR
     ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=True)
     results = []
+    t0 = time.perf_counter()
     for f in files[:30]:
         result = ocr.ocr(str(f), cls=True)
         texts = []
         if result and result[0]:
             for line in result[0]:
-                texts.append({"text": line[1][0], "confidence": line[1][1]})
+                texts.append({"text": line[1][0], "confidence": round(line[1][1], 4)})
         full_text = " ".join(t["text"] for t in texts)
-        results.append({"file": f.name, "full_text": full_text, "lines": texts, "n_lines": len(texts)})
-        print(f"  ✓ {f.name}: {len(texts)} lines — '{full_text[:80]}...'")
-    return results
+        avg_conf = sum(t["confidence"] for t in texts) / max(len(texts), 1)
+        results.append({"file": f.name, "full_text": full_text,
+                        "n_lines": len(texts), "avg_confidence": round(avg_conf, 4)})
+        preview = full_text[:80] + "..." if len(full_text) > 80 else full_text
+        print(f"  {f.name}: {len(texts)} lines (conf {avg_conf:.2f}) -- \'{preview}\'")
+    elapsed = time.perf_counter() - t0
+    return results, round(elapsed, 1)
+
+
+def run_paddleocr_vl(files):
+    """PaddleOCR-VL-1.5 -- vision-language document parsing."""
+    from paddleocr import PaddleOCR
+    vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
+                       use_textline_orientation=False, lang="en", use_gpu=True)
+    results = []
+    t0 = time.perf_counter()
+    for f in files[:10]:
+        vl_result = vl_ocr.ocr(str(f), cls=True)
+        n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
+        results.append({"file": f.name, "n_lines": n_lines})
+        print(f"  VL-1.5 {f.name}: {n_lines} lines")
+    elapsed = time.perf_counter() - t0
+    return results, round(elapsed, 1)
 
 
 def main():
     print("=" * 60)
-    print("OCR — PaddleOCR + PaddleOCR-VL-1.5 (GPU)")
+    print("OCR | PaddleOCR + PaddleOCR-VL-1.5")
     print("=" * 60)
     files = download_samples()
-    results = run_ocr(files)
+    metrics = {}
 
-    # PaddleOCR-VL-1.5 (vision-language OCR)
+    # PRIMARY: PaddleOCR
+    print()
+    print("-- PaddleOCR --")
     try:
-        from paddleocr import PaddleOCR
-        vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
-                           use_textline_orientation=False, lang="en", use_gpu=True)
-        for f in files[:5]:
-            vl_result = vl_ocr.ocr(str(f), cls=True)
-            n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
-            print(f"  ✓ VL-1.5 {f.name}: {n_lines} lines")
-        print("✓ PaddleOCR-VL-1.5 complete")
+        results, elapsed = run_paddleocr(files)
+        total_lines = sum(r["n_lines"] for r in results)
+        avg_conf = sum(r["avg_confidence"] for r in results) / max(len(results), 1)
+        metrics["PaddleOCR"] = {
+            "files": len(results), "total_lines": total_lines,
+            "avg_confidence": round(avg_conf, 4), "time_s": elapsed,
+        }
+        print(f"  PaddleOCR: {len(results)} files, {total_lines} lines in {elapsed}s")
     except Exception as e:
-        print(f"✗ PaddleOCR-VL-1.5: {e}")
-    out_path = os.path.join(os.path.dirname(__file__), "ocr_results.json")
+        print(f"  PaddleOCR failed: {e}")
+        results = []
+
+    # EXTENDED: PaddleOCR-VL-1.5
+    print()
+    print("-- PaddleOCR-VL-1.5 (document parsing) --")
+    try:
+        vl_results, vl_elapsed = run_paddleocr_vl(files)
+        vl_total = sum(r["n_lines"] for r in vl_results)
+        metrics["PaddleOCR-VL-1.5"] = {
+            "files": len(vl_results), "total_lines": vl_total, "time_s": vl_elapsed,
+        }
+        print(f"  VL-1.5: {len(vl_results)} files, {vl_total} lines in {vl_elapsed}s")
+    except Exception as e:
+        print(f"  PaddleOCR-VL-1.5 failed: {e}")
+
+    # Save metrics
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {out_path}")
+
+    # Also save detailed per-file results
+    detail_path = os.path.join(SAVE_DIR, "ocr_results.json")
+    with open(detail_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-    print(f"\n✓ Saved to {out_path}: {len(results)} files, {sum(r['n_lines'] for r in results)} lines")
+    print(f"Detailed results saved to {detail_path}")
 
 
 if __name__ == "__main__":

@@ -1,16 +1,28 @@
 """
 Modern NLP Classification Pipeline (April 2026)
-Models: ModernBERT (English) + XLM-RoBERTa (multilingual) + GLiNER (zero-shot NER)
-        TF-IDF + Naive Bayes as baseline
+
+Primary model: ModernBERT (answerdotai/ModernBERT-base) — English-first encoder,
+               fine-tuned with mixed-precision (fp16) for sequence classification.
+Secondary:     XLM-RoBERTa (multilingual fallback).
+Baselines:     TF-IDF + Naive Bayes / Logistic Regression (kept for comparison).
+Extras:        GLiNER zero-shot NER, BGE-M3 / Qwen3-Embedding similarity.
+
+Compute: GPU strongly recommended (~2-8 min per model on RTX 4060).
+         TF-IDF baselines run on CPU in <10s.
 Data: Auto-downloaded at runtime
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, f1_score
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    confusion_matrix, roc_auc_score,
+)
 import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
@@ -51,13 +63,18 @@ def run_tfidf_baseline(df):
     le = LabelEncoder(); y = le.fit_transform(df["label"])
     X_tr, X_te, y_tr, y_te = train_test_split(df["text"], y, test_size=0.2, random_state=42,
                                                 stratify=y if len(le.classes_) < 50 else None)
+    baseline_results = {}
     for name, clf in [("Naive Bayes", MultinomialNB()), ("LogReg", LogisticRegression(max_iter=1000, n_jobs=-1))]:
+        t0 = time.perf_counter()
         pipe = Pipeline([("tfidf", TfidfVectorizer(max_features=30000, ngram_range=(1, 2))), ("clf", clf)])
         pipe.fit(X_tr, y_tr)
         preds = pipe.predict(X_te)
+        elapsed = time.perf_counter() - t0
         acc = accuracy_score(y_te, preds)
         f1 = f1_score(y_te, preds, average="weighted")
-        print(f"  [Baseline] {name} — Accuracy: {acc:.4f}, F1: {f1:.4f}")
+        baseline_results[name] = {"accuracy": round(acc, 4), "f1_weighted": round(f1, 4), "time_s": round(elapsed, 1)}
+        print(f"  [Baseline] {name} — Accuracy: {acc:.4f}, F1: {f1:.4f}  ({elapsed:.1f}s)")
+    return baseline_results
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -69,8 +86,10 @@ def train_transformer(df, model_name, display_name):
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    use_amp = device.type == "cuda"
     le = LabelEncoder(); df["label_id"] = le.fit_transform(df["label"])
     n_classes = len(le.classes_)
+    is_binary = n_classes == 2
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
                                           stratify=df["label_id"] if n_classes < 50 else None)
 
@@ -89,29 +108,71 @@ def train_transformer(df, model_name, display_name):
 
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     sched = get_linear_schedule_with_warmup(opt, int(0.1 * len(train_loader) * EPOCHS), len(train_loader) * EPOCHS)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    t0 = time.perf_counter()
 
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for batch in train_loader:
             batch = {k: v.to(device) for k, v in batch.items()}
-            loss = model(**batch).loss; loss.backward()
+            with torch.amp.autocast("cuda", enabled=use_amp):
+                loss = model(**batch).loss
+            scaler.scale(loss).backward()
+            scaler.unscale_(opt)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
+            scaler.step(opt); scaler.update(); sched.step(); opt.zero_grad()
+            total_loss += loss.item()
         print(f"  [{display_name}] Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(train_loader):.4f}")
 
-    model.eval(); preds, labels = [], []
+    elapsed = time.perf_counter() - t0
+    model.eval(); all_preds, all_labels, all_logits = [], [], []
     with torch.no_grad():
         for batch in test_loader:
             batch = {k: v.to(device) for k, v in batch.items()}
-            preds.extend(torch.argmax(model(**batch).logits, dim=-1).cpu().numpy())
-            labels.extend(batch["labels"].cpu().numpy())
+            logits = model(**batch).logits
+            all_preds.extend(torch.argmax(logits, dim=-1).cpu().numpy())
+            all_labels.extend(batch["labels"].cpu().numpy())
+            all_logits.append(logits.cpu())
 
-    acc = accuracy_score(labels, preds)
-    f1 = f1_score(labels, preds, average="weighted")
-    print(f"\n✓ {display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}")
-    print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
-    model.save_pretrained(os.path.join(os.path.dirname(__file__), f"{display_name.lower().replace('-','_')}_model"))
-    return acc, f1
+    all_preds = np.array(all_preds)
+    all_labels = np.array(all_labels)
+    all_logits = torch.cat(all_logits, dim=0)
+
+    acc = accuracy_score(all_labels, all_preds)
+    f1 = f1_score(all_labels, all_preds, average="weighted")
+    row = {"accuracy": round(acc, 4), "f1_weighted": round(f1, 4), "time_s": round(elapsed, 1)}
+
+    # ROC-AUC (binary or multiclass OVR)
+    try:
+        probs = torch.softmax(all_logits, dim=-1).numpy()
+        if is_binary:
+            row["roc_auc"] = round(roc_auc_score(all_labels, probs[:, 1]), 4)
+        else:
+            row["roc_auc_ovr"] = round(roc_auc_score(all_labels, probs, multi_class="ovr", average="weighted"), 4)
+    except Exception:
+        pass
+
+    print(f"\n✓ {display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}  ({elapsed:.1f}s)")
+    if "roc_auc" in row:
+        print(f"  ROC-AUC: {row['roc_auc']:.4f}")
+    elif "roc_auc_ovr" in row:
+        print(f"  ROC-AUC (OVR): {row['roc_auc_ovr']:.4f}")
+    print(classification_report(all_labels, all_preds, target_names=le.classes_.astype(str), zero_division=0))
+
+    # Confusion matrix
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    cm = confusion_matrix(all_labels, all_preds)
+    fig, ax = plt.subplots(figsize=(max(6, n_classes * 0.8), max(5, n_classes * 0.7)))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
+                xticklabels=le.classes_.astype(str), yticklabels=le.classes_.astype(str))
+    ax.set_title(f"{display_name} Confusion Matrix")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("Actual")
+    fig.tight_layout()
+    fig.savefig(os.path.join(save_dir, f"cm_{display_name.lower().replace('-','_')}.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+    model.save_pretrained(os.path.join(save_dir, f"{display_name.lower().replace('-','_')}_model"))
+    return acc, f1, row
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -166,18 +227,23 @@ def run_embedding_similarity(df):
 def main():
     print("=" * 60)
     print("NLP CLASSIFICATION — ModernBERT + XLM-R | TF-IDF baseline | GLiNER NER")
+    print("Mixed-precision (fp16) training on GPU")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    metrics_out = {}
 
     # Baseline first
     print("\n— TF-IDF / Naive Bayes Baseline —")
-    run_tfidf_baseline(df)
+    baseline_metrics = run_tfidf_baseline(df)
+    metrics_out.update(baseline_metrics)
 
     # Primary transformer models
     best_acc, best_name = 0, ""
     for model_name, display_name in MODELS:
         try:
-            acc, f1 = train_transformer(df.copy(), model_name, display_name)
+            acc, f1, row = train_transformer(df.copy(), model_name, display_name)
+            metrics_out[display_name] = row
             if acc > best_acc:
                 best_acc, best_name = acc, display_name
         except Exception as e:
@@ -191,6 +257,12 @@ def main():
     # Embedding similarity
     print("\n— Embedding Similarity (BGE-M3 / Qwen3-Embedding) —")
     run_embedding_similarity(df)
+
+    # Save JSON metrics
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\n✓ Metrics saved → {out_path}")
 
 
 if __name__ == "__main__":

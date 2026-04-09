@@ -5,7 +5,7 @@ Run: python _overhaul_all.py
 
 Data sources: HuggingFace datasets, sklearn, torchvision, yfinance, UCI, OpenML, direct URLs
 """
-import os, sys, textwrap
+import os, sys, json, textwrap
 from pathlib import Path
 
 BASE = Path(r"e:\Github\Machine-Learning-Projects")
@@ -563,16 +563,34 @@ NLP_CLF = {
     "Deep Learning/IMDB Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "Deep Learning/News Category Prediction": {"target": "category", "text_col": "headline", "data": _hf("heegyu/news-category-dataset")},
     "Deep Learning/Sentiment Analysis - Flask App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
-    # NER / keyword / entity extraction (GLiNER primary)
-    "NLP/Named Entity Recognition": {"target": "ner_tags", "text_col": "tokens", "data": _hf("conll2003")},
-    "NLP/Keyword Extraction": {"target": "label", "text_col": "text", "data": _hf("EdinburghNLP/xsum")},
-    "NLP/Keyword Research": {"target": "label", "text_col": "text", "data": _hf("EdinburghNLP/xsum")},
     # Text classification misc
     "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("hate_speech18")},
     "NLP/BOW and TF-IDF with XGBoost": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
 }
 
-# ── FAMILY 7: NLP GENERATION ──
+# ── FAMILY 7: NER / ENTITY EXTRACTION ──
+NLP_NER = {
+    "NLP/Named Entity Recognition": {
+        "labels": ["person", "location", "organization", "miscellaneous"],
+        "data": _hf("conll2003"),
+        "text_col": "tokens",
+        "tag_col": "ner_tags",
+    },
+    "NLP/Keyword Extraction": {
+        "labels": ["keyword", "keyphrase", "topic", "entity"],
+        "data": _hf("midas/inspec", config="extraction"),
+        "text_col": "document",
+        "tag_col": "doc_bio_tags",
+    },
+    "NLP/Keyword Research": {
+        "labels": ["keyword", "keyphrase", "topic", "entity"],
+        "data": _hf("midas/inspec", config="extraction"),
+        "text_col": "document",
+        "tag_col": "doc_bio_tags",
+    },
+}
+
+# ── FAMILY 8: NLP GENERATION ──
 NLP_GEN = {
     "NLP/Document Summary Creator": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
     "NLP/Language Translation Model": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
@@ -630,20 +648,18 @@ IMAGE_CLF = {
 # ── FAMILY 9: CV DETECTION (YOLO) ──
 CV_DETECTION = {
     "Computer Vision/Car and Pedestrian Tracker": {"task": "track"},
-    "Computer Vision/Document Word Detection": {"task": "detect"},
     "Computer Vision/Lane Finder": {"task": "detect"},
-    "Computer Vision/Captcha Recognition": {"task": "detect"},
     "Deep Learning/Landmark Detection": {"task": "detect"},
 }
 
 # ── FAMILY 10: FACE/GESTURE ──
 FACE_GESTURE = {
     "Computer Vision/Face Detection - OpenCV": {"task": "face_detection"},
-    "Computer Vision/Face Expression Identifier": {"task": "face_detection"},
+    "Computer Vision/Face Expression Identifier": {"task": "expression"},
     "Computer Vision/Face Mask Detection": {"task": "face_detection"},
     "Computer Vision/Gesture Control Media Player": {"task": "hand_gesture"},
     "Computer Vision/Home Security": {"task": "face_detection"},
-    "Computer Vision/Live Smile Detector": {"task": "face_detection"},
+    "Computer Vision/Live Smile Detector": {"task": "expression"},
     "Computer Vision/Room Security - Webcam": {"task": "face_detection"},
     "Computer Vision/Face Recognition Door Lock - AWS Rekognition": {"task": "face_recognition"},
     "Deep Learning/Caffe Face Detector - OpenCV": {"task": "face_detection"},
@@ -657,6 +673,8 @@ OCR = {
     "Computer Vision/Image Text Extraction - OCR": {},
     "Computer Vision/Image to Text Conversion - OCR": {},
     "Computer Vision/QR Code Readability": {},
+    "Computer Vision/Document Word Detection": {},
+    "Computer Vision/Captcha Recognition": {},
 }
 
 # ── FAMILY 12: RECOMMENDATION ──
@@ -798,8 +816,11 @@ def gen_tabular_clf(path, cfg):
 Modern Tabular Classification Pipeline (April 2026)
 Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime — no local files needed
+
+Compute: GPU recommended (CatBoost/LightGBM/XGBoost use CUDA, TabM uses torch.cuda).
+         CPU fallback is automatic. ~2-10 min per dataset on RTX 4060.
 """
-import os, sys, warnings
+import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -807,7 +828,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.metrics import (
     accuracy_score, classification_report, f1_score,
-    roc_auc_score, confusion_matrix
+    roc_auc_score, average_precision_score, confusion_matrix,
+    brier_score_loss,
 )
 import matplotlib
 matplotlib.use("Agg")
@@ -859,13 +881,16 @@ def preprocess(df):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
-    results = {{}}
+    results = {{}}      # name -> y_pred
+    probas  = {{}}      # name -> probability array (for ROC-AUC / PR-AUC / calibration)
+    timings = {{}}      # name -> wall-clock seconds
     n_classes = y_train.nunique()
     is_binary = n_classes == 2
 
     # ── CatBoost (GPU) ──
     try:
         from catboost import CatBoostClassifier
+        t0 = time.perf_counter()
         cb = CatBoostClassifier(
             iterations=1000, learning_rate=0.05, depth=8,
             task_type="GPU", devices="0",
@@ -874,28 +899,34 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             auto_class_weights="Balanced",
         )
         cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = cb.predict(X_test).flatten()
-        print(f"\\n✓ CatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}")
+        probas["CatBoost"] = cb.predict_proba(X_test)
+        print(f"\\n✓ CatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
         print(f"✗ CatBoost: {{e}}")
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
+        t0 = time.perf_counter()
         m = lgb.LGBMClassifier(
             n_estimators=1000, learning_rate=0.05, max_depth=8,
             device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
               callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
-        print(f"\\n✓ LightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}")
+        probas["LightGBM"] = m.predict_proba(X_test)
+        print(f"\\n✓ LightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
         print(f"✗ LightGBM: {{e}}")
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBClassifier
+        t0 = time.perf_counter()
         m = XGBClassifier(
             n_estimators=1000, learning_rate=0.05, max_depth=8,
             device="cuda", tree_method="hist",
@@ -903,8 +934,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             early_stopping_rounds=50, verbosity=1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
-        print(f"\\n✓ XGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}")
+        probas["XGBoost"] = m.predict_proba(X_test)
+        print(f"\\n✓ XGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
         print(f"✗ XGBoost: {{e}}")
 
@@ -912,13 +945,19 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from autogluon.tabular import TabularPredictor
         import tempfile
+        t0 = time.perf_counter()
         train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
         test_ag = X_test.copy(); test_ag["{target}"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="{target}", path=tmp, verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["{target}"])).values
-            print(f"\\n✓ AutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}")
+            try:
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["{target}"])).values
+            except Exception:
+                pass
+            timings["AutoGluon"] = time.perf_counter() - t0
+            print(f"\\n✓ AutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
         print(f"✗ AutoGluon: {{e}}")
 
@@ -926,10 +965,16 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from tabpfn import TabPFNClassifier
         if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            t0 = time.perf_counter()
             m = TabPFNClassifier(device="cuda", N_ensemble_configurations=32)
             m.fit(X_train.values, y_train.values)
+            timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
-            print(f"\\n✓ TabPFN-v2 Accuracy: {{accuracy_score(y_test, results['TabPFN-v2']):.4f}}")
+            try:
+                probas["TabPFN-v2"] = m.predict_proba(X_test.values)
+            except Exception:
+                pass
+            print(f"\\n✓ TabPFN-v2 Accuracy: {{accuracy_score(y_test, results['TabPFN-v2']):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
         else:
             print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
@@ -965,6 +1010,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 self.head = nn.Linear(256, d_out)
             def forward(self, x): return self.head(self.blocks(self.embed(x)))
 
+        t0 = time.perf_counter()
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
         loss_fn = nn.CrossEntropyLoss()
@@ -972,35 +1018,50 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad():
-            results["TabM"] = torch.argmax(model(Xv), dim=-1).cpu().numpy()
-        print(f"\\n✓ TabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}")
+            logits = model(Xv)
+            results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
+            probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
+        timings["TabM"] = time.perf_counter() - t0
+        print(f"\\n✓ TabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
         print(f"✗ TabM: {{e}}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
+        t0 = time.perf_counter()
         automl = AutoML()
         automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
-        print(f"\\n✓ FLAML ({{automl.best_estimator}}) Accuracy: {{accuracy_score(y_test, results['FLAML']):.4f}}")
+        try:
+            probas["FLAML"] = automl.predict_proba(X_test)
+        except Exception:
+            pass
+        print(f"\\n✓ FLAML ({{automl.best_estimator}}) Accuracy: {{accuracy_score(y_test, results['FLAML']):.4f}}  ({{timings['FLAML']:.1f}}s)")
     except Exception as e:
         print(f"✗ FLAML: {{e}}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
         from lazypredict.Supervised import LazyClassifier
+        t0 = time.perf_counter()
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
-        print(f"\\n✓ LazyPredict — Top 5 classifiers:")
+        timings["LazyPredict"] = time.perf_counter() - t0
+        print(f"\\n✓ LazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
         print(f"✗ LazyPredict: {{e}}")
 
-    return results
+    return results, probas, timings
 
 
-def report(results, y_test, save_dir="."):
+def report(results, probas, timings, y_test, save_dir="."):
+    n_classes = len(set(y_test))
+    is_binary = n_classes == 2
+    metrics_out = {{}}
+
     print("\\n" + "=" * 60)
     print("MODEL COMPARISON")
     print("=" * 60)
@@ -1008,17 +1069,69 @@ def report(results, y_test, save_dir="."):
     for name, y_pred in results.items():
         acc = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred, average="weighted")
-        print(f"\\n— {{name}} —  Accuracy: {{acc:.4f}}  |  F1: {{f1:.4f}}")
+        row = {{"accuracy": round(acc, 4), "f1_weighted": round(f1, 4)}}
+
+        extra = ""
+        if name in probas:
+            p = probas[name]
+            try:
+                if is_binary:
+                    p1 = p[:, 1] if p.ndim == 2 else p
+                    row["roc_auc"] = round(roc_auc_score(y_test, p1), 4)
+                    row["pr_auc"] = round(average_precision_score(y_test, p1), 4)
+                    row["brier"] = round(brier_score_loss(y_test, p1), 4)
+                    extra = f"  ROC-AUC: {{row['roc_auc']:.4f}}  PR-AUC: {{row['pr_auc']:.4f}}"
+                else:
+                    row["roc_auc_ovr"] = round(roc_auc_score(
+                        y_test, p, multi_class="ovr", average="weighted"
+                    ), 4)
+                    extra = f"  ROC-AUC(OVR): {{row['roc_auc_ovr']:.4f}}"
+            except Exception:
+                pass
+
+        if name in timings:
+            row["time_s"] = round(timings[name], 1)
+
+        print(f"\\n— {{name}} —  Accuracy: {{acc:.4f}}  |  F1: {{f1:.4f}}{{extra}}")
         print(classification_report(y_test, y_pred, zero_division=0))
         if acc > best_acc:
             best_acc, best_name = acc, name
+        metrics_out[name] = row
+
         cm = confusion_matrix(y_test, y_pred)
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
         ax.set_title(f"{{name}} Confusion Matrix")
         fig.savefig(os.path.join(save_dir, f"cm_{{name.lower().replace(' ', '_')}}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
+
+    # ── Calibration plot (binary only) ──
+    if is_binary and probas:
+        try:
+            from sklearn.calibration import calibration_curve
+            fig, ax = plt.subplots(figsize=(7, 6))
+            ax.plot([0, 1], [0, 1], "k--", label="Perfectly calibrated")
+            for name, p in probas.items():
+                p1 = p[:, 1] if p.ndim == 2 else p
+                prob_true, prob_pred = calibration_curve(y_test, p1, n_bins=10, strategy="uniform")
+                ax.plot(prob_pred, prob_true, "s-", label=name)
+            ax.set_xlabel("Mean predicted probability")
+            ax.set_ylabel("Fraction of positives")
+            ax.set_title("Calibration Plot (Reliability Diagram)")
+            ax.legend(loc="lower right", fontsize=8)
+            fig.savefig(os.path.join(save_dir, "calibration_plot.png"), dpi=100, bbox_inches="tight")
+            plt.close(fig)
+            print("\\n✓ Calibration plot saved")
+        except Exception:
+            pass
+
     print(f"\\n🏆 Best: {{best_name}} ({{best_acc:.4f}})")
+
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
 
 
 def main():
@@ -1028,9 +1141,9 @@ def main():
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)
-    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    results, probas, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, probas, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
@@ -1046,14 +1159,20 @@ def gen_tabular_reg(path, cfg):
 Modern Tabular Regression Pipeline (April 2026)
 Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime
+
+Compute: GPU recommended (CatBoost/LightGBM/XGBoost use CUDA, TabM uses torch.cuda).
+         CPU fallback is automatic. ~2-10 min per dataset on RTX 4060.
 """
-import os, sys, warnings
+import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import (
+    mean_squared_error, mean_absolute_error, r2_score,
+    mean_absolute_percentage_error,
+)
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -1086,37 +1205,47 @@ def preprocess(df):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
-    results = {{}}
+    results = {{}}      # name -> y_pred
+    timings = {{}}      # name -> wall-clock seconds
 
+    # ── CatBoost (GPU) ──
     try:
         from catboost import CatBoostRegressor
+        t0 = time.perf_counter()
         m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
                               devices="0", early_stopping_rounds=50, verbose=100)
         m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = m.predict(X_test)
-        print(f"✓ CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}")
+        print(f"✓ CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
         print(f"✗ CatBoost: {{e}}")
 
+    # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
+        t0 = time.perf_counter()
         m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
                               device="gpu", verbose=-1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
               callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
-        print(f"✓ LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}")
+        print(f"✓ LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
         print(f"✗ LightGBM: {{e}}")
 
+    # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBRegressor
+        t0 = time.perf_counter()
         m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
                          device="cuda", tree_method="hist", early_stopping_rounds=50,
                          verbosity=1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
-        print(f"✓ XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}")
+        print(f"✓ XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
         print(f"✗ XGBoost: {{e}}")
 
@@ -1124,12 +1253,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from autogluon.tabular import TabularPredictor
         import tempfile
+        t0 = time.perf_counter()
         train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="{target}", path=tmp, problem_type="regression", verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
-            print(f"✓ AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}")
+            timings["AutoGluon"] = time.perf_counter() - t0
+            print(f"✓ AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
         print(f"✗ AutoGluon: {{e}}")
 
@@ -1137,10 +1268,12 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from tabpfn import TabPFNRegressor
         if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            t0 = time.perf_counter()
             m = TabPFNRegressor(device="cuda", N_ensemble_configurations=32)
             m.fit(X_train.values, y_train.values)
+            timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
-            print(f"✓ TabPFN-v2 RMSE: {{mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}}")
+            print(f"✓ TabPFN-v2 RMSE: {{mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
         else:
             print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
@@ -1167,56 +1300,108 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 super().__init__()
                 self.net = nn.Sequential(nn.Linear(d_in, 256), nn.SiLU(), TabMBlock(256), TabMBlock(256), nn.Linear(256, 1))
             def forward(self, x): return self.net(x).squeeze(-1)
+        t0 = time.perf_counter()
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
         for ep in range(100):
             model.train(); loss = nn.MSELoss()(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
-        print(f"✓ TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}")
+        timings["TabM"] = time.perf_counter() - t0
+        print(f"✓ TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
         print(f"✗ TabM: {{e}}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
+        t0 = time.perf_counter()
         automl = AutoML()
         automl.fit(X_train, y_train, task="regression", time_budget=120, verbose=0)
+        timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
-        print(f"✓ FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}")
+        print(f"✓ FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}  ({{timings['FLAML']:.1f}}s)")
     except Exception as e:
         print(f"✗ FLAML: {{e}}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
         from lazypredict.Supervised import LazyRegressor
+        t0 = time.perf_counter()
         lazy = LazyRegressor(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
-        print(f"\\n✓ LazyPredict — Top 5 regressors:")
+        timings["LazyPredict"] = time.perf_counter() - t0
+        print(f"\\n✓ LazyPredict — Top 5 regressors:  ({{timings['LazyPredict']:.1f}}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
         print(f"✗ LazyPredict: {{e}}")
 
-    return results
+    return results, timings
 
 
-def report(results, y_test, save_dir="."):
+def report(results, timings, y_test, save_dir="."):
+    metrics_out = {{}}
+
     print("\\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
     best_name, best_rmse = None, float("inf")
     for name, y_pred in results.items():
         rmse = mean_squared_error(y_test, y_pred, squared=False)
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
-        print(f"— {{name}} — RMSE: {{rmse:.4f}} | MAE: {{mae:.4f}} | R²: {{r2:.4f}}")
+        row = {{"rmse": round(rmse, 4), "mae": round(mae, 4), "r2": round(r2, 4)}}
+
+        # MAPE — only meaningful when target has no zeros
+        mape_str = ""
+        try:
+            if (y_test != 0).all():
+                mape = mean_absolute_percentage_error(y_test, y_pred)
+                row["mape"] = round(mape, 4)
+                mape_str = f"  MAPE: {{mape:.4f}}"
+        except Exception:
+            pass
+
+        if name in timings:
+            row["time_s"] = round(timings[name], 1)
+
+        print(f"\\n— {{name}} — RMSE: {{rmse:.4f}} | MAE: {{mae:.4f}} | R²: {{r2:.4f}}{{mape_str}}")
         if rmse < best_rmse:
             best_rmse, best_name = rmse, name
+        metrics_out[name] = row
+
+        # Predicted-vs-Actual scatter
         fig, ax = plt.subplots(figsize=(6, 5))
         ax.scatter(y_test, y_pred, alpha=0.4, s=10)
         ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
         ax.set_title(f"{{name}} — Predicted vs Actual")
+        ax.set_xlabel("Actual"); ax.set_ylabel("Predicted")
         fig.savefig(os.path.join(save_dir, f"scatter_{{name.lower().replace(' ', '_')}}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
+
+    # ── Residual distribution for the best model ──
+    if best_name:
+        residuals = y_test.values - results[best_name]
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        axes[0].hist(residuals, bins=40, edgecolor="black", alpha=0.7)
+        axes[0].set_title(f"{{best_name}} — Residual Distribution")
+        axes[0].set_xlabel("Residual (actual − predicted)")
+        axes[1].scatter(results[best_name], residuals, alpha=0.4, s=10)
+        axes[1].axhline(0, color="r", linestyle="--")
+        axes[1].set_title(f"{{best_name}} — Residual vs Predicted")
+        axes[1].set_xlabel("Predicted"); axes[1].set_ylabel("Residual")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "residuals_best.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        print("\\n✓ Residual plots saved")
+
     print(f"\\n🏆 Best: {{best_name}} (RMSE: {{best_rmse:.4f}})")
+
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
 
 
 def main():
@@ -1226,9 +1411,9 @@ def main():
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
-    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
@@ -1245,17 +1430,21 @@ Fraud / Imbalanced Classification Pipeline (April 2026)
 Models: CatBoost, LightGBM, XGBoost + calibrated probabilities + PyOD (ECOD, COPOD, IForest)
 GPU + threshold tuning + isotonic calibration
 Data: Auto-downloaded at runtime
+
+Compute: GPU recommended (CatBoost/LightGBM/XGBoost use CUDA). CPU fallback automatic.
+         ~2–8 min per dataset on RTX 4060.
 """
-import os, sys, warnings
+import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import (
-    classification_report, f1_score,
+    classification_report, f1_score, accuracy_score,
     precision_recall_curve, average_precision_score,
-    roc_auc_score, confusion_matrix
+    roc_auc_score, confusion_matrix,
+    recall_score, precision_score,
 )
 import matplotlib
 matplotlib.use("Agg")
@@ -1297,7 +1486,8 @@ def find_best_threshold(y_true, y_proba):
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
     from sklearn.calibration import CalibratedClassifierCV
-    results = {{}}
+    results = {{}}      # name -> {{preds, proba, thresh, model}}
+    timings = {{}}      # name -> wall-clock seconds
     # Hold out calibration split from training data
     X_tr, X_cal, y_tr, y_cal = train_test_split(
         X_train, y_train, test_size=0.15, random_state=42, stratify=y_train)
@@ -1316,6 +1506,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             eval_metric="aucpr", early_stopping_rounds=50, verbosity=1, n_jobs=-1)),
     ]:
         try:
+            t0 = time.perf_counter()
             m = builder()
             if name == "LightGBM":
                 import lightgbm as lgb
@@ -1330,8 +1521,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             proba = cal_model.predict_proba(X_test)[:, 1]
             thresh = find_best_threshold(y_test, proba)
             preds = (proba >= thresh).astype(int)
+            timings[name] = time.perf_counter() - t0
             results[name] = {{"preds": preds, "proba": proba, "thresh": thresh, "model": name}}
-            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]")
+            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]  ({{timings[name]:.1f}}s)")
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
@@ -1342,6 +1534,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         ("IForest-PyOD", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
     ]:
         try:
+            t0 = time.perf_counter()
             pm = pyod_builder()
             pm.fit(X_train.values if hasattr(X_train, "values") else X_train)
             scores = pm.decision_function(X_test.values if hasattr(X_test, "values") else X_test)
@@ -1349,19 +1542,64 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             n_anom = pyod_preds.sum()
             f1 = f1_score(y_test, pyod_preds) if len(set(y_test)) > 1 else 0
             auc = roc_auc_score(y_test, scores) if len(set(y_test)) > 1 else 0
-            print(f"✓ PyOD {{pyod_name}}: {{n_anom}} anomalies ({{n_anom/len(X_test):.2%}}), F1={{f1:.4f}}, AUC={{auc:.4f}}")
+            elapsed = time.perf_counter() - t0
+            timings[f"PyOD-{{pyod_name}}"] = elapsed
+            print(f"✓ PyOD {{pyod_name}}: {{n_anom}} anomalies ({{n_anom/len(X_test):.2%}}), F1={{f1:.4f}}, AUC={{auc:.4f}}  ({{elapsed:.1f}}s)")
         except Exception as e:
             print(f"✗ PyOD {{pyod_name}}: {{e}}")
 
-    return results
+    # ── FLAML AutoML (imbalance-aware benchmark) ──
+    try:
+        from flaml import AutoML
+        t0 = time.perf_counter()
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120,
+                   metric="ap", verbose=0)
+        flaml_proba = automl.predict_proba(X_test)[:, 1]
+        flaml_thresh = find_best_threshold(y_test, flaml_proba)
+        flaml_preds = (flaml_proba >= flaml_thresh).astype(int)
+        timings["FLAML"] = time.perf_counter() - t0
+        results["FLAML"] = {{"preds": flaml_preds, "proba": flaml_proba, "thresh": flaml_thresh, "model": "FLAML"}}
+        print(f"✓ FLAML ({{automl.best_estimator}}) F1: {{f1_score(y_test, flaml_preds):.4f}} (t={{flaml_thresh:.3f}})  ({{timings['FLAML']:.1f}}s)")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    # ── LazyPredict (quick sweep benchmark) ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        t0 = time.perf_counter()
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        timings["LazyPredict"] = time.perf_counter() - t0
+        print(f"\\n✓ LazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {{e}}")
+
+    return results, timings
 
 
-def report(results, y_test, save_dir="."):
+def report(results, timings, y_test, save_dir="."):
     from sklearn.calibration import calibration_curve
+    metrics_out = {{}}
+
     for name, r in results.items():
+        pr_auc = average_precision_score(y_test, r["proba"])
+        roc = roc_auc_score(y_test, r["proba"])
+        f1 = f1_score(y_test, r["preds"])
+        rec = recall_score(y_test, r["preds"])
+        prec = precision_score(y_test, r["preds"], zero_division=0)
+        acc = accuracy_score(y_test, r["preds"])
+        row = {{"f1": round(f1, 4), "pr_auc": round(pr_auc, 4), "roc_auc": round(roc, 4),
+               "recall": round(rec, 4), "precision": round(prec, 4), "accuracy": round(acc, 4),
+               "threshold": round(r["thresh"], 4)}}
+        if name in timings:
+            row["time_s"] = round(timings[name], 1)
+        metrics_out[name] = row
+
         print(f"\\n— {{name}} (threshold={{r['thresh']:.3f}}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
-        print(f"  AUPRC: {{average_precision_score(y_test, r['proba']):.4f}}  ROC-AUC: {{roc_auc_score(y_test, r['proba']):.4f}}")
+        print(f"  PR-AUC: {{pr_auc:.4f}}  ROC-AUC: {{roc:.4f}}  Recall@t: {{rec:.4f}}")
 
     # Reliability diagram (calibration plot)
     try:
@@ -1388,6 +1626,12 @@ def report(results, y_test, save_dir="."):
     except Exception as e:
         print(f"✗ Plot: {{e}}")
 
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
+
 
 def main():
     print("=" * 60)
@@ -1397,9 +1641,9 @@ def main():
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
-    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
@@ -1415,17 +1659,29 @@ def gen_nlp_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Classification Pipeline (April 2026)
-Models: ModernBERT (English) + XLM-RoBERTa (multilingual) + GLiNER (zero-shot NER)
-        TF-IDF + Naive Bayes as baseline
+
+Primary model: ModernBERT (answerdotai/ModernBERT-base) — English-first encoder,
+               fine-tuned with mixed-precision (fp16) for sequence classification.
+Secondary:     XLM-RoBERTa (multilingual fallback).
+Baselines:     TF-IDF + Naive Bayes / Logistic Regression (kept for comparison).
+Extras:        GLiNER zero-shot NER, BGE-M3 / Qwen3-Embedding similarity.
+
+Compute: GPU strongly recommended (~2-8 min per model on RTX 4060).
+         TF-IDF baselines run on CPU in <10s.
 Data: Auto-downloaded at runtime
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score, classification_report, f1_score
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    confusion_matrix, roc_auc_score,
+)
 import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
@@ -1465,13 +1721,18 @@ def run_tfidf_baseline(df):
     le = LabelEncoder(); y = le.fit_transform(df["label"])
     X_tr, X_te, y_tr, y_te = train_test_split(df["text"], y, test_size=0.2, random_state=42,
                                                 stratify=y if len(le.classes_) < 50 else None)
+    baseline_results = {{}}
     for name, clf in [("Naive Bayes", MultinomialNB()), ("LogReg", LogisticRegression(max_iter=1000, n_jobs=-1))]:
+        t0 = time.perf_counter()
         pipe = Pipeline([("tfidf", TfidfVectorizer(max_features=30000, ngram_range=(1, 2))), ("clf", clf)])
         pipe.fit(X_tr, y_tr)
         preds = pipe.predict(X_te)
+        elapsed = time.perf_counter() - t0
         acc = accuracy_score(y_te, preds)
         f1 = f1_score(y_te, preds, average="weighted")
-        print(f"  [Baseline] {{name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}")
+        baseline_results[name] = {{"accuracy": round(acc, 4), "f1_weighted": round(f1, 4), "time_s": round(elapsed, 1)}}
+        print(f"  [Baseline] {{name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}  ({{elapsed:.1f}}s)")
+    return baseline_results
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1483,8 +1744,10 @@ def train_transformer(df, model_name, display_name):
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    use_amp = device.type == "cuda"
     le = LabelEncoder(); df["label_id"] = le.fit_transform(df["label"])
     n_classes = len(le.classes_)
+    is_binary = n_classes == 2
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
                                           stratify=df["label_id"] if n_classes < 50 else None)
 
@@ -1503,29 +1766,71 @@ def train_transformer(df, model_name, display_name):
 
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     sched = get_linear_schedule_with_warmup(opt, int(0.1 * len(train_loader) * EPOCHS), len(train_loader) * EPOCHS)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    t0 = time.perf_counter()
 
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for batch in train_loader:
             batch = {{k: v.to(device) for k, v in batch.items()}}
-            loss = model(**batch).loss; loss.backward()
+            with torch.amp.autocast("cuda", enabled=use_amp):
+                loss = model(**batch).loss
+            scaler.scale(loss).backward()
+            scaler.unscale_(opt)
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-            opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
+            scaler.step(opt); scaler.update(); sched.step(); opt.zero_grad()
+            total_loss += loss.item()
         print(f"  [{{display_name}}] Epoch {{epoch+1}}/{{EPOCHS}}, Loss: {{total_loss/len(train_loader):.4f}}")
 
-    model.eval(); preds, labels = [], []
+    elapsed = time.perf_counter() - t0
+    model.eval(); all_preds, all_labels, all_logits = [], [], []
     with torch.no_grad():
         for batch in test_loader:
             batch = {{k: v.to(device) for k, v in batch.items()}}
-            preds.extend(torch.argmax(model(**batch).logits, dim=-1).cpu().numpy())
-            labels.extend(batch["labels"].cpu().numpy())
+            logits = model(**batch).logits
+            all_preds.extend(torch.argmax(logits, dim=-1).cpu().numpy())
+            all_labels.extend(batch["labels"].cpu().numpy())
+            all_logits.append(logits.cpu())
 
-    acc = accuracy_score(labels, preds)
-    f1 = f1_score(labels, preds, average="weighted")
-    print(f"\\n✓ {{display_name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}")
-    print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
-    model.save_pretrained(os.path.join(os.path.dirname(__file__), f"{{display_name.lower().replace('-','_')}}_model"))
-    return acc, f1
+    all_preds = np.array(all_preds)
+    all_labels = np.array(all_labels)
+    all_logits = torch.cat(all_logits, dim=0)
+
+    acc = accuracy_score(all_labels, all_preds)
+    f1 = f1_score(all_labels, all_preds, average="weighted")
+    row = {{"accuracy": round(acc, 4), "f1_weighted": round(f1, 4), "time_s": round(elapsed, 1)}}
+
+    # ROC-AUC (binary or multiclass OVR)
+    try:
+        probs = torch.softmax(all_logits, dim=-1).numpy()
+        if is_binary:
+            row["roc_auc"] = round(roc_auc_score(all_labels, probs[:, 1]), 4)
+        else:
+            row["roc_auc_ovr"] = round(roc_auc_score(all_labels, probs, multi_class="ovr", average="weighted"), 4)
+    except Exception:
+        pass
+
+    print(f"\\n✓ {{display_name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}  ({{elapsed:.1f}}s)")
+    if "roc_auc" in row:
+        print(f"  ROC-AUC: {{row['roc_auc']:.4f}}")
+    elif "roc_auc_ovr" in row:
+        print(f"  ROC-AUC (OVR): {{row['roc_auc_ovr']:.4f}}")
+    print(classification_report(all_labels, all_preds, target_names=le.classes_.astype(str), zero_division=0))
+
+    # Confusion matrix
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    cm = confusion_matrix(all_labels, all_preds)
+    fig, ax = plt.subplots(figsize=(max(6, n_classes * 0.8), max(5, n_classes * 0.7)))
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax,
+                xticklabels=le.classes_.astype(str), yticklabels=le.classes_.astype(str))
+    ax.set_title(f"{{display_name}} Confusion Matrix")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("Actual")
+    fig.tight_layout()
+    fig.savefig(os.path.join(save_dir, f"cm_{{display_name.lower().replace('-','_')}}.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+    model.save_pretrained(os.path.join(save_dir, f"{{display_name.lower().replace('-','_')}}_model"))
+    return acc, f1, row
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1580,18 +1885,23 @@ def run_embedding_similarity(df):
 def main():
     print("=" * 60)
     print("NLP CLASSIFICATION — ModernBERT + XLM-R | TF-IDF baseline | GLiNER NER")
+    print("Mixed-precision (fp16) training on GPU")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    metrics_out = {{}}
 
     # Baseline first
     print("\\n— TF-IDF / Naive Bayes Baseline —")
-    run_tfidf_baseline(df)
+    baseline_metrics = run_tfidf_baseline(df)
+    metrics_out.update(baseline_metrics)
 
     # Primary transformer models
     best_acc, best_name = 0, ""
     for model_name, display_name in MODELS:
         try:
-            acc, f1 = train_transformer(df.copy(), model_name, display_name)
+            acc, f1, row = train_transformer(df.copy(), model_name, display_name)
+            metrics_out[display_name] = row
             if acc > best_acc:
                 best_acc, best_name = acc, display_name
         except Exception as e:
@@ -1606,6 +1916,408 @@ def main():
     print("\\n— Embedding Similarity (BGE-M3 / Qwen3-Embedding) —")
     run_embedding_similarity(df)
 
+    # Save JSON metrics
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GENERATOR: NER / Entity Extraction  (GLiNER-primary)
+# ═══════════════════════════════════════════════════════════════════════════════
+def gen_ner(path, cfg):
+    labels_list = cfg.get("labels", ["person", "location", "organization", "miscellaneous"])
+    labels_str = json.dumps(labels_list)
+    data_load = cfg.get("data", '    raise FileNotFoundError("No data")')
+    text_col = cfg.get("text_col", "tokens")
+    tag_col = cfg.get("tag_col", "ner_tags")
+    return textwrap.dedent(f'''\
+"""
+Modern NER / Entity Extraction Pipeline (April 2026)
+
+Primary model : GLiNER (urchade/gliner_large-v2.1) — zero-shot NER that
+                generalises to arbitrary entity types without fine-tuning.
+Supervised    : HuggingFace token classification with ModernBERT when
+                labelled data is available.
+Baseline      : spaCy NER (en_core_web_sm) for quick comparison.
+
+Evaluated with seqeval (entity-level precision / recall / F1).
+All results + per-entity metrics exported to metrics.json.
+
+Compute: GPU recommended for transformer models; GLiNER runs on CPU in
+         ~1 min for small corpora.  spaCy baseline is CPU-only.
+Data: Auto-downloaded at runtime.
+"""
+import os, json, time, warnings, re
+import numpy as np
+import pandas as pd
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+warnings.filterwarnings("ignore")
+
+LABELS = {labels_str}
+TEXT_COL = "{text_col}"
+TAG_COL = "{tag_col}"
+
+# CoNLL BIO tag mapping (used when tag_col contains int IDs)
+CONLL_TAG_NAMES = ["O", "B-PER", "I-PER", "B-ORG", "I-ORG", "B-LOC", "I-LOC", "B-MISC", "I-MISC"]
+
+
+def load_data():
+{data_load}
+    print(f"Dataset: {{len(df)}} samples")
+    return df
+
+
+def prepare_sentences(df):
+    """Convert raw dataset rows into (tokens_list, tags_list) pairs."""
+    sentences, tags_all = [], []
+    for _, row in df.iterrows():
+        toks = row[TEXT_COL]
+        tags = row.get(TAG_COL)
+        # Tokens may be a list or a space-separated string
+        if isinstance(toks, str):
+            toks = toks.split()
+        if isinstance(toks, (list, np.ndarray)):
+            toks = [str(t) for t in toks]
+        else:
+            continue
+        # Tags: list of ints (CoNLL) or list of BIO strings
+        if tags is not None:
+            if isinstance(tags, str):
+                tags = tags.split()
+            if isinstance(tags, (list, np.ndarray)) and len(tags) == len(toks):
+                if all(isinstance(t, (int, np.integer)) for t in tags):
+                    tags = [CONLL_TAG_NAMES[int(t)] if int(t) < len(CONLL_TAG_NAMES) else "O" for t in tags]
+                tags = [str(t) for t in tags]
+            else:
+                tags = ["O"] * len(toks)
+        else:
+            tags = ["O"] * len(toks)
+        sentences.append(toks)
+        tags_all.append(tags)
+    return sentences, tags_all
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRIMARY: GLiNER zero-shot NER
+# ═══════════════════════════════════════════════════════════════
+def run_gliner(sentences, gold_tags, labels):
+    from gliner import GLiNER
+    model = GLiNER.from_pretrained("urchade/gliner_large-v2.1")
+    pred_tags_all = []
+    t0 = time.perf_counter()
+    for toks in sentences:
+        text = " ".join(toks)
+        entities = model.predict_entities(text[:2048], labels, threshold=0.35)
+        # Map character-span entities back to token-level BIO tags
+        tag_seq = ["O"] * len(toks)
+        char_offsets = []
+        pos = 0
+        for tok in toks:
+            start = text.find(tok, pos)
+            if start == -1:
+                start = pos
+            char_offsets.append((start, start + len(tok)))
+            pos = start + len(tok)
+        for ent in entities:
+            ent_start, ent_end = ent["start"], ent["end"]
+            lbl = ent["label"].upper().replace(" ", "_")
+            first = True
+            for i, (cs, ce) in enumerate(char_offsets):
+                if cs >= ent_start and ce <= ent_end + 1:
+                    tag_seq[i] = f"B-{{lbl}}" if first else f"I-{{lbl}}"
+                    first = False
+        pred_tags_all.append(tag_seq)
+    elapsed = time.perf_counter() - t0
+    return pred_tags_all, elapsed
+
+
+# ═══════════════════════════════════════════════════════════════
+# SUPERVISED: Token classification with ModernBERT
+# ═══════════════════════════════════════════════════════════════
+def run_supervised(sentences, gold_tags):
+    import torch
+    from torch.utils.data import DataLoader, Dataset
+    from transformers import AutoTokenizer, AutoModelForTokenClassification, get_linear_schedule_with_warmup
+    from sklearn.model_selection import train_test_split
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    use_amp = device.type == "cuda"
+
+    # Build label vocab from gold tags
+    all_labels = sorted(set(t for seq in gold_tags for t in seq))
+    label2id = {{l: i for i, l in enumerate(all_labels)}}
+    id2label = {{i: l for l, i in label2id.items()}}
+    n_labels = len(all_labels)
+
+    idx = list(range(len(sentences)))
+    tr_idx, te_idx = train_test_split(idx, test_size=0.2, random_state=42)
+    tr_sents = [sentences[i] for i in tr_idx]
+    tr_tags = [gold_tags[i] for i in tr_idx]
+    te_sents = [sentences[i] for i in te_idx]
+    te_tags = [gold_tags[i] for i in te_idx]
+
+    model_name = "answerdotai/ModernBERT-base"
+    tokenizer = AutoTokenizer.from_pretrained(model_name, add_prefix_space=True)
+    model = AutoModelForTokenClassification.from_pretrained(
+        model_name, num_labels=n_labels, id2label=id2label, label2id=label2id,
+    ).to(device)
+
+    MAX_LEN = 256
+
+    class NERDataset(Dataset):
+        def __init__(self, sents, tag_seqs):
+            self.items = []
+            for toks, tags in zip(sents, tag_seqs):
+                enc = tokenizer(toks, is_split_into_words=True, truncation=True,
+                                padding="max_length", max_length=MAX_LEN, return_tensors="pt")
+                word_ids = enc.word_ids()
+                label_ids = []
+                prev_word = None
+                for wid in word_ids:
+                    if wid is None:
+                        label_ids.append(-100)
+                    elif wid != prev_word:
+                        label_ids.append(label2id.get(tags[wid], 0) if wid < len(tags) else 0)
+                    else:
+                        label_ids.append(-100)
+                    prev_word = wid
+                enc = {{k: v.squeeze(0) for k, v in enc.items()}}
+                enc["labels"] = torch.tensor(label_ids, dtype=torch.long)
+                self.items.append(enc)
+        def __len__(self): return len(self.items)
+        def __getitem__(self, i): return self.items[i]
+
+    train_ds = NERDataset(tr_sents, tr_tags)
+    test_ds = NERDataset(te_sents, te_tags)
+    train_loader = DataLoader(train_ds, batch_size=16, shuffle=True)
+    test_loader = DataLoader(test_ds, batch_size=16)
+
+    opt = torch.optim.AdamW(model.parameters(), lr=2e-5, weight_decay=0.01)
+    sched = get_linear_schedule_with_warmup(opt, int(0.1 * len(train_loader) * 3), len(train_loader) * 3)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+    t0 = time.perf_counter()
+
+    for epoch in range(3):
+        model.train(); total_loss = 0
+        for batch in train_loader:
+            batch = {{k: v.to(device) for k, v in batch.items()}}
+            with torch.amp.autocast("cuda", enabled=use_amp):
+                loss = model(**batch).loss
+            scaler.scale(loss).backward()
+            scaler.unscale_(opt)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            scaler.step(opt); scaler.update(); sched.step(); opt.zero_grad()
+            total_loss += loss.item()
+        print(f"  [ModernBERT-NER] Epoch {{epoch+1}}/3, Loss: {{total_loss/len(train_loader):.4f}}")
+
+    elapsed = time.perf_counter() - t0
+
+    # Predict on test set
+    model.eval()
+    pred_tags_all, true_tags_all = [], []
+    with torch.no_grad():
+        for batch in test_loader:
+            batch = {{k: v.to(device) for k, v in batch.items()}}
+            logits = model(**batch).logits
+            preds = torch.argmax(logits, dim=-1).cpu().numpy()
+            labels = batch["labels"].cpu().numpy()
+            for pred_seq, label_seq in zip(preds, labels):
+                p, t = [], []
+                for pi, li in zip(pred_seq, label_seq):
+                    if li != -100:
+                        p.append(id2label.get(int(pi), "O"))
+                        t.append(id2label.get(int(li), "O"))
+                pred_tags_all.append(p)
+                true_tags_all.append(t)
+
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    model.save_pretrained(os.path.join(save_dir, "modernbert_ner_model"))
+    return pred_tags_all, true_tags_all, elapsed
+
+
+# ═══════════════════════════════════════════════════════════════
+# BASELINE: spaCy NER
+# ═══════════════════════════════════════════════════════════════
+def run_spacy_baseline(sentences, labels):
+    import spacy
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        from spacy.cli import download
+        download("en_core_web_sm")
+        nlp = spacy.load("en_core_web_sm")
+
+    # spaCy label -> our label mapping (best-effort)
+    SPACY_MAP = {{
+        "PERSON": "PER", "NORP": "MISC", "FAC": "LOC", "ORG": "ORG",
+        "GPE": "LOC", "LOC": "LOC", "PRODUCT": "MISC", "EVENT": "MISC",
+        "WORK_OF_ART": "MISC", "LAW": "MISC", "LANGUAGE": "MISC",
+        "DATE": "MISC", "TIME": "MISC", "PERCENT": "MISC", "MONEY": "MISC",
+        "QUANTITY": "MISC", "ORDINAL": "MISC", "CARDINAL": "MISC",
+        "KEYWORD": "KEYWORD", "KEYPHRASE": "KEYPHRASE",
+        "TOPIC": "TOPIC", "ENTITY": "ENTITY",
+    }}
+    pred_tags_all = []
+    t0 = time.perf_counter()
+    for toks in sentences:
+        text = " ".join(toks)
+        doc = nlp(text)
+        tag_seq = ["O"] * len(toks)
+        # Map spaCy char-span entities to token indices
+        char_offsets = []
+        pos = 0
+        for tok in toks:
+            start = text.find(tok, pos)
+            if start == -1:
+                start = pos
+            char_offsets.append((start, start + len(tok)))
+            pos = start + len(tok)
+        for ent in doc.ents:
+            lbl = SPACY_MAP.get(ent.label_, "MISC")
+            first = True
+            for i, (cs, ce) in enumerate(char_offsets):
+                if cs >= ent.start_char and ce <= ent.end_char + 1:
+                    tag_seq[i] = f"B-{{lbl}}" if first else f"I-{{lbl}}"
+                    first = False
+        pred_tags_all.append(tag_seq)
+    elapsed = time.perf_counter() - t0
+    return pred_tags_all, elapsed
+
+
+# ═══════════════════════════════════════════════════════════════
+# EVALUATION: seqeval entity-level metrics
+# ═══════════════════════════════════════════════════════════════
+def normalise_tags(pred_tags, gold_tags):
+    """Ensure pred and gold have the same length per sentence."""
+    out_p, out_g = [], []
+    for p, g in zip(pred_tags, gold_tags):
+        min_len = min(len(p), len(g))
+        out_p.append(p[:min_len])
+        out_g.append(g[:min_len])
+    return out_p, out_g
+
+
+def evaluate(pred_tags, gold_tags, model_name):
+    from seqeval.metrics import classification_report as seq_report
+    from seqeval.metrics import f1_score as seq_f1, precision_score as seq_p, recall_score as seq_r
+    pred_tags, gold_tags = normalise_tags(pred_tags, gold_tags)
+    p = seq_p(gold_tags, pred_tags, zero_division=0)
+    r = seq_r(gold_tags, pred_tags, zero_division=0)
+    f1 = seq_f1(gold_tags, pred_tags, zero_division=0)
+    print()
+    print(f"=== {{model_name}} entity-level metrics ===")
+    print(f"  Precision: {{p:.4f}}")
+    print(f"  Recall:    {{r:.4f}}")
+    print(f"  F1:        {{f1:.4f}}")
+    print(seq_report(gold_tags, pred_tags, zero_division=0))
+    return {{"precision": round(p, 4), "recall": round(r, 4), "f1": round(f1, 4)}}
+
+
+def plot_entity_counts(pred_tags, title, save_path):
+    """Bar chart of predicted entity type counts."""
+    counts = {{}}
+    for seq in pred_tags:
+        for tag in seq:
+            if tag.startswith("B-"):
+                lbl = tag[2:]
+                counts[lbl] = counts.get(lbl, 0) + 1
+    if not counts:
+        return
+    labels_sorted = sorted(counts.keys())
+    vals = [counts[l] for l in labels_sorted]
+    fig, ax = plt.subplots(figsize=(max(6, len(labels_sorted) * 0.8), 5))
+    ax.bar(labels_sorted, vals, color="steelblue")
+    ax.set_title(title)
+    ax.set_xlabel("Entity Type")
+    ax.set_ylabel("Count")
+    fig.tight_layout()
+    fig.savefig(save_path, dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+
+def main():
+    print("=" * 60)
+    print("NER / ENTITY EXTRACTION  GLiNER + ModernBERT + spaCy")
+    print(f"Target labels: {{LABELS}}")
+    print("=" * 60)
+    df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    sentences, gold_tags = prepare_sentences(df)
+    if len(sentences) > 5000:
+        sentences, gold_tags = sentences[:5000], gold_tags[:5000]
+    print(f"Prepared {{len(sentences)}} sentences")
+    metrics_out = {{}}
+
+    # -- GLiNER (primary) --
+    print()
+    print("-- GLiNER Zero-Shot NER --")
+    try:
+        gliner_preds, gliner_time = run_gliner(sentences, gold_tags, LABELS)
+        m = evaluate(gliner_preds, gold_tags, "GLiNER")
+        m["time_s"] = round(gliner_time, 1)
+        metrics_out["GLiNER"] = m
+        plot_entity_counts(gliner_preds, "GLiNER  Predicted Entities",
+                           os.path.join(save_dir, "entities_gliner.png"))
+        print(f"  Time: {{gliner_time:.1f}}s")
+    except Exception as e:
+        print(f"GLiNER failed: {{e}}")
+
+    # -- Supervised ModernBERT (if gold tags available) --
+    has_gold = any(any(t != "O" for t in seq) for seq in gold_tags)
+    if has_gold:
+        print()
+        print("-- ModernBERT Token Classification (supervised) --")
+        try:
+            sup_preds, sup_golds, sup_time = run_supervised(sentences, gold_tags)
+            m = evaluate(sup_preds, sup_golds, "ModernBERT-NER")
+            m["time_s"] = round(sup_time, 1)
+            metrics_out["ModernBERT-NER"] = m
+            plot_entity_counts(sup_preds, "ModernBERT-NER  Predicted Entities",
+                               os.path.join(save_dir, "entities_modernbert.png"))
+            print(f"  Time: {{sup_time:.1f}}s")
+        except Exception as e:
+            print(f"ModernBERT-NER failed: {{e}}")
+    else:
+        print()
+        print("-- Skipping supervised ModernBERT (no gold BIO tags) --")
+
+    # -- spaCy baseline --
+    print()
+    print("-- spaCy Baseline NER --")
+    try:
+        spacy_preds, spacy_time = run_spacy_baseline(sentences, LABELS)
+        m = evaluate(spacy_preds, gold_tags, "spaCy")
+        m["time_s"] = round(spacy_time, 1)
+        metrics_out["spaCy"] = m
+        plot_entity_counts(spacy_preds, "spaCy  Predicted Entities",
+                           os.path.join(save_dir, "entities_spacy.png"))
+        print(f"  Time: {{spacy_time:.1f}}s")
+    except Exception as e:
+        print(f"spaCy failed: {{e}}")
+
+    # -- Summary --
+    if metrics_out:
+        best_name = max(metrics_out, key=lambda k: metrics_out[k].get("f1", 0))
+        print()
+        print(f"Best: {{best_name}} (F1: {{metrics_out[best_name].get('f1', 0):.4f}})")
+
+    # Save metrics
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print()
+    print(f"Metrics saved to {{out_path}}")
+
 
 if __name__ == "__main__":
     main()
@@ -1617,11 +2329,23 @@ def gen_nlp_similarity(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Similarity / Retrieval Pipeline (April 2026)
-Models: BGE-M3 + Qwen3-Embedding + Sentence Transformers
-        TF-IDF cosine similarity as baseline
-Data: Auto-downloaded at runtime
+
+Primary   : Qwen3-Embedding-0.6B  — state-of-the-art dense embeddings.
+Secondary : BGE-M3                 — multilingual dense embeddings.
+Baseline  : TF-IDF cosine          — sparse bag-of-words comparison.
+
+Evaluation: If the dataset contains sentence pairs with gold similarity
+            scores (e.g. STS-B), Spearman and Pearson correlations are
+            computed. Otherwise, average pairwise cosine similarity and
+            top-k retrieval examples are reported.
+
+Exploration: UMAP + HDBSCAN embedding cluster visualisation.
+Timing    : Wall-clock per model.
+Export    : metrics.json with all scores and timings.
+Compute   : GPU recommended for Qwen3; BGE-M3 and TF-IDF run on CPU.
+Data      : Auto-downloaded at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
@@ -1629,6 +2353,7 @@ import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_data():
@@ -1637,8 +2362,9 @@ def load_data():
     return df
 
 
+# ── helpers ──────────────────────────────────────────────────
 def get_texts(df, n=500):
-    """Extract text column, return up to n samples."""
+    """Extract the best text column, return up to *n* samples."""
     for c in df.columns:
         if df[c].dtype == "object" and df[c].str.len().mean() > 20:
             return df[c].dropna().head(n).tolist()
@@ -1648,117 +2374,270 @@ def get_texts(df, n=500):
     return df.iloc[:, 0].astype(str).head(n).tolist()
 
 
+def detect_sts_pairs(df):
+    \"\"\"Return (sent1, sent2, gold_scores) if the dataset is a sentence-pair
+    benchmark (STS-B style), else (None, None, None).\"\"\"
+    # STS-B columns: sentence1, sentence2, score  (or label)
+    s1 = s2 = scores = None
+    for a, b in [("sentence1", "sentence2"), ("text1", "text2"),
+                  ("premise", "hypothesis"), ("text_a", "text_b")]:
+        if a in df.columns and b in df.columns:
+            s1, s2 = df[a].astype(str).tolist(), df[b].astype(str).tolist()
+            break
+    if s1 is None:
+        return None, None, None
+    for sc in ["score", "label", "similarity", "relatedness"]:
+        if sc in df.columns:
+            vals = pd.to_numeric(df[sc], errors="coerce")
+            if vals.notna().sum() > 10:
+                scores = vals.tolist()
+                break
+    return s1, s2, scores
+
+
+def show_top_pairs(sim, texts, n=3):
+    \"\"\"Print the top-k most similar pairs for the first *n* texts.\"\"\"
+    tmp = sim.copy(); np.fill_diagonal(tmp, 0)
+    for i in range(min(n, len(texts))):
+        top = np.argsort(tmp[i])[-3:][::-1]
+        parts = [f"{{j}}({{tmp[i,j]:.3f}})" for j in top]
+        print(f"    Text {{i}} most similar to: {{', '.join(parts)}}")
+
+
 # ═══════════════════════════════════════════════════════════════
 # BASELINE: TF-IDF Cosine Similarity
 # ═══════════════════════════════════════════════════════════════
-def run_tfidf_baseline(texts):
+def run_tfidf(texts, pairs=None):
     from sklearn.feature_extraction.text import TfidfVectorizer
+    t0 = time.perf_counter()
     tfidf = TfidfVectorizer(max_features=10000, stop_words="english")
+    if pairs:
+        s1, s2, gold = pairs
+        all_texts = s1 + s2
+        vecs = tfidf.fit_transform(all_texts)
+        v1, v2 = vecs[:len(s1)], vecs[len(s1):]
+        pred = np.array([cosine_similarity(v1[i], v2[i])[0, 0] for i in range(len(s1))])
+        elapsed = time.perf_counter() - t0
+        return {{"pred_scores": pred, "time_s": round(elapsed, 1)}}
     vecs = tfidf.fit_transform(texts)
     sim = cosine_similarity(vecs)
-    avg_sim = (sim.sum() - len(texts)) / (len(texts) * (len(texts) - 1))
-    print(f"  [Baseline] TF-IDF cosine: avg pairwise similarity = {{avg_sim:.4f}}")
-    # Show top-3 pairs
-    np.fill_diagonal(sim, 0)
-    for i in range(min(3, len(texts))):
-        top = np.argsort(sim[i])[-3:][::-1]
-        scores = [str(j) + f"({{sim[i,j]:.3f}})" for j in top]
-        joined = ", ".join(scores)
-        print(f"    Text {{i}} most similar to: {{joined}}")
-    return sim
-
-
-# ═══════════════════════════════════════════════════════════════
-# PRIMARY: BGE-M3 Embedding Similarity
-# ═══════════════════════════════════════════════════════════════
-def run_bge_m3(texts):
-    try:
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("BAAI/bge-m3")
-        embs = model.encode(texts, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
-        sim = cosine_similarity(embs)
-        avg_sim = (sim.sum() - len(texts)) / (len(texts) * (len(texts) - 1))
-        print("")
-        print(f"✓ BGE-M3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
-        print(f"  Avg pairwise semantic similarity = {{avg_sim:.4f}}")
-        np.fill_diagonal(sim, 0)
-        for i in range(min(3, len(texts))):
-            top = np.argsort(sim[i])[-3:][::-1]
-            scores = [str(j) + f"({{sim[i,j]:.3f}})" for j in top]
-            joined = ", ".join(scores)
-            print(f"    Text {{i}} most similar to: {{joined}}")
-        return embs, sim
-    except Exception as e:
-        print(f"✗ BGE-M3: {{e}}")
-        return None, None
+    avg = (sim.sum() - len(texts)) / max(len(texts) * (len(texts) - 1), 1)
+    elapsed = time.perf_counter() - t0
+    print(f"  TF-IDF avg pairwise similarity = {{avg:.4f}}")
+    show_top_pairs(sim, texts)
+    return {{"avg_cosine": round(float(avg), 4), "time_s": round(elapsed, 1)}}
 
 
 # ═══════════════════════════════════════════════════════════════
 # PRIMARY: Qwen3-Embedding
 # ═══════════════════════════════════════════════════════════════
-def run_qwen3_embedding(texts):
-    try:
-        from sentence_transformers import SentenceTransformer
-        model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
-        embs = model.encode(texts[:200], batch_size=16, show_progress_bar=True, normalize_embeddings=True)
-        sim = cosine_similarity(embs)
-        avg_sim = (sim.sum() - len(embs)) / (len(embs) * (len(embs) - 1))
-        print("")
-        print(f"✓ Qwen3-Embedding: {{len(embs)}} texts embedded (dim={{embs.shape[1]}})")
-        print(f"  Avg pairwise semantic similarity = {{avg_sim:.4f}}")
-        return embs, sim
-    except Exception as e:
-        print(f"✗ Qwen3-Embedding: {{e}}")
-        return None, None
+def run_qwen3(texts, pairs=None):
+    from sentence_transformers import SentenceTransformer
+    model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+    t0 = time.perf_counter()
+    if pairs:
+        s1, s2, gold = pairs
+        e1 = model.encode(s1, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+        e2 = model.encode(s2, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+        pred = np.array([float(cosine_similarity(e1[i:i+1], e2[i:i+1])[0, 0]) for i in range(len(s1))])
+        elapsed = time.perf_counter() - t0
+        return {{"pred_scores": pred, "dim": int(e1.shape[1]), "time_s": round(elapsed, 1)}}
+    embs = model.encode(texts, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+    sim = cosine_similarity(embs)
+    avg = (sim.sum() - len(texts)) / max(len(texts) * (len(texts) - 1), 1)
+    elapsed = time.perf_counter() - t0
+    print(f"  Qwen3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
+    print(f"  Avg pairwise semantic similarity = {{avg:.4f}}")
+    show_top_pairs(sim, texts)
+    return {{"embs": embs, "avg_cosine": round(float(avg), 4),
+             "dim": int(embs.shape[1]), "time_s": round(elapsed, 1)}}
 
 
 # ═══════════════════════════════════════════════════════════════
-# CLUSTERING: Embedding-based topic discovery
+# SECONDARY: BGE-M3 Embedding Similarity
 # ═══════════════════════════════════════════════════════════════
-def run_embedding_clustering(embs, texts):
+def run_bge_m3(texts, pairs=None):
+    from sentence_transformers import SentenceTransformer
+    model = SentenceTransformer("BAAI/bge-m3")
+    t0 = time.perf_counter()
+    if pairs:
+        s1, s2, gold = pairs
+        e1 = model.encode(s1, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+        e2 = model.encode(s2, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+        pred = np.array([float(cosine_similarity(e1[i:i+1], e2[i:i+1])[0, 0]) for i in range(len(s1))])
+        elapsed = time.perf_counter() - t0
+        return {{"pred_scores": pred, "dim": int(e1.shape[1]), "time_s": round(elapsed, 1)}}
+    embs = model.encode(texts, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+    sim = cosine_similarity(embs)
+    avg = (sim.sum() - len(texts)) / max(len(texts) * (len(texts) - 1), 1)
+    elapsed = time.perf_counter() - t0
+    print(f"  BGE-M3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
+    print(f"  Avg pairwise semantic similarity = {{avg:.4f}}")
+    show_top_pairs(sim, texts)
+    return {{"embs": embs, "avg_cosine": round(float(avg), 4),
+             "dim": int(embs.shape[1]), "time_s": round(elapsed, 1)}}
+
+
+# ═══════════════════════════════════════════════════════════════
+# EVALUATION: STS correlation (when gold scores available)
+# ═══════════════════════════════════════════════════════════════
+def eval_sts(pred, gold, model_name):
+    \"\"\"Spearman + Pearson correlation between predicted and gold similarity.\"\"\"
+    from scipy.stats import spearmanr, pearsonr
+    mask = ~np.isnan(gold)
+    pred, gold = np.asarray(pred)[mask], np.asarray(gold)[mask]
+    sp, _ = spearmanr(pred, gold)
+    pr, _ = pearsonr(pred, gold)
+    print(f"  [{{model_name}}] Spearman: {{sp:.4f}}  |  Pearson: {{pr:.4f}}")
+    return {{"spearman": round(float(sp), 4), "pearson": round(float(pr), 4)}}
+
+
+# ═══════════════════════════════════════════════════════════════
+# VISUALISATION: UMAP + HDBSCAN embedding clusters
+# ═══════════════════════════════════════════════════════════════
+def plot_clusters(embs, save_name="embedding_clusters.png"):
     if embs is None:
-        print("⚠ Skipping embedding clustering (no embeddings)")
         return
     try:
         import umap, hdbscan
-        reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1, random_state=42)
-        X_2d = reducer.fit_transform(embs)
-        labels = hdbscan.HDBSCAN(min_cluster_size=5).fit_predict(X_2d)
-        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-        print("")
-        print(f"✓ UMAP + HDBSCAN on embeddings: {{n_clusters}} topics/clusters")
+    except ImportError:
+        print("  (umap/hdbscan not installed — skipping cluster plot)")
+        return
+    reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1, random_state=42)
+    X_2d = reducer.fit_transform(embs)
+    labels = hdbscan.HDBSCAN(min_cluster_size=5).fit_predict(X_2d)
+    n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+    print(f"  UMAP + HDBSCAN: {{n_clusters}} clusters")
+    fig, ax = plt.subplots(figsize=(10, 7))
+    scatter = ax.scatter(X_2d[:, 0], X_2d[:, 1], c=labels, cmap="tab10", s=15, alpha=0.6)
+    ax.set_title("Embedding Space (UMAP + HDBSCAN)")
+    ax.set_xlabel("UMAP-1"); ax.set_ylabel("UMAP-2")
+    plt.colorbar(scatter, ax=ax, label="Cluster")
+    fig.tight_layout()
+    fig.savefig(os.path.join(SAVE_DIR, save_name), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {{save_name}}")
 
-        fig, ax = plt.subplots(figsize=(10, 7))
-        scatter = ax.scatter(X_2d[:, 0], X_2d[:, 1], c=labels, cmap="tab10", s=15, alpha=0.6)
-        ax.set_title("Embedding Space — UMAP + HDBSCAN"); ax.set_xlabel("UMAP 1"); ax.set_ylabel("UMAP 2")
-        plt.colorbar(scatter, ax=ax, label="Cluster")
-        plt.tight_layout()
-        plt.savefig(os.path.join(os.path.dirname(__file__), "embedding_clusters.png"), dpi=100)
-        print("✓ Saved embedding_clusters.png")
-    except Exception as e:
-        print(f"✗ Embedding clustering: {{e}}")
+
+# ═══════════════════════════════════════════════════════════════
+# VISUALISATION: Similarity heatmap
+# ═══════════════════════════════════════════════════════════════
+def plot_similarity_heatmap(sim, title, save_name):
+    n = min(30, sim.shape[0])
+    fig, ax = plt.subplots(figsize=(8, 7))
+    import seaborn as sns
+    sns.heatmap(sim[:n, :n], ax=ax, cmap="YlOrRd", vmin=0, vmax=1)
+    ax.set_title(title)
+    fig.tight_layout()
+    fig.savefig(os.path.join(SAVE_DIR, save_name), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    print(f"  Saved {{save_name}}")
 
 
 def main():
     print("=" * 60)
-    print("NLP SIMILARITY / RETRIEVAL — BGE-M3 + Qwen3-Embedding")
-    print("TF-IDF baseline | Embedding clustering")
+    print("NLP SIMILARITY / RETRIEVAL")
+    print("Qwen3-Embedding | BGE-M3 | TF-IDF baseline")
     print("=" * 60)
     df = load_data()
-    texts = get_texts(df)
-    print(f"Using {{len(texts)}} text samples")
+    metrics = {{}}
 
-    print(""); print("— TF-IDF Baseline —")
-    run_tfidf_baseline(texts)
+    # Check for sentence-pair benchmark structure (STS-B style)
+    s1, s2, gold = detect_sts_pairs(df)
+    is_paired = s1 is not None and gold is not None
 
-    print(""); print("— BGE-M3 Embeddings —")
-    embs, sim = run_bge_m3(texts)
+    if is_paired:
+        n = min(len(s1), len(gold))
+        s1, s2, gold = s1[:n], s2[:n], gold[:n]
+        gold_arr = np.array([float(g) if g is not None else float("nan") for g in gold])
+        pairs = (s1, s2, gold_arr)
+        print(f"Detected sentence-pair benchmark: {{n}} pairs")
+        print()
 
-    print(""); print("— Qwen3-Embedding —")
-    run_qwen3_embedding(texts)
+        print("-- TF-IDF Baseline --")
+        try:
+            r = run_tfidf(None, pairs=pairs)
+            m = eval_sts(r["pred_scores"], gold_arr, "TF-IDF")
+            m["time_s"] = r["time_s"]
+            metrics["TF-IDF"] = m
+        except Exception as e:
+            print(f"  TF-IDF failed: {{e}}")
+        print()
 
-    print(""); print("— Embedding Clustering —")
-    run_embedding_clustering(embs, texts)
+        print("-- Qwen3-Embedding (primary) --")
+        try:
+            r = run_qwen3(None, pairs=pairs)
+            m = eval_sts(r["pred_scores"], gold_arr, "Qwen3-Embedding")
+            m["time_s"] = r["time_s"]; m["dim"] = r.get("dim")
+            metrics["Qwen3-Embedding"] = m
+        except Exception as e:
+            print(f"  Qwen3-Embedding failed: {{e}}")
+        print()
+
+        print("-- BGE-M3 (secondary) --")
+        try:
+            r = run_bge_m3(None, pairs=pairs)
+            m = eval_sts(r["pred_scores"], gold_arr, "BGE-M3")
+            m["time_s"] = r["time_s"]; m["dim"] = r.get("dim")
+            metrics["BGE-M3"] = m
+        except Exception as e:
+            print(f"  BGE-M3 failed: {{e}}")
+    else:
+        texts = get_texts(df)
+        print(f"Using {{len(texts)}} text samples (unpaired mode)")
+        print()
+
+        print("-- TF-IDF Baseline --")
+        try:
+            r = run_tfidf(texts)
+            metrics["TF-IDF"] = r
+        except Exception as e:
+            print(f"  TF-IDF failed: {{e}}")
+        print()
+
+        print("-- Qwen3-Embedding (primary) --")
+        try:
+            r = run_qwen3(texts)
+            embs_q = r.pop("embs", None)
+            metrics["Qwen3-Embedding"] = r
+        except Exception as e:
+            embs_q = None
+            print(f"  Qwen3-Embedding failed: {{e}}")
+        print()
+
+        print("-- BGE-M3 (secondary) --")
+        try:
+            r = run_bge_m3(texts)
+            embs_b = r.pop("embs", None)
+            metrics["BGE-M3"] = r
+        except Exception as e:
+            embs_b = None
+            print(f"  BGE-M3 failed: {{e}}")
+        print()
+
+        # Use best available embeddings for clustering + heatmap
+        best_embs = embs_q if embs_q is not None else embs_b
+        print("-- Embedding Clustering --")
+        plot_clusters(best_embs)
+        if best_embs is not None:
+            sim_mat = cosine_similarity(best_embs)
+            plot_similarity_heatmap(sim_mat, "Cosine Similarity Heatmap",
+                                    "similarity_heatmap.png")
+
+    # ── Summary ──
+    if metrics:
+        # Pick best by spearman (paired) or avg_cosine (unpaired)
+        key = "spearman" if is_paired else "avg_cosine"
+        scored = {{k: v.get(key, 0) for k, v in metrics.items()}}
+        best = max(scored, key=scored.get)
+        print()
+        print(f"Best model: {{best}} ({{key}}={{scored[best]:.4f}})")
+
+    # Save metrics
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -1772,16 +2651,27 @@ def gen_nlp_gen(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Generation Pipeline (April 2026)
-Models: Qwen3-Instruct (chat/generation/summarization) + NLLB-200 (translation) + BART (summarization baseline)
-Data: Auto-downloaded at runtime
+
+Task      : {task}
+Primary   : Qwen3-Instruct (8B) via Ollama — chat, generation, summarisation.
+Translation: NLLB-200-distilled-600M (Meta) — 200+ language pairs, offline.
+Baseline  : BART-large-CNN (summarisation only).
+
+Chatbot mode runs a scripted demo conversation from the dataset first,
+then offers an interactive session. All modes report wall-clock timing
+and export results to metrics.json.
+
+Compute: Ollama manages GPU for Qwen3; NLLB/BART use torch + CUDA if available.
+Data   : Auto-downloaded at runtime.
 """
-import os, json, warnings
+import os, json, time, warnings
 import pandas as pd
 warnings.filterwarnings("ignore")
 
 TASK = "{task}"
 OLLAMA_MODEL = "qwen3:8b"
 OLLAMA_URL = "http://localhost:11434/api/generate"
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def query_ollama(prompt, temperature=0.7, max_tokens=512):
@@ -1801,116 +2691,357 @@ def load_data():
     return df
 
 
+# ═══════════════════════════════════════════════════════════════
+# SUMMARISATION — Qwen3 + BART baseline
+# ═══════════════════════════════════════════════════════════════
 def run_summarization(df):
-    \"\"\"Qwen3-Instruct for general summarization + BART as classic baseline.\"\"\"
     text_col = next((c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 50), df.select_dtypes("object").columns[0])
     texts = df[text_col].dropna().head(10).tolist()
+    metrics = {{}}
 
-    # ═══ PRIMARY: Qwen3-Instruct via Ollama ═══
-    qwen_results = []
+    # Detect gold reference summaries (xsum: 'summary'; cnn: 'highlights')
+    ref_col = None
+    for c in ("summary", "highlights", "abstract", "target"):
+        if c in df.columns and c != text_col:
+            ref_col = c
+            break
+    refs = df[ref_col].dropna().head(10).tolist() if ref_col else None
+    if refs:
+        print(f"  Gold references found in column '{{ref_col}}'")
+
+    # PRIMARY: Qwen3-Instruct via Ollama
+    t0 = time.perf_counter()
+    qwen_summaries = []
     for i, text in enumerate(texts):
         summary = query_ollama(f"Summarize concisely:\\n\\n{{text[:2000]}}\\n\\nSummary:")
         if summary:
-            qwen_results.append({{"original": text[:200], "summary": summary}})
+            qwen_summaries.append(summary.strip())
             print(f"  Qwen3 [{{i+1}}] {{summary[:100]}}...")
-    if qwen_results:
-        print(f"✓ Qwen3-Instruct summarized {{len(qwen_results)}} texts")
+    elapsed = time.perf_counter() - t0
+    if qwen_summaries:
+        print(f"  Qwen3-Instruct: {{len(qwen_summaries)}} summaries in {{elapsed:.1f}}s")
+    m = {{"count": len(qwen_summaries), "time_s": round(elapsed, 1)}}
+    if refs and qwen_summaries:
+        m.update(_compute_rouge(qwen_summaries, refs[:len(qwen_summaries)], "Qwen3"))
+    metrics["Qwen3-Instruct"] = m
 
-    # ═══ BASELINE: BART (facebook/bart-large-cnn) ═══
+    # BASELINE: BART
     try:
         import torch
         from transformers import BartForConditionalGeneration, BartTokenizer
         device = "cuda" if torch.cuda.is_available() else "cpu"
         tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
         model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn").to(device)
-        bart_results = []
+        t0 = time.perf_counter()
+        bart_summaries = []
         for i, text in enumerate(texts[:5]):
             inputs = tokenizer(text[:1024], return_tensors="pt", truncation=True, max_length=1024).to(device)
             summary_ids = model.generate(**inputs, max_length=150, min_length=30, num_beams=4, length_penalty=2.0)
             summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-            bart_results.append(summary)
+            bart_summaries.append(summary)
             print(f"  BART [{{i+1}}] {{summary[:100]}}...")
-        print(f"✓ BART summarized {{len(bart_results)}} texts")
+        elapsed = time.perf_counter() - t0
+        print(f"  BART: {{len(bart_summaries)}} summaries in {{elapsed:.1f}}s")
+        m = {{"count": len(bart_summaries), "time_s": round(elapsed, 1)}}
+        if refs and bart_summaries:
+            m.update(_compute_rouge(bart_summaries, refs[:len(bart_summaries)], "BART"))
+        metrics["BART"] = m
     except Exception as e:
-        print(f"✗ BART baseline: {{e}}")
+        print(f"  BART baseline failed: {{e}}")
+    return metrics
+
+
+def _compute_rouge(hypotheses, references, model_name):
+    \"\"\"Compute ROUGE-1/2/L F1 scores. Uses rouge-scorer if available, else
+    falls back to a simple n-gram overlap implementation.\"\"\"
+    try:
+        from rouge_score import rouge_scorer as rs
+        scorer = rs.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+        r1, r2, rl = [], [], []
+        for hyp, ref in zip(hypotheses, references):
+            s = scorer.score(str(ref), str(hyp))
+            r1.append(s["rouge1"].fmeasure)
+            r2.append(s["rouge2"].fmeasure)
+            rl.append(s["rougeL"].fmeasure)
+        avg = lambda xs: round(sum(xs) / max(len(xs), 1) * 100, 2)
+        out = {{"rouge1": avg(r1), "rouge2": avg(r2), "rougeL": avg(rl)}}
+        print(f"  [{{model_name}}] ROUGE-1: {{out['rouge1']}}  ROUGE-2: {{out['rouge2']}}  ROUGE-L: {{out['rougeL']}}")
+        return out
+    except ImportError:
+        pass
+    # Fallback: simple unigram overlap (ROUGE-1 approximation)
+    try:
+        scores = []
+        for hyp, ref in zip(hypotheses, references):
+            h_toks = set(str(hyp).lower().split())
+            r_toks = set(str(ref).lower().split())
+            if not r_toks:
+                continue
+            overlap = len(h_toks & r_toks)
+            p = overlap / max(len(h_toks), 1)
+            r = overlap / max(len(r_toks), 1)
+            f1 = 2 * p * r / max(p + r, 1e-9)
+            scores.append(f1)
+        avg_f1 = round(sum(scores) / max(len(scores), 1) * 100, 2) if scores else 0.0
+        print(f"  [{{model_name}}] ROUGE-1 (approx): {{avg_f1}}")
+        return {{"rouge1_approx": avg_f1}}
+    except Exception:
+        return {{}}
+
+
+# ═══════════════════════════════════════════════════════════════
+# TRANSLATION — NLLB-200
+# ═══════════════════════════════════════════════════════════════
+def _extract_texts(df, n=20):
+    \"\"\"Extract source texts from the dataset.  Handles WMT-style nested
+    'translation' dicts ({{\"de\": ..., \"en\": ...}}) as well as plain
+    string columns.  Returns (texts, references_or_None).
+    References are available when the dataset contains parallel pairs.\"\"\"
+    # WMT-style: column named 'translation' containing dicts
+    if "translation" in df.columns:
+        sample = df["translation"].dropna().head(n).tolist()
+        if sample and isinstance(sample[0], dict):
+            # Prefer English source if available, else first key
+            src_key = "en" if "en" in sample[0] else list(sample[0].keys())[0]
+            ref_key = [k for k in sample[0].keys() if k != src_key]
+            texts = [str(row.get(src_key, "")) for row in sample]
+            refs = {{k: [str(row.get(k, "")) for row in sample] for k in ref_key}} if ref_key else None
+            return texts, refs
+    # Plain string column
+    for c in df.columns:
+        if df[c].dtype == "object" and df[c].str.len().mean() > 10:
+            return df[c].dropna().head(n).astype(str).tolist(), None
+    text_cols = df.select_dtypes("object").columns
+    if len(text_cols):
+        return df[text_cols[0]].dropna().head(n).astype(str).tolist(), None
+    return df.iloc[:, 0].astype(str).head(n).tolist(), None
 
 
 def run_translation(df):
-    \"\"\"NLLB-200 (Meta) — 200+ language pairs, offline, multilingual.\"\"\"
     import torch
     from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model_id = "facebook/nllb-200-distilled-600M"
+    print(f"  Loading {{model_id}} on {{device}} ...")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
-    text_col = df.select_dtypes("object").columns[0]
+    metrics = {{}}
 
-    # Translate to multiple target languages
-    targets = [("fra_Latn", "French"), ("deu_Latn", "German"), ("spa_Latn", "Spanish"), ("zho_Hans", "Chinese")]
+    texts, refs = _extract_texts(df, n=10)
+    print(f"  Source texts: {{len(texts)}}")
+
+    targets = [("fra_Latn", "French"), ("deu_Latn", "German"),
+               ("spa_Latn", "Spanish"), ("zho_Hans", "Chinese")]
+    total_t0 = time.perf_counter()
+
     for tgt_code, tgt_name in targets:
-        results = []
-        for i, text in enumerate(df[text_col].dropna().head(3)):
-            inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
-            translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids(tgt_code), max_new_tokens=256)
-            translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
-            results.append({{"original": text[:100], "translated": translated}})
-            print(f"  → {{tgt_name}} [{{i+1}}] {{translated[:100]}}...")
-        print(f"✓ NLLB-200 → {{tgt_name}}: {{len(results)}} texts")
+        t0 = time.perf_counter()
+        translations = []
+        for i, text in enumerate(texts):
+            inputs = tokenizer(str(text)[:512], return_tensors="pt", truncation=True).to(device)
+            out_ids = model.generate(**inputs,
+                                     forced_bos_token_id=tokenizer.convert_tokens_to_ids(tgt_code),
+                                     max_new_tokens=256)
+            translated = tokenizer.decode(out_ids[0], skip_special_tokens=True)
+            translations.append(translated)
+            if i < 3:
+                print(f"    -> {{tgt_name}} [{{i+1}}] {{translated[:100]}}...")
+        elapsed = time.perf_counter() - t0
+        lang_metrics = {{"count": len(translations), "time_s": round(elapsed, 1)}}
+
+        # BLEU if we have reference translations for this language
+        lang_code_short = tgt_code.split("_")[0][:2]   # fra_Latn -> fr
+        iso_map = {{"fr": "fra_Latn", "de": "deu_Latn", "es": "spa_Latn", "zh": "zho_Hans"}}
+        if refs:
+            for rk in refs:
+                if rk == lang_code_short or iso_map.get(rk) == tgt_code:
+                    try:
+                        from sacrebleu.metrics import BLEU
+                        bleu = BLEU()
+                        score = bleu.corpus_score(translations, [refs[rk][:len(translations)]])
+                        lang_metrics["bleu"] = round(score.score, 2)
+                        print(f"    BLEU ({{tgt_name}}): {{score.score:.2f}}")
+                    except ImportError:
+                        try:
+                            from nltk.translate.bleu_score import corpus_bleu
+                            ref_tok = [[r.split()] for r in refs[rk][:len(translations)]]
+                            hyp_tok = [t.split() for t in translations]
+                            b = corpus_bleu(ref_tok, hyp_tok)
+                            lang_metrics["bleu"] = round(b * 100, 2)
+                            print(f"    BLEU ({{tgt_name}}): {{b*100:.2f}}")
+                        except Exception:
+                            pass
+                    break
+
+        print(f"  NLLB-200 -> {{tgt_name}}: {{len(translations)}} texts in {{elapsed:.1f}}s")
+        metrics[f"NLLB-200_{{tgt_name}}"] = lang_metrics
+
+    total_elapsed = time.perf_counter() - total_t0
+    metrics["NLLB-200_total"] = {{"time_s": round(total_elapsed, 1), "languages": len(targets),
+                                   "model": model_id, "device": str(device)}}
+    return metrics
 
 
+# ═══════════════════════════════════════════════════════════════
+# GENERATION — Qwen3-Instruct
+# ═══════════════════════════════════════════════════════════════
 def run_generation(df):
-    \"\"\"Qwen3-Instruct for text generation / next-word prediction.\"\"\"
     prompts = [
         "Write a creative short story about artificial intelligence discovering emotions:",
         "Complete this sentence: The future of machine learning is",
         "Explain quantum computing to a 10-year-old:",
     ]
-    # Use data context if available
     if df is not None:
         text_col = next((c for c in df.columns if df[c].dtype == "object"), None)
         if text_col:
             samples = df[text_col].dropna().head(3).tolist()
             prompts = [f"Continue this text creatively:\\n\\n{{t[:300]}}\\n\\nContinuation:" for t in samples]
 
+    t0 = time.perf_counter()
+    responses = []
     for i, prompt in enumerate(prompts):
         response = query_ollama(prompt, temperature=0.9, max_tokens=256)
         if response:
+            responses.append(response)
             print(f"  [{{i+1}}] {{response[:200]}}...")
-    print(f"✓ Qwen3-Instruct generated {{len(prompts)}} texts")
+    elapsed = time.perf_counter() - t0
+    print(f"  Qwen3-Instruct: {{len(responses)}} texts in {{elapsed:.1f}}s")
+    return {{"Qwen3-Instruct": {{"count": len(responses), "time_s": round(elapsed, 1)}}}}
 
 
-def run_chatbot():
-    \"\"\"Qwen3-Instruct interactive chatbot.\"\"\"
-    print("\\n💬 Chatbot (type 'quit' to exit)")
+# ═══════════════════════════════════════════════════════════════
+# CHATBOT — Qwen3-Instruct | demo + interactive
+# ═══════════════════════════════════════════════════════════════
+def extract_demo_turns(df, n=5):
+    \"\"\"Pull sample user utterances from the loaded dialogue dataset for a
+    scripted demo conversation (avoids relying solely on interactive input).\"\"\"
+    samples = []
+    # daily-dialogs: column named 'dialog' (list of turns) or first text col
+    for col in ("dialog", "utterance", "text", "question", "input"):
+        if col in df.columns:
+            vals = df[col].dropna().head(n * 3)
+            for v in vals:
+                if isinstance(v, list):
+                    samples.extend([str(t) for t in v[:2]])
+                elif isinstance(v, str) and len(v.strip()) > 5:
+                    samples.append(v.strip()[:200])
+                if len(samples) >= n:
+                    break
+            break
+    if not samples:
+        text_cols = df.select_dtypes("object").columns
+        if len(text_cols):
+            samples = df[text_cols[0]].dropna().astype(str).head(n).tolist()
+    return samples[:n]
+
+
+def run_chatbot(df=None):
+    \"\"\"Qwen3-Instruct chatbot: scripted demo + optional interactive session.\"\"\"
+    system = "You are a helpful, concise assistant."
+    metrics = {{"model": OLLAMA_MODEL, "turns": []}}
+
+    # ── Scripted demo from dataset ──
+    demo_prompts = []
+    if df is not None:
+        demo_prompts = extract_demo_turns(df, n=5)
+    if not demo_prompts:
+        demo_prompts = ["Hello!", "What can you help me with?",
+                        "Explain machine learning in one sentence.",
+                        "What is the capital of France?", "Thanks, goodbye!"]
+
+    print()
+    print("--- Demo Conversation (scripted) ---")
     history = []
-    while True:
-        user = input("\\nYou: ").strip()
-        if user.lower() in ("quit", "exit", "q"): break
-        history.append(f"User: {{user}}")
-        resp = query_ollama(f"You are a helpful assistant. Continue this conversation:\\n\\n{{'\\n'.join(history[-6:])}}\\n\\nAssistant:", temperature=0.8)
+    for user_msg in demo_prompts:
+        history.append(f"User: {{user_msg}}")
+        ctx = "\\n".join(history[-6:])
+        prompt = f"{{system}}\\n\\n{{ctx}}\\nAssistant:"
+        t0 = time.perf_counter()
+        resp = query_ollama(prompt, temperature=0.7, max_tokens=256)
+        latency = time.perf_counter() - t0
         if resp:
+            resp = resp.strip()
             history.append(f"Assistant: {{resp}}")
-            print(f"Bot: {{resp}}")
+            print(f"  User : {{user_msg}}")
+            print(f"  Bot  : {{resp[:200]}}")
+            print(f"  ({{latency:.1f}}s)")
+            metrics["turns"].append({{"user": user_msg, "bot": resp[:300],
+                                      "latency_s": round(latency, 1)}})
+        else:
+            print(f"  User : {{user_msg}}")
+            print(f"  Bot  : [no response]")
+
+    avg_lat = 0
+    if metrics["turns"]:
+        avg_lat = sum(t["latency_s"] for t in metrics["turns"]) / len(metrics["turns"])
+        print()
+        print(f"  Demo: {{len(metrics['turns'])}} turns, avg latency {{avg_lat:.1f}}s")
+    metrics["demo_avg_latency_s"] = round(avg_lat, 1)
+
+    # ── Interactive session (skipped in non-interactive environments) ──
+    import sys
+    if sys.stdin.isatty():
+        print()
+        print("--- Interactive Chat (type 'quit' to exit) ---")
+        while True:
+            try:
+                user = input("You: ").strip()
+            except EOFError:
+                break
+            if user.lower() in ("quit", "exit", "q", ""):
+                break
+            history.append(f"User: {{user}}")
+            ctx = "\\n".join(history[-6:])
+            prompt = f"{{system}}\\n\\n{{ctx}}\\nAssistant:"
+            t0 = time.perf_counter()
+            resp = query_ollama(prompt, temperature=0.8, max_tokens=512)
+            latency = time.perf_counter() - t0
+            if resp:
+                resp = resp.strip()
+                history.append(f"Assistant: {{resp}}")
+                print(f"Bot: {{resp}}")
+                print(f"  ({{latency:.1f}}s)")
+    else:
+        print("  (non-interactive environment — skipping live chat)")
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print(f"NLP GENERATION — Qwen3-Instruct + NLLB-200 + BART | Task: {{TASK}}")
+    print(f"NLP GENERATION | Task: {{TASK}} | Model: {{OLLAMA_MODEL}}")
     print("=" * 60)
+
+    # Ollama connectivity check (not needed for translation)
     if TASK != "translation":
         test = query_ollama("Say hello.", max_tokens=10)
         if not test:
-            print("⚠ Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
+            print("Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
             if TASK != "translation":
                 return
+
     df = load_data()
-    if TASK == "summarization" and df is not None: run_summarization(df)
-    elif TASK == "translation" and df is not None: run_translation(df)
-    elif TASK == "chatbot": run_chatbot()
-    elif TASK == "generation": run_generation(df)
+    metrics = {{}}
+
+    if TASK == "summarization" and df is not None:
+        metrics = run_summarization(df)
+    elif TASK == "translation" and df is not None:
+        metrics = run_translation(df)
+    elif TASK == "chatbot":
+        metrics = run_chatbot(df)
+    elif TASK == "generation":
+        metrics = run_generation(df)
     else:
-        if df is not None: run_summarization(df)
-        else: run_chatbot()
+        if df is not None:
+            metrics = run_summarization(df)
+        else:
+            metrics = run_chatbot()
+
+    # Export metrics
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print()
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -1948,23 +3079,28 @@ def gen_image_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 (primary backbone) + ConvNeXt V2 (fine-tuning backbone)
-Data: Auto-downloaded at runtime
+
+Primary : DINOv3 ViT-S/14 backbone (frozen head-only, then full fine-tune).
+Alternative: ConvNeXt V2 Tiny (fine-tuning baseline via timm).
+Timing  : Wall-clock per model.
+Export  : metrics.json with per-model accuracy + timing; confusion matrix plot.
+Data    : Auto-downloaded at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from PIL import Image
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
 IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_transforms(train=True):
@@ -1988,7 +3124,11 @@ def train_model():
     train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
+    metrics = {{}}
 
+    # ── DINOv3 (primary) ──
+    print()
+    print("-- DINOv3 ViT-S/14 --")
     backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
@@ -2008,6 +3148,7 @@ def train_model():
     opt = torch.optim.AdamW(model.head.parameters(), lr=LR, weight_decay=0.01)
 
     best_acc = 0
+    t0 = time.perf_counter()
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for imgs, labels in train_loader:
@@ -2023,16 +3164,31 @@ def train_model():
                 preds.extend(torch.argmax(model(imgs.to(device)), dim=-1).cpu().numpy())
                 gts.extend(labels.numpy())
         val_acc = accuracy_score(gts, preds)
-        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} — Loss: {{total_loss/len(train_loader):.4f}} — Val Acc: {{val_acc:.4f}}")
+        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} -- Loss: {{total_loss/len(train_loader):.4f}} -- Val Acc: {{val_acc:.4f}}")
         if val_acc > best_acc:
             best_acc = val_acc
-            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
+            best_preds, best_gts = preds, gts
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model.pth"))
+    dino_elapsed = round(time.perf_counter() - t0, 1)
 
-    print(f"\\n🏆 DINOv3 Best Val Accuracy: {{best_acc:.4f}}")
+    print(f"  DINOv3 Best Val Accuracy: {{best_acc:.4f}} ({{dino_elapsed}}s)")
+    print(classification_report(best_gts, best_preds, zero_division=0))
+    metrics["DINOv3"] = {{"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}}
 
-    # ConvNeXt V2 (alternative fine-tuning backbone)
+    # Confusion matrix
+    cm = confusion_matrix(best_gts, best_preds)
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.imshow(cm, cmap="Blues")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv3 Confusion Matrix")
+    fig.savefig(os.path.join(SAVE_DIR, "confusion_matrix.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+
+    # ── ConvNeXt V2 (alternative baseline) ──
+    print()
+    print("-- ConvNeXt V2 Tiny --")
     try:
         import timm
+        t1 = time.perf_counter()
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
         convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
         for epoch in range(3):
@@ -2047,16 +3203,25 @@ def train_model():
                 cv_preds.extend(torch.argmax(convnext(imgs.to(device)), dim=-1).cpu().numpy())
                 cv_gts.extend(labels.numpy())
         cv_acc = accuracy_score(cv_gts, cv_preds)
-        print(f"✓ ConvNeXt V2 Val Accuracy: {{cv_acc:.4f}}")
+        cv_elapsed = round(time.perf_counter() - t1, 1)
+        print(f"  ConvNeXt V2 Val Accuracy: {{cv_acc:.4f}} ({{cv_elapsed}}s)")
+        metrics["ConvNeXtV2"] = {{"val_accuracy": round(cv_acc, 4), "epochs": 3, "time_s": cv_elapsed}}
     except Exception as e:
-        print(f"✗ ConvNeXt V2: {{e}}")
+        print(f"  ConvNeXt V2: {{e}}")
+
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2")
+    print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
     print("=" * 60)
-    train_model()
+    metrics = train_model()
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -2070,10 +3235,15 @@ def gen_captioning(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Image Captioning / VLM Pipeline (April 2026)
-Models: Qwen3-VL (primary) + Molmo 2 (lightweight alternative)
-Data: Auto-downloaded at runtime
+
+Primary    : Qwen3-VL-2B-Instruct (vision-language, bfloat16, auto device).
+Alternative: Molmo-7B-D-0924 (AllenAI multimodal LLM, bfloat16).
+Timing     : Wall-clock per model.
+Export     : metrics.json with caption counts + avg length + timing;
+             captions.json with per-image captions from each model.
+Data       : Auto-downloaded at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import torch
 from PIL import Image
 import matplotlib; matplotlib.use("Agg")
@@ -2082,6 +3252,7 @@ import matplotlib.pyplot as plt
 warnings.filterwarnings("ignore")
 
 MAX_SAMPLES = 20
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_data():
@@ -2091,19 +3262,23 @@ def load_data():
 
 def caption_images():
     df = load_data()
-    # Auto-detect image column
     img_col = next((c for c in df.column_names if "image" in c.lower()), df.column_names[0])
     images = [df[i][img_col] for i in range(min(MAX_SAMPLES, len(df)))]
+    metrics = {{}}
+    all_captions = {{}}
 
-    # ═══ PRIMARY: Qwen3-VL ═══
+    # -- PRIMARY: Qwen3-VL --
+    print()
+    print("-- Qwen3-VL-2B-Instruct --")
     try:
         from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
         from qwen_vl_utils import process_vision_info
+        t0 = time.perf_counter()
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
             "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
         processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
         captions = []
-        for img in images:
+        for idx, img in enumerate(images):
             pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
             msgs = [{{"role": "user", "content": [
                 {{"type": "image", "image": pil_img}},
@@ -2116,34 +3291,60 @@ def caption_images():
             caption = processor.batch_decode(out_ids[:, inputs["input_ids"].shape[1]:],
                                               skip_special_tokens=True)[0]
             captions.append(caption)
-            print(f"  Qwen3-VL: {{caption[:100]}}...")
-        print(f"✓ Qwen3-VL captioned {{len(captions)}} images")
+            print(f"  [{{idx+1}}/{{len(images)}}] {{caption[:100]}}...")
+        elapsed = round(time.perf_counter() - t0, 1)
+        avg_len = sum(len(c) for c in captions) / max(len(captions), 1)
+        print(f"  Qwen3-VL: {{len(captions)}} captions, avg {{avg_len:.0f}} chars ({{elapsed}}s)")
+        metrics["Qwen3-VL"] = {{"captions": len(captions), "avg_length": round(avg_len, 1), "time_s": elapsed}}
+        all_captions["Qwen3-VL"] = captions
     except Exception as e:
-        print(f"✗ Qwen3-VL: {{e}}")
+        print(f"  Qwen3-VL failed: {{e}}")
 
-    # ═══ ALTERNATIVE: Molmo 2 ═══
+    # -- ALTERNATIVE: Molmo 2 --
+    print()
+    print("-- Molmo-7B-D-0924 --")
     try:
         from transformers import AutoModelForCausalLM, AutoProcessor as AP2
+        t1 = time.perf_counter()
         molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
             torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
         molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
-        for img in images[:5]:
+        molmo_captions = []
+        for idx, img in enumerate(images[:10]):
             pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
             inputs = molmo_proc.process(images=[pil_img], text="Describe this image in detail.")
             inputs = {{k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}}
             out = molmo.generate_from_batch(inputs, max_new_tokens=128, tokenizer=molmo_proc.tokenizer)
             caption = molmo_proc.tokenizer.decode(out[0], skip_special_tokens=True)
-            print(f"  Molmo-2: {{caption[:100]}}...")
-        print(f"✓ Molmo-2 captioned {{min(5, len(images))}} images")
+            molmo_captions.append(caption)
+            print(f"  [{{idx+1}}/{{min(10, len(images))}}] {{caption[:100]}}...")
+        mol_elapsed = round(time.perf_counter() - t1, 1)
+        mol_avg = sum(len(c) for c in molmo_captions) / max(len(molmo_captions), 1)
+        print(f"  Molmo-2: {{len(molmo_captions)}} captions, avg {{mol_avg:.0f}} chars ({{mol_elapsed}}s)")
+        metrics["Molmo-2"] = {{"captions": len(molmo_captions), "avg_length": round(mol_avg, 1), "time_s": mol_elapsed}}
+        all_captions["Molmo-2"] = molmo_captions
     except Exception as e:
-        print(f"✗ Molmo-2: {{e}}")
+        print(f"  Molmo-2 failed: {{e}}")
+
+    # Save captions
+    cap_path = os.path.join(SAVE_DIR, "captions.json")
+    with open(cap_path, "w", encoding="utf-8") as f:
+        json.dump(all_captions, f, indent=2, ensure_ascii=False)
+    print(f"Captions saved to {{cap_path}}")
+
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CAPTIONING / VLM — Qwen3-VL + Molmo 2")
+    print("IMAGE CAPTIONING / VLM | Qwen3-VL + Molmo 2")
     print("=" * 60)
-    caption_images()
+    metrics = caption_images()
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -2168,17 +3369,25 @@ def gen_medical_seg(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Medical Image Segmentation Pipeline (April 2026)
-Models: nnU-Net (supervised baseline) + MedSAM2 (promptable foundation model)
-Data: Auto-downloaded at runtime
+
+Primary : nnU-Net-style supervised U-Net (encoder-decoder with skip connections).
+Optional: MedSAM2 zero-shot promptable segmentation (center-point prompts).
+Metrics : Dice coefficient + mean IoU per model, wall-clock timing.
+Export  : metrics.json, segmentation_results.png, best_unet.pth.
+Data    : Auto-downloaded from HuggingFace at runtime.
+
+DISCLAIMER: This is an educational/research demonstration pipeline.
+It is NOT validated for clinical use. Medical image analysis models
+require rigorous validation on curated datasets, regulatory approval,
+and expert clinical oversight before any diagnostic application.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from PIL import Image
-from sklearn.metrics import f1_score
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -2186,6 +3395,7 @@ warnings.filterwarnings("ignore")
 
 IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 256, 8, 15, 1e-4
 N_CLASSES = {n_classes}
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_data():
@@ -2265,6 +3475,17 @@ def dice_score(pred, target, n_classes=N_CLASSES):
     return dice / n_classes
 
 
+def mean_iou(pred, target, n_classes=N_CLASSES):
+    pred = torch.argmax(pred, dim=1) if pred.ndim == 4 else pred
+    iou = 0.0
+    for c in range(n_classes):
+        p = (pred == c).float(); t = (target == c).float()
+        inter = (p * t).sum()
+        union = p.sum() + t.sum() - inter
+        iou += (inter + 1e-6) / (union + 1e-6)
+    return iou / n_classes
+
+
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hf_ds = load_data()
@@ -2273,14 +3494,18 @@ def train_model():
     train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, num_workers=0)
+    metrics = {{}}
 
-    # ═══ PRIMARY: nnU-Net-style supervised U-Net ═══
+    # --- PRIMARY: nnU-Net-style supervised U-Net ---
+    print()
+    print("-- nnU-Net-style U-Net (supervised) --")
     model = SimpleUNet().to(device)
     criterion = nn.CrossEntropyLoss()
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS)
 
     best_dice = 0
+    t0 = time.perf_counter()
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for imgs, masks in train_loader:
@@ -2289,32 +3514,41 @@ def train_model():
             loss = criterion(out, masks); loss.backward()
             opt.step(); opt.zero_grad(); total_loss += loss.item()
         scheduler.step()
-        model.eval(); dice_sum, n = 0, 0
+        model.eval(); dice_sum, iou_sum, n = 0, 0, 0
         with torch.no_grad():
             for imgs, masks in val_loader:
                 imgs, masks = imgs.to(device), masks.to(device)
                 out = model(imgs)
-                dice_sum += dice_score(out, masks).item(); n += 1
+                dice_sum += dice_score(out, masks).item()
+                iou_sum += mean_iou(out, masks).item()
+                n += 1
         val_dice = dice_sum / max(n, 1)
-        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} — Loss: {{total_loss/len(train_loader):.4f}} — Val Dice: {{val_dice:.4f}}")
+        val_iou = iou_sum / max(n, 1)
+        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} -- Loss: {{total_loss/len(train_loader):.4f}} -- Dice: {{val_dice:.4f}} -- IoU: {{val_iou:.4f}}")
         if val_dice > best_dice:
             best_dice = val_dice
-            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_unet.pth"))
-    print(f"\\n🏆 nnU-Net-style Best Val Dice: {{best_dice:.4f}}")
+            best_iou = val_iou
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_unet.pth"))
+    unet_elapsed = round(time.perf_counter() - t0, 1)
+    print(f"  nnU-Net Best -- Dice: {{best_dice:.4f}} -- IoU: {{best_iou:.4f}} ({{unet_elapsed}}s)")
+    metrics["nnUNet"] = {{"val_dice": round(best_dice, 4), "val_iou": round(best_iou, 4),
+                         "epochs": EPOCHS, "time_s": unet_elapsed}}
 
-    # ═══ ALTERNATIVE: MedSAM2 (promptable foundation segmentation) ═══
+    # --- OPTIONAL: MedSAM2 (zero-shot promptable segmentation) ---
+    print()
+    print("-- MedSAM2 (zero-shot, center-point prompt) --")
     try:
         from transformers import SamModel, SamProcessor
+        t1 = time.perf_counter()
         sam_model = SamModel.from_pretrained("wanglab/medsam-vit-base").to(device)
         sam_proc = SamProcessor.from_pretrained("wanglab/medsam-vit-base")
         sam_model.eval()
-        dice_sum, n = 0, 0
+        dice_sum, iou_sum, n = 0, 0, 0
         with torch.no_grad():
             for imgs, masks in val_loader:
                 for j in range(min(4, imgs.shape[0])):
                     pil_img = transforms.ToPILImage()(imgs[j])
                     h, w = pil_img.size[1], pil_img.size[0]
-                    # Center-point prompt
                     input_points = [[[w // 2, h // 2]]]
                     inputs = sam_proc(pil_img, input_points=input_points, return_tensors="pt").to(device)
                     outputs = sam_model(**inputs)
@@ -2328,13 +3562,21 @@ def train_model():
                             pred_binary.float().unsqueeze(0).unsqueeze(0),
                             size=gt.shape, mode="nearest")[0, 0].long()
                     inter = ((pred_binary == 1) & (gt == 1)).sum().float()
-                    union = (pred_binary == 1).sum().float() + (gt == 1).sum().float()
-                    dice_sum += (2 * inter + 1e-6) / (union + 1e-6); n += 1
-                if n >= 16: break
-        sam_dice = dice_sum / max(n, 1)
-        print(f"✓ MedSAM Dice (zero-shot, center-point prompt): {{sam_dice:.4f}}")
+                    p_sum = (pred_binary == 1).sum().float()
+                    t_sum = (gt == 1).sum().float()
+                    dice_sum += (2 * inter + 1e-6) / (p_sum + t_sum + 1e-6)
+                    iou_sum += (inter + 1e-6) / (p_sum + t_sum - inter + 1e-6)
+                    n += 1
+                if n >= 32:
+                    break
+        sam_dice = (dice_sum / max(n, 1)).item() if hasattr(dice_sum, "item") else dice_sum / max(n, 1)
+        sam_iou = (iou_sum / max(n, 1)).item() if hasattr(iou_sum, "item") else iou_sum / max(n, 1)
+        sam_elapsed = round(time.perf_counter() - t1, 1)
+        print(f"  MedSAM2 -- Dice: {{sam_dice:.4f}} -- IoU: {{sam_iou:.4f}} ({{sam_elapsed}}s, {{n}} samples)")
+        metrics["MedSAM2"] = {{"val_dice": round(sam_dice, 4), "val_iou": round(sam_iou, 4),
+                              "samples": n, "time_s": sam_elapsed}}
     except Exception as e:
-        print(f"✗ MedSAM: {{e}}")
+        print(f"  MedSAM2 skipped: {{e}}")
 
     # Visualize sample predictions
     model.eval()
@@ -2349,15 +3591,24 @@ def train_model():
                 axes[1, i].set_title("Prediction"); axes[1, i].axis("off")
             break
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), "segmentation_results.png"), dpi=100)
-    print("Saved segmentation_results.png")
+    plt.savefig(os.path.join(SAVE_DIR, "segmentation_results.png"), dpi=100)
+    plt.close(fig)
+    print(f"Saved segmentation_results.png")
+
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("MEDICAL SEGMENTATION — nnU-Net + MedSAM")
+    print("MEDICAL SEGMENTATION | nnU-Net + MedSAM2")
     print("=" * 60)
-    train_model()
+    print("NOTE: Educational/research demo only -- not for clinical use.")
+    metrics = train_model()
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -2377,8 +3628,11 @@ def gen_clustering(path, cfg):
 Modern Clustering Pipeline (April 2026)
 Models: UMAP + HDBSCAN (primary) + GMM (soft assignments) + K-Means (baseline)
 Data: Auto-downloaded at runtime
+
+Compute: CPU-only for K-Means/GMM (<10s). UMAP + HDBSCAN ~10-60s depending
+         on dataset size. No GPU required.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder
@@ -2419,18 +3673,23 @@ def eval_clustering(X, labels, name):
         ch = calinski_harabasz_score(X[mask], labels[mask])
         db = davies_bouldin_score(X[mask], labels[mask])
         print(f"  {{name}}: {{n}} clusters, noise={{noise}}, silhouette={{sil:.4f}}, CH={{ch:.1f}}, DB={{db:.4f}}")
-        return sil
+        return {{"n_clusters": n, "noise": noise, "silhouette": round(sil, 4),
+                "calinski_harabasz": round(ch, 1), "davies_bouldin": round(db, 4)}}
     else:
         print(f"  {{name}}: {{n}} clusters, noise={{noise}} — insufficient for metrics")
-        return 0
+        return {{"n_clusters": n, "noise": noise}}
 
 
 def cluster(X):
     results = {{}}
+    timings = {{}}
+    metrics_out = {{}}
+    save_dir = os.path.dirname(os.path.abspath(__file__))
 
     # ═══ PRIMARY: UMAP + HDBSCAN ═══
     try:
         import umap, hdbscan
+        t0 = time.perf_counter()
         reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1, random_state=42)
         X_umap = reducer.fit_transform(X)
 
@@ -2446,8 +3705,12 @@ def cluster(X):
                     best_sil, best_mcs, best_labels = s, mcs, lbls
         if best_labels is None:
             best_labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
-        print(f"✓ UMAP + HDBSCAN (min_cluster_size={{best_mcs}}):")
-        eval_clustering(X_umap, best_labels, "HDBSCAN")
+        timings["HDBSCAN"] = time.perf_counter() - t0
+        print(f"✓ UMAP + HDBSCAN (min_cluster_size={{best_mcs}})  ({{timings['HDBSCAN']:.1f}}s):")
+        m = eval_clustering(X_umap, best_labels, "HDBSCAN")
+        m["time_s"] = round(timings["HDBSCAN"], 1)
+        m["min_cluster_size"] = best_mcs
+        metrics_out["HDBSCAN"] = m
         results["HDBSCAN"] = {{"labels": best_labels, "embedding": X_umap}}
     except Exception as e:
         print(f"✗ UMAP + HDBSCAN: {{e}}")
@@ -2458,14 +3721,20 @@ def cluster(X):
     # ═══ SOFT ASSIGNMENTS: Gaussian Mixture Model ═══
     try:
         from sklearn.mixture import GaussianMixture
+        t0 = time.perf_counter()
         bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
         best_k = range(2, 11)[np.argmin(bics)]
         gmm = GaussianMixture(n_components=best_k, random_state=42).fit(X)
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
-        print(f"✓ GMM (BIC-optimal k={{best_k}}):")
-        eval_clustering(X, labels, "GMM")
-        avg_confidence = probs.max(axis=1).mean()
+        timings["GMM"] = time.perf_counter() - t0
+        print(f"✓ GMM (BIC-optimal k={{best_k}})  ({{timings['GMM']:.1f}}s):")
+        m = eval_clustering(X, labels, "GMM")
+        m["time_s"] = round(timings["GMM"], 1)
+        m["best_k"] = best_k
+        avg_confidence = float(probs.max(axis=1).mean())
+        m["avg_confidence"] = round(avg_confidence, 4)
+        metrics_out["GMM"] = m
         print(f"  Avg assignment confidence: {{avg_confidence:.4f}}")
         results["GMM"] = {{"labels": labels, "n": best_k, "probs": probs}}
     except Exception as e:
@@ -2474,6 +3743,7 @@ def cluster(X):
     # ═══ BASELINE: K-Means (Elbow + Silhouette) ═══
     try:
         from sklearn.cluster import KMeans
+        t0 = time.perf_counter()
         inertias, sils = [], []
         K_range = range(2, 11)
         for k in K_range:
@@ -2483,29 +3753,41 @@ def cluster(X):
             sils.append(silhouette_score(X, lbls))
         best_k = K_range[np.argmax(sils)]
         labels = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit_predict(X)
-        print(f"✓ K-Means baseline (best k={{best_k}}, silhouette={{max(sils):.4f}}):")
-        eval_clustering(X, labels, "K-Means")
+        timings["KMeans"] = time.perf_counter() - t0
+        print(f"✓ K-Means baseline (best k={{best_k}}, silhouette={{max(sils):.4f}})  ({{timings['KMeans']:.1f}}s):")
+        m = eval_clustering(X, labels, "K-Means")
+        m["time_s"] = round(timings["KMeans"], 1)
+        m["best_k"] = best_k
+        metrics_out["KMeans"] = m
         results["KMeans"] = {{"labels": labels, "n": best_k, "inertias": inertias, "sils": sils}}
+
+        # Elbow + Silhouette plots
+        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+        axes[0].plot(list(K_range), inertias, "bo-")
+        axes[0].set_title("Elbow Method"); axes[0].set_xlabel("k"); axes[0].set_ylabel("Inertia")
+        axes[1].plot(list(K_range), sils, "rs-")
+        axes[1].set_title("Silhouette Scores"); axes[1].set_xlabel("k"); axes[1].set_ylabel("Score")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "kmeans_elbow_silhouette.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        print("✓ Saved kmeans_elbow_silhouette.png")
     except Exception as e:
         print(f"✗ K-Means: {{e}}")
 
     # ═══ VISUALIZATION ═══
     try:
-        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
         embed = results.get("HDBSCAN", {{}}).get("embedding", X[:, :2] if X.shape[1] >= 2 else X)
-        for ax, (name, data) in zip(axes, [
-            ("HDBSCAN", results.get("HDBSCAN", {{}}).get("labels")),
-            ("GMM", results.get("GMM", {{}}).get("labels")),
-            ("K-Means", results.get("KMeans", {{}}).get("labels")),
-        ]):
-            if data is not None:
-                scatter = ax.scatter(embed[:, 0], embed[:, 1], c=data, cmap="tab10", s=10, alpha=0.6)
-                ax.set_title(name); ax.set_xlabel("Dim 1"); ax.set_ylabel("Dim 2")
-            else:
-                ax.set_title(f"{{name}} (N/A)")
+        active = [(n, results[n]["labels"]) for n in ["HDBSCAN", "GMM", "KMeans"] if n in results]
+        n_plots = len(active)
+        fig, axes = plt.subplots(1, max(n_plots, 1), figsize=(6 * max(n_plots, 1), 5))
+        if n_plots == 1: axes = [axes]
+        for ax, (name, lbls) in zip(axes, active):
+            scatter = ax.scatter(embed[:, 0], embed[:, 1], c=lbls, cmap="tab10", s=10, alpha=0.6)
+            ax.set_title(name); ax.set_xlabel("Dim 1"); ax.set_ylabel("Dim 2")
         plt.tight_layout()
-        plt.savefig(os.path.join(os.path.dirname(__file__), "clustering_results.png"), dpi=100)
-        print("Saved clustering_results.png")
+        plt.savefig(os.path.join(save_dir, "clustering_results.png"), dpi=100, bbox_inches="tight")
+        plt.close()
+        print("✓ Saved clustering_results.png")
     except Exception as e:
         print(f"⚠ Plot: {{e}}")
 
@@ -2515,8 +3797,15 @@ def cluster(X):
     for name in ["HDBSCAN", "GMM", "KMeans"]:
         if name in results:
             n = len(set(results[name]["labels"])) - (1 if -1 in results[name]["labels"] else 0)
-            print(f"  {{name}}: {{n}} clusters")
+            t = f"  ({{timings[name]:.1f}}s)" if name in timings else ""
+            print(f"  {{name}}: {{n}} clusters{{t}}")
     print("=" * 40)
+
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
 
 
 def main():
@@ -2537,11 +3826,25 @@ def gen_anomaly(path, cfg):
     data_load = cfg.get("data", '    raise FileNotFoundError("No data")')
     return textwrap.dedent(f'''\
 """
-Modern Anomaly Detection Pipeline (April 2026)
-Models: PyOD 2 (ECOD, COPOD, IForest) + anomalib PatchCore
+Modern Unsupervised Anomaly Detection Pipeline (April 2026)
+
+Approach: Purely unsupervised — no labeled fraud targets.
+          If ground-truth labels exist in the dataset they are used ONLY for
+          post-hoc evaluation, never for training.
+
+Models (PyOD 2):
+  - ECOD  — Empirical CDF-based, parameter-free, fast
+  - COPOD — Copula-based, parameter-free, fast
+  - IForest — Isolation Forest (ensemble baseline)
+  - LOF   — Local Outlier Factor (density-based, good for local anomalies)
+
+Visual anomaly detection:
+  - anomalib PatchCore (wide_resnet50_2 backbone, MVTec benchmark)
+
+Compute: CPU-only for PyOD models (<30s each). GPU for anomalib PatchCore.
 Data: Auto-downloaded at runtime
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler, OrdinalEncoder
@@ -2559,11 +3862,17 @@ def load_data():
 
 
 def preprocess(df):
+    \"\"\"Prepare data for unsupervised detection.
+
+    Returns (X_scaled, y_true_or_None).  Labels are auto-detected but NEVER
+    used for training — only for optional post-hoc evaluation.
+    \"\"\"
     df = df.copy()
     label_col = next((c for c in df.columns if c.lower() in ("label","class","target","anomaly","outlier")), None)
     y = None
     if label_col:
         y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
+        print(f"ℹ  Ground-truth column '{{label_col}}' detected — used for evaluation only (not training)")
     for c in df.columns:
         if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
     cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
@@ -2577,44 +3886,80 @@ def preprocess(df):
 
 
 def detect(X, y=None):
-    results = {{}}
+    results = {{}}      # name -> {{labels, scores}}
+    timings = {{}}      # name -> wall-clock seconds
+    metrics_out = {{}}  # name -> dict of metrics
+    has_labels = y is not None and len(set(y)) > 1
+
     for name, Builder in [
         ("ECOD", lambda: __import__("pyod.models.ecod", fromlist=["ECOD"]).ECOD(contamination=0.05)),
         ("COPOD", lambda: __import__("pyod.models.copod", fromlist=["COPOD"]).COPOD(contamination=0.05)),
         ("IForest", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
+        ("LOF", lambda: __import__("pyod.models.lof", fromlist=["LOF"]).LOF(contamination=0.05, n_neighbors=20)),
     ]:
         try:
+            t0 = time.perf_counter()
             m = Builder()
             m.fit(X)
+            elapsed = time.perf_counter() - t0
             labels = m.labels_
             scores = m.decision_scores_ if hasattr(m, "decision_scores_") else m.decision_function(X)
+            timings[name] = elapsed
             results[name] = {{"labels": labels, "scores": scores}}
-            n_anom = labels.sum()
-            print(f"✓ {{name}}: {{n_anom}} anomalies ({{n_anom/len(X):.2%}})")
-            if y is not None and len(set(y)) > 1:
+            n_anom = int(labels.sum())
+            row = {{"anomalies": n_anom, "anomaly_pct": round(n_anom / len(X), 4), "time_s": round(elapsed, 1)}}
+
+            # Score distribution summary
+            p50, p90, p95, p99 = np.percentile(scores, [50, 90, 95, 99])
+            row["score_p50"] = round(float(p50), 4)
+            row["score_p95"] = round(float(p95), 4)
+            row["score_p99"] = round(float(p99), 4)
+
+            extra = ""
+            if has_labels:
                 f1 = f1_score(y, labels)
                 auc = roc_auc_score(y, scores)
-                print(f"  F1: {{f1:.4f}}  ROC-AUC: {{auc:.4f}}")
+                row["f1"] = round(f1, 4)
+                row["roc_auc"] = round(auc, 4)
+                extra = f"  F1: {{f1:.4f}}  ROC-AUC: {{auc:.4f}}"
+
+            metrics_out[name] = row
+            print(f"✓ {{name}}: {{n_anom}} anomalies ({{n_anom/len(X):.2%}})  ({{elapsed:.1f}}s){{extra}}")
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
-    # ── Comparison plot ──
+    # ── Score distribution plot ──
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     if results:
         try:
-            fig, axes = plt.subplots(1, len(results), figsize=(6 * len(results), 5))
-            if len(results) == 1: axes = [axes]
+            n_models = len(results)
+            fig, axes = plt.subplots(1, n_models, figsize=(5 * n_models, 4))
+            if n_models == 1: axes = [axes]
             for ax, (name, r) in zip(axes, results.items()):
                 ax.hist(r["scores"][r["labels"] == 0], bins=50, alpha=0.6, label="Normal", density=True)
                 ax.hist(r["scores"][r["labels"] == 1], bins=50, alpha=0.6, label="Anomaly", density=True)
                 ax.set_title(name); ax.set_xlabel("Anomaly score"); ax.legend()
             plt.tight_layout()
-            plt.savefig(os.path.join(os.path.dirname(__file__), "anomaly_scores.png"), dpi=100)
+            plt.savefig(os.path.join(save_dir, "anomaly_scores.png"), dpi=100, bbox_inches="tight")
+            plt.close()
             print("✓ Saved anomaly_scores.png")
         except Exception as e:
-            print(f"⚠ Plot: {{e}}")
+            print(f"⚠ Score plot: {{e}}")
+
+    # ── Agreement matrix (how many detectors flag each point) ──
+    if len(results) > 1:
+        try:
+            all_labels = np.column_stack([r["labels"] for r in results.values()])
+            votes = all_labels.sum(axis=1)
+            for k in range(1, len(results) + 1):
+                n = int((votes >= k).sum())
+                print(f"  Flagged by ≥{{k}} detectors: {{n}} ({{n/len(X):.2%}})")
+        except Exception:
+            pass
 
     # ── anomalib PatchCore (image-based anomaly detection) ──
     try:
+        t0 = time.perf_counter()
         from anomalib.models import Patchcore
         from anomalib.data import MVTec
         from anomalib.engine import Engine
@@ -2624,14 +3969,24 @@ def detect(X, y=None):
         engine = Engine(max_epochs=1, devices=1, accelerator="auto")
         engine.fit(model=model, datamodule=datamodule)
         test_results = engine.test(model=model, datamodule=datamodule)
-        print(f"✓ PatchCore (anomalib): {{test_results}}")
+        elapsed = time.perf_counter() - t0
+        timings["PatchCore"] = elapsed
+        print(f"✓ PatchCore (anomalib): {{test_results}}  ({{elapsed:.1f}}s)")
     except Exception as e:
         print(f"✗ PatchCore: {{e}}")
+
+    # ── Save JSON metrics ──
+    out_path = os.path.join(save_dir, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics_out, f, indent=2)
+    print(f"\\n✓ Metrics saved → {{out_path}}")
 
 
 def main():
     print("=" * 60)
-    print("ANOMALY DETECTION — PyOD 2 + anomalib PatchCore")
+    print("UNSUPERVISED ANOMALY DETECTION")
+    print("PyOD 2 (ECOD / COPOD / IForest / LOF) + anomalib PatchCore")
+    print("Labels used for evaluation only — never for training")
     print("=" * 60)
     df = load_data()
     X, y = preprocess(df)
@@ -2672,9 +4027,10 @@ Compute requirements:
   - FLAML: CPU-only, budget-capped at 60s
 
 Metrics: RMSE, MAE, MAPE (where denominator is non-zero)
+Export : metrics.json + metrics.csv + forecast.png
 Data: Auto-downloaded at runtime
 """
-import os, warnings, time
+import os, json, warnings, time
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -2685,6 +4041,7 @@ warnings.filterwarnings("ignore")
 
 TARGET = "{target}"
 HORIZON = 30
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def mape_score(y_true, y_pred):
@@ -2731,29 +4088,29 @@ def forecast(df, target):
 
     # ═══ PRIMARY: AutoGluon TimeSeries ═══
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
         ts_df = pd.DataFrame({{"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train}})
         ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
         predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
-                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
+                                         path=os.path.join(SAVE_DIR, "ag_ts"))
         predictor.fit(ts_data, time_limit=180, presets="best_quality")
         ag_preds = predictor.predict(ts_data)
         y_pred = ag_preds["mean"].values[:len(test)]
         results["AutoGluon-TS"] = y_pred
-        print(f"✓ AutoGluon-TS ({{time.time()-t0:.1f}}s)")
+        print(f"  AutoGluon-TS ({{time.perf_counter()-t0:.1f}}s)")
         score("AutoGluon-TS", test, y_pred, metrics)
         lb = predictor.leaderboard(ts_data)
         print("  Leaderboard (top 5):")
         for line in lb.head().to_string().splitlines():
             print(f"    {{line}}")
-    except Exception as e: print(f"✗ AutoGluon-TS: {{e}}")
+    except Exception as e: print(f"  AutoGluon-TS failed: {{e}}")
 
     # ═══ FOUNDATION MODELS ═══
 
     # Chronos-Bolt (fast zero-shot)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import torch
         from chronos import ChronosPipeline
         pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
@@ -2761,13 +4118,13 @@ def forecast(df, target):
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
         results["Chronos-Bolt"] = y_pred
-        print(f"✓ Chronos-Bolt ({{time.time()-t0:.1f}}s)")
+        print(f"  Chronos-Bolt ({{time.perf_counter()-t0:.1f}}s)")
         score("Chronos-Bolt", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Chronos-Bolt: {{e}}")
+    except Exception as e: print(f"  Chronos-Bolt failed: {{e}}")
 
     # Chronos-2 (universal forecasting)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import torch
         from chronos import ChronosPipeline
         pipe2 = ChronosPipeline.from_pretrained("amazon/chronos-2-base",
@@ -2775,43 +4132,43 @@ def forecast(df, target):
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe2.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
         results["Chronos-2"] = y_pred
-        print(f"✓ Chronos-2 ({{time.time()-t0:.1f}}s)")
+        print(f"  Chronos-2 ({{time.perf_counter()-t0:.1f}}s)")
         score("Chronos-2", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Chronos-2: {{e}}")
+    except Exception as e: print(f"  Chronos-2 failed: {{e}}")
 
     # TimesFM (Google foundation model)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         import timesfm
         tfm = timesfm.TimesFm(
             hparams=timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=32,
                                             horizon_len=HORIZON),
             checkpoint=timesfm.TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch"))
-        freq = [0] * 1  # freq=0 → daily
+        freq = [0] * 1  # freq=0 -> daily
         y_pred, _ = tfm.forecast([train], freq)
         y_pred = y_pred[0][:len(test)]
         results["TimesFM"] = y_pred
-        print(f"✓ TimesFM ({{time.time()-t0:.1f}}s)")
+        print(f"  TimesFM ({{time.perf_counter()-t0:.1f}}s)")
         score("TimesFM", test, y_pred, metrics)
-    except Exception as e: print(f"✗ TimesFM: {{e}}")
+    except Exception as e: print(f"  TimesFM failed: {{e}}")
 
     # ═══ CLASSICAL BASELINES (comparison only) ═══
 
     # ARIMA (statsmodels)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from statsmodels.tsa.arima.model import ARIMA
         model = ARIMA(train, order=(5, 1, 0))
         fitted = model.fit()
         y_pred = fitted.forecast(steps=HORIZON)[:len(test)]
         results["ARIMA(5,1,0)"] = y_pred
-        print(f"✓ ARIMA(5,1,0) baseline ({{time.time()-t0:.1f}}s)")
+        print(f"  ARIMA(5,1,0) baseline ({{time.perf_counter()-t0:.1f}}s)")
         score("ARIMA(5,1,0)", test, y_pred, metrics)
-    except Exception as e: print(f"✗ ARIMA: {{e}}")
+    except Exception as e: print(f"  ARIMA failed: {{e}}")
 
     # Prophet (Meta)
     try:
-        t0 = time.time()
+        t0 = time.perf_counter()
         from prophet import Prophet
         p_df = pd.DataFrame({{"ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train}})
         m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=False)
@@ -2820,9 +4177,9 @@ def forecast(df, target):
         fc = m.predict(future)
         y_pred = fc["yhat"].values[-HORIZON:][:len(test)]
         results["Prophet"] = y_pred
-        print(f"✓ Prophet baseline ({{time.time()-t0:.1f}}s)")
+        print(f"  Prophet baseline ({{time.perf_counter()-t0:.1f}}s)")
         score("Prophet", test, y_pred, metrics)
-    except Exception as e: print(f"✗ Prophet: {{e}}")
+    except Exception as e: print(f"  Prophet failed: {{e}}")
 
     # ═══ TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ═══
     lags = [1, 2, 3, 5, 7, 14, 21]
@@ -2855,19 +4212,19 @@ def forecast(df, target):
                 device="cuda", tree_method="hist", verbosity=0, n_jobs=-1)),
         ]:
             try:
-                t0 = time.time()
+                t0 = time.perf_counter()
                 m = builder()
                 m.fit(X_lag_tr, y_lag_tr)
                 y_pred = m.predict(X_lag_te)[:len(test)]
                 results[name] = y_pred
-                print(f"✓ {{name}} ({{time.time()-t0:.1f}}s)")
+                print(f"  {{name}} ({{time.perf_counter()-t0:.1f}}s)")
                 score(name, y_lag_te.values[:len(y_pred)], y_pred, metrics)
             except Exception as e:
-                print(f"✗ {{name}}: {{e}}")
+                print(f"  {{name}} failed: {{e}}")
 
         # FLAML AutoML on lag features (tabularized forecasting only)
         try:
-            t0 = time.time()
+            t0 = time.perf_counter()
             from flaml import AutoML
             flaml_model = AutoML()
             flaml_model.fit(X_lag_tr, y_lag_tr, task="regression", time_budget=60,
@@ -2875,22 +4232,22 @@ def forecast(df, target):
             y_pred = flaml_model.predict(X_lag_te)[:len(test)]
             results["FLAML-Lag"] = y_pred
             best = flaml_model.best_estimator
-            print(f"✓ FLAML-Lag [best: {{best}}] ({{time.time()-t0:.1f}}s)")
+            print(f"  FLAML-Lag [best: {{best}}] ({{time.perf_counter()-t0:.1f}}s)")
             score("FLAML-Lag", y_lag_te.values[:len(y_pred)], y_pred, metrics)
         except Exception as e:
-            print(f"✗ FLAML-Lag: {{e}}")
+            print(f"  FLAML-Lag failed: {{e}}")
 
     # ═══ METRICS SUMMARY ═══
     if metrics:
-        print("")
+        print()
         print("=" * 65)
         print("METRICS SUMMARY")
         print("=" * 65)
         summary = pd.DataFrame(metrics).sort_values("RMSE")
         print(summary.to_string(index=False))
-        summary.to_csv(os.path.join(os.path.dirname(__file__), "metrics.csv"), index=False)
+        summary.to_csv(os.path.join(SAVE_DIR, "metrics.csv"), index=False)
         best_model = summary.iloc[0]["Model"]
-        print(f"  → Best model by RMSE: {{best_model}}")
+        print(f"  Best model by RMSE: {{best_model}}")
 
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
@@ -2899,19 +4256,24 @@ def forecast(df, target):
     for name, y_pred in results.items():
         ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
     ax.legend(); ax.set_title("Forecast Comparison")
-    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    fig.savefig(os.path.join(SAVE_DIR, "forecast.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
-    return results
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("TIME SERIES FORECASTING — April 2026")
+    print("TIME SERIES FORECASTING | April 2026")
     print("Primary: AutoGluon-TS, Chronos-Bolt, Chronos-2, TimesFM")
     print("Baselines: ARIMA, Prophet, LightGBM/CatBoost/XGBoost Lag, FLAML")
     print("=" * 60)
     df, target = load_data()
-    forecast(df, target)
+    metrics = forecast(df, target)
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -2925,11 +4287,15 @@ def gen_recommendation(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Recommendation Pipeline (April 2026)
-Models: implicit ALS/BPR (CF) + LightFM (hybrid) + Sentence Transformers/BGE-M3/Qwen3-Embedding (content)
-        Surprise SVD/KNN as baseline
-Data: Auto-downloaded at runtime
+
+CF task :  implicit ALS + BPR (primary), Surprise SVD/KNN (baseline).
+Hybrid  :  LightFM WARP/BPR (metadata-aware, cold-start capable).
+Content :  Sentence Transformers / BGE-M3 / Qwen3-Embedding.
+Timing  :  Wall-clock per model stage (CF and baseline).
+Export  :  metrics.json with per-model evaluation + timing.
+Data    :  Auto-downloaded at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix, coo_matrix
@@ -2939,6 +4305,7 @@ import matplotlib; matplotlib.use("Agg")
 warnings.filterwarnings("ignore")
 
 TASK = "{task}"  # cf | hybrid | content
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_data():
@@ -2966,42 +4333,50 @@ def build_interaction_matrix(df, user_col, item_col, rating_col):
     return mat, ue, ie
 
 
-# ═══════════════════════════════════════════════════════════════
-# PRIMARY: implicit ALS + BPR (collaborative filtering)
-# ═══════════════════════════════════════════════════════════════
+# -- PRIMARY: implicit ALS + BPR (collaborative filtering) --
 def run_implicit_cf(df, user_col, item_col, rating_col):
     mat, ue, ie = build_interaction_matrix(df, user_col, item_col, rating_col)
     n_users, n_items = mat.shape[0], mat.shape[1]
+    results = {{}}
 
     # implicit ALS
     try:
         from implicit.als import AlternatingLeastSquares
-        als = AlternatingLeastSquares(factors=128, iterations=30, use_gpu=True)
-        als.fit(mat)
-        # Evaluate: precision@10 on last interaction
         from implicit.evaluation import precision_at_k, train_test_split
+        t0 = time.perf_counter()
         train_m, test_m = train_test_split(mat, train_percentage=0.8)
-        als2 = AlternatingLeastSquares(factors=128, iterations=30, use_gpu=True)
-        als2.fit(train_m)
-        p_at_10 = precision_at_k(als2, train_m, test_m, K=10)
-        print(f"✓ implicit ALS — {{n_users}} users, {{n_items}} items, P@10={{p_at_10:.4f}}")
+        als = AlternatingLeastSquares(factors=128, iterations=30, use_gpu=True)
+        als.fit(train_m)
+        p_at_10 = precision_at_k(als, train_m, test_m, K=10)
+        als_elapsed = round(time.perf_counter() - t0, 1)
+        print(f"  implicit ALS -- {{n_users}} users, {{n_items}} items, P@10={{p_at_10:.4f}} ({{als_elapsed}}s)")
+        results["implicit_ALS"] = {{"users": n_users, "items": n_items,
+                                    "P@10": round(float(p_at_10), 4), "time_s": als_elapsed}}
     except Exception as e:
-        print(f"✗ implicit ALS: {{e}}")
+        print(f"  implicit ALS failed: {{e}}")
 
     # implicit BPR
     try:
         from implicit.bpr import BayesianPersonalizedRanking
+        from implicit.evaluation import precision_at_k, train_test_split
+        t1 = time.perf_counter()
+        train_m, test_m = train_test_split(mat, train_percentage=0.8)
         bpr = BayesianPersonalizedRanking(factors=128, iterations=100, use_gpu=True)
-        bpr.fit(mat)
-        print(f"✓ implicit BPR trained")
+        bpr.fit(train_m)
+        bpr_p10 = precision_at_k(bpr, train_m, test_m, K=10)
+        bpr_elapsed = round(time.perf_counter() - t1, 1)
+        print(f"  implicit BPR -- P@10={{bpr_p10:.4f}} ({{bpr_elapsed}}s)")
+        results["implicit_BPR"] = {{"P@10": round(float(bpr_p10), 4), "time_s": bpr_elapsed}}
     except Exception as e:
-        print(f"✗ implicit BPR: {{e}}")
+        print(f"  implicit BPR failed: {{e}}")
+
+    return results
 
 
 # ═══════════════════════════════════════════════════════════════
-# HYBRID: LightFM (user/item metadata, cold-start capable)
-# ═══════════════════════════════════════════════════════════════
+# -- HYBRID: LightFM (user/item metadata, cold-start capable) --
 def run_lightfm_hybrid(df, user_col, item_col, rating_col, content_col):
+    results = {{}}
     try:
         from lightfm import LightFM
         from lightfm.evaluation import precision_at_k, auc_score
@@ -3016,14 +4391,15 @@ def run_lightfm_hybrid(df, user_col, item_col, rating_col, content_col):
 
         # Build item features from content column if available
         item_features = None
+        n_item_features = 0
         if content_col and content_col in df.columns:
             unique_items = df[[item_col, content_col]].drop_duplicates(subset=[item_col])
-            # Simple: use content words as features
             all_features = set()
             for text in unique_items[content_col].fillna("").astype(str):
                 for w in text.lower().split()[:10]:
                     all_features.add(w)
             if all_features:
+                n_item_features = len(all_features)
                 lfds.fit_partial(item_features=all_features)
                 item_feat_list = []
                 for _, row in unique_items.iterrows():
@@ -3033,64 +4409,99 @@ def run_lightfm_hybrid(df, user_col, item_col, rating_col, content_col):
                         item_feat_list.append((row[item_col], feats))
                 if item_feat_list:
                     item_features = lfds.build_item_features(item_feat_list)
+        print(f"  Item features: {{n_item_features}} unique tokens" if n_item_features else "  No item features (pure interactions)")
 
         # Train WARP model (for implicit/ranking) and BPR model
         for loss in ["warp", "bpr"]:
+            t0 = time.perf_counter()
             model = LightFM(loss=loss, no_components=64, learning_rate=0.05)
             model.fit(interactions, item_features=item_features, epochs=30, num_threads=4)
             p_at_k = precision_at_k(model, interactions, item_features=item_features, k=10).mean()
             auc = auc_score(model, interactions, item_features=item_features).mean()
-            print(f"✓ LightFM ({{loss}}) — P@10={{p_at_k:.4f}}, AUC={{auc:.4f}}")
+            elapsed = round(time.perf_counter() - t0, 1)
+            print(f"  LightFM ({{loss}}) -- P@10={{p_at_k:.4f}}, AUC={{auc:.4f}} ({{elapsed}}s)")
+            results[f"LightFM_{{loss}}"] = {{"P@10": round(float(p_at_k), 4),
+                                            "AUC": round(float(auc), 4),
+                                            "item_features": n_item_features,
+                                            "time_s": elapsed}}
     except Exception as e:
-        print(f"✗ LightFM: {{e}}")
+        print(f"  LightFM failed: {{e}}")
+    return results
 
 
-# ═══════════════════════════════════════════════════════════════
-# CONTENT-BASED: Sentence Transformers / BGE-M3 / Qwen3-Embedding
-# ═══════════════════════════════════════════════════════════════
+# -- CONTENT-BASED: BGE-M3 / Qwen3-Embedding + TF-IDF baseline --
 def run_content_embeddings(df, item_col, content_col):
     if not content_col or content_col not in df.columns:
-        print("⚠ No content column found — skipping content-based embeddings")
-        return
-
+        print("  No content column found -- skipping content-based embeddings")
+        return {{}}
+    results = {{}}
     items = df[[item_col, content_col]].drop_duplicates(subset=[item_col]).head(1000)
     texts = items[content_col].fillna("").astype(str).tolist()
+    print(f"  {{len(items)}} unique items with content column '{{content_col}}'")
 
-    # BGE-M3
+    # PRIMARY: BGE-M3
     try:
         from sentence_transformers import SentenceTransformer
         from sklearn.metrics.pairwise import cosine_similarity
+        t0 = time.perf_counter()
         model = SentenceTransformer("BAAI/bge-m3")
         embs = model.encode(texts, batch_size=32, show_progress_bar=True)
         sim = cosine_similarity(embs)
-        # Show top-3 similar items for first 3 items
+        elapsed = round(time.perf_counter() - t0, 1)
         for i in range(min(3, len(items))):
-            top_idx = np.argsort(sim[i])[-4:-1][::-1]  # top 3 excluding self
+            top_idx = np.argsort(sim[i])[-4:-1][::-1]
             top_items = items.iloc[top_idx][item_col].tolist()
-            print(f"  Item '{{items.iloc[i][item_col]}}' → similar: {{top_items}}")
-        print(f"✓ BGE-M3 content-based: {{len(items)}} items embedded (dim={{embs.shape[1]}})")
+            print(f"  BGE-M3 '{{items.iloc[i][item_col]}}' -> {{top_items}}")
+        print(f"  BGE-M3: {{len(items)}} items, dim={{embs.shape[1]}} ({{elapsed}}s)")
+        results["BGE-M3"] = {{"items": len(items), "dim": int(embs.shape[1]), "time_s": elapsed}}
     except Exception as e:
-        print(f"✗ BGE-M3: {{e}}")
+        print(f"  BGE-M3 failed: {{e}}")
 
-    # Qwen3-Embedding
+    # ALTERNATIVE: Qwen3-Embedding
     try:
         from sentence_transformers import SentenceTransformer
         from sklearn.metrics.pairwise import cosine_similarity
+        t1 = time.perf_counter()
         qwen = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
-        qwen_embs = qwen.encode(texts[:200], batch_size=16, show_progress_bar=True)
+        qwen_embs = qwen.encode(texts, batch_size=16, show_progress_bar=True)
         qwen_sim = cosine_similarity(qwen_embs)
-        print(f"✓ Qwen3-Embedding: {{len(qwen_embs)}} items embedded (dim={{qwen_embs.shape[1]}})")
+        qwen_elapsed = round(time.perf_counter() - t1, 1)
+        for i in range(min(3, len(items))):
+            top_idx = np.argsort(qwen_sim[i])[-4:-1][::-1]
+            top_items = items.iloc[top_idx][item_col].tolist()
+            print(f"  Qwen3 '{{items.iloc[i][item_col]}}' -> {{top_items}}")
+        print(f"  Qwen3-Embedding: {{len(qwen_embs)}} items, dim={{qwen_embs.shape[1]}} ({{qwen_elapsed}}s)")
+        results["Qwen3-Embedding"] = {{"items": len(qwen_embs), "dim": int(qwen_embs.shape[1]), "time_s": qwen_elapsed}}
     except Exception as e:
-        print(f"✗ Qwen3-Embedding: {{e}}")
+        print(f"  Qwen3-Embedding failed: {{e}}")
+
+    # BASELINE: TF-IDF cosine similarity
+    try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        from sklearn.metrics.pairwise import cosine_similarity as cos_sim
+        t2 = time.perf_counter()
+        tfidf = TfidfVectorizer(max_features=5000, stop_words="english")
+        tfidf_mat = tfidf.fit_transform(texts)
+        tfidf_sim = cos_sim(tfidf_mat)
+        tfidf_elapsed = round(time.perf_counter() - t2, 1)
+        for i in range(min(3, len(items))):
+            top_idx = np.argsort(tfidf_sim[i])[-4:-1][::-1]
+            top_items = items.iloc[top_idx][item_col].tolist()
+            print(f"  TF-IDF '{{items.iloc[i][item_col]}}' -> {{top_items}}")
+        print(f"  TF-IDF baseline: {{tfidf_mat.shape[0]}} items, {{tfidf_mat.shape[1]}} features ({{tfidf_elapsed}}s)")
+        results["TF-IDF"] = {{"items": int(tfidf_mat.shape[0]), "features": int(tfidf_mat.shape[1]), "time_s": tfidf_elapsed}}
+    except Exception as e:
+        print(f"  TF-IDF baseline failed: {{e}}")
+
+    return results
 
 
-# ═══════════════════════════════════════════════════════════════
-# BASELINE: Surprise SVD + KNN
-# ═══════════════════════════════════════════════════════════════
+# -- BASELINE: Surprise SVD + KNN --
 def run_surprise_baseline(df, user_col, item_col, rating_col):
     if not rating_col:
-        print("⚠ No explicit ratings — skipping Surprise baseline")
-        return
+        print("  No explicit ratings -- skipping Surprise baseline")
+        return {{}}
+    results = {{}}
     try:
         from surprise import Dataset as SDataset, Reader, SVD, KNNBasic, accuracy
         from surprise.model_selection import cross_validate
@@ -3099,46 +4510,70 @@ def run_surprise_baseline(df, user_col, item_col, rating_col):
         data = SDataset.load_from_df(df[[user_col, item_col, rating_col]].dropna(), reader)
 
         for algo_cls, name in [(SVD, "SVD"), (KNNBasic, "KNN")]:
+            t0 = time.perf_counter()
             algo = algo_cls()
-            results = cross_validate(algo, data, measures=["RMSE", "MAE"], cv=3, verbose=False)
-            rmse = results["test_rmse"].mean()
-            mae = results["test_mae"].mean()
-            print(f"  Surprise {{name}} — RMSE={{rmse:.4f}}, MAE={{mae:.4f}}")
-        print("✓ Surprise baseline complete")
+            cv = cross_validate(algo, data, measures=["RMSE", "MAE"], cv=3, verbose=False)
+            elapsed = round(time.perf_counter() - t0, 1)
+            rmse = round(float(cv["test_rmse"].mean()), 4)
+            mae = round(float(cv["test_mae"].mean()), 4)
+            print(f"  Surprise {{name}} -- RMSE={{rmse}}, MAE={{mae}} ({{elapsed}}s)")
+            results[f"Surprise_{{name}}"] = {{"RMSE": rmse, "MAE": mae, "time_s": elapsed}}
+        print("  Surprise baseline complete")
     except Exception as e:
-        print(f"✗ Surprise baseline: {{e}}")
+        print(f"  Surprise baseline failed: {{e}}")
+    return results
 
 
 def train(df):
     user_col, item_col, rating_col, content_col = detect_columns(df)
-    print(f"Columns — user: {{user_col}}, item: {{item_col}}, rating: {{rating_col}}, content: {{content_col}}")
+    print(f"Columns -- user: {{user_col}}, item: {{item_col}}, rating: {{rating_col}}, content: {{content_col}}")
+    metrics = {{"task": TASK}}
 
     if TASK == "cf":
-        # Primary: implicit ALS/BPR → Baseline: Surprise SVD/KNN
-        run_implicit_cf(df, user_col, item_col, rating_col)
-        run_surprise_baseline(df, user_col, item_col, rating_col)
+        # Primary: implicit ALS/BPR -> Baseline: Surprise SVD/KNN
+        print()
+        print("-- implicit ALS + BPR (primary) --")
+        metrics.update(run_implicit_cf(df, user_col, item_col, rating_col))
+        print()
+        print("-- Surprise SVD + KNN (baseline) --")
+        metrics.update(run_surprise_baseline(df, user_col, item_col, rating_col))
     elif TASK == "hybrid":
-        # Primary: LightFM → also run implicit CF
-        run_lightfm_hybrid(df, user_col, item_col, rating_col, content_col)
-        run_implicit_cf(df, user_col, item_col, rating_col)
+        # Primary: LightFM -> Baseline: implicit ALS/BPR
+        print()
+        print("-- LightFM hybrid (primary) --")
+        metrics.update(run_lightfm_hybrid(df, user_col, item_col, rating_col, content_col))
+        print()
+        print("-- implicit ALS + BPR (baseline) --")
+        metrics.update(run_implicit_cf(df, user_col, item_col, rating_col))
     elif TASK == "content":
-        # Primary: embedding-based content similarity → also run implicit if possible
-        run_content_embeddings(df, item_col, content_col)
+        # Primary: embedding-based content similarity -> TF-IDF baseline
+        print()
+        print("-- Content embeddings (primary) --")
+        metrics.update(run_content_embeddings(df, item_col, content_col))
+        print()
+        print("-- implicit ALS/BPR (optional baseline) --")
         try:
-            run_implicit_cf(df, user_col, item_col, rating_col)
+            metrics.update(run_implicit_cf(df, user_col, item_col, rating_col))
         except Exception:
-            pass
+            print("  Skipped (no interaction data)")
     else:
         run_implicit_cf(df, user_col, item_col, rating_col)
         run_content_embeddings(df, item_col, content_col)
 
+    return metrics
+
 
 def main():
     print("=" * 60)
-    print(f"RECOMMENDATION ({{TASK}}) — implicit + LightFM + SentenceTransformers | Surprise baseline")
+    print(f"RECOMMENDATION ({{TASK}}) | implicit + LightFM + SentenceTransformers")
     print("=" * 60)
     df = load_data()
-    train(df)
+    metrics = train(df)
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -3689,16 +5124,20 @@ def gen_cv_detection(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern CV Object Detection Pipeline (April 2026)
-Model: YOLO26m (Ultralytics) — auto-downloads model + sample images
-Data: Auto-downloaded at runtime
+
+Primary : YOLO26m (Ultralytics) — real-time object detection / tracking.
+Data    : Auto-downloads sample images at runtime; also scans local dir.
+Timing  : Wall-clock per inference batch.
+Export  : metrics.json with detection counts, classes, and timing.
 """
-import os, warnings
+import os, json, time, warnings
 from pathlib import Path
 import urllib.request
 
 warnings.filterwarnings("ignore")
 
 TASK = "{task}"
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_URLS = [
     "https://ultralytics.com/images/bus.jpg",
@@ -3707,7 +5146,7 @@ SAMPLE_URLS = [
 
 
 def download_samples():
-    save_dir = Path(os.path.dirname(__file__)) / "sample_images"
+    save_dir = Path(SAVE_DIR) / "sample_images"
     save_dir.mkdir(exist_ok=True)
     paths = []
     for url in SAMPLE_URLS:
@@ -3717,7 +5156,7 @@ def download_samples():
         paths.append(fname)
     exts = (".jpg", ".jpeg", ".png", ".bmp")
     for ext in exts:
-        paths.extend([p for p in Path(os.path.dirname(__file__)).rglob(f"*{{ext}}") if p not in paths])
+        paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{{ext}}") if p not in paths])
     print(f"{{len(paths)}} images available")
     return paths
 
@@ -3725,37 +5164,64 @@ def download_samples():
 def run_detection(files):
     from ultralytics import YOLO
     model = YOLO("yolo26m.pt")
-    save_dir = os.path.join(os.path.dirname(__file__), "detections")
-    os.makedirs(save_dir, exist_ok=True)
+    out_dir = os.path.join(SAVE_DIR, "detections")
+    os.makedirs(out_dir, exist_ok=True)
+    metrics = {{"model": "yolo26m", "task": "detect", "images": []}}
+    t0 = time.perf_counter()
     for f in files[:20]:
         results = model(str(f))
         for r in results:
-            r.save(filename=os.path.join(save_dir, f.name))
+            r.save(filename=os.path.join(out_dir, f.name))
+            n_boxes = len(r.boxes) if r.boxes is not None else 0
+            classes = []
             if r.boxes is not None:
-                print(f"  ✓ {{f.name}}: {{len(r.boxes)}} objects detected")
-    print(f"Results saved to {{save_dir}}")
+                classes = [r.names[int(c)] for c in r.boxes.cls.tolist()]
+            metrics["images"].append({{"file": f.name, "detections": n_boxes,
+                                       "classes": dict(sorted({{c: classes.count(c) for c in set(classes)}}.items()))}})
+            if n_boxes:
+                print(f"  {{f.name}}: {{n_boxes}} objects detected")
+    elapsed = time.perf_counter() - t0
+    metrics["time_s"] = round(elapsed, 1)
+    metrics["total_images"] = len(metrics["images"])
+    metrics["total_detections"] = sum(i["detections"] for i in metrics["images"])
+    print(f"  Detection: {{metrics['total_images']}} images, {{metrics['total_detections']}} objects in {{elapsed:.1f}}s")
+    print(f"  Results saved to {{out_dir}}")
+    return metrics
 
 
 def run_tracking(files):
     from ultralytics import YOLO
     model = YOLO("yolo26m.pt")
-    video_files = [f for f in files if f.suffix in (".mp4", ".avi")]
+    video_files = [f for f in files if f.suffix in (".mp4", ".avi", ".mov")]
     if not video_files:
-        print("No video files found. Running detection on images instead.")
-        run_detection(files)
-        return
+        print("  No video files found. Running detection on images instead.")
+        return run_detection(files)
+    metrics = {{"model": "yolo26m", "task": "track", "videos": []}}
+    t0 = time.perf_counter()
     for v in video_files[:3]:
-        model.track(str(v), persist=True, save=True, project=os.path.dirname(__file__), name="tracking")
-        print(f"  ✓ Tracked: {{v.name}}")
+        model.track(str(v), persist=True, save=True, project=SAVE_DIR, name="tracking")
+        metrics["videos"].append({{"file": v.name}})
+        print(f"  Tracked: {{v.name}}")
+    elapsed = time.perf_counter() - t0
+    metrics["time_s"] = round(elapsed, 1)
+    print(f"  Tracking: {{len(metrics['videos'])}} videos in {{elapsed:.1f}}s")
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print(f"CV DETECTION — YOLO26m | Task: {{TASK}}")
+    print(f"CV DETECTION | Task: {{TASK}} | Model: YOLO26m")
     print("=" * 60)
     files = download_samples()
-    if TASK == "track": run_tracking(files)
-    else: run_detection(files)
+    if TASK == "track":
+        metrics = run_tracking(files)
+    else:
+        metrics = run_detection(files)
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -3768,17 +5234,25 @@ def gen_face_gesture(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Face/Hand/Gesture Pipeline (April 2026)
-Models: YOLO26 (face/person detection) + MediaPipe Face Landmarker (expressions/landmarks)
-        + MediaPipe Hand Landmarker / Gesture Recognizer + InsightFace (recognition/verification)
-Data: Auto-downloads LFW face samples at runtime
+
+Task dispatch:
+  face_detection : YOLO26m (primary) + MediaPipe Face Landmarker (secondary)
+  expression     : MediaPipe Face Landmarker blendshapes (primary) + YOLO26m (baseline)
+  face_recognition : InsightFace ArcFace embeddings + age/gender
+  hand_gesture   : MediaPipe Gesture Recognizer (webcam)
+  pose           : MediaPipe Pose Landmarker Heavy (33-point skeleton)
+Timing : Wall-clock per model stage.
+Export : metrics.json with detection counts, landmarks, and timing.
+Data   : Auto-downloads LFW face samples at runtime.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
 TASK = "{task}"
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def download_face_samples():
@@ -3807,15 +5281,25 @@ def run_yolo_detection(files):
     """YOLO26 for person/face detection — replaces Haar cascades."""
     from ultralytics import YOLO
     model = YOLO("yolo26m.pt")
-    save_dir = os.path.join(os.path.dirname(__file__), "yolo_detections")
+    save_dir = os.path.join(SAVE_DIR, "yolo_detections")
     os.makedirs(save_dir, exist_ok=True)
+    t0 = time.perf_counter()
+    total_persons = 0
+    total_objects = 0
     for f in files[:20]:
         results = model(str(f))
         for r in results:
             r.save(filename=os.path.join(save_dir, f.name))
             n_people = sum(1 for b in r.boxes if int(b.cls) == 0) if r.boxes is not None else 0
-            print(f"  ✓ YOLO26 {{f.name}}: {{n_people}} persons, {{len(r.boxes) if r.boxes is not None else 0}} total")
-    print(f"YOLO26 results saved to {{save_dir}}")
+            n_total = len(r.boxes) if r.boxes is not None else 0
+            total_persons += n_people
+            total_objects += n_total
+            print(f"  YOLO26 {{f.name}}: {{n_people}} persons, {{n_total}} total")
+    elapsed = time.perf_counter() - t0
+    print(f"  YOLO26: {{len(files[:20])}} images, {{total_objects}} objects in {{elapsed:.1f}}s")
+    print(f"  Results saved to {{save_dir}}")
+    return {{"model": "yolo26m", "images": len(files[:20]), "persons": total_persons,
+             "total_objects": total_objects, "time_s": round(elapsed, 1)}}
 
 
 def run_face_landmarker(files):
@@ -3826,8 +5310,7 @@ def run_face_landmarker(files):
         from mediapipe.tasks.python import vision as mp_vision
         import urllib.request
 
-        # Download face landmarker model
-        model_path = os.path.join(os.path.dirname(__file__), "face_landmarker.task")
+        model_path = os.path.join(SAVE_DIR, "face_landmarker.task")
         if not os.path.exists(model_path):
             urllib.request.urlretrieve(
                 "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/latest/face_landmarker.task",
@@ -3840,45 +5323,54 @@ def run_face_landmarker(files):
             num_faces=5)
         landmarker = mp_vision.FaceLandmarker.create_from_options(options)
 
-        save_dir = os.path.join(os.path.dirname(__file__), "face_landmark_results")
+        save_dir = os.path.join(SAVE_DIR, "face_landmark_results")
         os.makedirs(save_dir, exist_ok=True)
 
+        t0 = time.perf_counter()
+        total_faces = 0
         for f in files[:20]:
             img = cv2.imread(str(f))
             if img is None: continue
             mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
             result = landmarker.detect(mp_img)
             n_faces = len(result.face_landmarks)
-            # Draw landmarks
+            total_faces += n_faces
             for face_lm in result.face_landmarks:
                 for lm in face_lm:
                     x, y = int(lm.x * img.shape[1]), int(lm.y * img.shape[0])
                     cv2.circle(img, (x, y), 1, (0, 255, 0), -1)
-            # Report blendshapes (expressions)
             if result.face_blendshapes:
                 top_shapes = sorted(result.face_blendshapes[0], key=lambda b: b.score, reverse=True)[:3]
                 expr = ", ".join(f"{{b.category_name}}={{b.score:.2f}}" for b in top_shapes)
-                print(f"  ✓ {{f.name}}: {{n_faces}} faces, expressions: {{expr}}")
+                print(f"  {{f.name}}: {{n_faces}} faces, expressions: {{expr}}")
             else:
-                print(f"  ✓ {{f.name}}: {{n_faces}} faces (478-pt mesh)")
+                print(f"  {{f.name}}: {{n_faces}} faces (478-pt mesh)")
             cv2.imwrite(os.path.join(save_dir, f.name), img)
+        elapsed = time.perf_counter() - t0
         landmarker.close()
-        print(f"Face Landmarker results saved to {{save_dir}}")
+        print(f"  Face Landmarker: {{total_faces}} faces in {{elapsed:.1f}}s")
+        return {{"model": "MediaPipe Face Landmarker", "faces": total_faces, "time_s": round(elapsed, 1)}}
     except Exception as e:
-        print(f"✗ MediaPipe Face Landmarker: {{e}}")
+        print(f"  MediaPipe Face Landmarker: {{e}}")
         # Fallback to legacy face detection
         try:
             import cv2, mediapipe as mp
             mp_face = mp.solutions.face_detection; mp_draw = mp.solutions.drawing_utils
+            t0 = time.perf_counter()
+            total = 0
             with mp_face.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face:
                 for f in files[:20]:
                     img = cv2.imread(str(f))
                     if img is None: continue
                     results = face.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
                     n = len(results.detections) if results.detections else 0
-                    print(f"  ✓ (legacy) {{f.name}}: {{n}} faces")
+                    total += n
+                    print(f"  (legacy) {{f.name}}: {{n}} faces")
+            elapsed = time.perf_counter() - t0
+            return {{"model": "MediaPipe legacy", "faces": total, "time_s": round(elapsed, 1)}}
         except Exception as e2:
-            print(f"✗ MediaPipe legacy fallback: {{e2}}")
+            print(f"  MediaPipe legacy fallback: {{e2}}")
+    return {{}}
 
 
 def run_insightface(files):
@@ -3888,13 +5380,16 @@ def run_insightface(files):
         from insightface.app import FaceAnalysis
         app = FaceAnalysis(providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
         app.prepare(ctx_id=0, det_size=(640, 640))
-        save_dir = os.path.join(os.path.dirname(__file__), "insightface_results")
+        save_dir = os.path.join(SAVE_DIR, "insightface_results")
         os.makedirs(save_dir, exist_ok=True)
+        t0 = time.perf_counter()
         embeddings = []
+        total_faces = 0
         for f in files[:20]:
             img = cv2.imread(str(f))
             if img is None: continue
             faces = app.get(img)
+            total_faces += len(faces)
             for face in faces:
                 bbox = face.bbox.astype(int)
                 cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
@@ -3907,25 +5402,35 @@ def run_insightface(files):
                     cv2.putText(img, " ".join(info), (bbox[0], bbox[1]-5),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,0), 1)
             cv2.imwrite(os.path.join(save_dir, f.name), img)
-            print(f"  ✓ {{f.name}}: {{len(faces)}} faces")
+            print(f"  {{f.name}}: {{len(faces)}} faces")
+        elapsed = time.perf_counter() - t0
+        sim = None
         if len(embeddings) >= 2:
-            sim = np.dot(embeddings[0], embeddings[1]) / (np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1]))
+            sim = float(np.dot(embeddings[0], embeddings[1]) / (np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])))
             print(f"  Cosine similarity (face 0 vs 1): {{sim:.4f}}")
-        print(f"InsightFace results saved to {{save_dir}}")
+        print(f"  InsightFace: {{total_faces}} faces in {{elapsed:.1f}}s")
+        return {{"model": "InsightFace", "faces": total_faces, "embeddings": len(embeddings),
+                 "cosine_sim_0v1": round(sim, 4) if sim else None, "time_s": round(elapsed, 1)}}
     except Exception as e:
-        print(f"✗ InsightFace: {{e}}")
+        print(f"  InsightFace: {{e}}")
+        return {{}}
 
 
-def run_hand_gesture():
-    """MediaPipe Hand Landmarker / Gesture Recognizer — modern Tasks API."""
+def run_hand_gesture(files):
+    """MediaPipe Hand Landmarker / Gesture Recognizer — modern Tasks API.
+
+    Stage 1: Static image inference (offline, always runs).
+    Stage 2: Live webcam gesture recognition (runs only if display available).
+    """
+    import sys
     try:
         import cv2, mediapipe as mp
         from mediapipe.tasks import python as mp_tasks
         from mediapipe.tasks.python import vision as mp_vision
         import urllib.request
+        from collections import Counter
 
-        # Download gesture recognizer model
-        model_path = os.path.join(os.path.dirname(__file__), "gesture_recognizer.task")
+        model_path = os.path.join(SAVE_DIR, "gesture_recognizer.task")
         if not os.path.exists(model_path):
             urllib.request.urlretrieve(
                 "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/latest/gesture_recognizer.task",
@@ -3936,53 +5441,108 @@ def run_hand_gesture():
             num_hands=2)
         recognizer = mp_vision.GestureRecognizer.create_from_options(options)
 
-        print("Starting webcam gesture recognition... Press 'q' to quit.")
-        cap = cv2.VideoCapture(0)
-        frame_count = 0
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret: break
-            mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        # --- Stage 1: Static image inference ---
+        save_dir = os.path.join(SAVE_DIR, "hand_gesture_results")
+        os.makedirs(save_dir, exist_ok=True)
+        gesture_counts = Counter()
+        total_hands = 0
+        confidences = []
+        t0 = time.perf_counter()
+        for f in files[:20]:
+            img = cv2.imread(str(f))
+            if img is None:
+                continue
+            mp_img = mp.Image(image_format=mp.ImageFormat.SRGB,
+                              data=cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
             result = recognizer.recognize(mp_img)
+            n_hands = len(result.hand_landmarks) if result.hand_landmarks else 0
+            total_hands += n_hands
             if result.gestures:
-                for i, gesture in enumerate(result.gestures):
+                for gesture in result.gestures:
                     name = gesture[0].category_name
                     score = gesture[0].score
-                    cv2.putText(frame, f"{{name}} ({{score:.2f}})", (10, 40 + i * 30),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                    gesture_counts[name] += 1
+                    confidences.append(score)
             if result.hand_landmarks:
                 for hand_lm in result.hand_landmarks:
                     for lm in hand_lm:
-                        x, y = int(lm.x * frame.shape[1]), int(lm.y * frame.shape[0])
-                        cv2.circle(frame, (x, y), 3, (255, 0, 0), -1)
-            cv2.imshow("Gesture Recognition", frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"): break
-            frame_count += 1
-            if frame_count >= 300: break  # auto-stop after ~10 sec
-        cap.release(); cv2.destroyAllWindows()
+                        x, y = int(lm.x * img.shape[1]), int(lm.y * img.shape[0])
+                        cv2.circle(img, (x, y), 3, (255, 0, 0), -1)
+            cv2.imwrite(os.path.join(save_dir, f.name), img)
+            print(f"  {{f.name}}: {{n_hands}} hands")
+        static_elapsed = time.perf_counter() - t0
+        avg_conf = sum(confidences) / max(len(confidences), 1)
+        print(f"  Static: {{len(files[:20])}} images, {{total_hands}} hands in {{static_elapsed:.1f}}s")
+
+        # --- Stage 2: Live webcam (if display available) ---
+        webcam_frames = 0
+        webcam_elapsed = 0.0
+        if sys.stdout.isatty():
+            print("Starting webcam gesture recognition... Press 'q' to quit.")
+            cap = cv2.VideoCapture(0)
+            t1 = time.perf_counter()
+            while cap.isOpened():
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                mp_img = mp.Image(image_format=mp.ImageFormat.SRGB,
+                                  data=cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                result = recognizer.recognize(mp_img)
+                if result.gestures:
+                    for i, gesture in enumerate(result.gestures):
+                        name = gesture[0].category_name
+                        score = gesture[0].score
+                        gesture_counts[name] += 1
+                        cv2.putText(frame, f"{{name}} ({{score:.2f}})", (10, 40 + i * 30),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                if result.hand_landmarks:
+                    for hand_lm in result.hand_landmarks:
+                        for lm in hand_lm:
+                            x, y = int(lm.x * frame.shape[1]), int(lm.y * frame.shape[0])
+                            cv2.circle(frame, (x, y), 3, (255, 0, 0), -1)
+                cv2.imshow("Gesture Recognition", frame)
+                if cv2.waitKey(1) & 0xFF == ord("q"):
+                    break
+                webcam_frames += 1
+                if webcam_frames >= 300:
+                    break
+            cap.release()
+            cv2.destroyAllWindows()
+            webcam_elapsed = round(time.perf_counter() - t1, 1)
+            print(f"  Webcam: {{webcam_frames}} frames in {{webcam_elapsed}}s")
+        else:
+            print("  Webcam skipped (no display / headless environment)")
+
         recognizer.close()
-        print(f"✓ Gesture Recognizer processed {{frame_count}} frames")
+        return {{"model": "MediaPipe Gesture Recognizer", "hands_detected": total_hands,
+                 "static_images": len(files[:20]), "static_time_s": round(static_elapsed, 1),
+                 "gesture_counts": dict(gesture_counts),
+                 "avg_confidence": round(avg_conf, 4),
+                 "webcam_frames": webcam_frames, "webcam_time_s": webcam_elapsed}}
     except Exception as e:
-        print(f"✗ MediaPipe Gesture Recognizer: {{e}}")
-        # Fallback to legacy hand detection
+        print(f"  MediaPipe Gesture Recognizer: {{e}}")
+        # Fallback to legacy hand detection on static images
         try:
             import cv2, mediapipe as mp
-            mp_hands = mp.solutions.hands; mp_draw = mp.solutions.drawing_utils
-            print("(fallback) Starting webcam hand detection... Press 'q' to quit.")
-            cap = cv2.VideoCapture(0)
-            with mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.5) as hands:
-                while cap.isOpened():
-                    ret, frame = cap.read()
-                    if not ret: break
-                    results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-                    if results.multi_hand_landmarks:
-                        for lm in results.multi_hand_landmarks:
-                            mp_draw.draw_landmarks(frame, lm, mp_hands.HAND_CONNECTIONS)
-                    cv2.imshow("Hand Detection", frame)
-                    if cv2.waitKey(1) & 0xFF == ord("q"): break
-            cap.release(); cv2.destroyAllWindows()
+            mp_hands = mp.solutions.hands
+            t0 = time.perf_counter()
+            total = 0
+            with mp_hands.Hands(static_image_mode=True,
+                                min_detection_confidence=0.7) as hands:
+                for f in files[:20]:
+                    img = cv2.imread(str(f))
+                    if img is None:
+                        continue
+                    results = hands.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+                    n = len(results.multi_hand_landmarks) if results.multi_hand_landmarks else 0
+                    total += n
+                    print(f"  (legacy) {{f.name}}: {{n}} hands")
+            elapsed = time.perf_counter() - t0
+            return {{"model": "MediaPipe legacy hands", "hands_detected": total,
+                     "time_s": round(elapsed, 1)}}
         except Exception as e2:
-            print(f"✗ MediaPipe legacy hands: {{e2}}")
+            print(f"  MediaPipe legacy hands: {{e2}}")
+    return {{}}
 
 
 def run_pose(files):
@@ -3993,7 +5553,7 @@ def run_pose(files):
         from mediapipe.tasks.python import vision as mp_vision
         import urllib.request
 
-        model_path = os.path.join(os.path.dirname(__file__), "pose_landmarker.task")
+        model_path = os.path.join(SAVE_DIR, "pose_landmarker.task")
         if not os.path.exists(model_path):
             urllib.request.urlretrieve(
                 "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task",
@@ -4004,30 +5564,36 @@ def run_pose(files):
             num_poses=3)
         landmarker = mp_vision.PoseLandmarker.create_from_options(options)
 
-        save_dir = os.path.join(os.path.dirname(__file__), "pose_results")
+        save_dir = os.path.join(SAVE_DIR, "pose_results")
         os.makedirs(save_dir, exist_ok=True)
+        t0 = time.perf_counter()
+        total_poses = 0
         for f in files[:20]:
             img = cv2.imread(str(f))
             if img is None: continue
             mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
             result = landmarker.detect(mp_img)
             n_poses = len(result.pose_landmarks)
+            total_poses += n_poses
             for pose_lm in result.pose_landmarks:
                 for lm in pose_lm:
                     x, y = int(lm.x * img.shape[1]), int(lm.y * img.shape[0])
                     cv2.circle(img, (x, y), 3, (0, 0, 255), -1)
             cv2.imwrite(os.path.join(save_dir, f.name), img)
-            print(f"  ✓ {{f.name}}: {{n_poses}} poses")
+            print(f"  {{f.name}}: {{n_poses}} poses")
+        elapsed = time.perf_counter() - t0
         landmarker.close()
-        print(f"Pose Landmarker results saved to {{save_dir}}")
+        print(f"  Pose Landmarker: {{total_poses}} poses in {{elapsed:.1f}}s")
+        return {{"model": "MediaPipe Pose Landmarker", "poses": total_poses, "time_s": round(elapsed, 1)}}
     except Exception as e:
-        print(f"✗ MediaPipe Pose Landmarker: {{e}}")
+        print(f"  MediaPipe Pose Landmarker: {{e}}")
         # Fallback to legacy pose
         try:
             import cv2, mediapipe as mp
             mp_pose = mp.solutions.pose; mp_draw = mp.solutions.drawing_utils
-            save_dir = os.path.join(os.path.dirname(__file__), "pose_results")
+            save_dir = os.path.join(SAVE_DIR, "pose_results")
             os.makedirs(save_dir, exist_ok=True)
+            t0 = time.perf_counter()
             with mp_pose.Pose(min_detection_confidence=0.5) as pose:
                 for f in files[:20]:
                     img = cv2.imread(str(f))
@@ -4036,28 +5602,42 @@ def run_pose(files):
                     if results.pose_landmarks:
                         mp_draw.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
                     cv2.imwrite(os.path.join(save_dir, f.name), img)
-                    print(f"  ✓ (legacy) {{f.name}}")
+                    print(f"  (legacy) {{f.name}}")
+            elapsed = time.perf_counter() - t0
+            return {{"model": "MediaPipe legacy pose", "time_s": round(elapsed, 1)}}
         except Exception as e2:
-            print(f"✗ MediaPipe legacy pose: {{e2}}")
+            print(f"  MediaPipe legacy pose: {{e2}}")
+    return {{}}
 
 
 def main():
     print("=" * 60)
-    print(f"FACE/HAND/GESTURE — {{TASK}}")
+    print(f"FACE/HAND/GESTURE | Task: {{TASK}}")
     print("=" * 60)
     files = download_face_samples()
+    metrics = {{"task": TASK}}
+
     if TASK == "face_detection":
-        run_yolo_detection(files)
-        run_face_landmarker(files)
+        metrics["yolo"] = run_yolo_detection(files)
+        metrics["face_landmarker"] = run_face_landmarker(files)
+    elif TASK == "expression":
+        # Expression / smile / blink — landmarker is primary (blendshapes)
+        metrics["face_landmarker"] = run_face_landmarker(files)
+        metrics["yolo_baseline"] = run_yolo_detection(files)
     elif TASK == "hand_gesture":
-        run_hand_gesture()
+        metrics["gesture"] = run_hand_gesture(files)
     elif TASK == "pose":
-        run_pose(files)
+        metrics["pose"] = run_pose(files)
     elif TASK == "face_recognition":
-        run_insightface(files)
+        metrics["insightface"] = run_insightface(files)
     else:
-        run_yolo_detection(files)
-        run_face_landmarker(files)
+        metrics["yolo"] = run_yolo_detection(files)
+        metrics["face_landmarker"] = run_face_landmarker(files)
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -4069,14 +5649,20 @@ def gen_ocr(path, cfg):
     return textwrap.dedent('''\
 """
 Modern OCR Pipeline (April 2026)
-Model: PaddleOCR + PaddleOCR-VL-1.5 (GPU, multilingual)
-Data: Auto-downloads sample document images at runtime
+
+Primary : PaddleOCR (text detection + recognition, GPU, multilingual).
+Extended: PaddleOCR-VL-1.5 (vision-language document parsing).
+Timing  : Wall-clock per model stage.
+Export  : metrics.json with file-level results + aggregate stats + timing.
+Data    : Auto-downloads sample document images at runtime.
 """
-import os, json, warnings
+import os, json, time, warnings
 from pathlib import Path
 import urllib.request
 
 warnings.filterwarnings("ignore")
+
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_URLS = [
     "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img_12.jpg",
@@ -4085,7 +5671,7 @@ SAMPLE_URLS = [
 
 
 def download_samples():
-    save_dir = Path(os.path.dirname(__file__)) / "ocr_samples"
+    save_dir = Path(SAVE_DIR) / "ocr_samples"
     save_dir.mkdir(exist_ok=True)
     paths = []
     for url in SAMPLE_URLS:
@@ -4093,52 +5679,97 @@ def download_samples():
         if not fname.exists():
             urllib.request.urlretrieve(url, str(fname))
         paths.append(fname)
-    # Also gather any local images
     for ext in (".jpg", ".jpeg", ".png", ".bmp", ".tiff"):
-        paths.extend([p for p in Path(os.path.dirname(__file__)).rglob(f"*{ext}") if p not in paths])
+        paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{ext}") if p not in paths])
     print(f"{len(paths)} images available for OCR")
     return paths
 
 
-def run_ocr(files):
+def run_paddleocr(files):
+    """PaddleOCR -- primary text detection + recognition."""
     from paddleocr import PaddleOCR
     ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=True)
     results = []
+    t0 = time.perf_counter()
     for f in files[:30]:
         result = ocr.ocr(str(f), cls=True)
         texts = []
         if result and result[0]:
             for line in result[0]:
-                texts.append({"text": line[1][0], "confidence": line[1][1]})
+                texts.append({"text": line[1][0], "confidence": round(line[1][1], 4)})
         full_text = " ".join(t["text"] for t in texts)
-        results.append({"file": f.name, "full_text": full_text, "lines": texts, "n_lines": len(texts)})
-        print(f"  ✓ {f.name}: {len(texts)} lines — '{full_text[:80]}...'")
-    return results
+        avg_conf = sum(t["confidence"] for t in texts) / max(len(texts), 1)
+        results.append({"file": f.name, "full_text": full_text,
+                        "n_lines": len(texts), "avg_confidence": round(avg_conf, 4)})
+        preview = full_text[:80] + "..." if len(full_text) > 80 else full_text
+        print(f"  {f.name}: {len(texts)} lines (conf {avg_conf:.2f}) -- \\'{preview}\\'")
+    elapsed = time.perf_counter() - t0
+    return results, round(elapsed, 1)
+
+
+def run_paddleocr_vl(files):
+    """PaddleOCR-VL-1.5 -- vision-language document parsing."""
+    from paddleocr import PaddleOCR
+    vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
+                       use_textline_orientation=False, lang="en", use_gpu=True)
+    results = []
+    t0 = time.perf_counter()
+    for f in files[:10]:
+        vl_result = vl_ocr.ocr(str(f), cls=True)
+        n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
+        results.append({"file": f.name, "n_lines": n_lines})
+        print(f"  VL-1.5 {f.name}: {n_lines} lines")
+    elapsed = time.perf_counter() - t0
+    return results, round(elapsed, 1)
 
 
 def main():
     print("=" * 60)
-    print("OCR — PaddleOCR + PaddleOCR-VL-1.5 (GPU)")
+    print("OCR | PaddleOCR + PaddleOCR-VL-1.5")
     print("=" * 60)
     files = download_samples()
-    results = run_ocr(files)
+    metrics = {}
 
-    # PaddleOCR-VL-1.5 (vision-language OCR)
+    # PRIMARY: PaddleOCR
+    print()
+    print("-- PaddleOCR --")
     try:
-        from paddleocr import PaddleOCR
-        vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
-                           use_textline_orientation=False, lang="en", use_gpu=True)
-        for f in files[:5]:
-            vl_result = vl_ocr.ocr(str(f), cls=True)
-            n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
-            print(f"  ✓ VL-1.5 {f.name}: {n_lines} lines")
-        print("✓ PaddleOCR-VL-1.5 complete")
+        results, elapsed = run_paddleocr(files)
+        total_lines = sum(r["n_lines"] for r in results)
+        avg_conf = sum(r["avg_confidence"] for r in results) / max(len(results), 1)
+        metrics["PaddleOCR"] = {
+            "files": len(results), "total_lines": total_lines,
+            "avg_confidence": round(avg_conf, 4), "time_s": elapsed,
+        }
+        print(f"  PaddleOCR: {len(results)} files, {total_lines} lines in {elapsed}s")
     except Exception as e:
-        print(f"✗ PaddleOCR-VL-1.5: {e}")
-    out_path = os.path.join(os.path.dirname(__file__), "ocr_results.json")
+        print(f"  PaddleOCR failed: {e}")
+        results = []
+
+    # EXTENDED: PaddleOCR-VL-1.5
+    print()
+    print("-- PaddleOCR-VL-1.5 (document parsing) --")
+    try:
+        vl_results, vl_elapsed = run_paddleocr_vl(files)
+        vl_total = sum(r["n_lines"] for r in vl_results)
+        metrics["PaddleOCR-VL-1.5"] = {
+            "files": len(vl_results), "total_lines": vl_total, "time_s": vl_elapsed,
+        }
+        print(f"  VL-1.5: {len(vl_results)} files, {vl_total} lines in {vl_elapsed}s")
+    except Exception as e:
+        print(f"  PaddleOCR-VL-1.5 failed: {e}")
+
+    # Save metrics
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {out_path}")
+
+    # Also save detailed per-file results
+    detail_path = os.path.join(SAVE_DIR, "ocr_results.json")
+    with open(detail_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
-    print(f"\\n✓ Saved to {out_path}: {len(results)} files, {sum(r['n_lines'] for r in results)} lines")
+    print(f"Detailed results saved to {detail_path}")
 
 
 if __name__ == "__main__":
@@ -4159,6 +5790,7 @@ def main():
         ("Anomaly Detection", ANOMALY, gen_anomaly),
         ("Clustering", CLUSTERING, gen_clustering),
         ("NLP Classification", NLP_CLF, gen_nlp_clf),
+        ("NER / Extraction", NLP_NER, gen_ner),
         ("NLP Generation", NLP_GEN, gen_nlp_gen),
         ("NLP Similarity", NLP_SIM, gen_nlp_similarity),
         ("NLP Misc", NLP_MISC, gen_nlp_gen),

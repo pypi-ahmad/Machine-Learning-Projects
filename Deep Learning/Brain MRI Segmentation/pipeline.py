@@ -1,16 +1,24 @@
 """
 Modern Medical Image Segmentation Pipeline (April 2026)
-Models: nnU-Net (supervised baseline) + MedSAM2 (promptable foundation model)
-Data: Auto-downloaded at runtime
+
+Primary : nnU-Net-style supervised U-Net (encoder-decoder with skip connections).
+Optional: MedSAM2 zero-shot promptable segmentation (center-point prompts).
+Metrics : Dice coefficient + mean IoU per model, wall-clock timing.
+Export  : metrics.json, segmentation_results.png, best_unet.pth.
+Data    : Auto-downloaded from HuggingFace at runtime.
+
+DISCLAIMER: This is an educational/research demonstration pipeline.
+It is NOT validated for clinical use. Medical image analysis models
+require rigorous validation on curated datasets, regulatory approval,
+and expert clinical oversight before any diagnostic application.
 """
-import os, warnings
+import os, json, time, warnings
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from PIL import Image
-from sklearn.metrics import f1_score
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -18,6 +26,7 @@ warnings.filterwarnings("ignore")
 
 IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 256, 8, 15, 1e-4
 N_CLASSES = 2
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def load_data():
@@ -99,6 +108,17 @@ def dice_score(pred, target, n_classes=N_CLASSES):
     return dice / n_classes
 
 
+def mean_iou(pred, target, n_classes=N_CLASSES):
+    pred = torch.argmax(pred, dim=1) if pred.ndim == 4 else pred
+    iou = 0.0
+    for c in range(n_classes):
+        p = (pred == c).float(); t = (target == c).float()
+        inter = (p * t).sum()
+        union = p.sum() + t.sum() - inter
+        iou += (inter + 1e-6) / (union + 1e-6)
+    return iou / n_classes
+
+
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     hf_ds = load_data()
@@ -107,14 +127,18 @@ def train_model():
     train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, num_workers=0)
+    metrics = {}
 
-    # ═══ PRIMARY: nnU-Net-style supervised U-Net ═══
+    # --- PRIMARY: nnU-Net-style supervised U-Net ---
+    print()
+    print("-- nnU-Net-style U-Net (supervised) --")
     model = SimpleUNet().to(device)
     criterion = nn.CrossEntropyLoss()
     opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS)
 
     best_dice = 0
+    t0 = time.perf_counter()
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
         for imgs, masks in train_loader:
@@ -123,32 +147,41 @@ def train_model():
             loss = criterion(out, masks); loss.backward()
             opt.step(); opt.zero_grad(); total_loss += loss.item()
         scheduler.step()
-        model.eval(); dice_sum, n = 0, 0
+        model.eval(); dice_sum, iou_sum, n = 0, 0, 0
         with torch.no_grad():
             for imgs, masks in val_loader:
                 imgs, masks = imgs.to(device), masks.to(device)
                 out = model(imgs)
-                dice_sum += dice_score(out, masks).item(); n += 1
+                dice_sum += dice_score(out, masks).item()
+                iou_sum += mean_iou(out, masks).item()
+                n += 1
         val_dice = dice_sum / max(n, 1)
-        print(f"  Epoch {epoch+1}/{EPOCHS} — Loss: {total_loss/len(train_loader):.4f} — Val Dice: {val_dice:.4f}")
+        val_iou = iou_sum / max(n, 1)
+        print(f"  Epoch {epoch+1}/{EPOCHS} -- Loss: {total_loss/len(train_loader):.4f} -- Dice: {val_dice:.4f} -- IoU: {val_iou:.4f}")
         if val_dice > best_dice:
             best_dice = val_dice
-            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_unet.pth"))
-    print(f"\n🏆 nnU-Net-style Best Val Dice: {best_dice:.4f}")
+            best_iou = val_iou
+            torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_unet.pth"))
+    unet_elapsed = round(time.perf_counter() - t0, 1)
+    print(f"  nnU-Net Best -- Dice: {best_dice:.4f} -- IoU: {best_iou:.4f} ({unet_elapsed}s)")
+    metrics["nnUNet"] = {"val_dice": round(best_dice, 4), "val_iou": round(best_iou, 4),
+                         "epochs": EPOCHS, "time_s": unet_elapsed}
 
-    # ═══ ALTERNATIVE: MedSAM2 (promptable foundation segmentation) ═══
+    # --- OPTIONAL: MedSAM2 (zero-shot promptable segmentation) ---
+    print()
+    print("-- MedSAM2 (zero-shot, center-point prompt) --")
     try:
         from transformers import SamModel, SamProcessor
+        t1 = time.perf_counter()
         sam_model = SamModel.from_pretrained("wanglab/medsam-vit-base").to(device)
         sam_proc = SamProcessor.from_pretrained("wanglab/medsam-vit-base")
         sam_model.eval()
-        dice_sum, n = 0, 0
+        dice_sum, iou_sum, n = 0, 0, 0
         with torch.no_grad():
             for imgs, masks in val_loader:
                 for j in range(min(4, imgs.shape[0])):
                     pil_img = transforms.ToPILImage()(imgs[j])
                     h, w = pil_img.size[1], pil_img.size[0]
-                    # Center-point prompt
                     input_points = [[[w // 2, h // 2]]]
                     inputs = sam_proc(pil_img, input_points=input_points, return_tensors="pt").to(device)
                     outputs = sam_model(**inputs)
@@ -162,13 +195,21 @@ def train_model():
                             pred_binary.float().unsqueeze(0).unsqueeze(0),
                             size=gt.shape, mode="nearest")[0, 0].long()
                     inter = ((pred_binary == 1) & (gt == 1)).sum().float()
-                    union = (pred_binary == 1).sum().float() + (gt == 1).sum().float()
-                    dice_sum += (2 * inter + 1e-6) / (union + 1e-6); n += 1
-                if n >= 16: break
-        sam_dice = dice_sum / max(n, 1)
-        print(f"✓ MedSAM Dice (zero-shot, center-point prompt): {sam_dice:.4f}")
+                    p_sum = (pred_binary == 1).sum().float()
+                    t_sum = (gt == 1).sum().float()
+                    dice_sum += (2 * inter + 1e-6) / (p_sum + t_sum + 1e-6)
+                    iou_sum += (inter + 1e-6) / (p_sum + t_sum - inter + 1e-6)
+                    n += 1
+                if n >= 32:
+                    break
+        sam_dice = (dice_sum / max(n, 1)).item() if hasattr(dice_sum, "item") else dice_sum / max(n, 1)
+        sam_iou = (iou_sum / max(n, 1)).item() if hasattr(iou_sum, "item") else iou_sum / max(n, 1)
+        sam_elapsed = round(time.perf_counter() - t1, 1)
+        print(f"  MedSAM2 -- Dice: {sam_dice:.4f} -- IoU: {sam_iou:.4f} ({sam_elapsed}s, {n} samples)")
+        metrics["MedSAM2"] = {"val_dice": round(sam_dice, 4), "val_iou": round(sam_iou, 4),
+                              "samples": n, "time_s": sam_elapsed}
     except Exception as e:
-        print(f"✗ MedSAM: {e}")
+        print(f"  MedSAM2 skipped: {e}")
 
     # Visualize sample predictions
     model.eval()
@@ -183,15 +224,24 @@ def train_model():
                 axes[1, i].set_title("Prediction"); axes[1, i].axis("off")
             break
     plt.tight_layout()
-    plt.savefig(os.path.join(os.path.dirname(__file__), "segmentation_results.png"), dpi=100)
-    print("Saved segmentation_results.png")
+    plt.savefig(os.path.join(SAVE_DIR, "segmentation_results.png"), dpi=100)
+    plt.close(fig)
+    print(f"Saved segmentation_results.png")
+
+    return metrics
 
 
 def main():
     print("=" * 60)
-    print("MEDICAL SEGMENTATION — nnU-Net + MedSAM")
+    print("MEDICAL SEGMENTATION | nnU-Net + MedSAM2")
     print("=" * 60)
-    train_model()
+    print("NOTE: Educational/research demo only -- not for clinical use.")
+    metrics = train_model()
+
+    out_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(out_path, "w") as f:
+        json.dump(metrics, f, indent=2, default=str)
+    print(f"Metrics saved to {out_path}")
 
 
 if __name__ == "__main__":
