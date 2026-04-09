@@ -40,24 +40,43 @@ def preprocess(df):
 
 
 def detect(X, y=None):
+    results = {}
     for name, Builder in [
         ("ECOD", lambda: __import__("pyod.models.ecod", fromlist=["ECOD"]).ECOD(contamination=0.05)),
         ("COPOD", lambda: __import__("pyod.models.copod", fromlist=["COPOD"]).COPOD(contamination=0.05)),
-        ("IForest", lambda: __import__("sklearn.ensemble", fromlist=["IsolationForest"]).IsolationForest(contamination=0.05, random_state=42)),
+        ("IForest", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
     ]:
         try:
             m = Builder()
-            if "IForest" in name:
-                preds = m.fit_predict(X); labels = (preds == -1).astype(int)
-            else:
-                m.fit(X); labels = m.labels_
-            print(f"✓ {name}: {labels.sum()} anomalies ({labels.mean():.2%})")
+            m.fit(X)
+            labels = m.labels_
+            scores = m.decision_scores_ if hasattr(m, "decision_scores_") else m.decision_function(X)
+            results[name] = {"labels": labels, "scores": scores}
+            n_anom = labels.sum()
+            print(f"✓ {name}: {n_anom} anomalies ({n_anom/len(X):.2%})")
             if y is not None and len(set(y)) > 1:
-                print(f"  F1: {f1_score(y, labels):.4f}")
+                f1 = f1_score(y, labels)
+                auc = roc_auc_score(y, scores)
+                print(f"  F1: {f1:.4f}  ROC-AUC: {auc:.4f}")
         except Exception as e:
             print(f"✗ {name}: {e}")
 
-    # anomalib PatchCore (image-based anomaly detection)
+    # ── Comparison plot ──
+    if results:
+        try:
+            fig, axes = plt.subplots(1, len(results), figsize=(6 * len(results), 5))
+            if len(results) == 1: axes = [axes]
+            for ax, (name, r) in zip(axes, results.items()):
+                ax.hist(r["scores"][r["labels"] == 0], bins=50, alpha=0.6, label="Normal", density=True)
+                ax.hist(r["scores"][r["labels"] == 1], bins=50, alpha=0.6, label="Anomaly", density=True)
+                ax.set_title(name); ax.set_xlabel("Anomaly score"); ax.legend()
+            plt.tight_layout()
+            plt.savefig(os.path.join(os.path.dirname(__file__), "anomaly_scores.png"), dpi=100)
+            print("✓ Saved anomaly_scores.png")
+        except Exception as e:
+            print(f"⚠ Plot: {e}")
+
+    # ── anomalib PatchCore (image-based anomaly detection) ──
     try:
         from anomalib.models import Patchcore
         from anomalib.data import MVTec

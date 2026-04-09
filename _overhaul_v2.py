@@ -1238,7 +1238,8 @@ def gen_fraud(path, cfg):
     return textwrap.dedent(f'''\
 """
 Fraud / Imbalanced Classification Pipeline (April 2026)
-Models: CatBoost, LightGBM, XGBoost + PyOD — GPU + threshold tuning
+Models: CatBoost, LightGBM, XGBoost + calibrated probabilities + PyOD (ECOD, COPOD, IForest)
+GPU + threshold tuning + isotonic calibration
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -1291,8 +1292,12 @@ def find_best_threshold(y_true, y_proba):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
+    from sklearn.calibration import CalibratedClassifierCV
     results = {{}}
-    scale = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+    # Hold out calibration split from training data
+    X_tr, X_cal, y_tr, y_cal = train_test_split(
+        X_train, y_train, test_size=0.15, random_state=42, stratify=y_train)
+    scale = (y_tr == 0).sum() / max((y_tr == 1).sum(), 1)
 
     for name, builder in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
@@ -1310,44 +1315,81 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             m = builder()
             if name == "LightGBM":
                 import lightgbm as lgb
-                m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+                m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)],
                       callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
             else:
-                m.fit(X_train, y_train, eval_set=[(X_test, y_test)] if name == "XGBoost"
-                      else (X_test, y_test), verbose=100 if name == "XGBoost" else None)
-            proba = m.predict_proba(X_test)[:, 1]
+                m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)] if name == "XGBoost"
+                      else (X_cal, y_cal), verbose=100 if name == "XGBoost" else None)
+            # Calibrate probabilities (isotonic regression on held-out cal split)
+            cal_model = CalibratedClassifierCV(m, cv="prefit", method="isotonic")
+            cal_model.fit(X_cal, y_cal)
+            proba = cal_model.predict_proba(X_test)[:, 1]
             thresh = find_best_threshold(y_test, proba)
             preds = (proba >= thresh).astype(int)
-            results[name] = {{"preds": preds, "proba": proba, "thresh": thresh}}
-            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+            results[name] = {{"preds": preds, "proba": proba, "thresh": thresh, "model": name}}
+            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]")
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
     # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
-    try:
-        from pyod.models.ecod import ECOD
-        ecod = ECOD(contamination=0.05)
-        ecod.fit(X_train)
-        anomaly_scores = ecod.decision_function(X_test)
-        n_anom = (ecod.predict(X_test) == 1).sum()
-        print(f"✓ PyOD ECOD: {{n_anom}} anomalies flagged in test set ({{n_anom/len(X_test):.2%}})")
-    except Exception as e:
-        print(f"✗ PyOD: {{e}}")
+    for pyod_name, pyod_builder in [
+        ("ECOD", lambda: __import__("pyod.models.ecod", fromlist=["ECOD"]).ECOD(contamination=0.05)),
+        ("COPOD", lambda: __import__("pyod.models.copod", fromlist=["COPOD"]).COPOD(contamination=0.05)),
+        ("IForest-PyOD", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
+    ]:
+        try:
+            pm = pyod_builder()
+            pm.fit(X_train.values if hasattr(X_train, "values") else X_train)
+            scores = pm.decision_function(X_test.values if hasattr(X_test, "values") else X_test)
+            pyod_preds = pm.predict(X_test.values if hasattr(X_test, "values") else X_test)
+            n_anom = pyod_preds.sum()
+            f1 = f1_score(y_test, pyod_preds) if len(set(y_test)) > 1 else 0
+            auc = roc_auc_score(y_test, scores) if len(set(y_test)) > 1 else 0
+            print(f"✓ PyOD {{pyod_name}}: {{n_anom}} anomalies ({{n_anom/len(X_test):.2%}}), F1={{f1:.4f}}, AUC={{auc:.4f}}")
+        except Exception as e:
+            print(f"✗ PyOD {{pyod_name}}: {{e}}")
 
     return results
 
 
 def report(results, y_test, save_dir="."):
+    from sklearn.calibration import calibration_curve
     for name, r in results.items():
         print(f"\\n— {{name}} (threshold={{r['thresh']:.3f}}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
         print(f"  AUPRC: {{average_precision_score(y_test, r['proba']):.4f}}  ROC-AUC: {{roc_auc_score(y_test, r['proba']):.4f}}")
 
+    # Reliability diagram (calibration plot)
+    try:
+        fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+        for name, r in results.items():
+            prob_true, prob_pred = calibration_curve(y_test, r["proba"], n_bins=10, strategy="uniform")
+            axes[0].plot(prob_pred, prob_true, marker="o", label=name)
+        axes[0].plot([0, 1], [0, 1], "k--", label="Perfectly calibrated")
+        axes[0].set(xlabel="Mean predicted probability", ylabel="Fraction of positives",
+                    title="Reliability Diagram")
+        axes[0].legend()
+
+        # Confusion matrix for best model
+        best = max(results.items(), key=lambda x: f1_score(y_test, x[1]["preds"]))
+        cm = confusion_matrix(y_test, best[1]["preds"])
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=axes[1],
+                    xticklabels=["Legit", "Fraud"], yticklabels=["Legit", "Fraud"])
+        axes[1].set(xlabel="Predicted", ylabel="Actual", title=f"Confusion Matrix ({{best[0]}})")
+
+        plt.tight_layout()
+        plt.savefig(os.path.join(save_dir, "fraud_report.png"), dpi=150)
+        plt.close()
+        print(f"\\n✓ Report saved to {{save_dir}}/fraud_report.png")
+    except Exception as e:
+        print(f"✗ Plot: {{e}}")
+
 
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | PyOD")
+    print("CatBoost | LightGBM | XGBoost | PyOD (ECOD/COPOD/IForest)")
+    print("Calibrated probabilities + threshold tuning")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -2377,24 +2419,43 @@ def preprocess(df):
 
 
 def detect(X, y=None):
+    results = {{}}
     for name, Builder in [
         ("ECOD", lambda: __import__("pyod.models.ecod", fromlist=["ECOD"]).ECOD(contamination=0.05)),
         ("COPOD", lambda: __import__("pyod.models.copod", fromlist=["COPOD"]).COPOD(contamination=0.05)),
-        ("IForest", lambda: __import__("sklearn.ensemble", fromlist=["IsolationForest"]).IsolationForest(contamination=0.05, random_state=42)),
+        ("IForest", lambda: __import__("pyod.models.iforest", fromlist=["IForest"]).IForest(contamination=0.05, random_state=42)),
     ]:
         try:
             m = Builder()
-            if "IForest" in name:
-                preds = m.fit_predict(X); labels = (preds == -1).astype(int)
-            else:
-                m.fit(X); labels = m.labels_
-            print(f"✓ {{name}}: {{labels.sum()}} anomalies ({{labels.mean():.2%}})")
+            m.fit(X)
+            labels = m.labels_
+            scores = m.decision_scores_ if hasattr(m, "decision_scores_") else m.decision_function(X)
+            results[name] = {{"labels": labels, "scores": scores}}
+            n_anom = labels.sum()
+            print(f"✓ {{name}}: {{n_anom}} anomalies ({{n_anom/len(X):.2%}})")
             if y is not None and len(set(y)) > 1:
-                print(f"  F1: {{f1_score(y, labels):.4f}}")
+                f1 = f1_score(y, labels)
+                auc = roc_auc_score(y, scores)
+                print(f"  F1: {{f1:.4f}}  ROC-AUC: {{auc:.4f}}")
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
-    # anomalib PatchCore (image-based anomaly detection)
+    # ── Comparison plot ──
+    if results:
+        try:
+            fig, axes = plt.subplots(1, len(results), figsize=(6 * len(results), 5))
+            if len(results) == 1: axes = [axes]
+            for ax, (name, r) in zip(axes, results.items()):
+                ax.hist(r["scores"][r["labels"] == 0], bins=50, alpha=0.6, label="Normal", density=True)
+                ax.hist(r["scores"][r["labels"] == 1], bins=50, alpha=0.6, label="Anomaly", density=True)
+                ax.set_title(name); ax.set_xlabel("Anomaly score"); ax.legend()
+            plt.tight_layout()
+            plt.savefig(os.path.join(os.path.dirname(__file__), "anomaly_scores.png"), dpi=100)
+            print("✓ Saved anomaly_scores.png")
+        except Exception as e:
+            print(f"⚠ Plot: {{e}}")
+
+    # ── anomalib PatchCore (image-based anomaly detection) ──
     try:
         from anomalib.models import Patchcore
         from anomalib.data import MVTec
