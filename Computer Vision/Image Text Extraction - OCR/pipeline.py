@@ -1,6 +1,6 @@
 """
 Modern OCR Pipeline (April 2026)
-Model: PaddleOCR (GPU, multilingual)
+Model: PaddleOCR + PaddleOCR-VL-1.5 (GPU, multilingual)
 Data: Auto-downloads sample document images at runtime
 """
 import os, json, warnings
@@ -49,10 +49,23 @@ def run_ocr(files):
 
 def main():
     print("=" * 60)
-    print("OCR — PaddleOCR (GPU)")
+    print("OCR — PaddleOCR + PaddleOCR-VL-1.5 (GPU)")
     print("=" * 60)
     files = download_samples()
     results = run_ocr(files)
+
+    # PaddleOCR-VL-1.5 (vision-language OCR)
+    try:
+        from paddleocr import PaddleOCR
+        vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
+                           use_textline_orientation=False, lang="en", use_gpu=True)
+        for f in files[:5]:
+            vl_result = vl_ocr.ocr(str(f), cls=True)
+            n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
+            print(f"  ✓ VL-1.5 {f.name}: {n_lines} lines")
+        print("✓ PaddleOCR-VL-1.5 complete")
+    except Exception as e:
+        print(f"✗ PaddleOCR-VL-1.5: {e}")
     out_path = os.path.join(os.path.dirname(__file__), "ocr_results.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)

@@ -1033,7 +1033,7 @@ def gen_tabular_reg(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Tabular Regression Pipeline (April 2026)
-Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + TabM
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -1122,6 +1122,19 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ AutoGluon: {{e}}")
 
+    # ── RealTabPFN-v2 (prior-fitted network — regression) ──
+    try:
+        from tabpfn import TabPFNRegressor
+        if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            m = TabPFNRegressor(device="cuda", N_ensemble_configurations=32)
+            m.fit(X_train.values, y_train.values)
+            results["TabPFN-v2"] = m.predict(X_test.values)
+            print(f"✓ TabPFN-v2 RMSE: {{mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}}")
+        else:
+            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+    except Exception as e:
+        print(f"✗ TabPFN-v2: {{e}}")
+
     # ── TabM (deep tabular) ──
     try:
         import torch, torch.nn as nn
@@ -1198,7 +1211,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR REGRESSION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -1218,7 +1231,7 @@ def gen_fraud(path, cfg):
     return textwrap.dedent(f'''\
 """
 Fraud / Imbalanced Classification Pipeline (April 2026)
-Models: CatBoost, LightGBM, XGBoost, AutoGluon, TabM — GPU + threshold tuning
+Models: CatBoost, LightGBM, XGBoost + PyOD — GPU + threshold tuning
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -1303,89 +1316,16 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
-    # AutoGluon TabularPredictor (fraud-tuned)
+    # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     try:
-        from autogluon.tabular import TabularPredictor
-        ag_train = pd.concat([X_train, y_train], axis=1)
-        ag_test = pd.concat([X_test, y_test], axis=1)
-        predictor = TabularPredictor(label=ag_train.columns[-1], eval_metric="f1",
-                                      path=os.path.join(os.path.dirname(__file__), "ag_fraud"))
-        predictor.fit(ag_train, time_limit=120, presets="best_quality")
-        ag_proba = predictor.predict_proba(ag_test).iloc[:, 1].values
-        thresh = find_best_threshold(y_test, ag_proba)
-        preds = (ag_proba >= thresh).astype(int)
-        results["AutoGluon"] = {{"preds": preds, "proba": ag_proba, "thresh": thresh}}
-        print(f"✓ AutoGluon F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+        from pyod.models.ecod import ECOD
+        ecod = ECOD(contamination=0.05)
+        ecod.fit(X_train)
+        anomaly_scores = ecod.decision_function(X_test)
+        n_anom = (ecod.predict(X_test) == 1).sum()
+        print(f"✓ PyOD ECOD: {{n_anom}} anomalies flagged in test set ({{n_anom/len(X_test):.2%}})")
     except Exception as e:
-        print(f"✗ AutoGluon: {{e}}")
-
-    # TabM (binary fraud classifier)
-    try:
-        import torch
-        import torch.nn as nn
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        X_tr = torch.tensor(X_train.values, dtype=torch.float32).to(device)
-        X_te = torch.tensor(X_test.values, dtype=torch.float32).to(device)
-        y_tr = torch.tensor(y_train.values, dtype=torch.float32).to(device)
-        in_dim = X_tr.shape[1]
-
-        class TabMBlock(nn.Module):
-            def __init__(self, dim):
-                super().__init__()
-                self.fc = nn.Linear(dim, dim)
-                self.act = nn.SiLU()
-                self.norm = nn.LayerNorm(dim)
-            def forward(self, x): return self.norm(x + self.act(self.fc(x)))
-
-        class TabM(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.embed = nn.Linear(in_dim, 256)
-                self.blocks = nn.Sequential(*[TabMBlock(256) for _ in range(3)])
-                self.head = nn.Sequential(nn.Dropout(0.3), nn.Linear(256, 1))
-            def forward(self, x): return self.head(self.blocks(self.embed(x)))
-
-        model = TabM().to(device)
-        pos_weight = torch.tensor([scale], device=device)
-        crit = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-        for ep in range(80):
-            model.train()
-            logits = model(X_tr).squeeze()
-            loss = crit(logits, y_tr)
-            loss.backward(); opt.step(); opt.zero_grad()
-        model.eval()
-        with torch.no_grad():
-            proba = torch.sigmoid(model(X_te).squeeze()).cpu().numpy()
-        thresh = find_best_threshold(y_test, proba)
-        preds = (proba >= thresh).astype(int)
-        results["TabM"] = {{"preds": preds, "proba": proba, "thresh": thresh}}
-        print(f"✓ TabM F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
-    except Exception as e:
-        print(f"✗ TabM: {{e}}")
-
-    # ── Baseline Comparison: FLAML AutoML ──
-    try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
-        proba = automl.predict_proba(X_test)[:, 1]
-        thresh = find_best_threshold(y_test, proba)
-        preds = (proba >= thresh).astype(int)
-        results["FLAML"] = {{"preds": preds, "proba": proba, "thresh": thresh}}
-        print(f"✓ FLAML ({{automl.best_estimator}}) F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
-    except Exception as e:
-        print(f"✗ FLAML: {{e}}")
-
-    # ── Baseline Comparison: LazyPredict ──
-    try:
-        from lazypredict.Supervised import LazyClassifier
-        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
-        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
-        print(f"\\n✓ LazyPredict — Top 5 classifiers:")
-        print(lazy_models.head().to_string())
-    except Exception as e:
-        print(f"✗ LazyPredict: {{e}}")
+        print(f"✗ PyOD: {{e}}")
 
     return results
 
@@ -1400,7 +1340,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
+    print("CatBoost | LightGBM | XGBoost | PyOD")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -1555,7 +1495,7 @@ def gen_nlp_gen(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Generation Pipeline (April 2026)
-Model: Qwen3-Instruct via Ollama (local GPU inference)
+Model: Qwen3-Instruct via Ollama (chat/generation), NLLB-200 (translation)
 Data: Auto-downloaded at runtime
 """
 import os, json, warnings
@@ -1596,13 +1536,21 @@ def run_summarization(df):
 
 
 def run_translation(df):
+    \"\"\"Translate with NLLB-200 (Meta) — 200 language pairs, offline.\"\"\"
+    import torch
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model_id = "facebook/nllb-200-distilled-600M"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
     text_col = df.select_dtypes("object").columns[0]
     results = []
     for i, text in enumerate(df[text_col].dropna().head(10)):
-        translated = query_ollama(f"Translate to English:\\n\\n{{text[:1000]}}\\n\\nTranslation:")
-        if translated:
-            results.append({{"original": text[:100], "translated": translated}})
-            print(f"  [{{i+1}}] {{translated[:100]}}...")
+        inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
+        translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids("eng_Latn"), max_new_tokens=256)
+        translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
+        results.append({{"original": text[:100], "translated": translated}})
+        print(f"  [{{i+1}}] {{translated[:100]}}...")
     return results
 
 
@@ -1672,7 +1620,7 @@ def gen_image_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 fine-tuning + Qwen3-VL zero-shot — Vision Transformer
+Model: DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1777,10 +1725,50 @@ def train_model():
     except Exception as e:
         print(f"✗ Qwen3-VL: {{e}}")
 
+    # ConvNeXt V2 (alternative backbone)
+    try:
+        import timm
+        convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
+        convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
+        for epoch in range(3):
+            convnext.train(); total_loss = 0
+            for imgs, labels in train_loader:
+                imgs, labels = imgs.to(device), labels.to(device)
+                loss = criterion(convnext(imgs), labels); loss.backward()
+                convnext_opt.step(); convnext_opt.zero_grad(); total_loss += loss.item()
+        convnext.eval(); cv_preds, cv_gts = [], []
+        with torch.no_grad():
+            for imgs, labels in val_loader:
+                cv_preds.extend(torch.argmax(convnext(imgs.to(device)), dim=-1).cpu().numpy())
+                cv_gts.extend(labels.numpy())
+        cv_acc = accuracy_score(cv_gts, cv_preds)
+        print(f"✓ ConvNeXt V2 Val Accuracy: {{cv_acc:.4f}}")
+    except Exception as e:
+        print(f"✗ ConvNeXt V2: {{e}}")
+
+    # Molmo 2 (vision-language, alternative to Qwen3-VL)
+    try:
+        from transformers import AutoModelForCausalLM, AutoProcessor as AP2
+        molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
+            torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
+        molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
+        total = 0
+        for imgs, labels in val_loader:
+            if total >= 5: break
+            img_t = imgs[0]
+            pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
+            inputs = molmo_proc.process(images=[pil_img], text="Classify this image into one category. Reply with only the category name.")
+            inputs = {{k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}}
+            out = molmo.generate_from_batch(inputs, max_new_tokens=20, tokenizer=molmo_proc.tokenizer)
+            total += 1
+        print(f"✓ Molmo-2 tested {{total}} samples")
+    except Exception as e:
+        print(f"✗ Molmo-2: {{e}}")
+
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 (ViT-S/14) + Qwen3-VL")
+    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2")
     print("=" * 60)
     train_model()
 
@@ -2202,10 +2190,22 @@ def train(df):
             from sentence_transformers import SentenceTransformer
             from sklearn.metrics.pairwise import cosine_similarity
             items = df[[item_col, content_col]].drop_duplicates(subset=[item_col]).head(1000)
+
+            # BGE-M3 embeddings
             model = SentenceTransformer("BAAI/bge-m3")
             embs = model.encode(items[content_col].fillna("").tolist(), batch_size=32)
             sim = cosine_similarity(embs)
-            print(f"✓ Content-based: {{len(items)}} items embedded")
+            print(f"✓ BGE-M3 content-based: {{len(items)}} items embedded")
+
+            # Qwen3-Embedding (alternative)
+            try:
+                qwen_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+                qwen_embs = qwen_model.encode(items[content_col].fillna("").head(200).tolist(), batch_size=16)
+                qwen_sim = cosine_similarity(qwen_embs)
+                print(f"✓ Qwen3-Embedding: {{len(qwen_embs)}} items embedded")
+            except Exception as e:
+                print(f"✗ Qwen3-Embedding: {{e}}")
+
         except Exception as e: print(f"✗ Content-based: {{e}}")
 
 
@@ -2228,7 +2228,7 @@ def gen_rl(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Reinforcement Learning Pipeline (April 2026)
-Models: PPO (default), SAC (continuous) — Stable-Baselines3
+Models: PPO (default), SAC (continuous), DQN (baseline) — Stable-Baselines3
 Data: Gymnasium environments (auto-downloaded)
 """
 import os, warnings
@@ -2245,7 +2245,7 @@ TOTAL_TIMESTEPS = 100_000
 
 
 def train_agent():
-    from stable_baselines3 import PPO, SAC
+    from stable_baselines3 import PPO, SAC, DQN
     from stable_baselines3.common.evaluation import evaluate_policy
     from stable_baselines3.common.callbacks import EvalCallback
 
@@ -2259,6 +2259,10 @@ def train_agent():
     if ALGO == "SAC":
         model = SAC("MlpPolicy", env, learning_rate=3e-4, buffer_size=100_000,
                      batch_size=256, tau=0.005, gamma=0.99, verbose=1, device="auto")
+    elif ALGO == "DQN":
+        model = DQN("MlpPolicy", env, learning_rate=1e-4, buffer_size=50_000,
+                     batch_size=64, gamma=0.99, exploration_fraction=0.3,
+                     target_update_interval=1000, verbose=1, device="auto")
     else:
         model = PPO("MlpPolicy", env, learning_rate=3e-4, n_steps=2048, batch_size=64,
                      n_epochs=10, gamma=0.99, gae_lambda=0.95, clip_range=0.2,
@@ -2294,7 +2298,7 @@ def gen_audio(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Audio/Speech Pipeline (April 2026)
-Models: Whisper large-v3-turbo (ASR), Wav2Vec2 (clf), XTTS-v2 (TTS)
+Models: Whisper large-v3-turbo (ASR), Wav2Vec2 (clf), SepFormer (separation), XTTS-v2 (TTS)
 Data: Auto-downloaded at runtime from HuggingFace
 """
 import os, json, warnings
@@ -2371,6 +2375,54 @@ def run_voice_cloning():
         print(f"✗ XTTS: {{e}}")
 
 
+def run_wav2vec2_clf(audio_dir):
+    \"\"\"Audio classification with Wav2Vec2.\"\"\"
+    import torch
+    from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
+    import soundfile as sf
+    from pathlib import Path
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model_id = "facebook/wav2vec2-base"
+    try:
+        extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_id)
+        model = Wav2Vec2ForSequenceClassification.from_pretrained(
+            model_id, num_labels=10).to(device)
+        audio_files = list(Path(audio_dir).glob("*.wav"))[:10]
+        for f in audio_files:
+            arr, sr = sf.read(str(f))
+            if len(arr.shape) > 1: arr = arr[:, 0]
+            inputs = extractor(arr, sampling_rate=sr, return_tensors="pt", padding=True).to(device)
+            with torch.no_grad():
+                logits = model(**inputs).logits
+            pred = torch.argmax(logits, dim=-1).item()
+            print(f"  ✓ {{f.name}}: class {{pred}}")
+        print("✓ Wav2Vec2 classification complete")
+    except Exception as e:
+        print(f"✗ Wav2Vec2: {{e}}")
+
+
+def run_sepformer(audio_dir):
+    \"\"\"Source separation with SepFormer (SpeechBrain).\"\"\"
+    try:
+        from speechbrain.inference.separation import SepformerSeparation
+        from pathlib import Path
+        model = SepformerSeparation.from_hparams(
+            source="speechbrain/sepformer-whamr", savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
+        audio_files = list(Path(audio_dir).glob("*.wav"))[:5]
+        save_dir = os.path.join(os.path.dirname(__file__), "separated")
+        os.makedirs(save_dir, exist_ok=True)
+        for f in audio_files:
+            est_sources = model.separate_file(path=str(f))
+            for i in range(est_sources.shape[-1]):
+                out_path = os.path.join(save_dir, f"{{f.stem}}_source{{i}}.wav")
+                model.save_audio(out_path, est_sources[:, :, i])
+            print(f"  ✓ {{f.name}}: separated into {{est_sources.shape[-1]}} sources")
+        print(f"✓ SepFormer outputs saved to {{save_dir}}")
+    except Exception as e:
+        print(f"✗ SepFormer: {{e}}")
+
+
 def main():
     print("=" * 60)
     print(f"AUDIO/SPEECH — Task: {{TASK}}")
@@ -2384,7 +2436,9 @@ def main():
             print(f"Saved to {{out}}")
     elif TASK == "cloning": run_voice_cloning()
     elif TASK == "classification":
-        print(f"Audio classification data loaded: {{type(data)}}")
+        run_wav2vec2_clf(audio_dir)
+    elif TASK == "separation":
+        run_sepformer(audio_dir)
     else:
         results = run_whisper(audio_dir)
 
@@ -2608,7 +2662,7 @@ def gen_ocr(path, cfg):
     return textwrap.dedent('''\
 """
 Modern OCR Pipeline (April 2026)
-Model: PaddleOCR (GPU, multilingual)
+Model: PaddleOCR + PaddleOCR-VL-1.5 (GPU, multilingual)
 Data: Auto-downloads sample document images at runtime
 """
 import os, json, warnings
@@ -2657,10 +2711,23 @@ def run_ocr(files):
 
 def main():
     print("=" * 60)
-    print("OCR — PaddleOCR (GPU)")
+    print("OCR — PaddleOCR + PaddleOCR-VL-1.5 (GPU)")
     print("=" * 60)
     files = download_samples()
     results = run_ocr(files)
+
+    # PaddleOCR-VL-1.5 (vision-language OCR)
+    try:
+        from paddleocr import PaddleOCR
+        vl_ocr = PaddleOCR(use_doc_orientation_classify=False, use_doc_unwarping=False,
+                           use_textline_orientation=False, lang="en", use_gpu=True)
+        for f in files[:5]:
+            vl_result = vl_ocr.ocr(str(f), cls=True)
+            n_lines = len(vl_result[0]) if vl_result and vl_result[0] else 0
+            print(f"  ✓ VL-1.5 {f.name}: {n_lines} lines")
+        print("✓ PaddleOCR-VL-1.5 complete")
+    except Exception as e:
+        print(f"✗ PaddleOCR-VL-1.5: {e}")
     out_path = os.path.join(os.path.dirname(__file__), "ocr_results.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)

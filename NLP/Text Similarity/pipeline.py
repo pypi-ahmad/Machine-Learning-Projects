@@ -1,6 +1,6 @@
 """
 Modern NLP Generation Pipeline (April 2026)
-Model: Qwen3-Instruct via Ollama (local GPU inference)
+Model: Qwen3-Instruct via Ollama (chat/generation), NLLB-200 (translation)
 Data: Auto-downloaded at runtime
 """
 import os, json, warnings
@@ -42,13 +42,21 @@ def run_summarization(df):
 
 
 def run_translation(df):
+    """Translate with NLLB-200 (Meta) — 200 language pairs, offline."""
+    import torch
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model_id = "facebook/nllb-200-distilled-600M"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
     text_col = df.select_dtypes("object").columns[0]
     results = []
     for i, text in enumerate(df[text_col].dropna().head(10)):
-        translated = query_ollama(f"Translate to English:\n\n{text[:1000]}\n\nTranslation:")
-        if translated:
-            results.append({"original": text[:100], "translated": translated})
-            print(f"  [{i+1}] {translated[:100]}...")
+        inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
+        translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids("eng_Latn"), max_new_tokens=256)
+        translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
+        results.append({"original": text[:100], "translated": translated})
+        print(f"  [{i+1}] {translated[:100]}...")
     return results
 
 

@@ -1,6 +1,6 @@
 """
 Fraud / Imbalanced Classification Pipeline (April 2026)
-Models: CatBoost, LightGBM, XGBoost, AutoGluon, TabM — GPU + threshold tuning
+Models: CatBoost, LightGBM, XGBoost + PyOD — GPU + threshold tuning
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -86,89 +86,16 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         except Exception as e:
             print(f"✗ {name}: {e}")
 
-    # AutoGluon TabularPredictor (fraud-tuned)
+    # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     try:
-        from autogluon.tabular import TabularPredictor
-        ag_train = pd.concat([X_train, y_train], axis=1)
-        ag_test = pd.concat([X_test, y_test], axis=1)
-        predictor = TabularPredictor(label=ag_train.columns[-1], eval_metric="f1",
-                                      path=os.path.join(os.path.dirname(__file__), "ag_fraud"))
-        predictor.fit(ag_train, time_limit=120, presets="best_quality")
-        ag_proba = predictor.predict_proba(ag_test).iloc[:, 1].values
-        thresh = find_best_threshold(y_test, ag_proba)
-        preds = (ag_proba >= thresh).astype(int)
-        results["AutoGluon"] = {"preds": preds, "proba": ag_proba, "thresh": thresh}
-        print(f"✓ AutoGluon F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
+        from pyod.models.ecod import ECOD
+        ecod = ECOD(contamination=0.05)
+        ecod.fit(X_train)
+        anomaly_scores = ecod.decision_function(X_test)
+        n_anom = (ecod.predict(X_test) == 1).sum()
+        print(f"✓ PyOD ECOD: {n_anom} anomalies flagged in test set ({n_anom/len(X_test):.2%})")
     except Exception as e:
-        print(f"✗ AutoGluon: {e}")
-
-    # TabM (binary fraud classifier)
-    try:
-        import torch
-        import torch.nn as nn
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        X_tr = torch.tensor(X_train.values, dtype=torch.float32).to(device)
-        X_te = torch.tensor(X_test.values, dtype=torch.float32).to(device)
-        y_tr = torch.tensor(y_train.values, dtype=torch.float32).to(device)
-        in_dim = X_tr.shape[1]
-
-        class TabMBlock(nn.Module):
-            def __init__(self, dim):
-                super().__init__()
-                self.fc = nn.Linear(dim, dim)
-                self.act = nn.SiLU()
-                self.norm = nn.LayerNorm(dim)
-            def forward(self, x): return self.norm(x + self.act(self.fc(x)))
-
-        class TabM(nn.Module):
-            def __init__(self):
-                super().__init__()
-                self.embed = nn.Linear(in_dim, 256)
-                self.blocks = nn.Sequential(*[TabMBlock(256) for _ in range(3)])
-                self.head = nn.Sequential(nn.Dropout(0.3), nn.Linear(256, 1))
-            def forward(self, x): return self.head(self.blocks(self.embed(x)))
-
-        model = TabM().to(device)
-        pos_weight = torch.tensor([scale], device=device)
-        crit = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-        for ep in range(80):
-            model.train()
-            logits = model(X_tr).squeeze()
-            loss = crit(logits, y_tr)
-            loss.backward(); opt.step(); opt.zero_grad()
-        model.eval()
-        with torch.no_grad():
-            proba = torch.sigmoid(model(X_te).squeeze()).cpu().numpy()
-        thresh = find_best_threshold(y_test, proba)
-        preds = (proba >= thresh).astype(int)
-        results["TabM"] = {"preds": preds, "proba": proba, "thresh": thresh}
-        print(f"✓ TabM F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
-    except Exception as e:
-        print(f"✗ TabM: {e}")
-
-    # ── Baseline Comparison: FLAML AutoML ──
-    try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
-        proba = automl.predict_proba(X_test)[:, 1]
-        thresh = find_best_threshold(y_test, proba)
-        preds = (proba >= thresh).astype(int)
-        results["FLAML"] = {"preds": preds, "proba": proba, "thresh": thresh}
-        print(f"✓ FLAML ({automl.best_estimator}) F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
-    except Exception as e:
-        print(f"✗ FLAML: {e}")
-
-    # ── Baseline Comparison: LazyPredict ──
-    try:
-        from lazypredict.Supervised import LazyClassifier
-        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
-        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
-        print(f"\n✓ LazyPredict — Top 5 classifiers:")
-        print(lazy_models.head().to_string())
-    except Exception as e:
-        print(f"✗ LazyPredict: {e}")
+        print(f"✗ PyOD: {e}")
 
     return results
 
@@ -183,7 +110,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
+    print("CatBoost | LightGBM | XGBoost | PyOD")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)

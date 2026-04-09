@@ -57,10 +57,22 @@ def train(df):
             from sentence_transformers import SentenceTransformer
             from sklearn.metrics.pairwise import cosine_similarity
             items = df[[item_col, content_col]].drop_duplicates(subset=[item_col]).head(1000)
+
+            # BGE-M3 embeddings
             model = SentenceTransformer("BAAI/bge-m3")
             embs = model.encode(items[content_col].fillna("").tolist(), batch_size=32)
             sim = cosine_similarity(embs)
-            print(f"✓ Content-based: {len(items)} items embedded")
+            print(f"✓ BGE-M3 content-based: {len(items)} items embedded")
+
+            # Qwen3-Embedding (alternative)
+            try:
+                qwen_model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+                qwen_embs = qwen_model.encode(items[content_col].fillna("").head(200).tolist(), batch_size=16)
+                qwen_sim = cosine_similarity(qwen_embs)
+                print(f"✓ Qwen3-Embedding: {len(qwen_embs)} items embedded")
+            except Exception as e:
+                print(f"✗ Qwen3-Embedding: {e}")
+
         except Exception as e: print(f"✗ Content-based: {e}")
 
 

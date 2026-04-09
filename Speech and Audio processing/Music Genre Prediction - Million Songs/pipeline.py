@@ -1,6 +1,6 @@
 """
 Modern Audio/Speech Pipeline (April 2026)
-Models: Whisper large-v3-turbo (ASR), Wav2Vec2 (clf), XTTS-v2 (TTS)
+Models: Whisper large-v3-turbo (ASR), Wav2Vec2 (clf), SepFormer (separation), XTTS-v2 (TTS)
 Data: Auto-downloaded at runtime from HuggingFace
 """
 import os, json, warnings
@@ -78,6 +78,54 @@ def run_voice_cloning():
         print(f"✗ XTTS: {e}")
 
 
+def run_wav2vec2_clf(audio_dir):
+    """Audio classification with Wav2Vec2."""
+    import torch
+    from transformers import Wav2Vec2ForSequenceClassification, Wav2Vec2FeatureExtractor
+    import soundfile as sf
+    from pathlib import Path
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model_id = "facebook/wav2vec2-base"
+    try:
+        extractor = Wav2Vec2FeatureExtractor.from_pretrained(model_id)
+        model = Wav2Vec2ForSequenceClassification.from_pretrained(
+            model_id, num_labels=10).to(device)
+        audio_files = list(Path(audio_dir).glob("*.wav"))[:10]
+        for f in audio_files:
+            arr, sr = sf.read(str(f))
+            if len(arr.shape) > 1: arr = arr[:, 0]
+            inputs = extractor(arr, sampling_rate=sr, return_tensors="pt", padding=True).to(device)
+            with torch.no_grad():
+                logits = model(**inputs).logits
+            pred = torch.argmax(logits, dim=-1).item()
+            print(f"  ✓ {f.name}: class {pred}")
+        print("✓ Wav2Vec2 classification complete")
+    except Exception as e:
+        print(f"✗ Wav2Vec2: {e}")
+
+
+def run_sepformer(audio_dir):
+    """Source separation with SepFormer (SpeechBrain)."""
+    try:
+        from speechbrain.inference.separation import SepformerSeparation
+        from pathlib import Path
+        model = SepformerSeparation.from_hparams(
+            source="speechbrain/sepformer-whamr", savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
+        audio_files = list(Path(audio_dir).glob("*.wav"))[:5]
+        save_dir = os.path.join(os.path.dirname(__file__), "separated")
+        os.makedirs(save_dir, exist_ok=True)
+        for f in audio_files:
+            est_sources = model.separate_file(path=str(f))
+            for i in range(est_sources.shape[-1]):
+                out_path = os.path.join(save_dir, f"{f.stem}_source{i}.wav")
+                model.save_audio(out_path, est_sources[:, :, i])
+            print(f"  ✓ {f.name}: separated into {est_sources.shape[-1]} sources")
+        print(f"✓ SepFormer outputs saved to {save_dir}")
+    except Exception as e:
+        print(f"✗ SepFormer: {e}")
+
+
 def main():
     print("=" * 60)
     print(f"AUDIO/SPEECH — Task: {TASK}")
@@ -91,7 +139,9 @@ def main():
             print(f"Saved to {out}")
     elif TASK == "cloning": run_voice_cloning()
     elif TASK == "classification":
-        print(f"Audio classification data loaded: {type(data)}")
+        run_wav2vec2_clf(audio_dir)
+    elif TASK == "separation":
+        run_sepformer(audio_dir)
     else:
         results = run_whisper(audio_dir)
 

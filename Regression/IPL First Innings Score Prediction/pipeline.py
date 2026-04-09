@@ -1,6 +1,6 @@
 """
 Modern Tabular Regression Pipeline (April 2026)
-Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + TabM
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -89,6 +89,19 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ AutoGluon: {e}")
 
+    # ── RealTabPFN-v2 (prior-fitted network — regression) ──
+    try:
+        from tabpfn import TabPFNRegressor
+        if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            m = TabPFNRegressor(device="cuda", N_ensemble_configurations=32)
+            m.fit(X_train.values, y_train.values)
+            results["TabPFN-v2"] = m.predict(X_test.values)
+            print(f"✓ TabPFN-v2 RMSE: {mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}")
+        else:
+            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+    except Exception as e:
+        print(f"✗ TabPFN-v2: {e}")
+
     # ── TabM (deep tabular) ──
     try:
         import torch, torch.nn as nn
@@ -165,7 +178,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR REGRESSION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)

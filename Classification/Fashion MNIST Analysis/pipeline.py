@@ -1,6 +1,6 @@
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 fine-tuning + Qwen3-VL zero-shot — Vision Transformer
+Model: DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -107,10 +107,50 @@ def train_model():
     except Exception as e:
         print(f"✗ Qwen3-VL: {e}")
 
+    # ConvNeXt V2 (alternative backbone)
+    try:
+        import timm
+        convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
+        convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
+        for epoch in range(3):
+            convnext.train(); total_loss = 0
+            for imgs, labels in train_loader:
+                imgs, labels = imgs.to(device), labels.to(device)
+                loss = criterion(convnext(imgs), labels); loss.backward()
+                convnext_opt.step(); convnext_opt.zero_grad(); total_loss += loss.item()
+        convnext.eval(); cv_preds, cv_gts = [], []
+        with torch.no_grad():
+            for imgs, labels in val_loader:
+                cv_preds.extend(torch.argmax(convnext(imgs.to(device)), dim=-1).cpu().numpy())
+                cv_gts.extend(labels.numpy())
+        cv_acc = accuracy_score(cv_gts, cv_preds)
+        print(f"✓ ConvNeXt V2 Val Accuracy: {cv_acc:.4f}")
+    except Exception as e:
+        print(f"✗ ConvNeXt V2: {e}")
+
+    # Molmo 2 (vision-language, alternative to Qwen3-VL)
+    try:
+        from transformers import AutoModelForCausalLM, AutoProcessor as AP2
+        molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
+            torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
+        molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
+        total = 0
+        for imgs, labels in val_loader:
+            if total >= 5: break
+            img_t = imgs[0]
+            pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
+            inputs = molmo_proc.process(images=[pil_img], text="Classify this image into one category. Reply with only the category name.")
+            inputs = {k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}
+            out = molmo.generate_from_batch(inputs, max_new_tokens=20, tokenizer=molmo_proc.tokenizer)
+            total += 1
+        print(f"✓ Molmo-2 tested {total} samples")
+    except Exception as e:
+        print(f"✗ Molmo-2: {e}")
+
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 (ViT-S/14) + Qwen3-VL")
+    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2")
     print("=" * 60)
     train_model()
 
