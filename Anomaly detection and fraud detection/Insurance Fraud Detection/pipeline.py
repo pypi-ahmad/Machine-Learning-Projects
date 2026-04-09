@@ -146,7 +146,33 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ TabM: {e}")
 
+    # ── Baseline Comparison: FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        proba = automl.predict_proba(X_test)[:, 1]
+        thresh = find_best_threshold(y_test, proba)
+        preds = (proba >= thresh).astype(int)
+        results["FLAML"] = {"preds": preds, "proba": proba, "thresh": thresh}
+        print(f"✓ FLAML ({automl.best_estimator}) F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    # ── Baseline Comparison: LazyPredict ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        print(f"\n✓ LazyPredict — Top 5 classifiers:")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {e}")
+
     return results
+
+
+def report(results, y_test, save_dir="."):
     for name, r in results.items():
         print(f"\n— {name} (threshold={r['thresh']:.3f}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
@@ -156,7 +182,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)

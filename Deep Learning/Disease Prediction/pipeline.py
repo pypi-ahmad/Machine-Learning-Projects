@@ -182,6 +182,26 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ TabM: {e}")
 
+    # ── Baseline Comparison: FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML ({automl.best_estimator}) Accuracy: {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    # ── Baseline Comparison: LazyPredict ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        print(f"\n✓ LazyPredict — Top 5 classifiers:")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {e}")
+
     return results
 
 
@@ -209,7 +229,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)

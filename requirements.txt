@@ -35,7 +35,8 @@ ultralytics>=8.3.0
 
 # ── AutoML & Baselines ─────────────────────────────────────
 # pycaret>=3.5.0      # not yet compatible with Python 3.13
-# lazypredict>=0.2.14  # not yet compatible with Python 3.13
+lazypredict>=0.2.14
+flaml>=2.3.0
 autogluon.tabular>=1.2.0
 autogluon.timeseries>=1.2.0
 

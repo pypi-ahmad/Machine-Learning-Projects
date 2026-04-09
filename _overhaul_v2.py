@@ -966,6 +966,26 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ TabM: {{e}}")
 
+    # ── Baseline Comparison: FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\\n✓ FLAML ({{automl.best_estimator}}) Accuracy: {{accuracy_score(y_test, results['FLAML']):.4f}}")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    # ── Baseline Comparison: LazyPredict ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        print(f"\\n✓ LazyPredict — Top 5 classifiers:")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {{e}}")
+
     return results
 
 
@@ -993,7 +1013,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)
@@ -1133,6 +1153,26 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ TabM: {{e}}")
 
+    # ── Baseline Comparison: FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, verbose=0)
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    # ── Baseline Comparison: LazyPredict ──
+    try:
+        from lazypredict.Supervised import LazyRegressor
+        lazy = LazyRegressor(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        print(f"\\n✓ LazyPredict — Top 5 regressors:")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {{e}}")
+
     return results
 
 
@@ -1158,7 +1198,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR REGRESSION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -1324,7 +1364,33 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ TabM: {{e}}")
 
+    # ── Baseline Comparison: FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        proba = automl.predict_proba(X_test)[:, 1]
+        thresh = find_best_threshold(y_test, proba)
+        preds = (proba >= thresh).astype(int)
+        results["FLAML"] = {{"preds": preds, "proba": proba, "thresh": thresh}}
+        print(f"✓ FLAML ({{automl.best_estimator}}) F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    # ── Baseline Comparison: LazyPredict ──
+    try:
+        from lazypredict.Supervised import LazyClassifier
+        lazy = LazyClassifier(verbose=0, ignore_warnings=True)
+        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        print(f"\\n✓ LazyPredict — Top 5 classifiers:")
+        print(lazy_models.head().to_string())
+    except Exception as e:
+        print(f"✗ LazyPredict: {{e}}")
+
     return results
+
+
+def report(results, y_test, save_dir="."):
     for name, r in results.items():
         print(f"\\n— {{name}} (threshold={{r['thresh']:.3f}}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
@@ -1334,7 +1400,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
-    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM | FLAML | LazyPredict")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -2017,6 +2083,39 @@ def forecast(df, target):
         print(f"✓ AutoGluon-TS RMSE: {{rmse:.4f}}")
     except Exception as e: print(f"✗ AutoGluon-TS: {{e}}")
 
+    # ── Baseline: lag-feature tabular reframing with FLAML ──
+    try:
+        from flaml import AutoML
+        lags = [1, 2, 3, 5, 7, 14, 21]
+        lag_df = pd.DataFrame({{"y": series}})
+        for lg in lags:
+            lag_df[f"lag_{{lg}}"] = lag_df["y"].shift(lg)
+        lag_df["rolling_7"] = lag_df["y"].rolling(7).mean()
+        lag_df["rolling_14"] = lag_df["y"].rolling(14).mean()
+        lag_df = lag_df.dropna()
+        lag_train = lag_df.iloc[:split - max(lags)]
+        lag_test = lag_df.iloc[split - max(lags):split - max(lags) + HORIZON]
+        if len(lag_test) >= HORIZON:
+            X_lag_tr = lag_train.drop(columns=["y"]); y_lag_tr = lag_train["y"]
+            X_lag_te = lag_test.drop(columns=["y"]); y_lag_te = lag_test["y"]
+            automl = AutoML()
+            automl.fit(X_lag_tr, y_lag_tr, task="regression", time_budget=60, verbose=0)
+            y_pred = automl.predict(X_lag_te)[:len(test)]
+            rmse = mean_squared_error(y_lag_te.values[:len(y_pred)], y_pred, squared=False)
+            results["FLAML-Lag"] = y_pred
+            print(f"✓ FLAML-Lag ({{automl.best_estimator}}) RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ FLAML-Lag: {{e}}")
+
+    # ── Baseline: LazyPredict on lag features ──
+    try:
+        from lazypredict.Supervised import LazyRegressor
+        if "X_lag_tr" in dir() and len(X_lag_tr) > 0:
+            lazy = LazyRegressor(verbose=0, ignore_warnings=True)
+            lazy_models, _ = lazy.fit(X_lag_tr, X_lag_te, y_lag_tr, y_lag_te)
+            print(f"\\n✓ LazyPredict (lag-tabular) — Top 5 regressors:")
+            print(lazy_models.head().to_string())
+    except Exception as e: print(f"✗ LazyPredict-Lag: {{e}}")
+
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
     ax.plot(range(len(train)), train, alpha=0.5, label="Train")
@@ -2031,7 +2130,7 @@ def forecast(df, target):
 
 def main():
     print("=" * 60)
-    print("TIME SERIES: AutoGluon + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast")
+    print("TIME SERIES: AutoGluon + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast + FLAML/LazyPredict")
     print("=" * 60)
     df, target = load_data()
     forecast(df, target)
