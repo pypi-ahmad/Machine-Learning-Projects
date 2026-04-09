@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "RandomForestClassifier",
+  "pycaret_model": "LinearSVC",
+  "accuracy": 0.7283,
+  "f1": 0.7136,
+  "precision": 0.719,
+  "recall": 0.6722,
+  "lp_accuracy": 0.7115,
+  "lp_f1": 0.6921
+}

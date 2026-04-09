@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "AdaBoostClassifier",
+  "pycaret_model": "ExtraTreesClassifier",
+  "accuracy": 0.9391,
+  "f1": 0.8903,
+  "precision": 0.9299,
+  "recall": 0.9172,
+  "lp_accuracy": 0.9296,
+  "lp_f1": 0.8823
+}

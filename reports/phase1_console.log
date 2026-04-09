@@ -1,0 +1,118 @@
+======================================================================
+  Phase 1: Dataset Discovery + Notebook Patching + Reports
+======================================================================
+
+[1/4] Discovering and preparing datasets à
+2026-03-03 06:43:27 | INFO     | utils.dataset_finder | Preparing: automated-image-captioning
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: bbc-articles-summarization
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: cyberbullying-classification
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: e-commerce-clothing-reviews
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: e-commerce-product-classification
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: economic-news-articles
+2026-03-03 06:43:28 | INFO     | utils.dataset_finder | Preparing: english-to-french-translation
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: fake-news-detection
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: kaggle-survey-questions-clustering
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: medium-articles-clustering
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: name-generate-from-languages
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: news-headline-classification
+2026-03-03 06:43:29 | INFO     | utils.dataset_finder | Preparing: newsgroups-posts-clustering
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 105: character maps to <undefined>
+Call stack:
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 653, in <module>
+    main()
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 605, in main
+    ds_results = prepare_all_projects()
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 530, in prepare_all_projects
+    result = prepare_project_data(project_dir, slug)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 486, in prepare_project_data
+    ok = _try_kaggle_download(project_slug, raw_dir)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 410, in _try_kaggle_download
+    download_dataset(slug, dest=dest)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_downloader.py", line 168, in download_dataset
+    _download_kaggle_dataset(slug, raw_dir)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_downloader.py", line 94, in _download_kaggle_dataset
+    logger.info("Downloading dataset '%s' \u2192 %s", slug, dest)
+Message: "Downloading dataset '%s' \u2192 %s"
+Arguments: ('crawford/20-newsgroups', WindowsPath('D:/Workspace/Github/Natural-Language-Processing-Projects-with-Documentations/data/newsgroups-posts-clustering/raw'))
+Dataset URL: https://www.kaggle.com/datasets/crawford/20-newsgroups
+2026-03-03 06:43:50 | INFO     | utils.dataset_downloader | Extracting 20-newsgroups.zip ...
+2026-03-03 06:43:53 | INFO     | utils.dataset_downloader | Extracted and removed 20-newsgroups.zip
+2026-03-03 06:43:53 | INFO     | utils.dataset_downloader | Done ù 21 file(s) in D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\data\newsgroups-posts-clustering\raw
+2026-03-03 06:43:53 | INFO     | utils.dataset_finder | Preparing: paper-subject-prediction
+2026-03-03 06:43:53 | INFO     | utils.dataset_finder | Preparing: review-classification
+2026-03-03 06:43:54 | INFO     | utils.dataset_finder | Preparing: spam-message-detection
+2026-03-03 06:43:54 | INFO     | utils.dataset_finder | Preparing: stories-clustering
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 120: character maps to <undefined>
+Call stack:
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 653, in <module>
+    main()
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 605, in main
+    ds_results = prepare_all_projects()
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 530, in prepare_all_projects
+    result = prepare_project_data(project_dir, slug)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 486, in prepare_project_data
+    ok = _try_kaggle_download(project_slug, raw_dir)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 410, in _try_kaggle_download
+    download_dataset(slug, dest=dest)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_downloader.py", line 168, in download_dataset
+    _download_kaggle_dataset(slug, raw_dir)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_downloader.py", line 94, in _download_kaggle_dataset
+    logger.info("Downloading dataset '%s' \u2192 %s", slug, dest)
+Message: "Downloading dataset '%s' \u2192 %s"
+Arguments: ('fareedkhan557/1000-stories-100-genres', WindowsPath('D:/Workspace/Github/Natural-Language-Processing-Projects-with-Documentations/data/stories-clustering/raw'))
+Dataset URL: https://www.kaggle.com/datasets/fareedkhan557/1000-stories-100-genres
+2026-03-03 06:44:03 | INFO     | utils.dataset_downloader | Extracting 1000-stories-100-genres.zip ...
+2026-03-03 06:44:03 | INFO     | utils.dataset_downloader | Extracted and removed 1000-stories-100-genres.zip
+2026-03-03 06:44:03 | INFO     | utils.dataset_downloader | Done ù 1 file(s) in D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\data\stories-clustering\raw
+2026-03-03 06:44:03 | INFO     | utils.dataset_finder | Preparing: toxic-comment-classification
+2026-03-03 06:44:04 | INFO     | utils.dataset_finder | Preparing: trip-advisor-hotel-reviews
+2026-03-03 06:44:04 | INFO     | utils.dataset_finder | Preparing: twitter-sentiment-analysis
+2026-03-03 06:44:05 | INFO     | utils.dataset_finder | Preparing: world-war-i-letters
+--- Logging error ---
+Traceback (most recent call last):
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\logging\__init__.py", line 1154, in emit
+    stream.write(msg + self.terminator)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 79: character maps to <undefined>
+Call stack:
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 653, in <module>
+    main()
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 611, in main
+    map_path = generate_dataset_map(ds_results)
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\utils\dataset_finder.py", line 553, in generate_dataset_map
+    logger.info("Saved dataset_map.json \u2192 %s", out_path)
+Message: 'Saved dataset_map.json \u2192 %s'
+Arguments: (WindowsPath('D:/Workspace/Github/Natural-Language-Processing-Projects-with-Documentations/reports/dataset_map.json'),)
+       21/21 datasets READY
+
+[2/4] Generating dataset reports à
+Traceback (most recent call last):
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 653, in <module>
+    main()
+    ~~~~^^
+  File "D:\Workspace\Github\Natural-Language-Processing-Projects-with-Documentations\scripts\phase1_patch_notebooks.py", line 612, in main
+    print(f"       \u2192 {map_path.relative_to(WORKSPACE)}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2192' in position 7: character maps to <undefined>

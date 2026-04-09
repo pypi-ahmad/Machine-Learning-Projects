@@ -1,0 +1,10 @@
+# E-commerce Product Classification — 4 classes
+# Phase 2 result: F1w=0.2131 (BAD)
+# Fix: more epochs, proper stabilisation
+
+epochs: 4
+patience: 2
+max_length: 256
+focal_gamma: 1.0
+label_smoothing: 0.05
+max_samples: 10000

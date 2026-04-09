@@ -1,0 +1,10 @@
+# Paper Subject Prediction — many classes (extracted first term)
+# Phase 2 result: F1w=0.3826 (BAD)
+# Fix: more epochs, focal loss for many classes
+
+epochs: 5
+patience: 3
+max_length: 384
+focal_gamma: 2.0
+label_smoothing: 0.05
+max_samples: 10000

@@ -1,0 +1,54 @@
+# ============================================================
+# Global Configuration — Deep Learning Projects Monorepo
+# PyTorch-only | CUDA 13.0
+# ============================================================
+# Usage in Python:
+#   import yaml
+#   from pathlib import Path
+#   cfg = yaml.safe_load(open("configs/global_config.yaml"))
+# ============================================================
+
+# ── Device & Hardware ────────────────────────────────────────
+device: "auto"                  # "auto" | "cuda" | "cpu" | "mps"
+num_workers: 4                  # DataLoader workers
+pin_memory: true                # Pin memory for CUDA transfers
+mixed_precision: true           # Use torch.amp for AMP
+
+# ── Reproducibility ─────────────────────────────────────────
+seed: 42
+deterministic: true             # torch.backends.cudnn.deterministic
+
+# ── Training Defaults ────────────────────────────────────────
+batch_size: 32
+learning_rate: 0.001
+num_epochs: 50
+weight_decay: 0.0001
+optimizer: "adamw"              # "adam" | "adamw" | "sgd"
+scheduler: "cosine"             # "cosine" | "step" | "plateau" | "none"
+
+# ── Data Splits ──────────────────────────────────────────────
+train_split: 0.7
+val_split: 0.15
+test_split: 0.15
+
+# ── Logging & Tracking ──────────────────────────────────────
+log_level: "INFO"
+use_wandb: false
+use_mlflow: false
+checkpoint_dir: "outputs/checkpoints"
+log_dir: "outputs/logs"
+
+# ── Evaluation Metrics (defaults by task) ────────────────────
+metrics:
+  classification:
+    - accuracy
+    - f1
+    - precision
+    - recall
+  regression:
+    - rmse
+    - mae
+    - r2
+  segmentation:
+    - iou
+    - dice

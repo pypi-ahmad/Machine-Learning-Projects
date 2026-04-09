@@ -1,0 +1,10 @@
+# Twitter Sentiment Analysis — 5 classes
+# Phase 2 result: F1w=0.1230 (BAD)
+# Fix: more epochs, focal loss for 5-class
+
+epochs: 4
+patience: 2
+max_length: 128
+focal_gamma: 1.5
+label_smoothing: 0.05
+max_samples: 10000

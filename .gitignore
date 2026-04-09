@@ -1,97 +1,77 @@
-# ══════════════════════════════════════════════════════════════
-#  .gitignore — Machine Learning Projects
-# ══════════════════════════════════════════════════════════════
+# ==============================================================================
+# Deep Learning Projects Monorepo — .gitignore
+# ==============================================================================
 
-# ── Virtual Environments ──
+# ─── Virtual Environments ─────────────────────────────────────────────────────
+.venv/
 venv/
 env/
-.env/
-.venv/
 Lib/
 
-# ── Python Cache ──
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-*.egg
-dist/
-build/
-*.dist-info/
-site-packages/
-
-# ── Jupyter Notebook ──
-.ipynb_checkpoints/
-*.ipynb_checkpoints/
-
-# ── IDE / Editor ──
+# ─── IDE & Editor ─────────────────────────────────────────────────────────────
 .idea/
 .vscode/
 *.swp
 *.swo
 *~
-.project
-.classpath
-.settings/
 
-# ── OS Files ──
-.DS_Store
-Thumbs.db
-Desktop.ini
-ehthumbs.db
+# ─── Python Cache ─────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
 
-# ── Model Artifacts & Serialized Objects ──
+# ─── Jupyter / Notebook ──────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ─── Installed Packages ──────────────────────────────────────────────────────
+*.dist-info/
+site-packages/
+*.egg-info/
+
+# ─── Model Weights & Checkpoints ─────────────────────────────────────────────
+*.pt
+*.pth
+*.ckpt
 *.h5
 *.hdf5
-*.pkl
-*.pickle
-*.sav
-*.joblib
 *.pb
-*.pth
-*.pt
-*.onnx
 *.tflite
-saved_model/
-checkpoints/
+*.onnx
+*.caffemodel
+*.model
 
-# ── Large Data Files (>90MB GitHub limit) ──
-# Centralized data directory (6.7 GB — each project has its own dataset copy)
+# ─── Data & Datasets ─────────────────────────────────────────────────────────
+datasets/
 data/
+outputs/
+logs/
 
-# Block by extension
+# ─── Experiment Tracking ─────────────────────────────────────────────────────
+wandb/
+mlruns/
+lightning_logs/
+
+# ─── Large Files (use Git LFS for files > 95 MB) ─────────────────────────────
+# Recommendation: install Git LFS and track large binaries with:
+#   git lfs install
+#   git lfs track "*.zip"
+#   git lfs track "*.7z"
+# etc.
 *.zip
+*.7z
+*.rar
+*.tar
 *.tar.gz
 *.tar.bz2
-*.rar
-*.7z
-*.gz
+*.npy
+*.npz
+*.csv
+*.tsv
 *.parquet
 *.feather
-*.arrow
 
-# ── Audit & Internal Tooling ──
-audit_phase1/
-audit_phase2/
-audit_phase3/
-audit_phase5/
-audit_phase6/
-audit_phase8/
-audit_scripts/
-
-# ── Logs ──
-*.log
-logs/
-logs.log
-
-# ── pytest Cache ──
-.pytest_cache/
-htmlcov/
-.coverage
-coverage.xml
-
-# ── Miscellaneous ──
-*.tmp
-*.bak
-*.orig
+# ─── System Files ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

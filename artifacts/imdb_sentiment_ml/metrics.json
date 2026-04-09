@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "BaggingClassifier",
+  "pycaret_model": "RandomForestClassifier",
+  "accuracy": 0.7436,
+  "f1": 0.7312,
+  "precision": 0.7392,
+  "recall": 0.686,
+  "lp_accuracy": 0.7198,
+  "lp_f1": 0.7185
+}

@@ -1,0 +1,134 @@
+{
+  "e-commerce-clothing-reviews": {
+    "type": "dataset",
+    "slug": "nicapotato/womens-ecommerce-clothing-reviews",
+    "url": "https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews",
+    "category": "1-text-processing-and-analysis"
+  },
+  "trip-advisor-hotel-reviews": {
+    "type": "dataset",
+    "slug": "thedevastator/tripadvisor-hotel-reviews",
+    "url": "https://www.kaggle.com/datasets/thedevastator/tripadvisor-hotel-reviews",
+    "category": "1-text-processing-and-analysis"
+  },
+  "world-war-i-letters": {
+    "type": "dataset",
+    "slug": "anthaus/world-war-i-letters",
+    "url": "https://www.kaggle.com/datasets/anthaus/world-war-i-letters",
+    "category": "1-text-processing-and-analysis"
+  },
+
+  "cyberbullying-classification": {
+    "type": "dataset",
+    "slug": "andrewmvd/cyberbullying-classification",
+    "url": "https://www.kaggle.com/datasets/andrewmvd/cyberbullying-classification",
+    "category": "2-text-classification"
+  },
+  "e-commerce-product-classification": {
+    "type": "dataset",
+    "slug": "sumedhdataaspirant/e-commerce-text-dataset",
+    "url": "https://www.kaggle.com/datasets/sumedhdataaspirant/e-commerce-text-dataset",
+    "category": "2-text-classification"
+  },
+  "economic-news-articles": {
+    "type": "dataset",
+    "slug": "adhamelkomy/news-classification-and-analysis-using-nlp",
+    "url": "https://www.kaggle.com/datasets/adhamelkomy/news-classification-and-analysis-using-nlp",
+    "category": "2-text-classification"
+  },
+  "fake-news-detection": {
+    "type": "dataset",
+    "slug": "vishakhdapat/fake-news-detection",
+    "url": "https://www.kaggle.com/datasets/vishakhdapat/fake-news-detection",
+    "category": "2-text-classification"
+  },
+  "news-headline-classification": {
+    "type": "dataset",
+    "slug": "rmisra/news-category-dataset",
+    "url": "https://www.kaggle.com/datasets/rmisra/news-category-dataset",
+    "category": "2-text-classification"
+  },
+  "paper-subject-prediction": {
+    "type": "dataset",
+    "slug": "sumitm004/arxiv-scientific-research-papers-dataset",
+    "url": "https://www.kaggle.com/datasets/sumitm004/arxiv-scientific-research-papers-dataset",
+    "category": "2-text-classification"
+  },
+  "review-classification": {
+    "type": "dataset",
+    "slug": "ndrianahani/imdb-yelp-and-amazon-reviews",
+    "url": "https://www.kaggle.com/datasets/ndrianahani/imdb-yelp-and-amazon-reviews",
+    "category": "2-text-classification"
+  },
+  "spam-message-detection": {
+    "type": "dataset",
+    "slug": "uciml/sms-spam-collection-dataset",
+    "url": "https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset",
+    "category": "2-text-classification"
+  },
+  "toxic-comment-classification": {
+    "type": "competition",
+    "slug": "jigsaw-toxic-comment-classification-challenge",
+    "url": "https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge",
+    "category": "2-text-classification",
+    "note": "Competition dataset — you must accept rules on Kaggle before downloading."
+  },
+  "twitter-sentiment-analysis": {
+    "type": "dataset",
+    "slug": "milobele/sentiment140-dataset-1600000-tweets",
+    "url": "https://www.kaggle.com/datasets/milobele/sentiment140-dataset-1600000-tweets",
+    "category": "2-text-classification"
+  },
+
+  "automated-image-captioning": {
+    "type": "dataset",
+    "slug": "adityajn105/flickr8k",
+    "url": "https://www.kaggle.com/datasets/adityajn105/flickr8k",
+    "category": "3-text-generation"
+  },
+  "bbc-articles-summarization": {
+    "type": "dataset",
+    "slug": "pariza/bbc-news-summary",
+    "url": "https://www.kaggle.com/datasets/pariza/bbc-news-summary",
+    "category": "3-text-generation"
+  },
+  "english-to-french-translation": {
+    "type": "dataset",
+    "slug": "dhruvildave/en-fr-translation-dataset",
+    "url": "https://www.kaggle.com/datasets/dhruvildave/en-fr-translation-dataset",
+    "category": "3-text-generation"
+  },
+  "name-generate-from-languages": {
+    "type": "dataset",
+    "slug": "davidam9/international-names",
+    "url": "https://www.kaggle.com/datasets/davidam9/international-names",
+    "category": "3-text-generation",
+    "note": "Optional — repo already includes names/*.txt locally. Kaggle dataset is for a larger alternative."
+  },
+
+  "kaggle-survey-questions-clustering": {
+    "type": "competition",
+    "slug": "kaggle-survey-2021",
+    "url": "https://www.kaggle.com/competitions/kaggle-survey-2021",
+    "category": "4-text-clustering-and-topic-modelling",
+    "note": "Competition dataset — you must accept rules on Kaggle before downloading."
+  },
+  "medium-articles-clustering": {
+    "type": "dataset",
+    "slug": "arnabchaki/medium-articles-dataset",
+    "url": "https://www.kaggle.com/datasets/arnabchaki/medium-articles-dataset",
+    "category": "4-text-clustering-and-topic-modelling"
+  },
+  "newsgroups-posts-clustering": {
+    "type": "dataset",
+    "slug": "crawford/20-newsgroups",
+    "url": "https://www.kaggle.com/datasets/crawford/20-newsgroups",
+    "category": "4-text-clustering-and-topic-modelling"
+  },
+  "stories-clustering": {
+    "type": "dataset",
+    "slug": "fareedkhan557/1000-stories-100-genres",
+    "url": "https://www.kaggle.com/datasets/fareedkhan557/1000-stories-100-genres",
+    "category": "4-text-clustering-and-topic-modelling"
+  }
+}

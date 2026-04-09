@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "LinearSVC",
+  "pycaret_model": "ExtraTreesClassifier",
+  "accuracy": 0.7645,
+  "f1": 0.718,
+  "precision": 0.758,
+  "recall": 0.7217,
+  "lp_accuracy": 0.7348,
+  "lp_f1": 0.6988
+}

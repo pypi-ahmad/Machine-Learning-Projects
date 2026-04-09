@@ -1,0 +1,2 @@
+Kaggle (intents.json alternatives): https://www.kaggle.com/datasets/elvinagammed/chatbots-intent-recognition-dataset
+Note: If using custom intents.json, no external dataset needed.

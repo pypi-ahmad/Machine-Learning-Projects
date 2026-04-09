@@ -1,0 +1,10 @@
+# Review Classification — 3 sources (amazon/imdb/yelp), binary
+# Phase 2 result: F1w=0.3333 (BAD)
+# Fix: more epochs, longer training
+
+epochs: 4
+patience: 2
+max_length: 256
+focal_gamma: 0.0
+label_smoothing: 0.05
+max_samples: 10000

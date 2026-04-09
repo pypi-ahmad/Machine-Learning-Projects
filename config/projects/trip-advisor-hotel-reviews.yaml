@@ -1,0 +1,10 @@
+# Trip Advisor Hotel Reviews — 5-class rating
+# Phase 2 result: F1w=0.2689 (BAD)
+# Fix: more epochs, focal loss for imbalanced 5-class, longer training
+
+epochs: 4
+patience: 2
+max_length: 256
+focal_gamma: 1.0
+label_smoothing: 0.05
+max_samples: 10000

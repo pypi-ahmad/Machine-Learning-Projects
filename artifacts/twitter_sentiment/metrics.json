@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "BaggingClassifier",
+  "pycaret_model": "GradientBoostingClassifier",
+  "accuracy": 0.7319,
+  "f1": 0.7105,
+  "precision": 0.7203,
+  "recall": 0.7071,
+  "lp_accuracy": 0.7249,
+  "lp_f1": 0.7075
+}

@@ -1,0 +1,10 @@
+# Cyberbullying Classification — 6 classes
+# Phase 2 result: F1w=0.0498 (BAD)
+# Fix: more epochs, focal loss, class weight stabilisation
+
+epochs: 4
+patience: 2
+max_length: 256
+focal_gamma: 1.5
+label_smoothing: 0.05
+max_samples: 10000

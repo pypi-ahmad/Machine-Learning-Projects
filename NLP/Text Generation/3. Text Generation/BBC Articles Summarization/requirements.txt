@@ -1,0 +1,6 @@
+transformers==4.20.0
+keras_nlp==0.3.0
+datasets
+huggingface-hub
+nltk
+rouge-score

@@ -1,0 +1,61 @@
+# ======================================================================
+# Phase 3 Base Configuration
+# ======================================================================
+# Per-project overrides go in config/projects/<slug>.yaml
+# Any key here can be overridden per project.
+
+random_seed: 42
+test_size: 0.15
+val_size: 0.15
+
+training:
+  batch_size: 2
+  grad_accum: 8
+  lr: 2.0e-5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  max_grad_norm: 1.0
+  label_smoothing: 0.05
+  lr_scheduler_type: cosine
+  seed: 42
+
+classification:
+  model_name: microsoft/deberta-v3-base
+  max_length: 256
+  epochs: 3
+  patience: 2
+  max_samples: 10000
+  focal_gamma: 0.0        # auto-set to 1.5 for >=20 classes
+  run_kfold: true
+  kfold_n: 5
+
+multilabel:
+  model_name: microsoft/deberta-v3-base
+  max_length: 256
+  epochs: 4
+  patience: 2
+  max_samples: 50000
+
+clustering:
+  embedding_model: all-MiniLM-L6-v2
+  n_clusters: 5
+  n_topics: 10
+  max_texts: 15000
+
+summarization:
+  model_name: facebook/bart-large-cnn
+  max_samples: 5000
+
+translation:
+  model_name: facebook/nllb-200-distilled-600M
+  max_samples: 30000
+
+captioning:
+  model_name: Salesforce/blip-image-captioning-large
+  max_samples: 200
+
+generation:
+  hidden_size: 128
+  n_layers: 2
+  epochs: 20
+  lr: 0.003

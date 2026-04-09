@@ -1,0 +1,8 @@
+# Toxic Comment Classification — multilabel (6 labels)
+# Phase 2 result: F1mi=0.0000 (CRITICAL)
+# Fix: custom BCEWithLogitsLoss with pos_weight, per-label threshold tuning
+
+epochs: 4
+patience: 2
+max_length: 256
+max_samples: 50000

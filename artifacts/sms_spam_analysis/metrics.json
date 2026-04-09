@@ -1,0 +1,10 @@
+{
+  "best_model_lazypredict": "ExtraTreesClassifier",
+  "pycaret_model": "RandomForestClassifier",
+  "accuracy": 0.762,
+  "f1": 0.7043,
+  "precision": 0.7251,
+  "recall": 0.6869,
+  "lp_accuracy": 0.744,
+  "lp_f1": 0.6896
+}

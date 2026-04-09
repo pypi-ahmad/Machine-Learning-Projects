@@ -1,0 +1,488 @@
+{
+  "automated-image-captioning": {
+    "project_slug": "automated-image-captioning",
+    "project_path": "3. Text Generation/3. Text Generation/Automated Image Captioning",
+    "status": "READY",
+    "task": "image_captioning",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\automated-image-captioning\\raw",
+    "raw_paths": [
+      "captions.txt",
+      "images"
+    ],
+    "urls_found": [
+      "https://arxiv.org/pdf/1411.4555.pdf",
+      "https://imgur.com/wWHWbQt.jpg",
+      "https://miro.medium.com/max/1400/1*xIXqf46yYonSXkUOWcOCvg.gif",
+      "https://miro.medium.com/max/1400/1*6BFOIdSHlk24Z3DFEakvnQ.png",
+      "https://lena-voita.github.io/resources/lectures/word_emb/lookup_table.gif",
+      "https://raw.githubusercontent.com/yunjey/pytorch-tutorial/master/tutorials/03-advanced/image_captioning/png/model.png"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/adityajn105/flickr8k",
+      "https://forms.illinois.edu/sec/1713398"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "bbc-articles-summarization": {
+    "project_slug": "bbc-articles-summarization",
+    "project_path": "3. Text Generation/3. Text Generation/BBC Articles Summarization",
+    "status": "READY",
+    "task": "summarization",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\bbc-articles-summarization\\raw",
+    "raw_paths": [
+      "BBC News Summary"
+    ],
+    "urls_found": [
+      "https://arxiv.org/abs/1808.08745",
+      "https://arxiv.org/abs/1910.10683",
+      "https://arxiv.org/abs/1706.03762",
+      "https://github.com/huggingface/datasets"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/pariza/bbc-news-summary",
+      "http://mlg.ucd.ie/datasets/bbc.html"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "Dataset NOT bundled; must download from Kaggle"
+  },
+  "cyberbullying-classification": {
+    "project_slug": "cyberbullying-classification",
+    "project_path": "2. Text Classification/2. Text Classification/Cyberbullying Classification",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\cyberbullying-classification\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [
+      "https://i.imgur.com/TU74srO.png",
+      "https://i.imgur.com/sgQVKxv.png"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/andrewmvd/cyberbullying-classification"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "e-commerce-clothing-reviews": {
+    "project_slug": "e-commerce-clothing-reviews",
+    "project_path": "1. Text Processing and Analysis/1. Text Processing and Analysis/E-Commerce Clothing Reviews",
+    "status": "READY",
+    "task": "analysis",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\e-commerce-clothing-reviews\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [
+      "https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html",
+      "https://textblob.readthedocs.io/en/dev/"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "e-commerce-product-classification": {
+    "project_slug": "e-commerce-product-classification",
+    "project_path": "2. Text Classification/2. Text Classification/E-commerce Product Classification",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\e-commerce-product-classification\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [
+      "https://en.wikipedia.org/wiki/Economic_taxonomy",
+      "https://en.wikipedia.org/wiki/User_modeling",
+      "https://en.wikipedia.org/wiki/Google",
+      "https://en.wikipedia.org/wiki/Acronym",
+      "https://en.wikipedia.org/wiki/Lemmatisation",
+      "https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html",
+      "https://en.wikipedia.org/wiki/Text_mining",
+      "https://en.wikipedia.org/wiki/Support-vector_machine",
+      "https://en.wikipedia.org/wiki/Tf%E2%80%93idf#Term_frequency",
+      "https://en.wikipedia.org/wiki/Stemming",
+      "https://en.wikipedia.org/wiki/Text_normalization",
+      "https://en.wikipedia.org/wiki/World_Wide_Web",
+      "https://en.wikipedia.org/wiki/Text_corpus",
+      "https://en.wikipedia.org/wiki/Exploratory_data_analysis",
+      "https://en.wikipedia.org/wiki/Information_retrieval",
+      "https://en.wikipedia.org/wiki/Word_embedding",
+      "https://en.wikipedia.org/wiki/Internet",
+      "https://en.wikipedia.org/wiki/Online_shopping",
+      "https://en.wikipedia.org/wiki/E-commerce",
+      "https://en.wikipedia.org/wiki/Tf%E2%80%93idf",
+      "https://en.wikipedia.org/wiki/XGBoost",
+      "https://en.wikipedia.org/wiki/Online_auction",
+      "https://en.wikipedia.org/wiki/Sparse_matrix",
+      "https://en.wikipedia.org/wiki/Tf%E2%80%93idf#Inverse_document_frequency",
+      "https://en.wikipedia.org/wiki/Product_classification",
+      "https://en.wikipedia.org/wiki/Natural_language_processing",
+      "https://en.wikipedia.org/wiki/Part_of_speech",
+      "https://en.wikipedia.org/wiki/Email",
+      "https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractions",
+      "https://en.wikipedia.org/wiki/Electronic_business",
+      "https://en.wikipedia.org/wiki/Word2vec",
+      "https://en.wikipedia.org/wiki/Stop_word",
+      "https://en.wikipedia.org/wiki/Hyperparameter_optimization",
+      "https://en.wikipedia.org/wiki/Electronic_markets"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/sumedhdataaspirant/e-commerce-text-dataset"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "CSV has no header; col0=category, col1=description"
+  },
+  "economic-news-articles": {
+    "project_slug": "economic-news-articles",
+    "project_path": "2. Text Classification/2. Text Classification/Economic News Articles",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\economic-news-articles\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [
+      "https://www.dataquest.io/wp-content/uploads/2019/04/text-classification-python-spacy.png",
+      "https://miro.medium.com/max/3136/1*ruCawEw0--m2SeHmAQooJQ.jpeg"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/adhamelkomy/news-classification-and-analysis-using-nlp",
+      "https://www.figure-eight.com/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "english-to-french-translation": {
+    "project_slug": "english-to-french-translation",
+    "project_path": "3. Text Generation/3. Text Generation/English to French Translation",
+    "status": "READY",
+    "task": "translation",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\english-to-french-translation\\raw",
+    "raw_paths": [
+      "eng-fra.txt"
+    ],
+    "urls_found": [
+      "https://arxiv.org/pdf/1406.1078v3.pdf",
+      "https://arxiv.org/abs/1409.3215",
+      "https://arxiv.org/abs/1409.0473",
+      "http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.378.4095&rep=rep1&type=pdf",
+      "https://arxiv.org/abs/1406.1078",
+      "https://arxiv.org/abs/1508.04025",
+      "https://arxiv.org/abs/1506.05869"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/dhruvildave/en-fr-translation-dataset",
+      "https://www.manythings.org/anki/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "fake-news-detection": {
+    "project_slug": "fake-news-detection",
+    "project_path": "2. Text Classification/2. Text Classification/Fake News Detection",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\fake-news-detection\\raw",
+    "raw_paths": [
+      "Fake.csv",
+      "True.csv"
+    ],
+    "urls_found": [
+      "https://towardsdatascience.com/light-on-math-ml-intuitive-guide-to-understanding-glove-embeddings-b13b4f19c010**"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/vishakhdapat/fake-news-detection",
+      "https://www.uvic.ca/ecs/ece/isot/datasets/fake-news/index.php"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "True.csv and Fake.csv must be merged with a label column (1=True, 0=Fake)"
+  },
+  "kaggle-survey-questions-clustering": {
+    "project_slug": "kaggle-survey-questions-clustering",
+    "project_path": "4. Text Clustering & Topic Modelling/4. Text Clustering _ Topic Modelling/Kaggle Survey Questions Clustering",
+    "status": "READY",
+    "task": "clustering",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\kaggle-survey-questions-clustering\\raw",
+    "raw_paths": [
+      "questions.csv"
+    ],
+    "urls_found": [
+      "https://websitedesign9100.blogspot.com/2019/11/blog-post.html"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/competitions/kaggle-survey-2021"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "medium-articles-clustering": {
+    "project_slug": "medium-articles-clustering",
+    "project_path": "4. Text Clustering & Topic Modelling/4. Text Clustering _ Topic Modelling/Medium Articles Clustering",
+    "status": "READY",
+    "task": "clustering",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\medium-articles-clustering\\raw",
+    "raw_paths": [
+      "articles.csv"
+    ],
+    "urls_found": [
+      "http://https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Smoothed_LDA.png/377px-Smoothed_LDA.png",
+      "http://https://www.analyticsvidhya.com/blog/2020/04/beginners-guide-exploratory-data-analysis-text-data/",
+      "https://towardsdatascience.com/evaluate-topic-model-in-python-latent-dirichlet-allocation-lda-7d57484bb5d0"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/arnabchaki/medium-articles-dataset"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "name-generate-from-languages": {
+    "project_slug": "name-generate-from-languages",
+    "project_path": "3. Text Generation/3. Text Generation/Name Generate From Languages",
+    "status": "READY",
+    "task": "generation",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\name-generate-from-languages\\raw",
+    "raw_paths": [
+      "names"
+    ],
+    "urls_found": [
+      "https://karpathy.github.io/2015/05/21/rnn-effectiveness/",
+      "https://en.wikipedia.org/wiki/One-hot",
+      "https://colah.github.io/posts/2015-08-Understanding-LSTMs/",
+      "https://arxiv.org/abs/1207.0580"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/davidam9/international-names",
+      "https://pytorch.org/tutorials/intermediate/char_rnn_generation_tutorial.html"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "Local names/*.txt files bundled in repo"
+  },
+  "news-headline-classification": {
+    "project_slug": "news-headline-classification",
+    "project_path": "2. Text Classification/2. Text Classification/News Headline Classification",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\news-headline-classification\\raw",
+    "raw_paths": [
+      "data.json"
+    ],
+    "urls_found": [
+      "https://machinelearningmastery.com/what-are-word-embeddings/"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/rmisra/news-category-dataset",
+      "https://rishabhmisra.github.io/publications/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "newsgroups-posts-clustering": {
+    "project_slug": "newsgroups-posts-clustering",
+    "project_path": "4. Text Clustering & Topic Modelling/4. Text Clustering _ Topic Modelling/Newsgroups Posts Clustering",
+    "status": "READY",
+    "task": "clustering",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\newsgroups-posts-clustering\\raw",
+    "raw_paths": [
+      "alt.atheism.txt",
+      "comp.graphics.txt",
+      "comp.os.ms-windows.misc.txt",
+      "comp.sys.ibm.pc.hardware.txt",
+      "comp.sys.mac.hardware.txt",
+      "comp.windows.x.txt",
+      "list.csv",
+      "misc.forsale.txt",
+      "rec.autos.txt",
+      "rec.motorcycles.txt",
+      "rec.sport.baseball.txt",
+      "rec.sport.hockey.txt",
+      "sci.crypt.txt",
+      "sci.electronics.txt",
+      "sci.med.txt",
+      "sci.space.txt",
+      "soc.religion.christian.txt",
+      "talk.politics.guns.txt",
+      "talk.politics.mideast.txt",
+      "talk.politics.misc.txt",
+      "talk.religion.misc.txt"
+    ],
+    "urls_found": [],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/crawford/20-newsgroups",
+      "http://qwone.com/~jason/20Newsgroups/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "Uses sklearn.datasets.fetch_20newsgroups; data not bundled"
+  },
+  "paper-subject-prediction": {
+    "project_slug": "paper-subject-prediction",
+    "project_path": "2. Text Classification/2. Text Classification/Paper Subject Prediction",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\paper-subject-prediction\\raw",
+    "raw_paths": [
+      "arxiv_data.csv"
+    ],
+    "urls_found": [
+      "http://arxiv.org/help/api/index",
+      "https://openreview.net/",
+      "https://keras.io/examples/structured_data/imbalanced_classification/",
+      "https://wikipedia.org/wiki/Tf%E2%80%93idf",
+      "https://github.com/keras-team/keras-io/pull/1133#issuecomment-1322736860",
+      "https://www.tensorflow.org/addons/api_docs/python/tfa/metrics/F1Score",
+      "https://github.com/lukasschwab/arxiv.py",
+      "https://keras.io/api/metrics/accuracy_metrics/#binaryaccuracy-class",
+      "https://keras.io/api/layers/preprocessing_layers/categorical/string_lookup",
+      "https://arxiv.org/abs/1805.00932",
+      "https://keras.io/api/layers/preprocessing_layers/text/text_vectorization",
+      "https://keras.io/guides/preprocessing_layers/",
+      "https://arxiv.org/abs/1706.03762",
+      "https://en.wikipedia.org/wiki/Stratified_sampling",
+      "https://developers.google.com/machine-learning/glossary/#class-imbalanced-dataset",
+      "https://www.tensorflow.org/addons/api_docs/python/tfa/metrics/HammingLoss",
+      "https://www.tensorflow.org/tutorials/structured_data/imbalanced_data"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/sumitm004/arxiv-scientific-research-papers-dataset",
+      "https://arxiv.org/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "review-classification": {
+    "project_slug": "review-classification",
+    "project_path": "2. Text Classification/2. Text Classification/Review Classification",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\review-classification\\raw",
+    "raw_paths": [
+      "amazon.txt",
+      "imdb.txt",
+      "yelp.txt"
+    ],
+    "urls_found": [],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/ndrianahani/imdb-yelp-and-amazon-reviews"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "Tab-separated files: text<TAB>label (0/1). Three sources."
+  },
+  "spam-message-detection": {
+    "project_slug": "spam-message-detection",
+    "project_path": "2. Text Classification/2. Text Classification/Spam Message Detection",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\spam-message-detection\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/uciml/sms-spam-collection-dataset",
+      "https://archive.ics.uci.edu/ml/datasets/sms+spam+collection"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "stories-clustering": {
+    "project_slug": "stories-clustering",
+    "project_path": "4. Text Clustering & Topic Modelling/4. Text Clustering _ Topic Modelling/Stories Clustering",
+    "status": "READY",
+    "task": "clustering",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\stories-clustering\\raw",
+    "raw_paths": [
+      "1k_stories_100_genre.csv"
+    ],
+    "urls_found": [],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/fareedkhan557/1000-stories-100-genres"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": "Dataset NOT bundled; must download from Kaggle"
+  },
+  "toxic-comment-classification": {
+    "project_slug": "toxic-comment-classification",
+    "project_path": "2. Text Classification/2. Text Classification/Toxic Comment Classification",
+    "status": "READY",
+    "task": "classification_multilabel",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\toxic-comment-classification\\raw",
+    "raw_paths": [
+      "test.csv",
+      "train.csv"
+    ],
+    "urls_found": [
+      "https://www.tensorflow.org/versions/r0.12/images/embedding-custom-projection.png",
+      "https://i.imgur.com/txJomEa.png",
+      "https://i.imgur.com/uSjU4J7.png",
+      "https://leonardoaraujosantos.gitbooks.io/artificial-inteligence/content/image_folder_5/dropout.jpeg",
+      "https://www.analyticsvidhya.com/blog/2017/06/word-embeddings-count-word2veec/",
+      "https://wiseodd.github.io/techblog/2016/07/18/convnet-maxpool-layer/",
+      "http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/RNN-unrolled.png",
+      "https://www.pyimagesearch.com/wp-content/uploads/2017/12/not_santa_detector_dl_logos.jpg"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge",
+      "https://www.perspectiveapi.com/research/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "trip-advisor-hotel-reviews": {
+    "project_slug": "trip-advisor-hotel-reviews",
+    "project_path": "1. Text Processing and Analysis/1. Text Processing and Analysis/Trip Advisor Hotel Reviews",
+    "status": "READY",
+    "task": "analysis",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\trip-advisor-hotel-reviews\\raw",
+    "raw_paths": [
+      "data.csv"
+    ],
+    "urls_found": [
+      "https://editor.analyticsvidhya.com/uploads/50641nlp.jpeg"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/thedevastator/tripadvisor-hotel-reviews"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "twitter-sentiment-analysis": {
+    "project_slug": "twitter-sentiment-analysis",
+    "project_path": "2. Text Classification/2. Text Classification/Twitter Sentiment Analysis",
+    "status": "READY",
+    "task": "classification",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\twitter-sentiment-analysis\\raw",
+    "raw_paths": [
+      "test.csv",
+      "train.csv"
+    ],
+    "urls_found": [
+      "https://i.imgur.com/htll3Fu.png",
+      "https://i.imgur.com/3tASSmp.jpg"
+    ],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/milobele/sentiment140-dataset-1600000-tweets",
+      "http://help.sentiment140.com/for-students/"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  },
+  "world-war-i-letters": {
+    "project_slug": "world-war-i-letters",
+    "project_path": "1. Text Processing and Analysis/1. Text Processing and Analysis/World War I Letters",
+    "status": "READY",
+    "task": "analysis",
+    "raw_dir": "D:\\Workspace\\Github\\Natural-Language-Processing-Projects-with-Documentations\\data\\world-war-i-letters\\raw",
+    "raw_paths": [
+      "data.csv",
+      "letters.json"
+    ],
+    "urls_found": [],
+    "official_urls": [
+      "https://www.kaggle.com/datasets/anthaus/world-war-i-letters"
+    ],
+    "chosen_source": "data_dir (previously prepared)",
+    "notes": ""
+  }
+}

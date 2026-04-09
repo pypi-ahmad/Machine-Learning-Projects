@@ -1,0 +1,1782 @@
+2026-03-03 19:03:36,599:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,713:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,714:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,716:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,719:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,719:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,719:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,720:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,721:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,722:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,724:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,725:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,728:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,728:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,729:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,730:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,730:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,732:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,733:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,733:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,734:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,737:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,737:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,741:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,746:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,749:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,751:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,755:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,757:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,763:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,765:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,767:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,768:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,771:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,774:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,776:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,778:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,783:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,785:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,787:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,790:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,792:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,797:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,800:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,802:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,805:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,809:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,813:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,817:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,818:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,820:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,824:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,828:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,831:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,835:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,840:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,844:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,846:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,849:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,852:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,854:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,856:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,861:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,866:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,868:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,870:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,873:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,877:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,879:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,883:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,884:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,886:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,888:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,893:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,895:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,898:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,901:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,903:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,905:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,907:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,911:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,914:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:36,916:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:37,012:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 19:03:40,256:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,824:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,921:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,921:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,923:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,924:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,926:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,926:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,927:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,929:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,930:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,930:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,930:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,931:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,933:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,933:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,935:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,935:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,935:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,936:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,936:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,936:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,937:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,940:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,941:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,941:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,942:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,943:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,945:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,948:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,948:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,950:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,952:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,954:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,955:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,956:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,957:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,959:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,960:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,962:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,963:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,964:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,967:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,969:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,970:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,971:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,974:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,975:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,976:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,977:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,978:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,981:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,982:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,983:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,984:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,985:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,986:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,987:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,988:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,989:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,991:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,991:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,994:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,995:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,997:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,998:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:55,999:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,000:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,001:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,003:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,005:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,007:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,009:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,010:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,012:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,014:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,014:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,015:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,016:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,017:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,018:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:56,074:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 20:02:57,435:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,347:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,424:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,426:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,427:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,429:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,430:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,432:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,432:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,434:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,435:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,435:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,436:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,436:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,438:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,439:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,441:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,441:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,441:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,442:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,443:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,445:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,445:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,446:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,447:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,447:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,448:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,450:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,452:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,453:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,455:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,457:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,459:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,460:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,462:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,463:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,466:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,468:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,470:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,472:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,472:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,475:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,476:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,477:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,480:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,483:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,483:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,484:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,486:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,489:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,491:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,493:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,494:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,496:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,497:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,499:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,502:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,503:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,503:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,504:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,507:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,508:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,510:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,511:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,513:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,514:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,517:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,518:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,519:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,520:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,522:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,523:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,525:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,526:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,527:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,529:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,530:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,532:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:51,593:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-03 23:50:53,496:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:20,997:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,061:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,063:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,063:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,063:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,063:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,065:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,067:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,067:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,067:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,068:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,069:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,069:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,070:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,071:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,071:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,071:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,072:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,073:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,073:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,075:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,075:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,076:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,076:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,077:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,079:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,081:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,082:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,084:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,084:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,086:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,088:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,089:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,090:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,092:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,093:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,095:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,096:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,097:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,098:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,099:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,101:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,103:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,103:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,104:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,106:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,108:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,110:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,111:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,112:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,113:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,114:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,116:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,116:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,119:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,120:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,122:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,124:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,125:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,126:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,127:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,128:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,129:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,130:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,132:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,133:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,135:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,139:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,140:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,141:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,142:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,143:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,145:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,146:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,147:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,150:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,151:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,152:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,153:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,155:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,156:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,158:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,159:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,160:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,161:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,162:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,165:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,166:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,168:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,169:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:21,233:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 01:40:22,876:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,373:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,433:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,434:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,435:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,436:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,439:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,443:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,444:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,444:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,446:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,446:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,447:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,448:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,449:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,450:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,451:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,451:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,451:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,451:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,451:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,453:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,456:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,456:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,456:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,457:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,459:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,459:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,460:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,460:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,461:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,462:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,464:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,466:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,468:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,469:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,470:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,470:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,472:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,474:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,475:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,476:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,477:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,479:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,480:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,482:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,483:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,484:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,485:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,488:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,489:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,490:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,492:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,493:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,494:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,496:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,498:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,499:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,502:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,502:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,504:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,505:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,506:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,508:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,510:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,513:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,516:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,520:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,524:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,525:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,526:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,528:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,530:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,532:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,533:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,534:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,535:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,537:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,538:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,539:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,540:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,543:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,544:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,545:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:15,613:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 02:41:17,346:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:07,904:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_forest.py:830: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,608:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,609:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,610:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,609:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,611:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,611:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,611:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,612:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,614:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,612:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,612:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,615:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,615:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,615:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,616:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,616:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,617:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,618:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,618:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,618:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,619:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,619:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,618:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,619:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,619:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,619:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,620:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,620:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,620:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,620:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,621:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,623:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,622:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,622:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,624:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,624:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,623:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,624:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,623:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,624:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,624:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,626:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,625:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,626:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,626:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,627:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,629:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,628:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,629:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,710:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,710:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,712:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,711:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,712:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,713:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,713:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,715:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,716:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,717:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,716:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,719:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,719:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,720:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,720:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,721:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,722:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,722:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,722:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,723:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,724:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,726:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,727:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,725:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,728:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,726:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,728:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,729:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,729:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,730:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,730:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,731:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,731:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,733:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,733:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,734:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,734:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,734:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,735:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,736:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,736:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,737:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,738:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,739:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,741:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,743:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,738:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,739:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,744:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,741:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,742:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,745:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,746:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,747:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,743:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,744:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,748:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,749:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,750:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,751:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,746:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,752:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,747:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,749:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,753:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,750:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,754:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,751:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,756:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,757:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,753:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,758:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,755:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,759:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,756:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,757:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,760:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,762:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,763:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,759:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,762:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,762:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,763:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,765:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,765:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,766:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,767:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,768:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,768:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,768:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,769:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,770:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,769:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,771:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,772:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,770:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,775:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,772:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,775:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,776:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,773:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,775:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,777:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,776:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,778:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,777:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,780:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,778:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,781:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,778:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,782:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,780:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,783:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,781:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,784:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,782:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,783:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,785:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py:297: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:08,840:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\ensemble\_gb.py:1524: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:10,536:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+
+2026-03-04 08:27:10,541:WARNING:C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_logistic.py:1201: UserWarning: The number of unique classes is greater than 50% of the number of samples. `y` could represent a regression problem, not a classification problem.
+  check_classification_targets(y)
+

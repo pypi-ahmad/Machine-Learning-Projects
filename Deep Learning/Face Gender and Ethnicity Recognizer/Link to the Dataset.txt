@@ -1,0 +1,2 @@
+Kaggle (FairFace): https://www.kaggle.com/datasets/jessicali9530/fairface-dataset
+Kaggle (UTKFace alternative): https://www.kaggle.com/datasets/jangedoo/utkface-new

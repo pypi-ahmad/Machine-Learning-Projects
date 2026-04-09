@@ -1,0 +1,10 @@
+# Fake News Detection — binary
+# Phase 2 result: F1w=0.3588 (BAD)
+# Fix: longer sequences (news articles), more epochs
+
+epochs: 4
+patience: 2
+max_length: 512
+focal_gamma: 0.0
+label_smoothing: 0.05
+max_samples: 10000

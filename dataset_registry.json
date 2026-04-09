@@ -1,0 +1,1473 @@
+{
+  "boston_house_classification": {
+    "category": "Classification",
+    "project_name": "Boston House Classification",
+    "project_path": "Classification\\Boston House Classification",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/boston_house_classification/HousingData.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "MEDV",
+    "models": [
+      "LazyRegressor",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Classification\\Boston House Classification\\boston_house_classification.ipynb:cell2:pd.read_csv(\"../../data/boston_house_classification/HousingData.csv\"",
+      "Classification\\Boston House Classification\\boston_house_classification.ipynb:cell30:drop('MEDV')",
+      "Classification\\Boston House Classification\\boston_house_classification.ipynb:cell55:target='MEDV'"
+    ]
+  },
+  "credit_risk_modeling_using_the_german_credit_dataset": {
+    "category": "Classification",
+    "project_name": "Credit risk modeling using the German Credit Dataset",
+    "project_path": "Classification\\Credit risk modeling using the German Credit Dataset",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/credit_risk_german/german_credit_data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Risk",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Classification\\Credit risk modeling using the German Credit Dataset\\predicting_german_credit_default.ipynb:cell13:target='Risk'"
+    ]
+  },
+  "customer_segmentation_for_an_e_commerce_company": {
+    "category": "Classification",
+    "project_name": "Customer segmentation for an E-commerce company",
+    "project_path": "Classification\\Customer segmentation for an E-commerce company",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/customer_segmentation_ecommerce/data.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "AgglomerativeClustering",
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Classification\\Customer segmentation for an E-commerce company\\customer_segmentation_e-commerce.ipynb:cell17:pd.read_csv('../../data/customer_segmentation_ecommerce/data.csv'",
+      "target=null:unsupervised_RFM_KMeans(misclassified_as_Classification)"
+    ]
+  },
+  "cyberbullying_classification": {
+    "category": "Classification",
+    "project_name": "Cyberbullying Classification",
+    "project_path": "Classification\\Cyberbullying Classification",
+    "dataset_type": "text",
+    "source_type": "local",
+    "path": "data/cyberbullying_classification/cyberbullying_tweets.csv",
+    "fallback": null,
+    "task": "NLP",
+    "target": "sentiment",
+    "models": [
+      "LSTM",
+      "NLP_vectorizer",
+      "NaiveBayes"
+    ],
+    "evidence": [
+      "Classification\\Cyberbullying Classification\\Cyberbullying_classification.ipynb:cell12:pd.read_csv(\"../../data/cyberbullying_classification/cyberbullying_tweets.csv\"",
+      "Classification\\Cyberbullying Classification\\Cyberbullying_classification.ipynb:cell66:y=df['sentiment']"
+    ]
+  },
+  "drug_classification": {
+    "category": "Classification",
+    "project_name": "Drug Classification",
+    "project_path": "Classification\\Drug Classification",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/drug_classification/drugsComTrain_raw.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Drug",
+    "models": [
+      "LazyClassifier",
+      "LightGBM",
+      "PyCaret",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Classification\\Drug Classification\\Drug_Classification.ipynb:cell6:pd.read_csv('../../data/drug_classification/drugsComTrain_raw.csv'",
+      "Classification\\Drug Classification\\Drug_Classification.ipynb:cell6:pd.read_csv('../../data/drug_classification/drugsComTest_raw.csv'",
+      "Classification\\Drug Classification\\Drug_Classification.ipynb:cell79:target='Drug'"
+    ]
+  },
+  "garbage_classification": {
+    "category": "Classification",
+    "project_name": "Garbage Classification",
+    "project_path": "Classification\\Garbage Classification",
+    "dataset_type": "image",
+    "source_type": "local",
+    "path": "data/garbage_classification/Garbage classification/Garbage classification",
+    "fallback": "manual_required",
+    "task": "image_classification",
+    "target": "image_class_label",
+    "models": [
+      "CV_pipeline"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "Garbage_Classification.ipynb:cell3:ImageFolder(data_dir, transform=transformations)",
+      "target=image_class_label:6_classes(cardboard,glass,metal,paper,plastic,trash)"
+    ]
+  },
+  "glass_classification": {
+    "category": "Classification",
+    "project_name": "Glass Classification",
+    "project_path": "Classification\\Glass Classification",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/glass_classification/glass.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Type",
+    "models": [
+      "DecisionTree",
+      "GradientBoosting",
+      "LazyClassifier",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Classification\\Glass Classification\\Glass_classification.ipynb:cell7:pd.read_csv('../../data/glass_classification/glass.csv'",
+      "Classification\\Glass Classification\\Glass_classification.ipynb:cell46:y=df['Type']"
+    ]
+  },
+  "mobile_price_classification": {
+    "category": "Classification",
+    "project_name": "Mobile price classification",
+    "project_path": "Classification\\Mobile price classification",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/mobile_price_classification/train.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "price_range",
+    "models": [
+      "DecisionTree",
+      "GradientBoosting",
+      "LazyClassifier",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Classification\\Mobile price classification\\Mobile_price_classification.ipynb:cell6:pd.read_csv('../../data/mobile_price_classification/train.csv'",
+      "Classification\\Mobile price classification\\Mobile_price_classification.ipynb:cell6:pd.read_csv('../../data/mobile_price_classification/test.csv'",
+      "Classification\\Mobile price classification\\Mobile_price_classification.ipynb:cell20:drop('id')",
+      "Classification\\Mobile price classification\\Mobile_price_classification.ipynb:cell47:target='price_range'"
+    ]
+  },
+  "movie_genre_classification": {
+    "category": "Classification",
+    "project_name": "Movie Genre Classification",
+    "project_path": "Classification\\Movie Genre Classification",
+    "dataset_type": "text",
+    "source_type": "local",
+    "path": "data/movie_genre_classification/Genre Classification Dataset/train_data.txt",
+    "fallback": "manual_required",
+    "task": "NLP",
+    "target": "genre",
+    "models": [
+      "NLP_vectorizer"
+    ],
+    "evidence": [
+      "Classification\\Movie Genre Classification\\movies_genre_classification.ipynb:cell3:pd.read_csv(\"../../data/movie_genre_classification/Genre Classification Dataset/",
+      "Classification\\Movie Genre Classification\\movies_genre_classification.ipynb:cell14:drop('id')",
+      "Classification\\Movie Genre Classification\\movies_genre_classification.ipynb:cell26:y=df['genre']",
+      "movies_genre_classification.ipynb:cell3:pd.read_csv(\"../../data/movie_genre_classification/Genre Classification Dataset/train_data.txt\")",
+      "target=genre:9_classes(action,adventure,comedy,drama,horror,romance,sci-fi,thriller,other)"
+    ]
+  },
+  "predicting_customer_churn_for_a_telecom_company": {
+    "category": "Classification",
+    "project_name": "Predicting customer churn for a telecom company",
+    "project_path": "Classification\\Predicting customer churn for a telecom company",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/customer_churn_telecom/telecom_customer_churn.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "customerstatus",
+    "models": [
+      "DecisionTree",
+      "LazyClassifier",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Classification\\Predicting customer churn for a telecom company\\customer-churn-prediction-on-telecom-dataset.ipynb:cell9:pd.read_csv(\"../../data/customer_churn_telecom/telecom_customer_churn.csv\"",
+      "Classification\\Predicting customer churn for a telecom company\\customer-churn-prediction-on-telecom-dataset.ipynb:cell36:y=df['customerstatus']"
+    ]
+  },
+  "predicting_customer_lifetime_value": {
+    "category": "Classification",
+    "project_name": "Predicting customer lifetime value",
+    "project_path": "Classification\\Predicting customer lifetime value",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/customer_lifetime_value/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "LTVCluster",
+    "models": [
+      "KMeans",
+      "LazyClassifier",
+      "PyCaret",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Classification\\Predicting customer lifetime value\\customer-lifetime-value-prediction.ipynb:cell5:pd.read_csv('../../data/customer_lifetime_value/data.csv'",
+      "Classification\\Predicting customer lifetime value\\customer-lifetime-value-prediction.ipynb:cell27:target='LTVCluster'"
+    ]
+  },
+  "predicting_loan_default": {
+    "category": "Classification",
+    "project_name": "Predicting loan default",
+    "project_path": "Classification\\Predicting loan default",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/loan_default_prediction/Loan_Default.csv",
+    "fallback": "manual_required",
+    "task": "classification",
+    "target": "loss",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Classification\\Predicting loan default\\loan-default-prediction.ipynb:cell1:_csv_path = './loan-default-prediction/train_v2.csv'",
+      "Classification\\Predicting loan default\\loan-default-prediction.ipynb:cell21:drop('loss')",
+      "Classification\\Predicting loan default\\loan-default-prediction.ipynb:cell29:target='Status'",
+      "loan-default-prediction.ipynb:cell1:read_csv(Loan_Default.csv)",
+      "target=loss:renamed_from_Status:y=x['loss']"
+    ]
+  },
+  "student_performance_prediction": {
+    "category": "Classification",
+    "project_name": "Student performance prediction",
+    "project_path": "Classification\\Student performance prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/student_performance/StudentsPerformance.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "writing score",
+    "models": [
+      "DecisionTree",
+      "Lasso",
+      "LazyClassifier",
+      "LightGBM",
+      "LinearRegression",
+      "LogisticRegression",
+      "PyCaret",
+      "Ridge"
+    ],
+    "evidence": [
+      "Classification\\Student performance prediction\\student-performance-explained.ipynb:cell2:pd.read_csv('../../data/student_performance/StudentsPerformance.csv'",
+      "Classification\\Student performance prediction\\student-performance-explained.ipynb:cell20:y=df['writing score']"
+    ]
+  },
+  "traffic_congestion_prediction": {
+    "category": "Classification",
+    "project_name": "Traffic Congestion Prediction",
+    "project_path": "Classification\\Traffic Congestion Prediction",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/traffic_congestion_prediction/traffic.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Vehicles",
+    "models": [
+      "CNN",
+      "LSTM",
+      "NeuralNetwork"
+    ],
+    "evidence": [
+      "Classification\\Traffic Congestion Prediction\\traffic_prediction.ipynb:cell5:pd.read_csv(\"../../data/traffic_congestion_prediction/traffic.csv\"",
+      "traffic_prediction.ipynb:cell4:y='Vehicles'",
+      "target=Vehicles:LSTM_GRU_forecasting_vehicle_counts"
+    ]
+  },
+  "customer_segmentation_for_a_bank": {
+    "category": "Clustering",
+    "project_name": "1 Customer segmentation for a bank",
+    "project_path": "Clustering\\1 Customer segmentation for a bank",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/customer_segmentation_bank/german_credit_data.csv",
+    "fallback": "manual_required",
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "1 Customer segmentation for a bank.ipynb:cell2:pd.read_csv(r\"C:\\...\\german_credit_data.csv\")",
+      "target=null:unsupervised_clustering"
+    ]
+  },
+  "clustering_vehicle_crash_data_for_safety_analysi": {
+    "category": "Clustering",
+    "project_name": "10 clustering vehicle crash data for safety analysi",
+    "project_path": "Clustering\\10 clustering vehicle crash data for safety analysi",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/vehicle_crash_clustering/RTA Dataset.csv",
+    "fallback": "manual_required",
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Clustering\\10 clustering vehicle crash data for safety analysi\\10 Clustering vehicle crash data.ipynb:cell18:y=df['Number_of_vehicles_involved']",
+      "10 Clustering vehicle crash data.ipynb:cell5:pd.read_csv(r\"C:\\...\\RTA Dataset.csv\")",
+      "target=null:unsupervised_clustering"
+    ]
+  },
+  "credit_card_customer_segmentation": {
+    "category": "Clustering",
+    "project_name": "2 Credit Card customer segmentation",
+    "project_path": "Clustering\\2 Credit Card customer segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/credit_card_segmentation/CC GENERAL.csv",
+    "fallback": "manual_required",
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "2 Credit Card customer segmentation.ipynb:cell4:pd.read_csv(r\"C:\\...\\CC GENERAL.csv\")",
+      "target=null:unsupervised_clustering"
+    ]
+  },
+  "online_retail_customer_segmentation": {
+    "category": "Clustering",
+    "project_name": "3 Online retail customer segmentation",
+    "project_path": "Clustering\\3 Online retail customer segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/online_retail_segmentation/data.csv",
+    "fallback": "manual_required",
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Clustering\\3 Online retail customer segmentation\\3 Online retail customer segmentation.ipynb:cell42:drop('InvoiceDate_int')",
+      "3 Online retail customer segmentation.ipynb:cell7:pd.read_csv(r\"C:\\...\\data.csv\",encoding=\"ISO-8859-1\")",
+      "target=null:unsupervised_RFM_KMeans"
+    ]
+  },
+  "mall_customer_segmentation": {
+    "category": "Clustering",
+    "project_name": "4 Mall customer segmentation",
+    "project_path": "Clustering\\4 Mall customer segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/mall_customer_segmentation/Mall_Customers.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "target=null:unsupervised_clustering(KMeans,PyCaret)"
+    ]
+  },
+  "wine_segmentation": {
+    "category": "Clustering",
+    "project_name": "5 Wine segmentation",
+    "project_path": "Clustering\\5 Wine segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/wine_segmentation/wine-clustering.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": "Customer_Segment",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Clustering\\5 Wine segmentation\\5 Wine segmentation.ipynb:cell18:y=df['Customer_Segment']"
+    ]
+  },
+  "housing_price_segmentation": {
+    "category": "Clustering",
+    "project_name": "6 Housing price segmentation",
+    "project_path": "Clustering\\6 Housing price segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/housing_price_segmentation/House Price India.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "LinearRegression",
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "target=null:unsupervised_clustering(PyCaret)"
+    ]
+  },
+  "spotify_song_cluster_analysis": {
+    "category": "Clustering",
+    "project_name": "7 spotify song cluster analysis",
+    "project_path": "Clustering\\7 spotify song cluster analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/spotify_song_cluster/top50.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": "Unnamed: 0",
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "Clustering\\7 spotify song cluster analysis\\7 spotify song cluster analysis.ipynb:cell8:drop('Unnamed: 0')"
+    ]
+  },
+  "wholesale_customer_segmentation": {
+    "category": "Clustering",
+    "project_name": "8 wholesale customer segmentation",
+    "project_path": "Clustering\\8 wholesale customer segmentation",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/wholesale_customer_segmentation/Wholesale customers data.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "AgglomerativeClustering",
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "target=null:unsupervised_clustering(KMeans,Agglomerative)"
+    ]
+  },
+  "clustering_financial_time_series": {
+    "category": "Clustering",
+    "project_name": "9 Clustering financial time series",
+    "project_path": "Clustering\\9 Clustering financial time series",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/clustering_financial_time_series/all_stocks_5yr.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": null,
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "no_code_evidence",
+      "target=null:unsupervised_time_series_clustering(GARCH,PyCaret)"
+    ]
+  },
+  "airbnb_data_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Airbnb Data Analysis",
+    "project_path": "Data Analysis\\Airbnb Data Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/airbnb_data_analysis/data.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "price",
+    "models": [
+      "LazyClassifier",
+      "LinearRegression",
+      "LogisticRegression",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Airbnb Data Analysis\\code.ipynb:cell5:pd.read_csv('data.csv'",
+      "Data Analysis\\Airbnb Data Analysis\\code.ipynb:cell79:target='price'"
+    ]
+  },
+  "bank_payment_fraud_detection": {
+    "category": "Data Analysis",
+    "project_name": "Bank Payment Fraud Detection",
+    "project_path": "Data Analysis\\Bank Payment Fraud Detection",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/bank_payment_fraud/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "fraud",
+    "models": [
+      "LazyClassifier",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Data Analysis\\Bank Payment Fraud Detection\\code.ipynb:cell6:pd.read_csv(\"data.csv\"",
+      "Data Analysis\\Bank Payment Fraud Detection\\code.ipynb:cell28:y=df['fraud']"
+    ]
+  },
+  "covid_19_global_data_analysis": {
+    "category": "Data Analysis",
+    "project_name": "COVID-19 Global Data Analysis",
+    "project_path": "Data Analysis\\COVID-19 Global Data Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/covid19_global_analysis/worldometer_coronavirus_daily_data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": null,
+    "models": [],
+    "evidence": [
+      "Data Analysis\\COVID-19 Global Data Analysis\\code.ipynb:cell6:pd.read_csv('data/worldometer_coronavirus_daily_data.csv'",
+      "Data Analysis\\COVID-19 Global Data Analysis\\code.ipynb:cell8:pd.read_csv('data/worldometer_coronavirus_summary_data.csv'",
+      "target=null:EDA_only_no_ML_model"
+    ]
+  },
+  "coffee_quality_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Coffee Quality Analysis",
+    "project_path": "Data Analysis\\Coffee Quality Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/coffee_quality_analysis/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Total Cup Points",
+    "models": [
+      "GradientBoosting",
+      "LazyClassifier",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Data Analysis\\Coffee Quality Analysis\\code.ipynb:cell6:pd.read_csv(\"data.csv\"",
+      "Data Analysis\\Coffee Quality Analysis\\code.ipynb:cell46:drop('Total Cup Points')",
+      "Data Analysis\\Coffee Quality Analysis\\code.ipynb:cell53:y=df['Total Cup Points']"
+    ]
+  },
+  "customer_lifetime_value_prediction": {
+    "category": "Data Analysis",
+    "project_name": "Customer Lifetime Value Prediction",
+    "project_path": "Data Analysis\\Customer Lifetime Value Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/customer_ltv_prediction_da/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "LTVCluster",
+    "models": [
+      "KMeans",
+      "LazyClassifier",
+      "PyCaret",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Data Analysis\\Customer Lifetime Value Prediction\\code.ipynb:cell4:pd.read_csv('data.csv'",
+      "Data Analysis\\Customer Lifetime Value Prediction\\code.ipynb:cell34:target='LTVCluster'"
+    ]
+  },
+  "cybersecurity_anomaly_detection": {
+    "category": "Data Analysis",
+    "project_name": "Cybersecurity Anomaly Detection",
+    "project_path": "Data Analysis\\Cybersecurity Anomaly Detection",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/cybersecurity_anomaly/labelled_testing_data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "label",
+    "models": [
+      "IsolationForest",
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Cybersecurity Anomaly Detection\\code.ipynb:cell8:pd.read_csv('data/labelled_testing_data.csv'",
+      "Data Analysis\\Cybersecurity Anomaly Detection\\code.ipynb:cell8:pd.read_csv('data/labelled_validation_data.csv'",
+      "Data Analysis\\Cybersecurity Anomaly Detection\\code.ipynb:cell8:_train_path = 'data/labelled_training_data.csv'",
+      "Data Analysis\\Cybersecurity Anomaly Detection\\code.ipynb:cell170:y=df['label']"
+    ]
+  },
+  "data_science_salaries_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Data Science Salaries Analysis",
+    "project_path": "Data Analysis\\Data Science Salaries Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/data_science_salaries/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "salary_range",
+    "models": [
+      "GradientBoosting",
+      "LazyClassifier",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Data Analysis\\Data Science Salaries Analysis\\code.ipynb:cell6:pd.read_csv('data.csv'",
+      "Data Analysis\\Data Science Salaries Analysis\\code.ipynb:cell80:drop('adjusted_salary')",
+      "Data Analysis\\Data Science Salaries Analysis\\code.ipynb:cell102:y=df['salary_range']"
+    ]
+  },
+  "food_delivery_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Food Delivery Analysis",
+    "project_path": "Data Analysis\\Food Delivery Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/food_delivery_analysis/data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": null,
+    "models": [],
+    "evidence": [
+      "Data Analysis\\Food Delivery Analysis\\code.ipynb:cell5:pd.read_csv('data.csv'",
+      "target=null:EDA_only_no_ML_model"
+    ]
+  },
+  "heart_failure_prediction": {
+    "category": "Data Analysis",
+    "project_name": "Heart Failure Prediction",
+    "project_path": "Data Analysis\\Heart Failure Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/heart_failure_prediction_da/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "DEATH_EVENT",
+    "models": [
+      "LSTM",
+      "LazyClassifier",
+      "NeuralNetwork",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Heart Failure Prediction\\code.ipynb:cell5:pd.read_csv(\"data.csv\"",
+      "Data Analysis\\Heart Failure Prediction\\code.ipynb:cell25:X=drop('DEATH_EVENT')"
+    ]
+  },
+  "indians_diabetes_prediction": {
+    "category": "Data Analysis",
+    "project_name": "Indians Diabetes Prediction",
+    "project_path": "Data Analysis\\Indians Diabetes Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/indians_diabetes_da/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Outcome",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Indians Diabetes Prediction\\code.ipynb:cell5:pd.read_csv('data.csv'",
+      "Data Analysis\\Indians Diabetes Prediction\\code.ipynb:cell40:drop('Outcome')",
+      "Data Analysis\\Indians Diabetes Prediction\\code.ipynb:cell40:X=drop('Outcome')"
+    ]
+  },
+  "medical_insurance_cost_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Medical Insurance Cost Analysis",
+    "project_path": "Data Analysis\\Medical Insurance Cost Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/medical_insurance_cost/data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": "charges",
+    "models": [
+      "LazyRegressor",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Medical Insurance Cost Analysis\\code.ipynb:cell7:pd.read_csv('data.csv'",
+      "Data Analysis\\Medical Insurance Cost Analysis\\code.ipynb:cell37:y=df['charges']"
+    ]
+  },
+  "melbourne_housing_price_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Melbourne Housing Price Analysis",
+    "project_path": "Data Analysis\\Melbourne Housing Price Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/melbourne_housing_price/data.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "Price",
+    "models": [
+      "LazyRegressor",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Data Analysis\\Melbourne Housing Price Analysis\\code.ipynb:cell8:pd.read_csv('data.csv'",
+      "Data Analysis\\Melbourne Housing Price Analysis\\code.ipynb:cell68:y=df['Price']"
+    ]
+  },
+  "mobile_price_prediction": {
+    "category": "Data Analysis",
+    "project_name": "Mobile Price Prediction",
+    "project_path": "Data Analysis\\Mobile Price Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/mobile_price_prediction_da/train.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "price_range",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Mobile Price Prediction\\code.ipynb:cell5:pd.read_csv('data/train.csv'",
+      "Data Analysis\\Mobile Price Prediction\\code.ipynb:cell35:drop('price_range')",
+      "Data Analysis\\Mobile Price Prediction\\code.ipynb:cell35:X=drop('price_range')"
+    ]
+  },
+  "pokemon_data_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Pokemon Data Analysis",
+    "project_path": "Data Analysis\\Pokemon Data Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/pokemon_data_analysis/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Number",
+    "models": [
+      "LazyClassifier",
+      "LightGBM",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Data Analysis\\Pokemon Data Analysis\\code.ipynb:cell10:pd.read_csv(\"data.csv\"",
+      "Data Analysis\\Pokemon Data Analysis\\code.ipynb:cell47:drop('index')",
+      "Data Analysis\\Pokemon Data Analysis\\code.ipynb:cell85:X=drop('Number')"
+    ]
+  },
+  "red_wine_quality_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Red Wine Quality Analysis",
+    "project_path": "Data Analysis\\Red Wine Quality Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/red_wine_quality/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Reviews",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Red Wine Quality Analysis\\code.ipynb:cell6:pd.read_csv(\"data.csv\"",
+      "Data Analysis\\Red Wine Quality Analysis\\code.ipynb:cell55:y=df['Reviews']"
+    ]
+  },
+  "sleep_health_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Sleep Health Analysis",
+    "project_path": "Data Analysis\\Sleep Health Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/sleep_health_analysis/data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": "Blood Pressure",
+    "models": [],
+    "evidence": [
+      "Data Analysis\\Sleep Health Analysis\\code.ipynb:cell6:pd.read_csv('data.csv'",
+      "Data Analysis\\Sleep Health Analysis\\code.ipynb:cell21:drop('Blood Pressure')"
+    ]
+  },
+  "spotify_health_clustering": {
+    "category": "Data Analysis",
+    "project_name": "Spotify Health Clustering",
+    "project_path": "Data Analysis\\Spotify Health Clustering",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/spotify_health_clustering/train.csv",
+    "fallback": null,
+    "task": "clustering",
+    "target": "popularity",
+    "models": [
+      "KMeans",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Spotify Health Clustering\\code.ipynb:cell15:y=df['popularity']"
+    ]
+  },
+  "student_alcohol_consumption_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Student Alcohol Consumption Analysis",
+    "project_path": "Data Analysis\\Student Alcohol Consumption Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/student_alcohol_consumption/data.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "failures",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Student Alcohol Consumption Analysis\\code.ipynb:cell2:pd.read_csv('data.csv'",
+      "Data Analysis\\Student Alcohol Consumption Analysis\\code.ipynb:cell68:pd.read_csv('data.csv'",
+      "Data Analysis\\Student Alcohol Consumption Analysis\\code.ipynb:cell68:y=df['failures']"
+    ]
+  },
+  "titanic_data_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Titanic Data Analysis",
+    "project_path": "Data Analysis\\Titanic Data Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/titanic_data_analysis/train.csv",
+    "fallback": null,
+    "task": "classification",
+    "target": "Survived",
+    "models": [
+      "DecisionTree",
+      "LazyClassifier",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Data Analysis\\Titanic Data Analysis\\code.ipynb:cell4:pd.read_csv('../../data/titanic_data_analysis/train.csv'",
+      "Data Analysis\\Titanic Data Analysis\\code.ipynb:cell4:pd.read_csv('../../data/titanic_data_analysis/test.csv'",
+      "Data Analysis\\Titanic Data Analysis\\code.ipynb:cell78:drop('Survived')",
+      "Data Analysis\\Titanic Data Analysis\\code.ipynb:cell80:y=df['Survived']"
+    ]
+  },
+  "top_billionaires_list_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Top Billionaires List Analysis",
+    "project_path": "Data Analysis\\Top Billionaires List Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/top_billionaires/data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": null,
+    "models": [],
+    "evidence": [
+      "Data Analysis\\Top Billionaires List Analysis\\code.ipynb:cell6:pd.read_csv('data.csv'",
+      "target=null:EDA_only_no_ML_model"
+    ]
+  },
+  "video_game_sales_analysis": {
+    "category": "Data Analysis",
+    "project_name": "Video Game Sales Analysis",
+    "project_path": "Data Analysis\\Video Game Sales Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/video_game_sales/data.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": "Global_Sales",
+    "models": [
+      "LazyRegressor",
+      "LinearRegression",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Data Analysis\\Video Game Sales Analysis\\code.ipynb:cell7:pd.read_csv('data.csv'",
+      "Data Analysis\\Video Game Sales Analysis\\code.ipynb:cell83:y=df['Global_Sales']"
+    ]
+  },
+  "youtube_trending_videos_analysis": {
+    "category": "Data Analysis",
+    "project_name": "YouTube Trending Videos Analysis",
+    "project_path": "Data Analysis\\YouTube Trending Videos Analysis",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/youtube_trending/USvideos.csv",
+    "fallback": null,
+    "task": "data_analysis",
+    "target": "title_length",
+    "models": [],
+    "evidence": [
+      "Data Analysis\\YouTube Trending Videos Analysis\\code.ipynb:cell5:pd.read_csv(\"data/USvideos.csv\"",
+      "Data Analysis\\YouTube Trending Videos Analysis\\code.ipynb:cell59:y=df['title_length']"
+    ]
+  },
+  "bank_customer_churn_prediction": {
+    "category": "Regression",
+    "project_name": "Bank Customer churn prediction",
+    "project_path": "Regression\\Bank Customer churn prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/bank_customer_churn/Churn_Modelling.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "Exited",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Bank Customer churn prediction\\bank_customer_churn_prediction.ipynb:cell5:pd.read_csv('../../data/bank_customer_churn/Churn_Modelling.csv'",
+      "Regression\\Bank Customer churn prediction\\bank_customer_churn_prediction.ipynb:cell37:y=df['Exited']"
+    ]
+  },
+  "crop_yield_prediction": {
+    "category": "Regression",
+    "project_name": "Crop yield prediction",
+    "project_path": "Regression\\Crop yield prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/crop_yield_prediction/yield_df.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "Value",
+    "models": [
+      "LazyRegressor",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Crop yield prediction\\crop_yield_prediction.ipynb:cell3:pd.read_csv('../../data/crop_yield_prediction/yield.csv'",
+      "Regression\\Crop yield prediction\\crop_yield_prediction.ipynb:cell12:pd.read_csv('../../data/crop_yield_prediction/rainfall.csv'",
+      "Regression\\Crop yield prediction\\crop_yield_prediction.ipynb:cell29:pd.read_csv('../../data/crop_yield_prediction/pesticides.csv'",
+      "Regression\\Crop yield prediction\\crop_yield_prediction.ipynb:cell37:pd.read_csv('../../data/crop_yield_prediction/temp.csv'",
+      "Regression\\Crop yield prediction\\crop_yield_prediction.ipynb:cell83:target='Value'"
+    ]
+  },
+  "employee_future_prediction": {
+    "category": "Regression",
+    "project_name": "Employee Future Prediction",
+    "project_path": "Regression\\Employee Future Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/employee_future_prediction/Employee.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "LeaveOrNot",
+    "models": [
+      "DecisionTree",
+      "GradientBoosting",
+      "LazyClassifier",
+      "LightGBM",
+      "LogisticRegression",
+      "NaiveBayes",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Regression\\Employee Future Prediction\\employee_prediction.ipynb:cell2:pd.read_csv('../../data/employee_future_prediction/Employee.csv'",
+      "Regression\\Employee Future Prediction\\employee_prediction.ipynb:cell29:drop('LeaveOrNot')",
+      "Regression\\Employee Future Prediction\\employee_prediction.ipynb:cell29:X=drop('LeaveOrNot')"
+    ]
+  },
+  "flight_delay_prediction": {
+    "category": "Regression",
+    "project_name": "Flight Delay Prediction",
+    "project_path": "Regression\\Flight Delay Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/flight_delay_prediction/Jan_2020_ontime.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "CANCELLED",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Flight Delay Prediction\\predict_flight_cancelled.ipynb:cell1:pd.read_csv('../../data/flight_delay_prediction/Jan_2019_ontime.csv'",
+      "Regression\\Flight Delay Prediction\\predict_flight_cancelled.ipynb:cell1:pd.read_csv('../../data/flight_delay_prediction/Jan_2020_ontime.csv'",
+      "Regression\\Flight Delay Prediction\\predict_flight_cancelled.ipynb:cell42:drop('CANCELLED')",
+      "Regression\\Flight Delay Prediction\\predict_flight_cancelled.ipynb:cell51:target='CANCELLED'"
+    ]
+  },
+  "heart_disease_prediction": {
+    "category": "Regression",
+    "project_name": "Heart disease prediction",
+    "project_path": "Regression\\Heart disease prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/heart_disease_prediction/heart.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "target",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Heart disease prediction\\heart_disease_predictions.ipynb:cell3:pd.read_csv('../../data/heart_disease_prediction/heart.csv'",
+      "Regression\\Heart disease prediction\\heart_disease_predictions.ipynb:cell41:y=df['target']"
+    ]
+  },
+  "hotel_booking_cancellation_prediction": {
+    "category": "Regression",
+    "project_name": "Hotel Booking Cancellation Prediction",
+    "project_path": "Regression\\Hotel Booking Cancellation Prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/hotel_booking_cancellation/hotel_bookings.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "is_canceled",
+    "models": [
+      "DecisionTree",
+      "GradientBoosting",
+      "LazyClassifier",
+      "LightGBM",
+      "LogisticRegression",
+      "PyCaret",
+      "RandomForest",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Regression\\Hotel Booking Cancellation Prediction\\hotel_booking_prediction.ipynb:cell4:pd.read_csv('../../data/hotel_booking_cancellation/hotel_bookings.csv'",
+      "Regression\\Hotel Booking Cancellation Prediction\\hotel_booking_prediction.ipynb:cell59:drop('is_canceled')",
+      "Regression\\Hotel Booking Cancellation Prediction\\hotel_booking_prediction.ipynb:cell65:y=df['is_canceled']"
+    ]
+  },
+  "house_price_prediction": {
+    "category": "Regression",
+    "project_name": "House Price prediction",
+    "project_path": "Regression\\House Price prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/house_price_prediction/train.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "SalePrice",
+    "models": [
+      "GradientBoosting",
+      "Lasso",
+      "LazyRegressor",
+      "PyCaret",
+      "RandomForest",
+      "Ridge",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Regression\\House Price prediction\\House_Prices_Prediction.ipynb:cell3:pd.read_csv('../../data/house_price_prediction/train.csv'",
+      "Regression\\House Price prediction\\House_Prices_Prediction.ipynb:cell3:pd.read_csv('../../data/house_price_prediction/test.csv'",
+      "Regression\\House Price prediction\\House_Prices_Prediction.ipynb:cell6:drop('Id')",
+      "Regression\\House Price prediction\\House_Prices_Prediction.ipynb:cell11:y=df['SalePrice']"
+    ]
+  },
+  "insurance_premium_prediction": {
+    "category": "Regression",
+    "project_name": "Insurance premium prediction",
+    "project_path": "Regression\\Insurance premium prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/insurance_premium_prediction/insurance.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "charges",
+    "models": [
+      "LazyRegressor",
+      "LinearRegression",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Insurance premium prediction\\predicting_insurance_premium.ipynb:cell2:filename = './archive/insurance.csv'",
+      "Regression\\Insurance premium prediction\\predicting_insurance_premium.ipynb:cell22:X=drop('charges')"
+    ]
+  },
+  "job_salary_prediction": {
+    "category": "Regression",
+    "project_name": "Job Salary prediction",
+    "project_path": "Regression\\Job Salary prediction",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/job_salary_prediction/adzuna_global_job_listings_2025.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "SalaryNormalized",
+    "models": [
+      "LazyRegressor",
+      "PyCaret",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Regression\\Job Salary prediction\\job_salary_prediction.ipynb:cell3:_csv_path = './job-salary-prediction/Train_rev1.zip'",
+      "Regression\\Job Salary prediction\\job_salary_prediction.ipynb:cell18:drop('SalaryNormalized')",
+      "Regression\\Job Salary prediction\\job_salary_prediction.ipynb:cell18:X=drop('SalaryNormalized')"
+    ]
+  },
+  "predicting_car_prices_using_the_car_features": {
+    "category": "Regression",
+    "project_name": "Predicting car prices using the car features",
+    "project_path": "Regression\\Predicting car prices using the car features",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/car_price_prediction/CarPrice_Assignment.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "const",
+    "models": [
+      "LinearRegression"
+    ],
+    "evidence": [
+      "Regression\\Predicting car prices using the car features\\car_price_prediction.ipynb:cell5:pd.read_csv('../../data/car_price_prediction/CarPrice_Assignment.csv'",
+      "Regression\\Predicting car prices using the car features\\car_price_prediction.ipynb:cell104:drop('const')"
+    ]
+  },
+  "predicting_diabetes_using_the_prima_indians_diabetes_dataset": {
+    "category": "Regression",
+    "project_name": "Predicting diabetes using the prima indians diabetes dataset",
+    "project_path": "Regression\\Predicting diabetes using the prima indians diabetes dataset",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/diabetes_prediction/diabetes.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "Outcome",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Predicting diabetes using the prima indians diabetes dataset\\diabetes_prediction.ipynb:cell7:pd.read_csv('../../data/diabetes_prediction/diabetes.csv'",
+      "Regression\\Predicting diabetes using the prima indians diabetes dataset\\diabetes_prediction.ipynb:cell35:y=df['Outcome']"
+    ]
+  },
+  "predicting_energy_usage_in_buildings": {
+    "category": "Regression",
+    "project_name": "Predicting energy usage in buildings",
+    "project_path": "Regression\\Predicting energy usage in buildings",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/energy_usage_prediction/KAG_energydata_complete.csv",
+    "fallback": null,
+    "task": "regression",
+    "target": "Appliances",
+    "models": [
+      "LazyClassifier",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Predicting energy usage in buildings\\energy_prediction.ipynb:cell3:pd.read_csv(\"../../data/energy_usage_prediction/KAG_energydata_complete.csv\"",
+      "Regression\\Predicting energy usage in buildings\\energy_prediction.ipynb:cell46:X=drop('Appliances')"
+    ]
+  },
+  "predicting_rainfall_amount": {
+    "category": "Regression",
+    "project_name": "Predicting rainfall amount",
+    "project_path": "Regression\\Predicting rainfall amount",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/rainfall_prediction/weatherAUS.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "RainTomorrow",
+    "models": [
+      "LSTM",
+      "NeuralNetwork"
+    ],
+    "evidence": [
+      "Regression\\Predicting rainfall amount\\rain_prediction.ipynb:cell4:pd.read_csv(\"../../data/rainfall_prediction/weatherAUS.csv\"",
+      "Regression\\Predicting rainfall amount\\rain_prediction.ipynb:cell37:X=drop('RainTomorrow')"
+    ]
+  },
+  "predicting_the_price_of_bitcoin": {
+    "category": "Regression",
+    "project_name": "Predicting the price of bitcoin",
+    "project_path": "Regression\\Predicting the price of bitcoin",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/bitcoin_price_prediction/btcusd_1-min_data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Close",
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "Regression\\Predicting the price of bitcoin\\bitcoin_price_prediction.ipynb:cell3:pd.read_csv('../../data/bitcoin_price_prediction/btcusd_1-min_data.csv'",
+      "Regression\\Predicting the price of bitcoin\\bitcoin_price_prediction.ipynb:cell20:target='Close'"
+    ]
+  },
+  "prediction_future_sales": {
+    "category": "Regression",
+    "project_name": "Prediction Future Sales",
+    "project_path": "Regression\\Prediction Future Sales",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/future_sales_prediction/Walmart_Sales.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Weekly_Sales",
+    "models": [
+      "ARIMA",
+      "LinearRegression",
+      "RandomForest"
+    ],
+    "evidence": [
+      "Regression\\Prediction Future Sales\\sales_forecasting.ipynb:cell7:pd.read_csv('../../data/future_sales_prediction/Walmart_Sales.csv'",
+      "Regression\\Prediction Future Sales\\sales_forecasting.ipynb:cell110:pd.read_csv('./clean_data.csv'",
+      "Regression\\Prediction Future Sales\\sales_forecasting.ipynb:cell73:y=df['Weekly_Sales']"
+    ]
+  },
+  "stock_price_prediction": {
+    "category": "Regression",
+    "project_name": "Stock price prediction",
+    "project_path": "Regression\\Stock price prediction",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/stock_price_prediction_netflix/NFLX.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Close",
+    "models": [
+      "LinearRegression"
+    ],
+    "evidence": [
+      "Regression\\Stock price prediction\\netflix_stock_price_prediction.ipynb:cell3:pd.read_csv(\"../../data/stock_price_prediction_netflix/NFLX.csv\"",
+      "netflix_stock_price_prediction.ipynb:cell2:pd.read_csv(\"../../data/stock_price_prediction_netflix/NFLX.csv\")",
+      "target=Close:y_train=train['Close'].values"
+    ]
+  },
+  "cryptocurrency_price_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Cryptocurrency Price Forecasting",
+    "project_path": "Time Series Analysis\\Cryptocurrency Price Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/cryptocurrency_forecasting/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Close",
+    "models": [
+      "ARIMA",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Cryptocurrency Price Forecasting\\code.ipynb:cell5:pd.read_csv('data.csv'",
+      "Time Series Analysis\\Cryptocurrency Price Forecasting\\code.ipynb:cell38:target='Close'"
+    ]
+  },
+  "electricity_demand_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Electricity Demand Forecasting",
+    "project_path": "Time Series Analysis\\Electricity Demand Forecasting",
+    "dataset_type": "tabular",
+    "source_type": "local",
+    "path": "data/electricity_demand_forecasting/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "energy",
+    "models": [],
+    "evidence": [
+      "Time Series Analysis\\Electricity Demand Forecasting\\code.ipynb:cell8:path = \"data.csv\"",
+      "code.ipynb:cell3:data.rename(columns={'value':'energy'})",
+      "target=energy:daily_MWh_demand_Spain"
+    ]
+  },
+  "gold_price_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Gold Price Forecasting",
+    "project_path": "Time Series Analysis\\Gold Price Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/gold_price_forecasting/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Adj Close",
+    "models": [],
+    "evidence": [
+      "Time Series Analysis\\Gold Price Forecasting\\code.ipynb:cell3:pd.read_csv(\"data.csv\"",
+      "Time Series Analysis\\Gold Price Forecasting\\code.ipynb:cell31:X=drop('Adj Close')"
+    ]
+  },
+  "mini_course_sales_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Mini-Course Sales Forecasting",
+    "project_path": "Time Series Analysis\\Mini-Course Sales Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/mini_course_sales_forecasting/train.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "id",
+    "models": [
+      "GradientBoosting",
+      "Lasso",
+      "LightGBM",
+      "RandomForest",
+      "Ridge",
+      "XGBoost"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Mini-Course Sales Forecasting\\code.ipynb:cell7:drop('id')"
+    ]
+  },
+  "pollution_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Pollution Forecasting",
+    "project_path": "Time Series Analysis\\Pollution Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/pollution_forecasting/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "None",
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Pollution Forecasting\\code.ipynb:cell6:pd.read_csv(\"data.csv\"",
+      "Time Series Analysis\\Pollution Forecasting\\code.ipynb:cell21:target='None'"
+    ]
+  },
+  "rossmann_store_sales_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Rossmann Store Sales Forecasting",
+    "project_path": "Time Series Analysis\\Rossmann Store Sales Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/rossmann_store_sales/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Sales",
+    "models": [
+      "Prophet",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Rossmann Store Sales Forecasting\\code.ipynb:cell6:pd.read_csv('data.csv'",
+      "Time Series Analysis\\Rossmann Store Sales Forecasting\\code.ipynb:cell26:pd.read_csv('store.csv'",
+      "Time Series Analysis\\Rossmann Store Sales Forecasting\\code.ipynb:cell109:target='Sales'"
+    ]
+  },
+  "smart_home_s_temperature_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Smart Home_s Temperature Forecasting",
+    "project_path": "Time Series Analysis\\Smart Home_s Temperature Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/smart_home_temperature/train.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Indoor_temperature_room",
+    "models": [
+      "RandomForest"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Smart Home_s Temperature Forecasting\\code.ipynb:cell4:pd.read_csv('data/train.csv'",
+      "Time Series Analysis\\Smart Home_s Temperature Forecasting\\code.ipynb:cell4:pd.read_csv('data/test.csv'",
+      "Time Series Analysis\\Smart Home_s Temperature Forecasting\\code.ipynb:cell29:X=drop('Indoor_temperature_room')"
+    ]
+  },
+  "solar_power_generation_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Solar Power Generation Forecasting",
+    "project_path": "Time Series Analysis\\Solar Power Generation Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/solar_power_forecasting/Plant_1_Generation_Data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "None",
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Solar Power Generation Forecasting\\code.ipynb:cell5:pd.read_csv('data/Plant_1_Generation_Data.csv'",
+      "Time Series Analysis\\Solar Power Generation Forecasting\\code.ipynb:cell5:pd.read_csv('data/Plant_1_Weather_Sensor_Data.csv'",
+      "Time Series Analysis\\Solar Power Generation Forecasting\\code.ipynb:cell5:drop('PLANT_ID')",
+      "Time Series Analysis\\Solar Power Generation Forecasting\\code.ipynb:cell38:target='None'"
+    ]
+  },
+  "stock_price_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Stock Price Forecasting",
+    "project_path": "Time Series Analysis\\Stock Price Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "api",
+    "path": "data/stock_price_forecasting_ts/stock_data_combined.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "None",
+    "models": [
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Stock Price Forecasting\\code.ipynb:cell4:yfinance()",
+      "Time Series Analysis\\Stock Price Forecasting\\code.ipynb:cell6:yfinance(GOOG,AAPL,MSFT,APPLE,AMZN)",
+      "Time Series Analysis\\Stock Price Forecasting\\code.ipynb:cell6:pandas_datareader",
+      "Time Series Analysis\\Stock Price Forecasting\\code.ipynb:cell54:target='None'"
+    ]
+  },
+  "store_item_demand_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Store Item Demand Forecasting",
+    "project_path": "Time Series Analysis\\Store Item Demand Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/store_item_demand_forecasting/train.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "sales",
+    "models": [
+      "ARIMA",
+      "LightGBM",
+      "PyCaret"
+    ],
+    "evidence": [
+      "Time Series Analysis\\Store Item Demand Forecasting\\code.ipynb:cell8:pd.read_csv('data/train.csv'",
+      "Time Series Analysis\\Store Item Demand Forecasting\\code.ipynb:cell8:pd.read_csv('data/test.csv'",
+      "Time Series Analysis\\Store Item Demand Forecasting\\code.ipynb:cell59:target='sales'"
+    ]
+  },
+  "weather_forecasting": {
+    "category": "Time Series Analysis",
+    "project_name": "Weather Forecasting",
+    "project_path": "Time Series Analysis\\Weather Forecasting",
+    "dataset_type": "timeseries",
+    "source_type": "local",
+    "path": "data/weather_forecasting/data.csv",
+    "fallback": null,
+    "task": "time_series",
+    "target": "Next_Tmax",
+    "models": [],
+    "evidence": [
+      "Time Series Analysis\\Weather Forecasting\\code.ipynb:cell7:pd.read_csv('data.csv'",
+      "Time Series Analysis\\Weather Forecasting\\code.ipynb:cell25:pd.read_csv('data.csv'",
+      "Time Series Analysis\\Weather Forecasting\\code.ipynb:cell33:X=drop('Next_Tmax')"
+    ]
+  }
+}

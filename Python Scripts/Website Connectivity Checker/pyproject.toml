@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "check-website-connectivity"
+version = "1.0.0"
+description = "CLI tool to check whether websites are reachable."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = ["connectivity", "http", "uptime", "cli"]
+dependencies = [
+    "typer>=0.9,<1",
+    "httpx>=0.27,<1",
+]
+
+[project.scripts]
+check_site = "check_website_connectivity.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/check_website_connectivity"]
+
+# ---------- ruff -----------------------------------------------------------
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+
+# ---------- pyright --------------------------------------------------------
+[tool.pyright]
+include = ["src"]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"
+
+# ---------- pytest ---------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,2 @@
+Kaggle (Landmarks): https://www.kaggle.com/datasets/google/google-landmarks-dataset
+Official (GLDv2 info): https://github.com/cvdfoundation/google-landmark

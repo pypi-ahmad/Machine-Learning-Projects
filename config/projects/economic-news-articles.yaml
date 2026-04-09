@@ -1,0 +1,10 @@
+# Economic News Articles — 3 classes (positive/negative/neutral)
+# Phase 2 result: F1w=0.0392 (BAD)
+# Fix: more epochs, cosine schedule, gradient clipping
+
+epochs: 4
+patience: 2
+max_length: 256
+focal_gamma: 1.0
+label_smoothing: 0.05
+max_samples: 10000

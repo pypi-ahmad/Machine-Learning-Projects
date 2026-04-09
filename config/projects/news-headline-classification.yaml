@@ -1,0 +1,11 @@
+# News Headline Classification — many categories (41+)
+# Phase 2 result: F1w=0.0476 (BAD)
+# Fix: more epochs, focal loss for many classes, higher grad_accum
+
+epochs: 5
+patience: 3
+max_length: 128
+focal_gamma: 2.0
+label_smoothing: 0.05
+max_samples: 10000
+grad_accum: 16

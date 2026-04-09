@@ -1,0 +1,83 @@
+# ==============================================================================
+# Full-Run Profile — 4 GB GPU VRAM budget
+# ==============================================================================
+# Every run.py reads these defaults when invoked with:
+#   python run.py --mode full --profile full_4gb
+#
+# Per-project constants (MODEL, CLASSES, TARGET, etc.) remain in each run.py.
+# This file controls *training procedure* knobs only.
+# ==============================================================================
+
+seed: 42
+amp: true                       # mixed-precision (fp16 on CUDA)
+max_gpu_mem_mb: 4096            # soft VRAM ceiling (triggers batch backoff)
+num_workers: 2                  # keep host RAM sane
+pin_memory: false               # safer on tight VRAM
+
+# ── Batch / accumulation auto-tuning ─────────────────────────────────────────
+batch_size: 8                   # starting batch size (may shrink on OOM)
+batch_size_min: 1               # lower bound before giving up
+grad_accum_steps: 4             # effective batch = batch_size * grad_accum_steps
+grad_accum_auto: true           # auto-increase accum when batch shrinks
+
+# ── Image classification (shared/cv.py) ──────────────────────────────────────
+cv:
+  img_size: 224                 # starting img_size (backoff → 192 → 160 → 128)
+  img_size_backoff: [192, 160, 128]
+  epochs: 10
+  lr: 0.0001
+  freeze_backbone_epochs: 2     # freeze feature extractor for first N epochs
+  early_stopping: true
+  patience: 3
+  val_split: 0.1
+  test_split: 0.1
+
+# ── Tabular (shared/tabular.py via sklearn fallback) ─────────────────────────
+tabular:
+  test_split: 0.15
+  val_split: 0.15
+  n_estimators: 200
+  early_stopping: true
+
+# ── NLP / Transformers (shared/nlp.py) ───────────────────────────────────────
+nlp:
+  max_length: 256
+  epochs: 5
+  lr: 0.00002
+  batch_size: 8
+  gradient_checkpointing: true
+  early_stopping: true
+  patience: 2
+  val_split: 0.1
+  test_split: 0.1
+
+# ── Custom CV (segmentation, colorization, etc.) ─────────────────────────────
+custom_cv:
+  img_size: 224
+  epochs: 15
+  lr: 0.0001
+  batch_size: 4
+  early_stopping: true
+  patience: 3
+  val_split: 0.1
+  test_split: 0.1
+
+# ── Custom audio ─────────────────────────────────────────────────────────────
+custom_audio:
+  epochs: 15
+  lr: 0.001
+  batch_size: 16
+  early_stopping: true
+  patience: 3
+  val_split: 0.1
+  test_split: 0.1
+
+# ── Custom special (e.g. Sudoku solver) ──────────────────────────────────────
+custom_special:
+  epochs: 10
+  lr: 0.001
+  batch_size: 128
+  early_stopping: true
+  patience: 3
+  val_split: 0.1
+  test_split: 0.1

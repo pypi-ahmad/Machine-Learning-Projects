@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cli-todo"
+version = "1.0.0"
+description = "A simple CLI todo app with JSON storage."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = ["cli", "todo", "task"]
+dependencies = [
+    "typer>=0.9,<1",
+    "platformdirs>=4,<5",
+]
+
+[project.scripts]
+cli_todo = "cli_todo.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cli_todo"]
+
+# ── Ruff ──────────────────────────────────────────────────────────────
+[tool.ruff]
+target-version = "py311"
+line-length = 99
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific rules
+]
+ignore = ["UP007"]  # allow X | Y only on 3.10+
+
+[tool.ruff.lint.isort]
+known-first-party = ["cli_todo"]
+
+# ── Pyright ───────────────────────────────────────────────────────────
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "basic"
+include = ["src"]
+
+# ── Pytest ────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
