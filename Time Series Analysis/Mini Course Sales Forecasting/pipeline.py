@@ -82,7 +82,7 @@ def forecast(df, target):
     n = len(series); split = n - HORIZON
     train, test = series[:split], series[split:]
 
-    # ═══ PRIMARY: AutoGluon TimeSeries ═══
+    # === PRIMARY: AutoGluon TimeSeries ===
     try:
         t0 = time.perf_counter()
         from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
@@ -102,7 +102,7 @@ def forecast(df, target):
             print(f"    {line}")
     except Exception as e: print(f"  AutoGluon-TS failed: {e}")
 
-    # ═══ FOUNDATION MODELS ═══
+    # === FOUNDATION MODELS ===
 
     # Chronos-Bolt (fast zero-shot)
     try:
@@ -148,7 +148,7 @@ def forecast(df, target):
         score("TimesFM", test, y_pred, metrics)
     except Exception as e: print(f"  TimesFM failed: {e}")
 
-    # ═══ CLASSICAL BASELINES (comparison only) ═══
+    # === CLASSICAL BASELINES (comparison only) ===
 
     # ARIMA (statsmodels)
     try:
@@ -177,7 +177,7 @@ def forecast(df, target):
         score("Prophet", test, y_pred, metrics)
     except Exception as e: print(f"  Prophet failed: {e}")
 
-    # ═══ TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ═══
+    # === TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ===
     lags = [1, 2, 3, 5, 7, 14, 21]
     lag_df = pd.DataFrame({"y": series})
     for lg in lags:
@@ -233,7 +233,7 @@ def forecast(df, target):
         except Exception as e:
             print(f"  FLAML-Lag failed: {e}")
 
-    # ═══ METRICS SUMMARY ═══
+    # === METRICS SUMMARY ===
     if metrics:
         print()
         print("=" * 65)

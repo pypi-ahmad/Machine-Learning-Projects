@@ -734,11 +734,17 @@ TIME_SERIES = {
 
 # ── FAMILY 14: REINFORCEMENT LEARNING ──
 RL = {
+    # Discrete-action environments (PPO primary)
     "Reinforcement Learning/Cliff Walking": {"env": "CliffWalking-v0", "algo": "PPO"},
     "Reinforcement Learning/Frozen Lake": {"env": "FrozenLake-v1", "algo": "PPO"},
     "Reinforcement Learning/Gridworld Navigation": {"env": "CartPole-v1", "algo": "PPO"},
     "Reinforcement Learning/Lunar Landing": {"env": "LunarLander-v3", "algo": "PPO"},
     "Reinforcement Learning/Taxi Navigation": {"env": "Taxi-v3", "algo": "PPO"},
+    # Continuous-action environments (SAC primary)
+    "Reinforcement Learning/Pendulum Control": {"env": "Pendulum-v1", "algo": "SAC"},
+    "Reinforcement Learning/Mountain Car Continuous": {"env": "MountainCarContinuous-v0", "algo": "SAC"},
+    "Reinforcement Learning/Lunar Lander Continuous": {"env": "LunarLander-v3", "algo": "SAC", "continuous": True},
+    "Reinforcement Learning/Bipedal Walker": {"env": "BipedalWalker-v3", "algo": "SAC"},
 }
 
 # ── FAMILY 15: AUDIO / SPEECH ──
@@ -746,6 +752,8 @@ AUDIO = {
     "Speech and Audio processing/Audio Denoising": {"task": "denoising", "data": _hf("edinburghcstr/vctk")},
     "Speech and Audio processing/Music Genre Prediction - Million Songs": {"task": "classification", "data": _hf("marsyas/gtzan")},
     "Speech and Audio processing/Voice Cloning": {"task": "cloning", "data": _hf("edinburghcstr/vctk")},
+    "Speech and Audio processing/Speech to Text": {"task": "transcription"},
+    "Computer Vision/Noise Reduction": {"task": "denoising"},
     "Deep Learning/Cat and Dog Voice Recognition": {"task": "classification", "data": _hf("google/speech_commands", config="v0.02")},
 }
 
@@ -774,7 +782,6 @@ CV_MISC = {
     "Computer Vision/Image Cartoonify": {"task": "detect"},
     "Computer Vision/Image to Sketch": {"task": "detect"},
     "Computer Vision/Image Watermark": {"task": "detect"},
-    "Computer Vision/Noise Reduction": {"task": "detect"},
 }
 
 # ── CAPTIONING / VLM ──
@@ -3686,7 +3693,7 @@ def cluster(X):
     metrics_out = {{}}
     save_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # ═══ PRIMARY: UMAP + HDBSCAN ═══
+    # === PRIMARY: UMAP + HDBSCAN ===
     try:
         import umap, hdbscan
         t0 = time.perf_counter()
@@ -3706,19 +3713,19 @@ def cluster(X):
         if best_labels is None:
             best_labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
         timings["HDBSCAN"] = time.perf_counter() - t0
-        print(f"✓ UMAP + HDBSCAN (min_cluster_size={{best_mcs}})  ({{timings['HDBSCAN']:.1f}}s):")
+        print(f"  UMAP + HDBSCAN (min_cluster_size={{best_mcs}})  ({{timings['HDBSCAN']:.1f}}s):")
         m = eval_clustering(X_umap, best_labels, "HDBSCAN")
         m["time_s"] = round(timings["HDBSCAN"], 1)
         m["min_cluster_size"] = best_mcs
         metrics_out["HDBSCAN"] = m
         results["HDBSCAN"] = {{"labels": best_labels, "embedding": X_umap}}
     except Exception as e:
-        print(f"✗ UMAP + HDBSCAN: {{e}}")
+        print(f"  UMAP + HDBSCAN failed: {{e}}")
         # Fallback: PCA for embedding
         from sklearn.decomposition import PCA
         X_umap = PCA(n_components=2).fit_transform(X)
 
-    # ═══ SOFT ASSIGNMENTS: Gaussian Mixture Model ═══
+    # === SOFT ASSIGNMENTS: Gaussian Mixture Model ===
     try:
         from sklearn.mixture import GaussianMixture
         t0 = time.perf_counter()
@@ -3728,7 +3735,7 @@ def cluster(X):
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
         timings["GMM"] = time.perf_counter() - t0
-        print(f"✓ GMM (BIC-optimal k={{best_k}})  ({{timings['GMM']:.1f}}s):")
+        print(f"  GMM (BIC-optimal k={{best_k}})  ({{timings['GMM']:.1f}}s):")
         m = eval_clustering(X, labels, "GMM")
         m["time_s"] = round(timings["GMM"], 1)
         m["best_k"] = best_k
@@ -3738,9 +3745,9 @@ def cluster(X):
         print(f"  Avg assignment confidence: {{avg_confidence:.4f}}")
         results["GMM"] = {{"labels": labels, "n": best_k, "probs": probs}}
     except Exception as e:
-        print(f"✗ GMM: {{e}}")
+        print(f"  GMM failed: {{e}}")
 
-    # ═══ BASELINE: K-Means (Elbow + Silhouette) ═══
+    # === BASELINE: K-Means (Elbow + Silhouette) ===
     try:
         from sklearn.cluster import KMeans
         t0 = time.perf_counter()
@@ -3754,7 +3761,7 @@ def cluster(X):
         best_k = K_range[np.argmax(sils)]
         labels = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit_predict(X)
         timings["KMeans"] = time.perf_counter() - t0
-        print(f"✓ K-Means baseline (best k={{best_k}}, silhouette={{max(sils):.4f}})  ({{timings['KMeans']:.1f}}s):")
+        print(f"  K-Means baseline (best k={{best_k}}, silhouette={{max(sils):.4f}})  ({{timings['KMeans']:.1f}}s):")
         m = eval_clustering(X, labels, "K-Means")
         m["time_s"] = round(timings["KMeans"], 1)
         m["best_k"] = best_k
@@ -3770,11 +3777,11 @@ def cluster(X):
         fig.tight_layout()
         fig.savefig(os.path.join(save_dir, "kmeans_elbow_silhouette.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
-        print("✓ Saved kmeans_elbow_silhouette.png")
+        print("  Saved kmeans_elbow_silhouette.png")
     except Exception as e:
-        print(f"✗ K-Means: {{e}}")
+        print(f"  K-Means failed: {{e}}")
 
-    # ═══ VISUALIZATION ═══
+    # === VISUALIZATION ===
     try:
         embed = results.get("HDBSCAN", {{}}).get("embedding", X[:, :2] if X.shape[1] >= 2 else X)
         active = [(n, results[n]["labels"]) for n in ["HDBSCAN", "GMM", "KMeans"] if n in results]
@@ -3787,11 +3794,11 @@ def cluster(X):
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, "clustering_results.png"), dpi=100, bbox_inches="tight")
         plt.close()
-        print("✓ Saved clustering_results.png")
+        print("  Saved clustering_results.png")
     except Exception as e:
-        print(f"⚠ Plot: {{e}}")
+        print(f"  Plot failed: {{e}}")
 
-    # ═══ SUMMARY ═══
+    # === SUMMARY ===
     print("\\n" + "=" * 40)
     print("CLUSTERING COMPARISON:")
     for name in ["HDBSCAN", "GMM", "KMeans"]:
@@ -3805,7 +3812,7 @@ def cluster(X):
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
         json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+    print(f"  Metrics saved to {{out_path}}")
 
 
 def main():
@@ -4086,7 +4093,7 @@ def forecast(df, target):
     n = len(series); split = n - HORIZON
     train, test = series[:split], series[split:]
 
-    # ═══ PRIMARY: AutoGluon TimeSeries ═══
+    # === PRIMARY: AutoGluon TimeSeries ===
     try:
         t0 = time.perf_counter()
         from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
@@ -4106,7 +4113,7 @@ def forecast(df, target):
             print(f"    {{line}}")
     except Exception as e: print(f"  AutoGluon-TS failed: {{e}}")
 
-    # ═══ FOUNDATION MODELS ═══
+    # === FOUNDATION MODELS ===
 
     # Chronos-Bolt (fast zero-shot)
     try:
@@ -4152,7 +4159,7 @@ def forecast(df, target):
         score("TimesFM", test, y_pred, metrics)
     except Exception as e: print(f"  TimesFM failed: {{e}}")
 
-    # ═══ CLASSICAL BASELINES (comparison only) ═══
+    # === CLASSICAL BASELINES (comparison only) ===
 
     # ARIMA (statsmodels)
     try:
@@ -4181,7 +4188,7 @@ def forecast(df, target):
         score("Prophet", test, y_pred, metrics)
     except Exception as e: print(f"  Prophet failed: {{e}}")
 
-    # ═══ TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ═══
+    # === TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ===
     lags = [1, 2, 3, 5, 7, 14, 21]
     lag_df = pd.DataFrame({{"y": series}})
     for lg in lags:
@@ -4237,7 +4244,7 @@ def forecast(df, target):
         except Exception as e:
             print(f"  FLAML-Lag failed: {{e}}")
 
-    # ═══ METRICS SUMMARY ═══
+    # === METRICS SUMMARY ===
     if metrics:
         print()
         print("=" * 65)
@@ -4584,31 +4591,34 @@ if __name__ == "__main__":
 def gen_rl(path, cfg):
     env = cfg.get("env", "CartPole-v1")
     algo = cfg.get("algo", "PPO")
+    is_cont_cfg = cfg.get("continuous", False)
+    # For LunarLander with continuous flag, use the continuous kwarg
+    make_kwargs = 'continuous=True' if is_cont_cfg else ''
     return textwrap.dedent(f'''\
 """
 Modern Reinforcement Learning Pipeline (April 2026)
 
-Primary algorithm:
-  - PPO  (Stable-Baselines3) — default for discrete & continuous envs
-  - SAC  (Stable-Baselines3) — preferred for continuous-action envs
+Primary algorithm: {algo}
+  - SAC  (Stable-Baselines3) -- default for continuous-action envs
+  - PPO  (Stable-Baselines3) -- default for discrete-action envs
 
-Baselines (educational / comparison):
-  - DQN  (Stable-Baselines3) — deep RL baseline for discrete-action envs
-  - Q-learning (tabular)     — pure educational baseline for small-state discrete envs
-                                (FrozenLake, CliffWalking, Taxi — enumerable state space)
+Baselines (comparison):
+  - PPO  (Stable-Baselines3) -- comparison when SAC is primary
+  - DQN  (Stable-Baselines3) -- deep RL baseline for discrete-action envs
+  - Q-learning (tabular)     -- educational baseline for small-state discrete envs
 
 Environment: {env}
-Action space: auto-detected (discrete → PPO+DQN, continuous → PPO+SAC)
+Action space: auto-detected (discrete -> PPO+DQN, continuous -> SAC+PPO)
 
 Compute requirements:
-  - PPO : ~100K steps ≈ 1-3 min on CPU, <1 min with GPU
-  - SAC : ~100K steps ≈ 2-5 min on CPU, <1 min with GPU
-  - DQN : ~100K steps ≈ 1-3 min on CPU, <1 min with GPU
+  - PPO : ~100K steps, 1-3 min on CPU, <1 min with GPU
+  - DQN : ~100K steps, 1-3 min on CPU, <1 min with GPU
+  - SAC : ~100K steps, 2-5 min on CPU, <1 min with GPU
   - Q-learning (tabular): <10s, CPU-only, no neural network
 
 Dependencies: stable-baselines3, gymnasium, matplotlib, numpy
 """
-import os, warnings, time, json
+import os, json, time, warnings
 import numpy as np
 import gymnasium as gym
 import matplotlib; matplotlib.use("Agg")
@@ -4619,6 +4629,8 @@ warnings.filterwarnings("ignore")
 ENV_NAME = "{env}"
 ALGO = "{algo}"
 TOTAL_TIMESTEPS = 100_000
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
+MAKE_KWARGS = dict({make_kwargs})
 
 # Discrete envs where DQN is a valid baseline
 DISCRETE_ENVS = ("CliffWalking", "FrozenLake", "Taxi", "LunarLander", "CartPole", "MountainCar")
@@ -4626,7 +4638,7 @@ DISCRETE_ENVS = ("CliffWalking", "FrozenLake", "Taxi", "LunarLander", "CartPole"
 TABULAR_ENVS = ("CliffWalking", "FrozenLake", "Taxi")
 
 
-def train_sb3(algo_name, env, eval_env, save_dir, timesteps):
+def train_sb3(algo_name, env_instance, eval_env, save_dir, timesteps):
     \"\"\"Train a Stable-Baselines3 agent (PPO, SAC, or DQN).\"\"\"
     from stable_baselines3 import PPO, SAC, DQN
     from stable_baselines3.common.evaluation import evaluate_policy
@@ -4636,29 +4648,29 @@ def train_sb3(algo_name, env, eval_env, save_dir, timesteps):
         log_path=save_dir, eval_freq=5000, n_eval_episodes=10, deterministic=True)
 
     if algo_name == "SAC":
-        model = SAC("MlpPolicy", env, learning_rate=3e-4, buffer_size=100_000,
+        model = SAC("MlpPolicy", env_instance, learning_rate=3e-4, buffer_size=100_000,
                      batch_size=256, tau=0.005, gamma=0.99, verbose=1, device="auto")
     elif algo_name == "DQN":
-        model = DQN("MlpPolicy", env, learning_rate=1e-4, buffer_size=50_000,
+        model = DQN("MlpPolicy", env_instance, learning_rate=1e-4, buffer_size=50_000,
                      batch_size=64, gamma=0.99, exploration_fraction=0.3,
                      target_update_interval=1000, verbose=1, device="auto")
     else:
-        model = PPO("MlpPolicy", env, learning_rate=3e-4, n_steps=2048, batch_size=64,
+        model = PPO("MlpPolicy", env_instance, learning_rate=3e-4, n_steps=2048, batch_size=64,
                      n_epochs=10, gamma=0.99, gae_lambda=0.95, clip_range=0.2,
                      ent_coef=0.01, verbose=1, device="auto")
 
-    t0 = time.time()
+    t0 = time.perf_counter()
     print(f"  Training {{algo_name}} on {{ENV_NAME}} for {{timesteps}} steps ...")
     model.learn(total_timesteps=timesteps, callback=eval_cb)
-    elapsed = time.time() - t0
+    elapsed = time.perf_counter() - t0
     mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=20)
-    print(f"  ✓ {{algo_name}} — Reward: {{mean_reward:.2f}} ± {{std_reward:.2f}} ({{elapsed:.1f}}s)")
+    print(f"  {{algo_name}} - Reward: {{mean_reward:.2f}} +/- {{std_reward:.2f}} ({{elapsed:.1f}}s)")
     model.save(os.path.join(save_dir, f"{{algo_name.lower()}}_{{ENV_NAME}}"))
     return algo_name, mean_reward, std_reward, elapsed
 
 
 def train_q_table(env_name, n_episodes=10_000, lr=0.1, gamma=0.99, eps_start=1.0, eps_end=0.01, eps_decay=0.9995):
-    \"\"\"Tabular Q-learning — educational baseline for small-state discrete envs.\"\"\"
+    \"\"\"Tabular Q-learning - educational baseline for small-state discrete envs.\"\"\"
     env = gym.make(env_name)
     n_states = env.observation_space.n
     n_actions = env.action_space.n
@@ -4666,7 +4678,7 @@ def train_q_table(env_name, n_episodes=10_000, lr=0.1, gamma=0.99, eps_start=1.0
     epsilon = eps_start
     rewards_log = []
 
-    t0 = time.time()
+    t0 = time.perf_counter()
     print(f"  Training Q-learning (tabular) on {{env_name}} for {{n_episodes}} episodes ...")
     for ep in range(n_episodes):
         state, _ = env.reset()
@@ -4701,10 +4713,10 @@ def train_q_table(env_name, n_episodes=10_000, lr=0.1, gamma=0.99, eps_start=1.0
         eval_rewards.append(total_r)
     eval_env.close()
 
-    elapsed = time.time() - t0
+    elapsed = time.perf_counter() - t0
     mean_r = np.mean(eval_rewards)
     std_r = np.std(eval_rewards)
-    print(f"  ✓ Q-learning — Reward: {{mean_r:.2f}} ± {{std_r:.2f}} ({{elapsed:.1f}}s, {{n_states}} states × {{n_actions}} actions)")
+    print(f"  Q-learning - Reward: {{mean_r:.2f}} +/- {{std_r:.2f}} ({{elapsed:.1f}}s, {{n_states}} states x {{n_actions}} actions)")
     return "Q-learning", mean_r, std_r, elapsed, rewards_log
 
 
@@ -4716,7 +4728,7 @@ def plot_results(results, save_dir):
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(names, means, yerr=stds, capsize=5, color=["#2196F3", "#4CAF50", "#FF9800", "#9C27B0"][:len(names)])
     ax.set_ylabel("Mean Reward (20 eval episodes)")
-    ax.set_title(f"RL Algorithm Comparison — {{ENV_NAME}}")
+    ax.set_title(f"RL Algorithm Comparison - {{ENV_NAME}}")
     for bar, m in zip(bars, means):
         ax.text(bar.get_x() + bar.get_width()/2, bar.get_height(), f"{{m:.1f}}", ha="center", va="bottom", fontsize=9)
     fig.tight_layout()
@@ -4726,68 +4738,67 @@ def plot_results(results, save_dir):
 
 def main():
     print("=" * 60)
-    print(f"REINFORCEMENT LEARNING — {{ENV_NAME}}")
-    print(f"Primary: {{ALGO}}  |  Baselines: DQN + Q-learning (where applicable)")
+    print(f"REINFORCEMENT LEARNING | {{ENV_NAME}}")
+    print(f"Primary: {{ALGO}}  |  Baselines: auto-selected for action space")
     print("=" * 60)
-    save_dir = os.path.dirname(os.path.abspath(__file__))
     results = []
 
-    # ═══ PRIMARY: PPO or SAC ═══
-    env = gym.make(ENV_NAME); eval_env = gym.make(ENV_NAME)
+    # === PRIMARY: SAC or PPO ===
+    env = gym.make(ENV_NAME, **MAKE_KWARGS); eval_env = gym.make(ENV_NAME, **MAKE_KWARGS)
     is_continuous = hasattr(env.action_space, "shape") and len(env.action_space.shape) > 0
     act_type = "continuous" if is_continuous else "discrete"
     print(f"  Environment: {{ENV_NAME}} ({{act_type}} actions)")
 
-    name, reward, std, dt = train_sb3(ALGO, env, eval_env, save_dir, TOTAL_TIMESTEPS)
+    name, reward, std, dt = train_sb3(ALGO, env, eval_env, SAVE_DIR, TOTAL_TIMESTEPS)
     results.append((name, reward, std, dt))
     env.close(); eval_env.close()
 
-    # ═══ DQN BASELINE (discrete environments) ═══
+    # === DQN BASELINE (discrete environments) ===
     is_discrete = any(tag in ENV_NAME for tag in DISCRETE_ENVS)
     if is_discrete and ALGO != "DQN":
         try:
-            env2 = gym.make(ENV_NAME); eval_env2 = gym.make(ENV_NAME)
-            name, reward, std, dt = train_sb3("DQN", env2, eval_env2, save_dir, TOTAL_TIMESTEPS)
+            env2 = gym.make(ENV_NAME, **MAKE_KWARGS); eval_env2 = gym.make(ENV_NAME, **MAKE_KWARGS)
+            name, reward, std, dt = train_sb3("DQN", env2, eval_env2, SAVE_DIR, TOTAL_TIMESTEPS)
             results.append((name, reward, std, dt))
             env2.close(); eval_env2.close()
         except Exception as e:
-            print(f"  ✗ DQN baseline: {{e}}")
+            print(f"  DQN baseline failed: {{e}}")
 
-    # ═══ SAC COMPARISON (continuous environments) ═══
-    if is_continuous and ALGO != "SAC":
+    # === PPO COMPARISON (continuous environments where SAC is primary) ===
+    if is_continuous and ALGO != "PPO":
         try:
-            env3 = gym.make(ENV_NAME); eval_env3 = gym.make(ENV_NAME)
-            name, reward, std, dt = train_sb3("SAC", env3, eval_env3, save_dir, TOTAL_TIMESTEPS)
+            env3 = gym.make(ENV_NAME, **MAKE_KWARGS); eval_env3 = gym.make(ENV_NAME, **MAKE_KWARGS)
+            name, reward, std, dt = train_sb3("PPO", env3, eval_env3, SAVE_DIR, TOTAL_TIMESTEPS)
             results.append((name, reward, std, dt))
             env3.close(); eval_env3.close()
         except Exception as e:
-            print(f"  ✗ SAC comparison: {{e}}")
+            print(f"  PPO comparison failed: {{e}}")
 
-    # ═══ Q-LEARNING BASELINE (small-state discrete environments) ═══
+    # === Q-LEARNING BASELINE (small-state discrete environments) ===
     is_tabular = any(tag in ENV_NAME for tag in TABULAR_ENVS)
     if is_tabular:
         try:
             name, reward, std, dt, _ = train_q_table(ENV_NAME)
             results.append((name, reward, std, dt))
         except Exception as e:
-            print(f"  ✗ Q-learning baseline: {{e}}")
+            print(f"  Q-learning baseline failed: {{e}}")
 
-    # ═══ SUMMARY ═══
-    print("")
+    # === SUMMARY ===
+    print()
     print("=" * 60)
     print("COMPARISON")
     print("=" * 60)
     best = max(results, key=lambda x: x[1])
     for name, reward, std, dt in results:
-        marker = " ← best" if name == best[0] else ""
-        print(f"  {{name:15s}}  Reward: {{reward:8.2f}} ± {{std:6.2f}}  ({{dt:.1f}}s){{marker}}")
+        marker = " <- best" if name == best[0] else ""
+        print(f"  {{name:15s}}  Reward: {{reward:8.2f}} +/- {{std:6.2f}}  ({{dt:.1f}}s){{marker}}")
 
     # Save metrics
     metrics = [{{"algorithm": r[0], "mean_reward": r[1], "std_reward": r[2], "time_s": r[3]}} for r in results]
-    with open(os.path.join(save_dir, "metrics.json"), "w") as f:
+    with open(os.path.join(SAVE_DIR, "metrics.json"), "w") as f:
         json.dump(metrics, f, indent=2)
 
-    plot_results(results, save_dir)
+    plot_results(results, SAVE_DIR)
     print(f"  Saved: comparison.png, metrics.json")
 
 
@@ -4808,10 +4819,10 @@ Modern Audio/Speech Pipeline (April 2026)
 Task: {task}
 
 Model selection by task:
-  - ASR / speech-to-text   → Whisper large-v3-turbo (OpenAI)
-  - Audio classification   → Wav2Vec2-base + HuBERT-base (Meta)
-  - Denoising / separation → SpeechBrain SepFormer (speechbrain/sepformer-whamr)
-  - Voice cloning / TTS    → Coqui XTTS-v2 (multilingual, speaker-adaptive)
+  - ASR / speech-to-text   -- Whisper large-v3-turbo (OpenAI)
+  - Audio classification   -- Wav2Vec2-base + HuBERT-base (Meta)
+  - Denoising / separation -- SpeechBrain SepFormer (speechbrain/sepformer-whamr)
+  - Voice cloning / TTS    -- Coqui XTTS-v2 (multilingual, speaker-adaptive)
 
 Compute requirements:
   - Whisper large-v3-turbo : ~2 GB VRAM, ~3s/file on GPU, ~15s/file on CPU
@@ -4822,12 +4833,13 @@ Compute requirements:
 Dependencies: transformers, torch, torchaudio, soundfile, speechbrain, TTS (Coqui)
 Data: Auto-downloaded at runtime from HuggingFace
 """
-import os, json, warnings, time
+import os, json, time, warnings
 import numpy as np
 
 warnings.filterwarnings("ignore")
 
 TASK = "{task}"
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def download_audio_samples():
@@ -4835,7 +4847,7 @@ def download_audio_samples():
     from datasets import load_dataset
     import soundfile as sf
 
-    save_dir = os.path.join(os.path.dirname(__file__), "audio_data")
+    save_dir = os.path.join(SAVE_DIR, "audio_data")
     os.makedirs(save_dir, exist_ok=True)
 
     if TASK == "classification":
@@ -4869,9 +4881,9 @@ def download_audio_samples():
     return save_dir, paths
 
 
-# ═══════════════════════════════════════════════════════════
-# ASR / SPEECH-TO-TEXT  →  Whisper large-v3-turbo
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# ASR / SPEECH-TO-TEXT -- Whisper large-v3-turbo
+# ===========================================================
 
 def run_whisper(audio_dir):
     \"\"\"Automatic speech recognition with Whisper large-v3-turbo.\"\"\"
@@ -4883,7 +4895,7 @@ def run_whisper(audio_dir):
     model_id = "openai/whisper-large-v3-turbo"
 
     print(f"  Loading {{model_id}} on {{device}} ...")
-    t0 = time.time()
+    t0 = time.perf_counter()
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True).to(device)
     processor = AutoProcessor.from_pretrained(model_id)
@@ -4891,23 +4903,23 @@ def run_whisper(audio_dir):
                    tokenizer=processor.tokenizer,
                    feature_extractor=processor.feature_extractor,
                    torch_dtype=torch_dtype, device=device)
-    print(f"  Model loaded in {{time.time()-t0:.1f}}s")
+    print(f"  Model loaded in {{time.perf_counter()-t0:.1f}}s")
 
     from pathlib import Path
     audio_files = sorted(Path(audio_dir).glob("*.wav")) + sorted(Path(audio_dir).glob("*.flac"))
     results = []
     for f in audio_files[:10]:
-        t1 = time.time()
+        t1 = time.perf_counter()
         result = asr(str(f), return_timestamps=True)
-        dt = time.time() - t1
+        dt = time.perf_counter() - t1
         results.append({{"file": f.name, "text": result["text"], "time_s": round(dt, 2)}})
-        print(f"  ✓ {{f.name}} ({{dt:.1f}}s): {{result['text'][:80]}}...")
+        print(f"  {{f.name}} ({{dt:.1f}}s): {{result['text'][:80]}}...")
     return results
 
 
-# ═══════════════════════════════════════════════════════════
-# AUDIO CLASSIFICATION  →  Wav2Vec2 + HuBERT
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# AUDIO CLASSIFICATION -- Wav2Vec2 + HuBERT
+# ===========================================================
 
 def run_wav2vec2_clf(audio_dir):
     \"\"\"Audio classification with Wav2Vec2 and HuBERT.\"\"\"
@@ -4920,7 +4932,7 @@ def run_wav2vec2_clf(audio_dir):
     audio_files = sorted(Path(audio_dir).glob("*.wav"))[:20]
 
     if not audio_files:
-        print("  ⚠ No .wav files found — extracting from dataset ...")
+        print("  No .wav files found - extracting from dataset ...")
         # Try to extract audio from HF dataset objects
         ds_dir = Path(audio_dir)
         from datasets import load_dataset
@@ -4938,7 +4950,7 @@ def run_wav2vec2_clf(audio_dir):
     for model_name, label in [("facebook/wav2vec2-base", "Wav2Vec2"),
                                ("facebook/hubert-base-ls960", "HuBERT")]:
         try:
-            t0 = time.time()
+            t0 = time.perf_counter()
             print(f"  Loading {{label}} ...")
             extractor = AutoFeatureExtractor.from_pretrained(model_name)
             model = AutoModelForAudioClassification.from_pretrained(
@@ -4955,78 +4967,154 @@ def run_wav2vec2_clf(audio_dir):
                 pred = torch.argmax(logits, dim=-1).item()
                 preds.append(pred)
                 print(f"    {{f.name}}: class {{pred}}")
-            elapsed = time.time() - t0
+            elapsed = time.perf_counter() - t0
             summary.append({{"model": label, "n_files": len(preds),
                             "time_s": round(elapsed, 1)}})
-            print(f"  ✓ {{label}}: {{len(preds)}} files classified ({{elapsed:.1f}}s)")
+            print(f"  {{label}}: {{len(preds)}} files classified ({{elapsed:.1f}}s)")
         except Exception as e:
-            print(f"  ✗ {{label}}: {{e}}")
+            print(f"  {{label}} failed: {{e}}")
 
     return summary
 
 
-# ═══════════════════════════════════════════════════════════
-# DENOISING / SEPARATION  →  SpeechBrain SepFormer
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# DENOISING / SEPARATION -- SpeechBrain SepFormer
+# ===========================================================
 
 def run_sepformer(audio_dir):
-    \"\"\"Speech enhancement / denoising with SpeechBrain SepFormer.\"\"\"
+    \"\"\"Speech enhancement / denoising.
+
+    Primary: SepFormer (speechbrain/sepformer-whamr) - neural, SOTA
+    Baseline: spectral subtraction - classical signal processing
+    \"\"\"
     try:
         from pathlib import Path
         import torchaudio
 
+        audio_files = sorted(Path(audio_dir).glob("*.wav"))[:10]
+
+        # --- BASELINE: Spectral Subtraction ---
+        print("  --- Baseline: Spectral Subtraction ---")
+        baseline_results = []
+        t_base = time.perf_counter()
+        for f in audio_files:
+            try:
+                import soundfile as sf
+                data, sr = sf.read(str(f))
+                if len(data.shape) > 1:
+                    data = data[:, 0]
+                fl = min(400, len(data))
+                hop = fl // 2
+                n_frames = max(1, len(data) // hop - 1)
+                frames = np.array([data[i*hop:i*hop+fl] for i in range(n_frames) if i*hop+fl <= len(data)])
+                if len(frames) == 0:
+                    continue
+                ham = np.hamming(fl)
+                windowed = frames * ham
+                dft = np.fft.fft(windowed)
+                mag = np.abs(dft)
+                phase = np.angle(dft)
+                noise_est = np.mean(mag, axis=0)
+                clean_mag = np.maximum(mag - 2 * noise_est, 0)
+                estimate = clean_mag * np.exp(1j * phase)
+                ift = [np.fft.ifft(e).real for e in estimate]
+                clean_data = list(ift[0][:hop])
+                for i in range(len(ift) - 1):
+                    clean_data.extend(ift[i][hop:] + ift[i+1][:hop])
+                clean_data.extend(ift[-1][hop:])
+                baseline_results.append({{"file": f.name, "method": "spectral_subtraction"}})
+                print(f"    {{f.name}}: processed")
+            except Exception as e:
+                print(f"    {{f.name}}: failed ({{e}})")
+        dt_base = time.perf_counter() - t_base
+        print(f"  Spectral subtraction: {{len(baseline_results)}} files ({{dt_base:.1f}}s)")
+
+        # --- PRIMARY: SepFormer ---
+        print("  --- Primary: SpeechBrain SepFormer ---")
         print("  Loading SepFormer (speechbrain/sepformer-whamr) ...")
-        t0 = time.time()
+        t0 = time.perf_counter()
         try:
             from speechbrain.inference.separation import SepformerSeparation
             sep_model = SepformerSeparation.from_hparams(
                 source="speechbrain/sepformer-whamr",
-                savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
+                savedir=os.path.join(SAVE_DIR, "sepformer_model"))
         except ImportError:
             from speechbrain.pretrained import SepformerSeparation
             sep_model = SepformerSeparation.from_hparams(
                 source="speechbrain/sepformer-whamr",
-                savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
-        print(f"  Model loaded in {{time.time()-t0:.1f}}s")
+                savedir=os.path.join(SAVE_DIR, "sepformer_model"))
+        print(f"  Model loaded in {{time.perf_counter()-t0:.1f}}s")
 
-        audio_files = sorted(Path(audio_dir).glob("*.wav"))[:5]
-        out_dir = os.path.join(os.path.dirname(__file__), "enhanced")
+        out_dir = os.path.join(SAVE_DIR, "enhanced")
         os.makedirs(out_dir, exist_ok=True)
         results = []
 
         for f in audio_files:
-            t1 = time.time()
+            t1 = time.perf_counter()
             est_sources = sep_model.separate_file(path=str(f))
             out_path = os.path.join(out_dir, f"{{f.stem}}_enhanced.wav")
             torchaudio.save(out_path, est_sources[:, :, 0].cpu(), 8000)
-            dt = time.time() - t1
+            dt = time.perf_counter() - t1
             results.append({{"file": f.name, "output": f"{{f.stem}}_enhanced.wav",
-                            "time_s": round(dt, 1)}})
-            print(f"  ✓ {{f.name}} → {{f.stem}}_enhanced.wav ({{dt:.1f}}s)")
+                            "method": "sepformer", "time_s": round(dt, 1)}})
+            print(f"  {{f.name}} -> {{f.stem}}_enhanced.wav ({{dt:.1f}}s)")
 
         print(f"  Enhanced audio saved to {{out_dir}}")
-        return results
+        print(f"  SepFormer: {{len(results)}} files | Baseline: {{len(baseline_results)}} files")
+        return {{"sepformer": results, "baseline_spectral": baseline_results}}
     except Exception as e:
-        print(f"  ✗ SepFormer: {{e}}")
-        return []
+        print(f"  SepFormer failed: {{e}}")
+        return {{}}
 
 
-# ═══════════════════════════════════════════════════════════
-# VOICE CLONING / TTS  →  Coqui XTTS-v2
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# VOICE CLONING / TTS -- Coqui XTTS-v2
+# ===========================================================
 
 def run_voice_cloning(audio_dir):
-    \"\"\"Text-to-speech with voice cloning using Coqui XTTS-v2.\"\"\"
+    \"\"\"Voice cloning and text-to-speech.
+
+    Primary: Coqui XTTS-v2 (multilingual, speaker-adaptive, ~4 GB VRAM)
+    Baseline: pyttsx3 (offline, CPU-only, no cloning)
+    \"\"\"
+    results = {{"xtts": [], "baseline_pyttsx3": []}}
+
+    # --- BASELINE: pyttsx3 (offline CPU TTS) ---
+    try:
+        import pyttsx3
+        print("  --- Baseline: pyttsx3 (offline TTS) ---")
+        engine = pyttsx3.init()
+        baseline_dir = os.path.join(SAVE_DIR, "tts_baseline")
+        os.makedirs(baseline_dir, exist_ok=True)
+        baseline_texts = [
+            "This is a baseline text to speech sample using pyttsx3.",
+            "Offline synthesis is fast but lacks naturalness.",
+        ]
+        for i, text in enumerate(baseline_texts):
+            t1 = time.perf_counter()
+            out_path = os.path.join(baseline_dir, f"baseline_{{i:02d}}.wav")
+            engine.save_to_file(text, out_path)
+            engine.runAndWait()
+            dt = time.perf_counter() - t1
+            results["baseline_pyttsx3"].append({{
+                "text": text[:60], "output": os.path.basename(out_path),
+                "time_s": round(dt, 1)}})
+            print(f"    baseline_{{i:02d}}.wav ({{dt:.1f}}s)")
+    except Exception as e:
+        print(f"  pyttsx3 baseline skipped: {{e}}")
+
+    # --- PRIMARY: XTTS-v2 ---
     try:
         from TTS.api import TTS
         from pathlib import Path
 
+        print("  --- Primary: Coqui XTTS-v2 ---")
         print("  Loading XTTS-v2 ...")
-        t0 = time.time()
+        t0 = time.perf_counter()
         tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
-        print(f"  Model loaded in {{time.time()-t0:.1f}}s")
+        print(f"  Model loaded in {{time.perf_counter()-t0:.1f}}s")
 
-        out_dir = os.path.join(os.path.dirname(__file__), "tts_output")
+        out_dir = os.path.join(SAVE_DIR, "tts_output")
         os.makedirs(out_dir, exist_ok=True)
 
         # Find a reference speaker sample for voice cloning
@@ -5034,84 +5122,84 @@ def run_voice_cloning(audio_dir):
         ref_speaker = str(ref_files[0]) if ref_files else None
 
         texts = [
-            "Hello, this is a text to speech demonstration using XTTS version 2.",
-            "Modern voice cloning can produce remarkably natural speech.",
+            ("Hello, this is a text to speech demonstration using XTTS version 2.", "en"),
+            ("Modern voice cloning can produce remarkably natural speech.", "en"),
+            ("Deep learning models now generate human-quality audio in real time.", "en"),
+            ("Bonjour, ceci est une demonstration de synthese vocale multilingue.", "fr"),
         ]
 
-        results = []
-        for i, text in enumerate(texts):
-            t1 = time.time()
+        for i, (text, lang) in enumerate(texts):
+            t1 = time.perf_counter()
             out_path = os.path.join(out_dir, f"tts_sample_{{i:02d}}.wav")
             if ref_speaker:
                 tts.tts_to_file(text=text, file_path=out_path,
-                               speaker_wav=ref_speaker, language="en")
+                               speaker_wav=ref_speaker, language=lang)
                 mode = "cloned"
             else:
                 tts.tts_to_file(text=text, file_path=out_path)
                 mode = "default"
-            dt = time.time() - t1
-            results.append({{"text": text[:60], "output": os.path.basename(out_path),
-                            "mode": mode, "time_s": round(dt, 1)}})
-            print(f"  ✓ [{{mode}}] tts_sample_{{i:02d}}.wav ({{dt:.1f}}s)")
+            dt = time.perf_counter() - t1
+            results["xtts"].append({{"text": text[:60], "output": os.path.basename(out_path),
+                            "mode": mode, "language": lang, "time_s": round(dt, 1)}})
+            print(f"  [{{mode}}/{{lang}}] tts_sample_{{i:02d}}.wav ({{dt:.1f}}s)")
 
         print(f"  TTS output saved to {{out_dir}}")
-        return results
+        print(f"  XTTS-v2: {{len(results['xtts'])}} samples | Baseline: {{len(results['baseline_pyttsx3'])}} samples")
     except Exception as e:
-        print(f"  ✗ XTTS-v2: {{e}}")
-        return []
+        print(f"  XTTS-v2 failed: {{e}}")
+
+    return results
 
 
 def main():
     print("=" * 60)
-    print(f"AUDIO/SPEECH — Task: {{TASK}}")
+    print(f"AUDIO/SPEECH | Task: {{TASK}}")
     print("Models: Whisper | Wav2Vec2/HuBERT | SepFormer | XTTS-v2")
     print("=" * 60)
 
     audio_dir, data = download_audio_samples()
-    out_dir = os.path.dirname(os.path.abspath(__file__))
     results = {{}}
 
     if TASK == "transcription":
-        print("")
-        print("─── ASR: Whisper large-v3-turbo ───")
+        print()
+        print("--- ASR: Whisper large-v3-turbo ---")
         asr_results = run_whisper(audio_dir)
         results["whisper"] = asr_results
         if asr_results:
-            out = os.path.join(out_dir, "transcriptions.json")
+            out = os.path.join(SAVE_DIR, "transcriptions.json")
             with open(out, "w", encoding="utf-8") as f:
                 json.dump(asr_results, f, indent=2)
             print(f"  Saved transcriptions to {{out}}")
 
     elif TASK == "classification":
-        print("")
-        print("─── Classification: Wav2Vec2 + HuBERT ───")
+        print()
+        print("--- Classification: Wav2Vec2 + HuBERT ---")
         clf_results = run_wav2vec2_clf(audio_dir)
         results["classification"] = clf_results
 
     elif TASK == "denoising" or TASK == "separation":
-        print("")
-        print("─── Denoising: SpeechBrain SepFormer ───")
+        print()
+        print("--- Denoising: SpeechBrain SepFormer ---")
         sep_results = run_sepformer(audio_dir)
         results["sepformer"] = sep_results
 
     elif TASK == "cloning":
-        print("")
-        print("─── Voice Cloning: XTTS-v2 ───")
+        print()
+        print("--- Voice Cloning: XTTS-v2 ---")
         tts_results = run_voice_cloning(audio_dir)
         results["xtts"] = tts_results
 
     else:
-        # Default: run Whisper ASR
-        print("")
-        print("─── ASR (default): Whisper large-v3-turbo ───")
+        print()
+        print("--- ASR (default): Whisper large-v3-turbo ---")
         asr_results = run_whisper(audio_dir)
         results["whisper"] = asr_results
 
-    # Save summary
-    summary_path = os.path.join(out_dir, "results.json")
-    with open(summary_path, "w", encoding="utf-8") as f:
+    # Save metrics
+    metrics_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)
-    print(f"  Results saved to {{summary_path}}")
+    print(f"  Metrics saved to {{metrics_path}}")
 
 
 if __name__ == "__main__":

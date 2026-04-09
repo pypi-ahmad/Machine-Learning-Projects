@@ -1,7 +1,7 @@
 """
 Modern Reinforcement Learning Pipeline (April 2026)
 
-Primary algorithm: PPO
+Primary algorithm: SAC
   - SAC  (Stable-Baselines3) -- default for continuous-action envs
   - PPO  (Stable-Baselines3) -- default for discrete-action envs
 
@@ -10,7 +10,7 @@ Baselines (comparison):
   - DQN  (Stable-Baselines3) -- deep RL baseline for discrete-action envs
   - Q-learning (tabular)     -- educational baseline for small-state discrete envs
 
-Environment: CartPole-v1
+Environment: MountainCarContinuous-v0
 Action space: auto-detected (discrete -> PPO+DQN, continuous -> SAC+PPO)
 
 Compute requirements:
@@ -29,8 +29,8 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-ENV_NAME = "CartPole-v1"
-ALGO = "PPO"
+ENV_NAME = "MountainCarContinuous-v0"
+ALGO = "SAC"
 TOTAL_TIMESTEPS = 100_000
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 MAKE_KWARGS = dict()

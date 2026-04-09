@@ -1,7 +1,7 @@
 """
 Modern Audio/Speech Pipeline (April 2026)
 
-Task: denoising
+Task: transcription
 
 Model selection by task:
   - ASR / speech-to-text   -- Whisper large-v3-turbo (OpenAI)
@@ -23,7 +23,7 @@ import numpy as np
 
 warnings.filterwarnings("ignore")
 
-TASK = "denoising"
+TASK = "transcription"
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 

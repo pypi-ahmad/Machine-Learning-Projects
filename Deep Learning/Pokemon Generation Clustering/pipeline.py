@@ -60,7 +60,7 @@ def cluster(X):
     metrics_out = {}
     save_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # ═══ PRIMARY: UMAP + HDBSCAN ═══
+    # === PRIMARY: UMAP + HDBSCAN ===
     try:
         import umap, hdbscan
         t0 = time.perf_counter()
@@ -80,19 +80,19 @@ def cluster(X):
         if best_labels is None:
             best_labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
         timings["HDBSCAN"] = time.perf_counter() - t0
-        print(f"✓ UMAP + HDBSCAN (min_cluster_size={best_mcs})  ({timings['HDBSCAN']:.1f}s):")
+        print(f"  UMAP + HDBSCAN (min_cluster_size={best_mcs})  ({timings['HDBSCAN']:.1f}s):")
         m = eval_clustering(X_umap, best_labels, "HDBSCAN")
         m["time_s"] = round(timings["HDBSCAN"], 1)
         m["min_cluster_size"] = best_mcs
         metrics_out["HDBSCAN"] = m
         results["HDBSCAN"] = {"labels": best_labels, "embedding": X_umap}
     except Exception as e:
-        print(f"✗ UMAP + HDBSCAN: {e}")
+        print(f"  UMAP + HDBSCAN failed: {e}")
         # Fallback: PCA for embedding
         from sklearn.decomposition import PCA
         X_umap = PCA(n_components=2).fit_transform(X)
 
-    # ═══ SOFT ASSIGNMENTS: Gaussian Mixture Model ═══
+    # === SOFT ASSIGNMENTS: Gaussian Mixture Model ===
     try:
         from sklearn.mixture import GaussianMixture
         t0 = time.perf_counter()
@@ -102,7 +102,7 @@ def cluster(X):
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
         timings["GMM"] = time.perf_counter() - t0
-        print(f"✓ GMM (BIC-optimal k={best_k})  ({timings['GMM']:.1f}s):")
+        print(f"  GMM (BIC-optimal k={best_k})  ({timings['GMM']:.1f}s):")
         m = eval_clustering(X, labels, "GMM")
         m["time_s"] = round(timings["GMM"], 1)
         m["best_k"] = best_k
@@ -112,9 +112,9 @@ def cluster(X):
         print(f"  Avg assignment confidence: {avg_confidence:.4f}")
         results["GMM"] = {"labels": labels, "n": best_k, "probs": probs}
     except Exception as e:
-        print(f"✗ GMM: {e}")
+        print(f"  GMM failed: {e}")
 
-    # ═══ BASELINE: K-Means (Elbow + Silhouette) ═══
+    # === BASELINE: K-Means (Elbow + Silhouette) ===
     try:
         from sklearn.cluster import KMeans
         t0 = time.perf_counter()
@@ -128,7 +128,7 @@ def cluster(X):
         best_k = K_range[np.argmax(sils)]
         labels = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit_predict(X)
         timings["KMeans"] = time.perf_counter() - t0
-        print(f"✓ K-Means baseline (best k={best_k}, silhouette={max(sils):.4f})  ({timings['KMeans']:.1f}s):")
+        print(f"  K-Means baseline (best k={best_k}, silhouette={max(sils):.4f})  ({timings['KMeans']:.1f}s):")
         m = eval_clustering(X, labels, "K-Means")
         m["time_s"] = round(timings["KMeans"], 1)
         m["best_k"] = best_k
@@ -144,11 +144,11 @@ def cluster(X):
         fig.tight_layout()
         fig.savefig(os.path.join(save_dir, "kmeans_elbow_silhouette.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
-        print("✓ Saved kmeans_elbow_silhouette.png")
+        print("  Saved kmeans_elbow_silhouette.png")
     except Exception as e:
-        print(f"✗ K-Means: {e}")
+        print(f"  K-Means failed: {e}")
 
-    # ═══ VISUALIZATION ═══
+    # === VISUALIZATION ===
     try:
         embed = results.get("HDBSCAN", {}).get("embedding", X[:, :2] if X.shape[1] >= 2 else X)
         active = [(n, results[n]["labels"]) for n in ["HDBSCAN", "GMM", "KMeans"] if n in results]
@@ -161,11 +161,11 @@ def cluster(X):
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, "clustering_results.png"), dpi=100, bbox_inches="tight")
         plt.close()
-        print("✓ Saved clustering_results.png")
+        print("  Saved clustering_results.png")
     except Exception as e:
-        print(f"⚠ Plot: {e}")
+        print(f"  Plot failed: {e}")
 
-    # ═══ SUMMARY ═══
+    # === SUMMARY ===
     print("\n" + "=" * 40)
     print("CLUSTERING COMPARISON:")
     for name in ["HDBSCAN", "GMM", "KMeans"]:
@@ -179,7 +179,7 @@ def cluster(X):
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
         json.dump(metrics_out, f, indent=2)
-    print(f"\n✓ Metrics saved → {out_path}")
+    print(f"  Metrics saved to {out_path}")
 
 
 def main():

@@ -4,10 +4,10 @@ Modern Audio/Speech Pipeline (April 2026)
 Task: denoising
 
 Model selection by task:
-  - ASR / speech-to-text   → Whisper large-v3-turbo (OpenAI)
-  - Audio classification   → Wav2Vec2-base + HuBERT-base (Meta)
-  - Denoising / separation → SpeechBrain SepFormer (speechbrain/sepformer-whamr)
-  - Voice cloning / TTS    → Coqui XTTS-v2 (multilingual, speaker-adaptive)
+  - ASR / speech-to-text   -- Whisper large-v3-turbo (OpenAI)
+  - Audio classification   -- Wav2Vec2-base + HuBERT-base (Meta)
+  - Denoising / separation -- SpeechBrain SepFormer (speechbrain/sepformer-whamr)
+  - Voice cloning / TTS    -- Coqui XTTS-v2 (multilingual, speaker-adaptive)
 
 Compute requirements:
   - Whisper large-v3-turbo : ~2 GB VRAM, ~3s/file on GPU, ~15s/file on CPU
@@ -18,12 +18,13 @@ Compute requirements:
 Dependencies: transformers, torch, torchaudio, soundfile, speechbrain, TTS (Coqui)
 Data: Auto-downloaded at runtime from HuggingFace
 """
-import os, json, warnings, time
+import os, json, time, warnings
 import numpy as np
 
 warnings.filterwarnings("ignore")
 
 TASK = "denoising"
+SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def download_audio_samples():
@@ -31,7 +32,7 @@ def download_audio_samples():
     from datasets import load_dataset
     import soundfile as sf
 
-    save_dir = os.path.join(os.path.dirname(__file__), "audio_data")
+    save_dir = os.path.join(SAVE_DIR, "audio_data")
     os.makedirs(save_dir, exist_ok=True)
 
     if TASK == "classification":
@@ -66,9 +67,9 @@ def download_audio_samples():
     return save_dir, paths
 
 
-# ═══════════════════════════════════════════════════════════
-# ASR / SPEECH-TO-TEXT  →  Whisper large-v3-turbo
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# ASR / SPEECH-TO-TEXT -- Whisper large-v3-turbo
+# ===========================================================
 
 def run_whisper(audio_dir):
     """Automatic speech recognition with Whisper large-v3-turbo."""
@@ -80,7 +81,7 @@ def run_whisper(audio_dir):
     model_id = "openai/whisper-large-v3-turbo"
 
     print(f"  Loading {model_id} on {device} ...")
-    t0 = time.time()
+    t0 = time.perf_counter()
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True).to(device)
     processor = AutoProcessor.from_pretrained(model_id)
@@ -88,23 +89,23 @@ def run_whisper(audio_dir):
                    tokenizer=processor.tokenizer,
                    feature_extractor=processor.feature_extractor,
                    torch_dtype=torch_dtype, device=device)
-    print(f"  Model loaded in {time.time()-t0:.1f}s")
+    print(f"  Model loaded in {time.perf_counter()-t0:.1f}s")
 
     from pathlib import Path
     audio_files = sorted(Path(audio_dir).glob("*.wav")) + sorted(Path(audio_dir).glob("*.flac"))
     results = []
     for f in audio_files[:10]:
-        t1 = time.time()
+        t1 = time.perf_counter()
         result = asr(str(f), return_timestamps=True)
-        dt = time.time() - t1
+        dt = time.perf_counter() - t1
         results.append({"file": f.name, "text": result["text"], "time_s": round(dt, 2)})
-        print(f"  ✓ {f.name} ({dt:.1f}s): {result['text'][:80]}...")
+        print(f"  {f.name} ({dt:.1f}s): {result['text'][:80]}...")
     return results
 
 
-# ═══════════════════════════════════════════════════════════
-# AUDIO CLASSIFICATION  →  Wav2Vec2 + HuBERT
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# AUDIO CLASSIFICATION -- Wav2Vec2 + HuBERT
+# ===========================================================
 
 def run_wav2vec2_clf(audio_dir):
     """Audio classification with Wav2Vec2 and HuBERT."""
@@ -117,7 +118,7 @@ def run_wav2vec2_clf(audio_dir):
     audio_files = sorted(Path(audio_dir).glob("*.wav"))[:20]
 
     if not audio_files:
-        print("  ⚠ No .wav files found — extracting from dataset ...")
+        print("  No .wav files found - extracting from dataset ...")
         # Try to extract audio from HF dataset objects
         ds_dir = Path(audio_dir)
         from datasets import load_dataset
@@ -135,7 +136,7 @@ def run_wav2vec2_clf(audio_dir):
     for model_name, label in [("facebook/wav2vec2-base", "Wav2Vec2"),
                                ("facebook/hubert-base-ls960", "HuBERT")]:
         try:
-            t0 = time.time()
+            t0 = time.perf_counter()
             print(f"  Loading {label} ...")
             extractor = AutoFeatureExtractor.from_pretrained(model_name)
             model = AutoModelForAudioClassification.from_pretrained(
@@ -152,78 +153,154 @@ def run_wav2vec2_clf(audio_dir):
                 pred = torch.argmax(logits, dim=-1).item()
                 preds.append(pred)
                 print(f"    {f.name}: class {pred}")
-            elapsed = time.time() - t0
+            elapsed = time.perf_counter() - t0
             summary.append({"model": label, "n_files": len(preds),
                             "time_s": round(elapsed, 1)})
-            print(f"  ✓ {label}: {len(preds)} files classified ({elapsed:.1f}s)")
+            print(f"  {label}: {len(preds)} files classified ({elapsed:.1f}s)")
         except Exception as e:
-            print(f"  ✗ {label}: {e}")
+            print(f"  {label} failed: {e}")
 
     return summary
 
 
-# ═══════════════════════════════════════════════════════════
-# DENOISING / SEPARATION  →  SpeechBrain SepFormer
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# DENOISING / SEPARATION -- SpeechBrain SepFormer
+# ===========================================================
 
 def run_sepformer(audio_dir):
-    """Speech enhancement / denoising with SpeechBrain SepFormer."""
+    """Speech enhancement / denoising.
+
+    Primary: SepFormer (speechbrain/sepformer-whamr) - neural, SOTA
+    Baseline: spectral subtraction - classical signal processing
+    """
     try:
         from pathlib import Path
         import torchaudio
 
+        audio_files = sorted(Path(audio_dir).glob("*.wav"))[:10]
+
+        # --- BASELINE: Spectral Subtraction ---
+        print("  --- Baseline: Spectral Subtraction ---")
+        baseline_results = []
+        t_base = time.perf_counter()
+        for f in audio_files:
+            try:
+                import soundfile as sf
+                data, sr = sf.read(str(f))
+                if len(data.shape) > 1:
+                    data = data[:, 0]
+                fl = min(400, len(data))
+                hop = fl // 2
+                n_frames = max(1, len(data) // hop - 1)
+                frames = np.array([data[i*hop:i*hop+fl] for i in range(n_frames) if i*hop+fl <= len(data)])
+                if len(frames) == 0:
+                    continue
+                ham = np.hamming(fl)
+                windowed = frames * ham
+                dft = np.fft.fft(windowed)
+                mag = np.abs(dft)
+                phase = np.angle(dft)
+                noise_est = np.mean(mag, axis=0)
+                clean_mag = np.maximum(mag - 2 * noise_est, 0)
+                estimate = clean_mag * np.exp(1j * phase)
+                ift = [np.fft.ifft(e).real for e in estimate]
+                clean_data = list(ift[0][:hop])
+                for i in range(len(ift) - 1):
+                    clean_data.extend(ift[i][hop:] + ift[i+1][:hop])
+                clean_data.extend(ift[-1][hop:])
+                baseline_results.append({"file": f.name, "method": "spectral_subtraction"})
+                print(f"    {f.name}: processed")
+            except Exception as e:
+                print(f"    {f.name}: failed ({e})")
+        dt_base = time.perf_counter() - t_base
+        print(f"  Spectral subtraction: {len(baseline_results)} files ({dt_base:.1f}s)")
+
+        # --- PRIMARY: SepFormer ---
+        print("  --- Primary: SpeechBrain SepFormer ---")
         print("  Loading SepFormer (speechbrain/sepformer-whamr) ...")
-        t0 = time.time()
+        t0 = time.perf_counter()
         try:
             from speechbrain.inference.separation import SepformerSeparation
             sep_model = SepformerSeparation.from_hparams(
                 source="speechbrain/sepformer-whamr",
-                savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
+                savedir=os.path.join(SAVE_DIR, "sepformer_model"))
         except ImportError:
             from speechbrain.pretrained import SepformerSeparation
             sep_model = SepformerSeparation.from_hparams(
                 source="speechbrain/sepformer-whamr",
-                savedir=os.path.join(os.path.dirname(__file__), "sepformer_model"))
-        print(f"  Model loaded in {time.time()-t0:.1f}s")
+                savedir=os.path.join(SAVE_DIR, "sepformer_model"))
+        print(f"  Model loaded in {time.perf_counter()-t0:.1f}s")
 
-        audio_files = sorted(Path(audio_dir).glob("*.wav"))[:5]
-        out_dir = os.path.join(os.path.dirname(__file__), "enhanced")
+        out_dir = os.path.join(SAVE_DIR, "enhanced")
         os.makedirs(out_dir, exist_ok=True)
         results = []
 
         for f in audio_files:
-            t1 = time.time()
+            t1 = time.perf_counter()
             est_sources = sep_model.separate_file(path=str(f))
             out_path = os.path.join(out_dir, f"{f.stem}_enhanced.wav")
             torchaudio.save(out_path, est_sources[:, :, 0].cpu(), 8000)
-            dt = time.time() - t1
+            dt = time.perf_counter() - t1
             results.append({"file": f.name, "output": f"{f.stem}_enhanced.wav",
-                            "time_s": round(dt, 1)})
-            print(f"  ✓ {f.name} → {f.stem}_enhanced.wav ({dt:.1f}s)")
+                            "method": "sepformer", "time_s": round(dt, 1)})
+            print(f"  {f.name} -> {f.stem}_enhanced.wav ({dt:.1f}s)")
 
         print(f"  Enhanced audio saved to {out_dir}")
-        return results
+        print(f"  SepFormer: {len(results)} files | Baseline: {len(baseline_results)} files")
+        return {"sepformer": results, "baseline_spectral": baseline_results}
     except Exception as e:
-        print(f"  ✗ SepFormer: {e}")
-        return []
+        print(f"  SepFormer failed: {e}")
+        return {}
 
 
-# ═══════════════════════════════════════════════════════════
-# VOICE CLONING / TTS  →  Coqui XTTS-v2
-# ═══════════════════════════════════════════════════════════
+# ===========================================================
+# VOICE CLONING / TTS -- Coqui XTTS-v2
+# ===========================================================
 
 def run_voice_cloning(audio_dir):
-    """Text-to-speech with voice cloning using Coqui XTTS-v2."""
+    """Voice cloning and text-to-speech.
+
+    Primary: Coqui XTTS-v2 (multilingual, speaker-adaptive, ~4 GB VRAM)
+    Baseline: pyttsx3 (offline, CPU-only, no cloning)
+    """
+    results = {"xtts": [], "baseline_pyttsx3": []}
+
+    # --- BASELINE: pyttsx3 (offline CPU TTS) ---
+    try:
+        import pyttsx3
+        print("  --- Baseline: pyttsx3 (offline TTS) ---")
+        engine = pyttsx3.init()
+        baseline_dir = os.path.join(SAVE_DIR, "tts_baseline")
+        os.makedirs(baseline_dir, exist_ok=True)
+        baseline_texts = [
+            "This is a baseline text to speech sample using pyttsx3.",
+            "Offline synthesis is fast but lacks naturalness.",
+        ]
+        for i, text in enumerate(baseline_texts):
+            t1 = time.perf_counter()
+            out_path = os.path.join(baseline_dir, f"baseline_{i:02d}.wav")
+            engine.save_to_file(text, out_path)
+            engine.runAndWait()
+            dt = time.perf_counter() - t1
+            results["baseline_pyttsx3"].append({
+                "text": text[:60], "output": os.path.basename(out_path),
+                "time_s": round(dt, 1)})
+            print(f"    baseline_{i:02d}.wav ({dt:.1f}s)")
+    except Exception as e:
+        print(f"  pyttsx3 baseline skipped: {e}")
+
+    # --- PRIMARY: XTTS-v2 ---
     try:
         from TTS.api import TTS
         from pathlib import Path
 
+        print("  --- Primary: Coqui XTTS-v2 ---")
         print("  Loading XTTS-v2 ...")
-        t0 = time.time()
+        t0 = time.perf_counter()
         tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
-        print(f"  Model loaded in {time.time()-t0:.1f}s")
+        print(f"  Model loaded in {time.perf_counter()-t0:.1f}s")
 
-        out_dir = os.path.join(os.path.dirname(__file__), "tts_output")
+        out_dir = os.path.join(SAVE_DIR, "tts_output")
         os.makedirs(out_dir, exist_ok=True)
 
         # Find a reference speaker sample for voice cloning
@@ -231,84 +308,84 @@ def run_voice_cloning(audio_dir):
         ref_speaker = str(ref_files[0]) if ref_files else None
 
         texts = [
-            "Hello, this is a text to speech demonstration using XTTS version 2.",
-            "Modern voice cloning can produce remarkably natural speech.",
+            ("Hello, this is a text to speech demonstration using XTTS version 2.", "en"),
+            ("Modern voice cloning can produce remarkably natural speech.", "en"),
+            ("Deep learning models now generate human-quality audio in real time.", "en"),
+            ("Bonjour, ceci est une demonstration de synthese vocale multilingue.", "fr"),
         ]
 
-        results = []
-        for i, text in enumerate(texts):
-            t1 = time.time()
+        for i, (text, lang) in enumerate(texts):
+            t1 = time.perf_counter()
             out_path = os.path.join(out_dir, f"tts_sample_{i:02d}.wav")
             if ref_speaker:
                 tts.tts_to_file(text=text, file_path=out_path,
-                               speaker_wav=ref_speaker, language="en")
+                               speaker_wav=ref_speaker, language=lang)
                 mode = "cloned"
             else:
                 tts.tts_to_file(text=text, file_path=out_path)
                 mode = "default"
-            dt = time.time() - t1
-            results.append({"text": text[:60], "output": os.path.basename(out_path),
-                            "mode": mode, "time_s": round(dt, 1)})
-            print(f"  ✓ [{mode}] tts_sample_{i:02d}.wav ({dt:.1f}s)")
+            dt = time.perf_counter() - t1
+            results["xtts"].append({"text": text[:60], "output": os.path.basename(out_path),
+                            "mode": mode, "language": lang, "time_s": round(dt, 1)})
+            print(f"  [{mode}/{lang}] tts_sample_{i:02d}.wav ({dt:.1f}s)")
 
         print(f"  TTS output saved to {out_dir}")
-        return results
+        print(f"  XTTS-v2: {len(results['xtts'])} samples | Baseline: {len(results['baseline_pyttsx3'])} samples")
     except Exception as e:
-        print(f"  ✗ XTTS-v2: {e}")
-        return []
+        print(f"  XTTS-v2 failed: {e}")
+
+    return results
 
 
 def main():
     print("=" * 60)
-    print(f"AUDIO/SPEECH — Task: {TASK}")
+    print(f"AUDIO/SPEECH | Task: {TASK}")
     print("Models: Whisper | Wav2Vec2/HuBERT | SepFormer | XTTS-v2")
     print("=" * 60)
 
     audio_dir, data = download_audio_samples()
-    out_dir = os.path.dirname(os.path.abspath(__file__))
     results = {}
 
     if TASK == "transcription":
-        print("")
-        print("─── ASR: Whisper large-v3-turbo ───")
+        print()
+        print("--- ASR: Whisper large-v3-turbo ---")
         asr_results = run_whisper(audio_dir)
         results["whisper"] = asr_results
         if asr_results:
-            out = os.path.join(out_dir, "transcriptions.json")
+            out = os.path.join(SAVE_DIR, "transcriptions.json")
             with open(out, "w", encoding="utf-8") as f:
                 json.dump(asr_results, f, indent=2)
             print(f"  Saved transcriptions to {out}")
 
     elif TASK == "classification":
-        print("")
-        print("─── Classification: Wav2Vec2 + HuBERT ───")
+        print()
+        print("--- Classification: Wav2Vec2 + HuBERT ---")
         clf_results = run_wav2vec2_clf(audio_dir)
         results["classification"] = clf_results
 
     elif TASK == "denoising" or TASK == "separation":
-        print("")
-        print("─── Denoising: SpeechBrain SepFormer ───")
+        print()
+        print("--- Denoising: SpeechBrain SepFormer ---")
         sep_results = run_sepformer(audio_dir)
         results["sepformer"] = sep_results
 
     elif TASK == "cloning":
-        print("")
-        print("─── Voice Cloning: XTTS-v2 ───")
+        print()
+        print("--- Voice Cloning: XTTS-v2 ---")
         tts_results = run_voice_cloning(audio_dir)
         results["xtts"] = tts_results
 
     else:
-        # Default: run Whisper ASR
-        print("")
-        print("─── ASR (default): Whisper large-v3-turbo ───")
+        print()
+        print("--- ASR (default): Whisper large-v3-turbo ---")
         asr_results = run_whisper(audio_dir)
         results["whisper"] = asr_results
 
-    # Save summary
-    summary_path = os.path.join(out_dir, "results.json")
-    with open(summary_path, "w", encoding="utf-8") as f:
+    # Save metrics
+    metrics_path = os.path.join(SAVE_DIR, "metrics.json")
+    with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)
-    print(f"  Results saved to {summary_path}")
+    print(f"  Metrics saved to {metrics_path}")
 
 
 if __name__ == "__main__":
