@@ -563,6 +563,13 @@ NLP_CLF = {
     "Deep Learning/IMDB Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "Deep Learning/News Category Prediction": {"target": "category", "text_col": "headline", "data": _hf("heegyu/news-category-dataset")},
     "Deep Learning/Sentiment Analysis - Flask App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    # NER / keyword / entity extraction (GLiNER primary)
+    "NLP/Named Entity Recognition": {"target": "ner_tags", "text_col": "tokens", "data": _hf("conll2003")},
+    "NLP/Keyword Extraction": {"target": "label", "text_col": "text", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Keyword Research": {"target": "label", "text_col": "text", "data": _hf("EdinburghNLP/xsum")},
+    # Text classification misc
+    "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("hate_speech18")},
+    "NLP/BOW and TF-IDF with XGBoost": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
 }
 
 # ── FAMILY 7: NLP GENERATION ──
@@ -726,11 +733,7 @@ AUDIO = {
 
 # ── MISC NLP (text utilities — Keyword, Plagiarism, etc.) ──
 NLP_MISC = {
-    "NLP/Keyword Extraction": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
-    "NLP/Keyword Research": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
-    "NLP/Named Entity Recognition": {"target": "ner_tags", "text_col": "tokens", "data": _hf("conll2003")},
     "NLP/Plagiarism Checker": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
-    "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("hate_speech18")},
     "NLP/Stop Words in 28 Languages": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
     "NLP/Text Clustering and Topic Modelling": {"task": "summarization", "data": _hf("SetFit/20_newsgroups")},
     "NLP/Text File Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
@@ -739,7 +742,6 @@ NLP_MISC = {
     "NLP/WhatsApp Chat Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
     "NLP/WhatsApp Group Chat Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
     "NLP/Wikipedia Search Word Cloud": {"task": "summarization", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
-    "NLP/BOW and TF-IDF with XGBoost": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Cross Language Information Retrieval": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
 }
 
@@ -1367,7 +1369,8 @@ def gen_nlp_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Classification Pipeline (April 2026)
-Models: ModernBERT + XLM-RoBERTa fine-tuned + GLiNER NER
+Models: ModernBERT (English) + XLM-RoBERTa (multilingual) + GLiNER (zero-shot NER)
+        TF-IDF + Naive Bayes as baseline
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1404,6 +1407,30 @@ def load_data():
     return df
 
 
+# ═══════════════════════════════════════════════════════════════
+# BASELINE: TF-IDF + Naive Bayes / Logistic Regression
+# ═══════════════════════════════════════════════════════════════
+def run_tfidf_baseline(df):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
+
+    le = LabelEncoder(); y = le.fit_transform(df["label"])
+    X_tr, X_te, y_tr, y_te = train_test_split(df["text"], y, test_size=0.2, random_state=42,
+                                                stratify=y if len(le.classes_) < 50 else None)
+    for name, clf in [("Naive Bayes", MultinomialNB()), ("LogReg", LogisticRegression(max_iter=1000, n_jobs=-1))]:
+        pipe = Pipeline([("tfidf", TfidfVectorizer(max_features=30000, ngram_range=(1, 2))), ("clf", clf)])
+        pipe.fit(X_tr, y_tr)
+        preds = pipe.predict(X_te)
+        acc = accuracy_score(y_te, preds)
+        f1 = f1_score(y_te, preds, average="weighted")
+        print(f"  [Baseline] {{name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRIMARY: ModernBERT / XLM-R fine-tuned classifier
+# ═══════════════════════════════════════════════════════════════
 def train_transformer(df, model_name, display_name):
     import torch
     from torch.utils.data import DataLoader, Dataset
@@ -1455,27 +1482,66 @@ def train_transformer(df, model_name, display_name):
     return acc, f1
 
 
+# ═══════════════════════════════════════════════════════════════
+# GLiNER: Zero-shot NER on text samples
+# ═══════════════════════════════════════════════════════════════
 def run_gliner(df):
-    """Zero-shot NER with GLiNER on a sample of texts."""
     try:
         from gliner import GLiNER
         model = GLiNER.from_pretrained("urchade/gliner_base")
-        sample_labels = ["person", "location", "organization", "date", "money", "product"]
+        sample_labels = ["person", "location", "organization", "date", "money", "product", "event"]
         for i, text in enumerate(df["text"].head(10)):
             entities = model.predict_entities(text[:512], sample_labels, threshold=0.4)
             if entities:
                 ent_str = ", ".join(f"{{e['text']}}({{e['label']}})" for e in entities[:5])
                 print(f"  [{{i+1}}] {{ent_str}}")
-        print("✓ GLiNER NER complete")
+        print("✓ GLiNER zero-shot NER complete")
     except Exception as e:
         print(f"✗ GLiNER: {{e}}")
 
 
+# ═══════════════════════════════════════════════════════════════
+# EMBEDDING SIMILARITY: BGE-M3 / Qwen3-Embedding
+# ═══════════════════════════════════════════════════════════════
+def run_embedding_similarity(df):
+    \"\"\"Embedding-based retrieval/similarity with BGE-M3 and Qwen3-Embedding.\"\"\"
+    texts = df["text"].dropna().head(200).tolist()
+    try:
+        from sentence_transformers import SentenceTransformer
+        from sklearn.metrics.pairwise import cosine_similarity
+
+        # BGE-M3
+        model = SentenceTransformer("BAAI/bge-m3")
+        embs = model.encode(texts, batch_size=32, show_progress_bar=True)
+        sim = cosine_similarity(embs)
+        # Show top-3 similar texts for first 3 samples
+        for i in range(min(3, len(texts))):
+            top_idx = np.argsort(sim[i])[-4:-1][::-1]
+            print(f"  Text {{i+1}} most similar to: {{[idx for idx in top_idx]}}")
+        print(f"✓ BGE-M3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
+
+        # Qwen3-Embedding
+        try:
+            qwen = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+            qwen_embs = qwen.encode(texts[:100], batch_size=16, show_progress_bar=True)
+            print(f"✓ Qwen3-Embedding: {{len(qwen_embs)}} texts embedded (dim={{qwen_embs.shape[1]}})")
+        except Exception as e:
+            print(f"✗ Qwen3-Embedding: {{e}}")
+    except Exception as e:
+        print(f"✗ Embedding similarity: {{e}}")
+
+
 def main():
     print("=" * 60)
-    print("NLP CLASSIFICATION — ModernBERT + XLM-R + GLiNER")
+    print("NLP CLASSIFICATION — ModernBERT + XLM-R | TF-IDF baseline | GLiNER NER")
     print("=" * 60)
     df = load_data()
+
+    # Baseline first
+    print("\\n— TF-IDF / Naive Bayes Baseline —")
+    run_tfidf_baseline(df)
+
+    # Primary transformer models
     best_acc, best_name = 0, ""
     for model_name, display_name in MODELS:
         try:
@@ -1485,8 +1551,14 @@ def main():
         except Exception as e:
             print(f"✗ {{display_name}}: {{e}}")
     print(f"\\n🏆 Best: {{best_name}} (Accuracy: {{best_acc:.4f}})")
+
+    # Zero-shot NER
     print("\\n— GLiNER Zero-Shot NER —")
     run_gliner(df)
+
+    # Embedding similarity
+    print("\\n— Embedding Similarity (BGE-M3 / Qwen3-Embedding) —")
+    run_embedding_similarity(df)
 
 
 if __name__ == "__main__":

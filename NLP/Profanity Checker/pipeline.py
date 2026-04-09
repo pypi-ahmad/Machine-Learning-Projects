@@ -1,145 +1,196 @@
 """
-Modern NLP Generation Pipeline (April 2026)
-Models: Qwen3-Instruct (chat/generation/summarization) + NLLB-200 (translation) + BART (summarization baseline)
+Modern NLP Classification Pipeline (April 2026)
+Models: ModernBERT (English) + XLM-RoBERTa (multilingual) + GLiNER (zero-shot NER)
+        TF-IDF + Naive Bayes as baseline
 Data: Auto-downloaded at runtime
 """
-import os, json, warnings
+import os, warnings
+import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, classification_report, f1_score
+import matplotlib; matplotlib.use("Agg")
+
 warnings.filterwarnings("ignore")
 
-TASK = "summarization"
-OLLAMA_MODEL = "qwen3:8b"
-OLLAMA_URL = "http://localhost:11434/api/generate"
+TARGET = "label"
+TEXT_COL = "text"
+MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
 
-
-def query_ollama(prompt, temperature=0.7, max_tokens=512):
-    import requests
-    try:
-        r = requests.post(OLLAMA_URL, json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False,
-                          "options": {"temperature": temperature, "num_predict": max_tokens}}, timeout=120)
-        r.raise_for_status()
-        return r.json().get("response", "")
-    except Exception as e:
-        print(f"Ollama error: {e}")
-        return None
+MODELS = [
+    ("answerdotai/ModernBERT-base", "ModernBERT"),
+    ("FacebookAI/xlm-roberta-base", "XLM-R"),
+]
 
 
 def load_data():
     from datasets import load_dataset as _hf_load
     df = _hf_load("hate_speech18", split="train").to_pandas()
+    # Auto-detect text column
+    text_col = TEXT_COL
+    if text_col not in df.columns:
+        candidates = [c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 20]
+        text_col = candidates[0] if candidates else df.select_dtypes("object").columns[0]
+    target = TARGET if TARGET in df.columns else df.columns[-1]
+    df = df[[text_col, target]].dropna()
+    df.columns = ["text", "label"]
+    print(f"Dataset: {len(df)} samples")
     return df
 
 
-def run_summarization(df):
-    """Qwen3-Instruct for general summarization + BART as classic baseline."""
-    text_col = next((c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 50), df.select_dtypes("object").columns[0])
-    texts = df[text_col].dropna().head(10).tolist()
+# ═══════════════════════════════════════════════════════════════
+# BASELINE: TF-IDF + Naive Bayes / Logistic Regression
+# ═══════════════════════════════════════════════════════════════
+def run_tfidf_baseline(df):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.naive_bayes import MultinomialNB
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.pipeline import Pipeline
 
-    # ═══ PRIMARY: Qwen3-Instruct via Ollama ═══
-    qwen_results = []
-    for i, text in enumerate(texts):
-        summary = query_ollama(f"Summarize concisely:\n\n{text[:2000]}\n\nSummary:")
-        if summary:
-            qwen_results.append({"original": text[:200], "summary": summary})
-            print(f"  Qwen3 [{i+1}] {summary[:100]}...")
-    if qwen_results:
-        print(f"✓ Qwen3-Instruct summarized {len(qwen_results)} texts")
-
-    # ═══ BASELINE: BART (facebook/bart-large-cnn) ═══
-    try:
-        import torch
-        from transformers import BartForConditionalGeneration, BartTokenizer
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
-        model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn").to(device)
-        bart_results = []
-        for i, text in enumerate(texts[:5]):
-            inputs = tokenizer(text[:1024], return_tensors="pt", truncation=True, max_length=1024).to(device)
-            summary_ids = model.generate(**inputs, max_length=150, min_length=30, num_beams=4, length_penalty=2.0)
-            summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-            bart_results.append(summary)
-            print(f"  BART [{i+1}] {summary[:100]}...")
-        print(f"✓ BART summarized {len(bart_results)} texts")
-    except Exception as e:
-        print(f"✗ BART baseline: {e}")
+    le = LabelEncoder(); y = le.fit_transform(df["label"])
+    X_tr, X_te, y_tr, y_te = train_test_split(df["text"], y, test_size=0.2, random_state=42,
+                                                stratify=y if len(le.classes_) < 50 else None)
+    for name, clf in [("Naive Bayes", MultinomialNB()), ("LogReg", LogisticRegression(max_iter=1000, n_jobs=-1))]:
+        pipe = Pipeline([("tfidf", TfidfVectorizer(max_features=30000, ngram_range=(1, 2))), ("clf", clf)])
+        pipe.fit(X_tr, y_tr)
+        preds = pipe.predict(X_te)
+        acc = accuracy_score(y_te, preds)
+        f1 = f1_score(y_te, preds, average="weighted")
+        print(f"  [Baseline] {name} — Accuracy: {acc:.4f}, F1: {f1:.4f}")
 
 
-def run_translation(df):
-    """NLLB-200 (Meta) — 200+ language pairs, offline, multilingual."""
+# ═══════════════════════════════════════════════════════════════
+# PRIMARY: ModernBERT / XLM-R fine-tuned classifier
+# ═══════════════════════════════════════════════════════════════
+def train_transformer(df, model_name, display_name):
     import torch
-    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_id = "facebook/nllb-200-distilled-600M"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
-    text_col = df.select_dtypes("object").columns[0]
+    from torch.utils.data import DataLoader, Dataset
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
 
-    # Translate to multiple target languages
-    targets = [("fra_Latn", "French"), ("deu_Latn", "German"), ("spa_Latn", "Spanish"), ("zho_Hans", "Chinese")]
-    for tgt_code, tgt_name in targets:
-        results = []
-        for i, text in enumerate(df[text_col].dropna().head(3)):
-            inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
-            translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids(tgt_code), max_new_tokens=256)
-            translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
-            results.append({"original": text[:100], "translated": translated})
-            print(f"  → {tgt_name} [{i+1}] {translated[:100]}...")
-        print(f"✓ NLLB-200 → {tgt_name}: {len(results)} texts")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    le = LabelEncoder(); df["label_id"] = le.fit_transform(df["label"])
+    n_classes = len(le.classes_)
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
+                                          stratify=df["label_id"] if n_classes < 50 else None)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=n_classes).to(device)
+
+    class DS(Dataset):
+        def __init__(self, texts, labels):
+            self.enc = tokenizer(texts, truncation=True, padding="max_length", max_length=MAX_LEN, return_tensors="pt")
+            self.labels = torch.tensor(labels, dtype=torch.long)
+        def __len__(self): return len(self.labels)
+        def __getitem__(self, i): return {**{k: v[i] for k, v in self.enc.items()}, "labels": self.labels[i]}
+
+    train_loader = DataLoader(DS(train_df["text"].tolist(), train_df["label_id"].tolist()), batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(DS(test_df["text"].tolist(), test_df["label_id"].tolist()), batch_size=BATCH_SIZE)
+
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
+    sched = get_linear_schedule_with_warmup(opt, int(0.1 * len(train_loader) * EPOCHS), len(train_loader) * EPOCHS)
+
+    for epoch in range(EPOCHS):
+        model.train(); total_loss = 0
+        for batch in train_loader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            loss = model(**batch).loss; loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
+        print(f"  [{display_name}] Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(train_loader):.4f}")
+
+    model.eval(); preds, labels = [], []
+    with torch.no_grad():
+        for batch in test_loader:
+            batch = {k: v.to(device) for k, v in batch.items()}
+            preds.extend(torch.argmax(model(**batch).logits, dim=-1).cpu().numpy())
+            labels.extend(batch["labels"].cpu().numpy())
+
+    acc = accuracy_score(labels, preds)
+    f1 = f1_score(labels, preds, average="weighted")
+    print(f"\n✓ {display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}")
+    print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
+    model.save_pretrained(os.path.join(os.path.dirname(__file__), f"{display_name.lower().replace('-','_')}_model"))
+    return acc, f1
 
 
-def run_generation(df):
-    """Qwen3-Instruct for text generation / next-word prediction."""
-    prompts = [
-        "Write a creative short story about artificial intelligence discovering emotions:",
-        "Complete this sentence: The future of machine learning is",
-        "Explain quantum computing to a 10-year-old:",
-    ]
-    # Use data context if available
-    if df is not None:
-        text_col = next((c for c in df.columns if df[c].dtype == "object"), None)
-        if text_col:
-            samples = df[text_col].dropna().head(3).tolist()
-            prompts = [f"Continue this text creatively:\n\n{t[:300]}\n\nContinuation:" for t in samples]
-
-    for i, prompt in enumerate(prompts):
-        response = query_ollama(prompt, temperature=0.9, max_tokens=256)
-        if response:
-            print(f"  [{i+1}] {response[:200]}...")
-    print(f"✓ Qwen3-Instruct generated {len(prompts)} texts")
+# ═══════════════════════════════════════════════════════════════
+# GLiNER: Zero-shot NER on text samples
+# ═══════════════════════════════════════════════════════════════
+def run_gliner(df):
+    try:
+        from gliner import GLiNER
+        model = GLiNER.from_pretrained("urchade/gliner_base")
+        sample_labels = ["person", "location", "organization", "date", "money", "product", "event"]
+        for i, text in enumerate(df["text"].head(10)):
+            entities = model.predict_entities(text[:512], sample_labels, threshold=0.4)
+            if entities:
+                ent_str = ", ".join(f"{e['text']}({e['label']})" for e in entities[:5])
+                print(f"  [{i+1}] {ent_str}")
+        print("✓ GLiNER zero-shot NER complete")
+    except Exception as e:
+        print(f"✗ GLiNER: {e}")
 
 
-def run_chatbot():
-    """Qwen3-Instruct interactive chatbot."""
-    print("\n💬 Chatbot (type 'quit' to exit)")
-    history = []
-    while True:
-        user = input("\nYou: ").strip()
-        if user.lower() in ("quit", "exit", "q"): break
-        history.append(f"User: {user}")
-        resp = query_ollama(f"You are a helpful assistant. Continue this conversation:\n\n{'\n'.join(history[-6:])}\n\nAssistant:", temperature=0.8)
-        if resp:
-            history.append(f"Assistant: {resp}")
-            print(f"Bot: {resp}")
+# ═══════════════════════════════════════════════════════════════
+# EMBEDDING SIMILARITY: BGE-M3 / Qwen3-Embedding
+# ═══════════════════════════════════════════════════════════════
+def run_embedding_similarity(df):
+    """Embedding-based retrieval/similarity with BGE-M3 and Qwen3-Embedding."""
+    texts = df["text"].dropna().head(200).tolist()
+    try:
+        from sentence_transformers import SentenceTransformer
+        from sklearn.metrics.pairwise import cosine_similarity
+
+        # BGE-M3
+        model = SentenceTransformer("BAAI/bge-m3")
+        embs = model.encode(texts, batch_size=32, show_progress_bar=True)
+        sim = cosine_similarity(embs)
+        # Show top-3 similar texts for first 3 samples
+        for i in range(min(3, len(texts))):
+            top_idx = np.argsort(sim[i])[-4:-1][::-1]
+            print(f"  Text {i+1} most similar to: {[idx for idx in top_idx]}")
+        print(f"✓ BGE-M3: {len(texts)} texts embedded (dim={embs.shape[1]})")
+
+        # Qwen3-Embedding
+        try:
+            qwen = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+            qwen_embs = qwen.encode(texts[:100], batch_size=16, show_progress_bar=True)
+            print(f"✓ Qwen3-Embedding: {len(qwen_embs)} texts embedded (dim={qwen_embs.shape[1]})")
+        except Exception as e:
+            print(f"✗ Qwen3-Embedding: {e}")
+    except Exception as e:
+        print(f"✗ Embedding similarity: {e}")
 
 
 def main():
     print("=" * 60)
-    print(f"NLP GENERATION — Qwen3-Instruct + NLLB-200 + BART | Task: {TASK}")
+    print("NLP CLASSIFICATION — ModernBERT + XLM-R | TF-IDF baseline | GLiNER NER")
     print("=" * 60)
-    if TASK != "translation":
-        test = query_ollama("Say hello.", max_tokens=10)
-        if not test:
-            print("⚠ Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
-            if TASK != "translation":
-                return
     df = load_data()
-    if TASK == "summarization" and df is not None: run_summarization(df)
-    elif TASK == "translation" and df is not None: run_translation(df)
-    elif TASK == "chatbot": run_chatbot()
-    elif TASK == "generation": run_generation(df)
-    else:
-        if df is not None: run_summarization(df)
-        else: run_chatbot()
+
+    # Baseline first
+    print("\n— TF-IDF / Naive Bayes Baseline —")
+    run_tfidf_baseline(df)
+
+    # Primary transformer models
+    best_acc, best_name = 0, ""
+    for model_name, display_name in MODELS:
+        try:
+            acc, f1 = train_transformer(df.copy(), model_name, display_name)
+            if acc > best_acc:
+                best_acc, best_name = acc, display_name
+        except Exception as e:
+            print(f"✗ {display_name}: {e}")
+    print(f"\n🏆 Best: {best_name} (Accuracy: {best_acc:.4f})")
+
+    # Zero-shot NER
+    print("\n— GLiNER Zero-Shot NER —")
+    run_gliner(df)
+
+    # Embedding similarity
+    print("\n— Embedding Similarity (BGE-M3 / Qwen3-Embedding) —")
+    run_embedding_similarity(df)
 
 
 if __name__ == "__main__":
