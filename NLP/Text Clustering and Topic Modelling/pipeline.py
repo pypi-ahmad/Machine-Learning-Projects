@@ -1,145 +1,148 @@
 """
-Modern NLP Generation Pipeline (April 2026)
-Models: Qwen3-Instruct (chat/generation/summarization) + NLLB-200 (translation) + BART (summarization baseline)
+Modern NLP Similarity / Retrieval Pipeline (April 2026)
+Models: BGE-M3 + Qwen3-Embedding + Sentence Transformers
+        TF-IDF cosine similarity as baseline
 Data: Auto-downloaded at runtime
 """
-import os, json, warnings
+import os, warnings
+import numpy as np
 import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 warnings.filterwarnings("ignore")
-
-TASK = "summarization"
-OLLAMA_MODEL = "qwen3:8b"
-OLLAMA_URL = "http://localhost:11434/api/generate"
-
-
-def query_ollama(prompt, temperature=0.7, max_tokens=512):
-    import requests
-    try:
-        r = requests.post(OLLAMA_URL, json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False,
-                          "options": {"temperature": temperature, "num_predict": max_tokens}}, timeout=120)
-        r.raise_for_status()
-        return r.json().get("response", "")
-    except Exception as e:
-        print(f"Ollama error: {e}")
-        return None
 
 
 def load_data():
     from datasets import load_dataset as _hf_load
     df = _hf_load("SetFit/20_newsgroups", split="train").to_pandas()
+    print(f"Dataset shape: {df.shape}")
     return df
 
 
-def run_summarization(df):
-    """Qwen3-Instruct for general summarization + BART as classic baseline."""
-    text_col = next((c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 50), df.select_dtypes("object").columns[0])
-    texts = df[text_col].dropna().head(10).tolist()
+def get_texts(df, n=500):
+    """Extract text column, return up to n samples."""
+    for c in df.columns:
+        if df[c].dtype == "object" and df[c].str.len().mean() > 20:
+            return df[c].dropna().head(n).tolist()
+    text_cols = df.select_dtypes("object").columns
+    if len(text_cols) > 0:
+        return df[text_cols[0]].dropna().head(n).tolist()
+    return df.iloc[:, 0].astype(str).head(n).tolist()
 
-    # ═══ PRIMARY: Qwen3-Instruct via Ollama ═══
-    qwen_results = []
-    for i, text in enumerate(texts):
-        summary = query_ollama(f"Summarize concisely:\n\n{text[:2000]}\n\nSummary:")
-        if summary:
-            qwen_results.append({"original": text[:200], "summary": summary})
-            print(f"  Qwen3 [{i+1}] {summary[:100]}...")
-    if qwen_results:
-        print(f"✓ Qwen3-Instruct summarized {len(qwen_results)} texts")
 
-    # ═══ BASELINE: BART (facebook/bart-large-cnn) ═══
+# ═══════════════════════════════════════════════════════════════
+# BASELINE: TF-IDF Cosine Similarity
+# ═══════════════════════════════════════════════════════════════
+def run_tfidf_baseline(texts):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    tfidf = TfidfVectorizer(max_features=10000, stop_words="english")
+    vecs = tfidf.fit_transform(texts)
+    sim = cosine_similarity(vecs)
+    avg_sim = (sim.sum() - len(texts)) / (len(texts) * (len(texts) - 1))
+    print(f"  [Baseline] TF-IDF cosine: avg pairwise similarity = {avg_sim:.4f}")
+    # Show top-3 pairs
+    np.fill_diagonal(sim, 0)
+    for i in range(min(3, len(texts))):
+        top = np.argsort(sim[i])[-3:][::-1]
+        scores = [str(j) + f"({sim[i,j]:.3f})" for j in top]
+        joined = ", ".join(scores)
+        print(f"    Text {i} most similar to: {joined}")
+    return sim
+
+
+# ═══════════════════════════════════════════════════════════════
+# PRIMARY: BGE-M3 Embedding Similarity
+# ═══════════════════════════════════════════════════════════════
+def run_bge_m3(texts):
     try:
-        import torch
-        from transformers import BartForConditionalGeneration, BartTokenizer
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        tokenizer = BartTokenizer.from_pretrained("facebook/bart-large-cnn")
-        model = BartForConditionalGeneration.from_pretrained("facebook/bart-large-cnn").to(device)
-        bart_results = []
-        for i, text in enumerate(texts[:5]):
-            inputs = tokenizer(text[:1024], return_tensors="pt", truncation=True, max_length=1024).to(device)
-            summary_ids = model.generate(**inputs, max_length=150, min_length=30, num_beams=4, length_penalty=2.0)
-            summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-            bart_results.append(summary)
-            print(f"  BART [{i+1}] {summary[:100]}...")
-        print(f"✓ BART summarized {len(bart_results)} texts")
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer("BAAI/bge-m3")
+        embs = model.encode(texts, batch_size=32, show_progress_bar=True, normalize_embeddings=True)
+        sim = cosine_similarity(embs)
+        avg_sim = (sim.sum() - len(texts)) / (len(texts) * (len(texts) - 1))
+        print("")
+        print(f"✓ BGE-M3: {len(texts)} texts embedded (dim={embs.shape[1]})")
+        print(f"  Avg pairwise semantic similarity = {avg_sim:.4f}")
+        np.fill_diagonal(sim, 0)
+        for i in range(min(3, len(texts))):
+            top = np.argsort(sim[i])[-3:][::-1]
+            scores = [str(j) + f"({sim[i,j]:.3f})" for j in top]
+            joined = ", ".join(scores)
+            print(f"    Text {i} most similar to: {joined}")
+        return embs, sim
     except Exception as e:
-        print(f"✗ BART baseline: {e}")
+        print(f"✗ BGE-M3: {e}")
+        return None, None
 
 
-def run_translation(df):
-    """NLLB-200 (Meta) — 200+ language pairs, offline, multilingual."""
-    import torch
-    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_id = "facebook/nllb-200-distilled-600M"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
-    text_col = df.select_dtypes("object").columns[0]
-
-    # Translate to multiple target languages
-    targets = [("fra_Latn", "French"), ("deu_Latn", "German"), ("spa_Latn", "Spanish"), ("zho_Hans", "Chinese")]
-    for tgt_code, tgt_name in targets:
-        results = []
-        for i, text in enumerate(df[text_col].dropna().head(3)):
-            inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
-            translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids(tgt_code), max_new_tokens=256)
-            translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
-            results.append({"original": text[:100], "translated": translated})
-            print(f"  → {tgt_name} [{i+1}] {translated[:100]}...")
-        print(f"✓ NLLB-200 → {tgt_name}: {len(results)} texts")
+# ═══════════════════════════════════════════════════════════════
+# PRIMARY: Qwen3-Embedding
+# ═══════════════════════════════════════════════════════════════
+def run_qwen3_embedding(texts):
+    try:
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
+        embs = model.encode(texts[:200], batch_size=16, show_progress_bar=True, normalize_embeddings=True)
+        sim = cosine_similarity(embs)
+        avg_sim = (sim.sum() - len(embs)) / (len(embs) * (len(embs) - 1))
+        print("")
+        print(f"✓ Qwen3-Embedding: {len(embs)} texts embedded (dim={embs.shape[1]})")
+        print(f"  Avg pairwise semantic similarity = {avg_sim:.4f}")
+        return embs, sim
+    except Exception as e:
+        print(f"✗ Qwen3-Embedding: {e}")
+        return None, None
 
 
-def run_generation(df):
-    """Qwen3-Instruct for text generation / next-word prediction."""
-    prompts = [
-        "Write a creative short story about artificial intelligence discovering emotions:",
-        "Complete this sentence: The future of machine learning is",
-        "Explain quantum computing to a 10-year-old:",
-    ]
-    # Use data context if available
-    if df is not None:
-        text_col = next((c for c in df.columns if df[c].dtype == "object"), None)
-        if text_col:
-            samples = df[text_col].dropna().head(3).tolist()
-            prompts = [f"Continue this text creatively:\n\n{t[:300]}\n\nContinuation:" for t in samples]
+# ═══════════════════════════════════════════════════════════════
+# CLUSTERING: Embedding-based topic discovery
+# ═══════════════════════════════════════════════════════════════
+def run_embedding_clustering(embs, texts):
+    if embs is None:
+        print("⚠ Skipping embedding clustering (no embeddings)")
+        return
+    try:
+        import umap, hdbscan
+        reducer = umap.UMAP(n_components=2, n_neighbors=15, min_dist=0.1, random_state=42)
+        X_2d = reducer.fit_transform(embs)
+        labels = hdbscan.HDBSCAN(min_cluster_size=5).fit_predict(X_2d)
+        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
+        print("")
+        print(f"✓ UMAP + HDBSCAN on embeddings: {n_clusters} topics/clusters")
 
-    for i, prompt in enumerate(prompts):
-        response = query_ollama(prompt, temperature=0.9, max_tokens=256)
-        if response:
-            print(f"  [{i+1}] {response[:200]}...")
-    print(f"✓ Qwen3-Instruct generated {len(prompts)} texts")
-
-
-def run_chatbot():
-    """Qwen3-Instruct interactive chatbot."""
-    print("\n💬 Chatbot (type 'quit' to exit)")
-    history = []
-    while True:
-        user = input("\nYou: ").strip()
-        if user.lower() in ("quit", "exit", "q"): break
-        history.append(f"User: {user}")
-        resp = query_ollama(f"You are a helpful assistant. Continue this conversation:\n\n{'\n'.join(history[-6:])}\n\nAssistant:", temperature=0.8)
-        if resp:
-            history.append(f"Assistant: {resp}")
-            print(f"Bot: {resp}")
+        fig, ax = plt.subplots(figsize=(10, 7))
+        scatter = ax.scatter(X_2d[:, 0], X_2d[:, 1], c=labels, cmap="tab10", s=15, alpha=0.6)
+        ax.set_title("Embedding Space — UMAP + HDBSCAN"); ax.set_xlabel("UMAP 1"); ax.set_ylabel("UMAP 2")
+        plt.colorbar(scatter, ax=ax, label="Cluster")
+        plt.tight_layout()
+        plt.savefig(os.path.join(os.path.dirname(__file__), "embedding_clusters.png"), dpi=100)
+        print("✓ Saved embedding_clusters.png")
+    except Exception as e:
+        print(f"✗ Embedding clustering: {e}")
 
 
 def main():
     print("=" * 60)
-    print(f"NLP GENERATION — Qwen3-Instruct + NLLB-200 + BART | Task: {TASK}")
+    print("NLP SIMILARITY / RETRIEVAL — BGE-M3 + Qwen3-Embedding")
+    print("TF-IDF baseline | Embedding clustering")
     print("=" * 60)
-    if TASK != "translation":
-        test = query_ollama("Say hello.", max_tokens=10)
-        if not test:
-            print("⚠ Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
-            if TASK != "translation":
-                return
     df = load_data()
-    if TASK == "summarization" and df is not None: run_summarization(df)
-    elif TASK == "translation" and df is not None: run_translation(df)
-    elif TASK == "chatbot": run_chatbot()
-    elif TASK == "generation": run_generation(df)
-    else:
-        if df is not None: run_summarization(df)
-        else: run_chatbot()
+    texts = get_texts(df)
+    print(f"Using {len(texts)} text samples")
+
+    print(""); print("— TF-IDF Baseline —")
+    run_tfidf_baseline(texts)
+
+    print(""); print("— BGE-M3 Embeddings —")
+    embs, sim = run_bge_m3(texts)
+
+    print(""); print("— Qwen3-Embedding —")
+    run_qwen3_embedding(texts)
+
+    print(""); print("— Embedding Clustering —")
+    run_embedding_clustering(embs, texts)
 
 
 if __name__ == "__main__":
