@@ -750,16 +750,22 @@ CV_MISC = {
     "Computer Vision/Noise Reduction": {"task": "detect"},
 }
 
-# Image captioning / colorization → NLP gen family
-CV_NLP_MISC = {
-    "Computer Vision/Image Captioning": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
+# ── CAPTIONING / VLM ──
+CAPTIONING = {
+    "Computer Vision/Image Captioning": {"data": _hf("nlphuji/flickr30k")},
+    "Deep Learning/Image Colorization": {"data": _hf("nlphuji/flickr30k")},
+    "Speech and Audio processing/Image Captioning": {"data": _hf("nlphuji/flickr30k")},
+}
+
+# ── MEDICAL SEGMENTATION ──
+MEDICAL_SEG = {
+    "Deep Learning/Brain MRI Segmentation": {"dataset": "hf:mateuszbuda/brain-segmentation", "n_classes": 2},
+    "Deep Learning/COVID-19 Lung CT Scan Analysis": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 2},
 }
 
 # ── MISC Deep Learning ──
 DL_IMAGE_MISC = {
-    "Deep Learning/Brain MRI Segmentation": {"dataset": "hf:mateuszbuda/brain-segmentation", "n_classes": 2},
     "Deep Learning/GANs": {"dataset": "MNIST", "n_classes": 10},
-    "Deep Learning/COVID-19 Lung CT Scan Analysis": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 2},
     "Deep Learning/Sudoku Solver - Neural Network": {"dataset": "MNIST", "n_classes": 10},
 }
 DL_TABULAR_MISC = {
@@ -768,10 +774,6 @@ DL_TABULAR_MISC = {
 }
 DL_CLUSTER_MISC = {
     "Deep Learning/Pokemon Generation Clustering": {"data": _url_csv("https://raw.githubusercontent.com/lgreski/pokemonData/master/Pokemon.csv")},
-}
-DL_NLP_MISC = {
-    "Deep Learning/Image Colorization": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
-    "Speech and Audio processing/Image Captioning": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
 }
 
 
@@ -1620,7 +1622,7 @@ def gen_image_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2
+Model: DINOv3 (primary backbone) + ConvNeXt V2 (fine-tuning backbone)
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1702,30 +1704,7 @@ def train_model():
 
     print(f"\\n🏆 DINOv3 Best Val Accuracy: {{best_acc:.4f}}")
 
-    # Qwen3-VL zero-shot classification
-    try:
-        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
-        from qwen_vl_utils import process_vision_info
-        vl_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
-        vl_proc = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 20: break
-            for img_t in imgs[:4]:
-                pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-                msgs = [{{"role": "user", "content": [{{"type": "image", "image": pil_img}},
-                        {{"type": "text", "text": "Classify this image into one category. Reply with only the category name."}}]}}]
-                text = vl_proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-                vis_inp = process_vision_info(msgs)
-                inp = vl_proc(text=[text], images=vis_inp[0], return_tensors="pt").to(vl_model.device)
-                vl_model.generate(**inp, max_new_tokens=20)
-                total += 1
-        print(f"✓ Qwen3-VL zero-shot: tested {{total}} samples")
-    except Exception as e:
-        print(f"✗ Qwen3-VL: {{e}}")
-
-    # ConvNeXt V2 (alternative backbone)
+    # ConvNeXt V2 (alternative fine-tuning backbone)
     try:
         import timm
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
@@ -1746,29 +1725,311 @@ def train_model():
     except Exception as e:
         print(f"✗ ConvNeXt V2: {{e}}")
 
-    # Molmo 2 (vision-language, alternative to Qwen3-VL)
+
+def main():
+    print("=" * 60)
+    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2")
+    print("=" * 60)
+    train_model()
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_captioning(path, cfg):
+    """Image captioning / multimodal VLM pipeline — Qwen3-VL + Molmo 2."""
+    data_load = cfg.get("data", '    raise FileNotFoundError("No data source configured")')
+    return textwrap.dedent(f'''\
+"""
+Modern Image Captioning / VLM Pipeline (April 2026)
+Models: Qwen3-VL (primary) + Molmo 2 (lightweight alternative)
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import torch
+from PIL import Image
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+MAX_SAMPLES = 20
+
+
+def load_data():
+{data_load}
+    return df
+
+
+def caption_images():
+    df = load_data()
+    # Auto-detect image column
+    img_col = next((c for c in df.column_names if "image" in c.lower()), df.column_names[0])
+    images = [df[i][img_col] for i in range(min(MAX_SAMPLES, len(df)))]
+
+    # ═══ PRIMARY: Qwen3-VL ═══
+    try:
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        from qwen_vl_utils import process_vision_info
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
+        processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
+        captions = []
+        for img in images:
+            pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
+            msgs = [{{"role": "user", "content": [
+                {{"type": "image", "image": pil_img}},
+                {{"type": "text", "text": "Describe this image in detail."}}
+            ]}}]
+            text = processor.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+            vis_inp = process_vision_info(msgs)
+            inputs = processor(text=[text], images=vis_inp[0], return_tensors="pt").to(model.device)
+            out_ids = model.generate(**inputs, max_new_tokens=128)
+            caption = processor.batch_decode(out_ids[:, inputs["input_ids"].shape[1]:],
+                                              skip_special_tokens=True)[0]
+            captions.append(caption)
+            print(f"  Qwen3-VL: {{caption[:100]}}...")
+        print(f"✓ Qwen3-VL captioned {{len(captions)}} images")
+    except Exception as e:
+        print(f"✗ Qwen3-VL: {{e}}")
+
+    # ═══ ALTERNATIVE: Molmo 2 ═══
     try:
         from transformers import AutoModelForCausalLM, AutoProcessor as AP2
         molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
             torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
         molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 5: break
-            img_t = imgs[0]
-            pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-            inputs = molmo_proc.process(images=[pil_img], text="Classify this image into one category. Reply with only the category name.")
+        for img in images[:5]:
+            pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
+            inputs = molmo_proc.process(images=[pil_img], text="Describe this image in detail.")
             inputs = {{k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}}
-            out = molmo.generate_from_batch(inputs, max_new_tokens=20, tokenizer=molmo_proc.tokenizer)
-            total += 1
-        print(f"✓ Molmo-2 tested {{total}} samples")
+            out = molmo.generate_from_batch(inputs, max_new_tokens=128, tokenizer=molmo_proc.tokenizer)
+            caption = molmo_proc.tokenizer.decode(out[0], skip_special_tokens=True)
+            print(f"  Molmo-2: {{caption[:100]}}...")
+        print(f"✓ Molmo-2 captioned {{min(5, len(images))}} images")
     except Exception as e:
         print(f"✗ Molmo-2: {{e}}")
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2")
+    print("IMAGE CAPTIONING / VLM — Qwen3-VL + Molmo 2")
+    print("=" * 60)
+    caption_images()
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_medical_seg(path, cfg):
+    """Medical image segmentation — nnU-Net + MedSAM2."""
+    ds = cfg.get("dataset", "hf:mateuszbuda/brain-segmentation")
+    n_classes = cfg.get("n_classes", 2)
+    if ds.startswith("hf:"):
+        hf_name = ds[3:]
+        ds_load = f'''    from datasets import load_dataset as _hf_load
+    hf_ds = _hf_load("{hf_name}", split="train")
+    print(f"Loaded {{len(hf_ds)}} samples from {hf_name}")'''
+    else:
+        ds_load = f'''    from datasets import load_dataset as _hf_load
+    hf_ds = _hf_load("{ds}", split="train")
+    print(f"Loaded {{len(hf_ds)}} samples")'''
+
+    return textwrap.dedent(f'''\
+"""
+Modern Medical Image Segmentation Pipeline (April 2026)
+Models: nnU-Net (supervised baseline) + MedSAM2 (promptable foundation model)
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, Dataset, random_split
+from torchvision import transforms
+from PIL import Image
+from sklearn.metrics import f1_score
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 256, 8, 15, 1e-4
+N_CLASSES = {n_classes}
+
+
+def load_data():
+{ds_load}
+    return hf_ds
+
+
+class MedSegDataset(Dataset):
+    def __init__(self, hf_ds, img_size=IMG_SIZE):
+        self.ds = hf_ds
+        self.img_size = img_size
+        cols = hf_ds.column_names
+        self.img_col = next((c for c in cols if "image" in c.lower()), cols[0])
+        self.mask_col = next((c for c in cols if "mask" in c.lower() or "seg" in c.lower() or "label" in c.lower()), cols[-1])
+        self.to_tensor = transforms.ToTensor()
+    def __len__(self): return len(self.ds)
+    def __getitem__(self, i):
+        item = self.ds[i]
+        img = item[self.img_col]
+        mask = item[self.mask_col]
+        if hasattr(img, "convert"):
+            img = img.convert("RGB").resize((self.img_size, self.img_size))
+        if hasattr(mask, "convert"):
+            mask = mask.convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
+        img_t = self.to_tensor(img)
+        mask_t = torch.from_numpy(np.array(mask)).long()
+        if mask_t.ndim == 3: mask_t = mask_t[0]
+        mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
+        return img_t, mask_t
+
+
+class UNetBlock(nn.Module):
+    def __init__(self, in_c, out_c):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True),
+            nn.Conv2d(out_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True))
+    def forward(self, x): return self.conv(x)
+
+
+class SimpleUNet(nn.Module):
+    \"\"\"Lightweight U-Net as nnU-Net-style supervised baseline.\"\"\"
+    def __init__(self, in_ch=3, out_ch=N_CLASSES, features=[64, 128, 256, 512]):
+        super().__init__()
+        self.encoders = nn.ModuleList()
+        self.decoders = nn.ModuleList()
+        self.pool = nn.MaxPool2d(2)
+        for f in features:
+            self.encoders.append(UNetBlock(in_ch, f)); in_ch = f
+        self.bottleneck = UNetBlock(features[-1], features[-1] * 2)
+        for f in reversed(features):
+            self.decoders.append(nn.ConvTranspose2d(f * 2, f, 2, stride=2))
+            self.decoders.append(UNetBlock(f * 2, f))
+        self.final = nn.Conv2d(features[0], out_ch, 1)
+    def forward(self, x):
+        skips = []
+        for enc in self.encoders:
+            x = enc(x); skips.append(x); x = self.pool(x)
+        x = self.bottleneck(x)
+        for i in range(0, len(self.decoders), 2):
+            x = self.decoders[i](x)
+            skip = skips[-(i // 2 + 1)]
+            if x.shape != skip.shape:
+                x = nn.functional.interpolate(x, size=skip.shape[2:])
+            x = torch.cat([skip, x], dim=1)
+            x = self.decoders[i + 1](x)
+        return self.final(x)
+
+
+def dice_score(pred, target, n_classes=N_CLASSES):
+    pred = torch.argmax(pred, dim=1)
+    dice = 0.0
+    for c in range(n_classes):
+        p = (pred == c).float(); t = (target == c).float()
+        inter = (p * t).sum()
+        dice += (2 * inter + 1e-6) / (p.sum() + t.sum() + 1e-6)
+    return dice / n_classes
+
+
+def train_model():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    hf_ds = load_data()
+    dataset = MedSegDataset(hf_ds)
+    val_size = max(1, int(0.2 * len(dataset)))
+    train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, num_workers=0)
+
+    # ═══ PRIMARY: nnU-Net-style supervised U-Net ═══
+    model = SimpleUNet().to(device)
+    criterion = nn.CrossEntropyLoss()
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS)
+
+    best_dice = 0
+    for epoch in range(EPOCHS):
+        model.train(); total_loss = 0
+        for imgs, masks in train_loader:
+            imgs, masks = imgs.to(device), masks.to(device)
+            out = model(imgs)
+            loss = criterion(out, masks); loss.backward()
+            opt.step(); opt.zero_grad(); total_loss += loss.item()
+        scheduler.step()
+        model.eval(); dice_sum, n = 0, 0
+        with torch.no_grad():
+            for imgs, masks in val_loader:
+                imgs, masks = imgs.to(device), masks.to(device)
+                out = model(imgs)
+                dice_sum += dice_score(out, masks).item(); n += 1
+        val_dice = dice_sum / max(n, 1)
+        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} — Loss: {{total_loss/len(train_loader):.4f}} — Val Dice: {{val_dice:.4f}}")
+        if val_dice > best_dice:
+            best_dice = val_dice
+            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_unet.pth"))
+    print(f"\\n🏆 nnU-Net-style Best Val Dice: {{best_dice:.4f}}")
+
+    # ═══ ALTERNATIVE: MedSAM2 (promptable foundation segmentation) ═══
+    try:
+        from transformers import SamModel, SamProcessor
+        sam_model = SamModel.from_pretrained("wanglab/medsam-vit-base").to(device)
+        sam_proc = SamProcessor.from_pretrained("wanglab/medsam-vit-base")
+        sam_model.eval()
+        dice_sum, n = 0, 0
+        with torch.no_grad():
+            for imgs, masks in val_loader:
+                for j in range(min(4, imgs.shape[0])):
+                    pil_img = transforms.ToPILImage()(imgs[j])
+                    h, w = pil_img.size[1], pil_img.size[0]
+                    # Center-point prompt
+                    input_points = [[[w // 2, h // 2]]]
+                    inputs = sam_proc(pil_img, input_points=input_points, return_tensors="pt").to(device)
+                    outputs = sam_model(**inputs)
+                    pred_mask = sam_proc.image_processor.post_process_masks(
+                        outputs.pred_masks.cpu(), inputs["original_sizes"].cpu(),
+                        inputs["reshaped_input_sizes"].cpu())[0]
+                    pred_binary = (pred_mask[0, 0] > 0).long()
+                    gt = masks[j]
+                    if pred_binary.shape != gt.shape:
+                        pred_binary = nn.functional.interpolate(
+                            pred_binary.float().unsqueeze(0).unsqueeze(0),
+                            size=gt.shape, mode="nearest")[0, 0].long()
+                    inter = ((pred_binary == 1) & (gt == 1)).sum().float()
+                    union = (pred_binary == 1).sum().float() + (gt == 1).sum().float()
+                    dice_sum += (2 * inter + 1e-6) / (union + 1e-6); n += 1
+                if n >= 16: break
+        sam_dice = dice_sum / max(n, 1)
+        print(f"✓ MedSAM Dice (zero-shot, center-point prompt): {{sam_dice:.4f}}")
+    except Exception as e:
+        print(f"✗ MedSAM: {{e}}")
+
+    # Visualize sample predictions
+    model.eval()
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+    with torch.no_grad():
+        for imgs, masks in val_loader:
+            preds = torch.argmax(model(imgs.to(device)), dim=1).cpu()
+            for i in range(min(4, imgs.shape[0])):
+                axes[0, i].imshow(imgs[i].permute(1, 2, 0).numpy())
+                axes[0, i].set_title("Input"); axes[0, i].axis("off")
+                axes[1, i].imshow(preds[i].numpy(), cmap="jet", alpha=0.7)
+                axes[1, i].set_title("Prediction"); axes[1, i].axis("off")
+            break
+    plt.tight_layout()
+    plt.savefig(os.path.join(os.path.dirname(__file__), "segmentation_results.png"), dpi=100)
+    print("Saved segmentation_results.png")
+
+
+def main():
+    print("=" * 60)
+    print("MEDICAL SEGMENTATION — nnU-Net + MedSAM")
     print("=" * 60)
     train_model()
 
@@ -2791,6 +3052,8 @@ def main():
         ("CV Misc", CV_MISC, gen_cv_detection),
         ("Face/Gesture", FACE_GESTURE, gen_face_gesture),
         ("OCR", OCR, gen_ocr),
+        ("Captioning / VLM", CAPTIONING, gen_captioning),
+        ("Medical Segmentation", MEDICAL_SEG, gen_medical_seg),
         ("Recommendation", RECOMMENDATION, gen_recommendation),
         ("Time Series", TIME_SERIES, gen_timeseries),
         ("Reinforcement Learning", RL, gen_rl),
@@ -2798,8 +3061,6 @@ def main():
         ("DL Image Misc", DL_IMAGE_MISC, gen_image_clf),
         ("DL Tabular Misc", DL_TABULAR_MISC, gen_tabular_reg),
         ("DL Cluster Misc", DL_CLUSTER_MISC, gen_clustering),
-        ("DL NLP Misc", DL_NLP_MISC, gen_nlp_gen),
-        ("CV NLP Misc", CV_NLP_MISC, gen_nlp_gen),
     ]
 
     for family_name, projects, generator in families:

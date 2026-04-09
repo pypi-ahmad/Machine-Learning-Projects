@@ -1,6 +1,6 @@
 """
-Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2
+Modern Medical Image Segmentation Pipeline (April 2026)
+Models: nnU-Net (supervised baseline) + MedSAM2 (promptable foundation model)
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -10,160 +10,186 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from PIL import Image
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import f1_score
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 256, 8, 15, 1e-4
+N_CLASSES = 2
 
 
-def get_transforms(train=True):
-    if train:
-        return transforms.Compose([
-            transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
-            transforms.ColorJitter(0.2, 0.2, 0.2), transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
-    return transforms.Compose([
-        transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-    ])
+def load_data():
+    from datasets import load_dataset as _hf_load
+    hf_ds = _hf_load("mateuszbuda/brain-segmentation", split="train")
+    print(f"Loaded {len(hf_ds)} samples from mateuszbuda/brain-segmentation")
+    return hf_ds
+
+
+class MedSegDataset(Dataset):
+    def __init__(self, hf_ds, img_size=IMG_SIZE):
+        self.ds = hf_ds
+        self.img_size = img_size
+        cols = hf_ds.column_names
+        self.img_col = next((c for c in cols if "image" in c.lower()), cols[0])
+        self.mask_col = next((c for c in cols if "mask" in c.lower() or "seg" in c.lower() or "label" in c.lower()), cols[-1])
+        self.to_tensor = transforms.ToTensor()
+    def __len__(self): return len(self.ds)
+    def __getitem__(self, i):
+        item = self.ds[i]
+        img = item[self.img_col]
+        mask = item[self.mask_col]
+        if hasattr(img, "convert"):
+            img = img.convert("RGB").resize((self.img_size, self.img_size))
+        if hasattr(mask, "convert"):
+            mask = mask.convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
+        img_t = self.to_tensor(img)
+        mask_t = torch.from_numpy(np.array(mask)).long()
+        if mask_t.ndim == 3: mask_t = mask_t[0]
+        mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
+        return img_t, mask_t
+
+
+class UNetBlock(nn.Module):
+    def __init__(self, in_c, out_c):
+        super().__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True),
+            nn.Conv2d(out_c, out_c, 3, padding=1), nn.BatchNorm2d(out_c), nn.ReLU(inplace=True))
+    def forward(self, x): return self.conv(x)
+
+
+class SimpleUNet(nn.Module):
+    """Lightweight U-Net as nnU-Net-style supervised baseline."""
+    def __init__(self, in_ch=3, out_ch=N_CLASSES, features=[64, 128, 256, 512]):
+        super().__init__()
+        self.encoders = nn.ModuleList()
+        self.decoders = nn.ModuleList()
+        self.pool = nn.MaxPool2d(2)
+        for f in features:
+            self.encoders.append(UNetBlock(in_ch, f)); in_ch = f
+        self.bottleneck = UNetBlock(features[-1], features[-1] * 2)
+        for f in reversed(features):
+            self.decoders.append(nn.ConvTranspose2d(f * 2, f, 2, stride=2))
+            self.decoders.append(UNetBlock(f * 2, f))
+        self.final = nn.Conv2d(features[0], out_ch, 1)
+    def forward(self, x):
+        skips = []
+        for enc in self.encoders:
+            x = enc(x); skips.append(x); x = self.pool(x)
+        x = self.bottleneck(x)
+        for i in range(0, len(self.decoders), 2):
+            x = self.decoders[i](x)
+            skip = skips[-(i // 2 + 1)]
+            if x.shape != skip.shape:
+                x = nn.functional.interpolate(x, size=skip.shape[2:])
+            x = torch.cat([skip, x], dim=1)
+            x = self.decoders[i + 1](x)
+        return self.final(x)
+
+
+def dice_score(pred, target, n_classes=N_CLASSES):
+    pred = torch.argmax(pred, dim=1)
+    dice = 0.0
+    for c in range(n_classes):
+        p = (pred == c).float(); t = (target == c).float()
+        inter = (p * t).sum()
+        dice += (2 * inter + 1e-6) / (p.sum() + t.sum() + 1e-6)
+    return dice / n_classes
 
 
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("mateuszbuda/brain-segmentation", split="train")
-    # Convert HF image dataset to torchvision-style
-    class HFImageDataset(Dataset):
-        def __init__(self, hf_dataset, transform=None):
-            self.ds = hf_dataset; self.transform = transform
-            img_col = next((c for c in hf_dataset.column_names if "image" in c.lower()), hf_dataset.column_names[0])
-            lbl_col = next((c for c in hf_dataset.column_names if "label" in c.lower()), hf_dataset.column_names[-1])
-            self.img_col, self.lbl_col = img_col, lbl_col
-        def __len__(self): return len(self.ds)
-        def __getitem__(self, i):
-            img = self.ds[i][self.img_col].convert("RGB") if hasattr(self.ds[i][self.img_col], "convert") else Image.open(self.ds[i][self.img_col]).convert("RGB")
-            lbl = self.ds[i][self.lbl_col]
-            return self.transform(img) if self.transform else img, lbl
-    train_ds = HFImageDataset(hf_ds, transform=get_transforms(True))
-    n_classes = len(set(hf_ds[next(c for c in hf_ds.column_names if "label" in c.lower())]))
+    hf_ds = load_data()
+    dataset = MedSegDataset(hf_ds)
+    val_size = max(1, int(0.2 * len(dataset)))
+    train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
+    train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_ds, batch_size=BATCH_SIZE, num_workers=0)
 
-    val_size = max(1, int(0.2 * len(train_ds)))
-    train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
-    train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
-    val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
-
-    backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
-    embed_dim = 384  # ViT-S/14
-
-    class Classifier(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.backbone = backbone
-            self.head = nn.Sequential(nn.LayerNorm(embed_dim), nn.Linear(embed_dim, 256),
-                                      nn.GELU(), nn.Dropout(0.3), nn.Linear(256, n_classes))
-            for p in self.backbone.parameters(): p.requires_grad = False
-        def forward(self, x):
-            feat = self.backbone(x)
-            return self.head(feat)
-
-    model = Classifier().to(device)
+    # ═══ PRIMARY: nnU-Net-style supervised U-Net ═══
+    model = SimpleUNet().to(device)
     criterion = nn.CrossEntropyLoss()
-    opt = torch.optim.AdamW(model.head.parameters(), lr=LR, weight_decay=0.01)
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=EPOCHS)
 
-    best_acc = 0
+    best_dice = 0
     for epoch in range(EPOCHS):
         model.train(); total_loss = 0
-        for imgs, labels in train_loader:
-            imgs, labels = imgs.to(device), labels.to(device)
-            loss = criterion(model(imgs), labels); loss.backward()
+        for imgs, masks in train_loader:
+            imgs, masks = imgs.to(device), masks.to(device)
+            out = model(imgs)
+            loss = criterion(out, masks); loss.backward()
             opt.step(); opt.zero_grad(); total_loss += loss.item()
-        if epoch == 2:
-            for p in model.backbone.parameters(): p.requires_grad = True
-            opt = torch.optim.AdamW(model.parameters(), lr=LR * 0.1, weight_decay=0.01)
-        model.eval(); preds, gts = [], []
+        scheduler.step()
+        model.eval(); dice_sum, n = 0, 0
         with torch.no_grad():
-            for imgs, labels in val_loader:
-                preds.extend(torch.argmax(model(imgs.to(device)), dim=-1).cpu().numpy())
-                gts.extend(labels.numpy())
-        val_acc = accuracy_score(gts, preds)
-        print(f"  Epoch {epoch+1}/{EPOCHS} — Loss: {total_loss/len(train_loader):.4f} — Val Acc: {val_acc:.4f}")
-        if val_acc > best_acc:
-            best_acc = val_acc
-            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
+            for imgs, masks in val_loader:
+                imgs, masks = imgs.to(device), masks.to(device)
+                out = model(imgs)
+                dice_sum += dice_score(out, masks).item(); n += 1
+        val_dice = dice_sum / max(n, 1)
+        print(f"  Epoch {epoch+1}/{EPOCHS} — Loss: {total_loss/len(train_loader):.4f} — Val Dice: {val_dice:.4f}")
+        if val_dice > best_dice:
+            best_dice = val_dice
+            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_unet.pth"))
+    print(f"\n🏆 nnU-Net-style Best Val Dice: {best_dice:.4f}")
 
-    print(f"\n🏆 DINOv3 Best Val Accuracy: {best_acc:.4f}")
-
-    # Qwen3-VL zero-shot classification
+    # ═══ ALTERNATIVE: MedSAM2 (promptable foundation segmentation) ═══
     try:
-        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
-        from qwen_vl_utils import process_vision_info
-        vl_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
-        vl_proc = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 20: break
-            for img_t in imgs[:4]:
-                pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-                msgs = [{"role": "user", "content": [{"type": "image", "image": pil_img},
-                        {"type": "text", "text": "Classify this image into one category. Reply with only the category name."}]}]
-                text = vl_proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-                vis_inp = process_vision_info(msgs)
-                inp = vl_proc(text=[text], images=vis_inp[0], return_tensors="pt").to(vl_model.device)
-                vl_model.generate(**inp, max_new_tokens=20)
-                total += 1
-        print(f"✓ Qwen3-VL zero-shot: tested {total} samples")
-    except Exception as e:
-        print(f"✗ Qwen3-VL: {e}")
-
-    # ConvNeXt V2 (alternative backbone)
-    try:
-        import timm
-        convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
-        convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
-        for epoch in range(3):
-            convnext.train(); total_loss = 0
-            for imgs, labels in train_loader:
-                imgs, labels = imgs.to(device), labels.to(device)
-                loss = criterion(convnext(imgs), labels); loss.backward()
-                convnext_opt.step(); convnext_opt.zero_grad(); total_loss += loss.item()
-        convnext.eval(); cv_preds, cv_gts = [], []
+        from transformers import SamModel, SamProcessor
+        sam_model = SamModel.from_pretrained("wanglab/medsam-vit-base").to(device)
+        sam_proc = SamProcessor.from_pretrained("wanglab/medsam-vit-base")
+        sam_model.eval()
+        dice_sum, n = 0, 0
         with torch.no_grad():
-            for imgs, labels in val_loader:
-                cv_preds.extend(torch.argmax(convnext(imgs.to(device)), dim=-1).cpu().numpy())
-                cv_gts.extend(labels.numpy())
-        cv_acc = accuracy_score(cv_gts, cv_preds)
-        print(f"✓ ConvNeXt V2 Val Accuracy: {cv_acc:.4f}")
+            for imgs, masks in val_loader:
+                for j in range(min(4, imgs.shape[0])):
+                    pil_img = transforms.ToPILImage()(imgs[j])
+                    h, w = pil_img.size[1], pil_img.size[0]
+                    # Center-point prompt
+                    input_points = [[[w // 2, h // 2]]]
+                    inputs = sam_proc(pil_img, input_points=input_points, return_tensors="pt").to(device)
+                    outputs = sam_model(**inputs)
+                    pred_mask = sam_proc.image_processor.post_process_masks(
+                        outputs.pred_masks.cpu(), inputs["original_sizes"].cpu(),
+                        inputs["reshaped_input_sizes"].cpu())[0]
+                    pred_binary = (pred_mask[0, 0] > 0).long()
+                    gt = masks[j]
+                    if pred_binary.shape != gt.shape:
+                        pred_binary = nn.functional.interpolate(
+                            pred_binary.float().unsqueeze(0).unsqueeze(0),
+                            size=gt.shape, mode="nearest")[0, 0].long()
+                    inter = ((pred_binary == 1) & (gt == 1)).sum().float()
+                    union = (pred_binary == 1).sum().float() + (gt == 1).sum().float()
+                    dice_sum += (2 * inter + 1e-6) / (union + 1e-6); n += 1
+                if n >= 16: break
+        sam_dice = dice_sum / max(n, 1)
+        print(f"✓ MedSAM Dice (zero-shot, center-point prompt): {sam_dice:.4f}")
     except Exception as e:
-        print(f"✗ ConvNeXt V2: {e}")
+        print(f"✗ MedSAM: {e}")
 
-    # Molmo 2 (vision-language, alternative to Qwen3-VL)
-    try:
-        from transformers import AutoModelForCausalLM, AutoProcessor as AP2
-        molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
-            torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
-        molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 5: break
-            img_t = imgs[0]
-            pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-            inputs = molmo_proc.process(images=[pil_img], text="Classify this image into one category. Reply with only the category name.")
-            inputs = {k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}
-            out = molmo.generate_from_batch(inputs, max_new_tokens=20, tokenizer=molmo_proc.tokenizer)
-            total += 1
-        print(f"✓ Molmo-2 tested {total} samples")
-    except Exception as e:
-        print(f"✗ Molmo-2: {e}")
+    # Visualize sample predictions
+    model.eval()
+    fig, axes = plt.subplots(2, 4, figsize=(16, 8))
+    with torch.no_grad():
+        for imgs, masks in val_loader:
+            preds = torch.argmax(model(imgs.to(device)), dim=1).cpu()
+            for i in range(min(4, imgs.shape[0])):
+                axes[0, i].imshow(imgs[i].permute(1, 2, 0).numpy())
+                axes[0, i].set_title("Input"); axes[0, i].axis("off")
+                axes[1, i].imshow(preds[i].numpy(), cmap="jet", alpha=0.7)
+                axes[1, i].set_title("Prediction"); axes[1, i].axis("off")
+            break
+    plt.tight_layout()
+    plt.savefig(os.path.join(os.path.dirname(__file__), "segmentation_results.png"), dpi=100)
+    print("Saved segmentation_results.png")
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2")
+    print("MEDICAL SEGMENTATION — nnU-Net + MedSAM")
     print("=" * 60)
     train_model()
 

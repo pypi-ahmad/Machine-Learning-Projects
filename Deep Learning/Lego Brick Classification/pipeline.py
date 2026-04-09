@@ -1,6 +1,6 @@
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2
+Model: DINOv3 (primary backbone) + ConvNeXt V2 (fine-tuning backbone)
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -97,30 +97,7 @@ def train_model():
 
     print(f"\n🏆 DINOv3 Best Val Accuracy: {best_acc:.4f}")
 
-    # Qwen3-VL zero-shot classification
-    try:
-        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
-        from qwen_vl_utils import process_vision_info
-        vl_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
-        vl_proc = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 20: break
-            for img_t in imgs[:4]:
-                pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-                msgs = [{"role": "user", "content": [{"type": "image", "image": pil_img},
-                        {"type": "text", "text": "Classify this image into one category. Reply with only the category name."}]}]
-                text = vl_proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
-                vis_inp = process_vision_info(msgs)
-                inp = vl_proc(text=[text], images=vis_inp[0], return_tensors="pt").to(vl_model.device)
-                vl_model.generate(**inp, max_new_tokens=20)
-                total += 1
-        print(f"✓ Qwen3-VL zero-shot: tested {total} samples")
-    except Exception as e:
-        print(f"✗ Qwen3-VL: {e}")
-
-    # ConvNeXt V2 (alternative backbone)
+    # ConvNeXt V2 (alternative fine-tuning backbone)
     try:
         import timm
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
@@ -141,29 +118,10 @@ def train_model():
     except Exception as e:
         print(f"✗ ConvNeXt V2: {e}")
 
-    # Molmo 2 (vision-language, alternative to Qwen3-VL)
-    try:
-        from transformers import AutoModelForCausalLM, AutoProcessor as AP2
-        molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
-            torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
-        molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
-        total = 0
-        for imgs, labels in val_loader:
-            if total >= 5: break
-            img_t = imgs[0]
-            pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
-            inputs = molmo_proc.process(images=[pil_img], text="Classify this image into one category. Reply with only the category name.")
-            inputs = {k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}
-            out = molmo.generate_from_batch(inputs, max_new_tokens=20, tokenizer=molmo_proc.tokenizer)
-            total += 1
-        print(f"✓ Molmo-2 tested {total} samples")
-    except Exception as e:
-        print(f"✗ Molmo-2: {e}")
-
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2 + Qwen3-VL + Molmo 2")
+    print("IMAGE CLASSIFICATION — DINOv3 + ConvNeXt V2")
     print("=" * 60)
     train_model()
 

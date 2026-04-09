@@ -1,27 +1,17 @@
 """
-Modern NLP Generation Pipeline (April 2026)
-Model: Qwen3-Instruct via Ollama (chat/generation), NLLB-200 (translation)
+Modern Image Captioning / VLM Pipeline (April 2026)
+Models: Qwen3-VL (primary) + Molmo 2 (lightweight alternative)
 Data: Auto-downloaded at runtime
 """
-import os, json, warnings
-import pandas as pd
+import os, warnings
+import torch
+from PIL import Image
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
 warnings.filterwarnings("ignore")
 
-TASK = "generation"
-OLLAMA_MODEL = "qwen3:8b"
-OLLAMA_URL = "http://localhost:11434/api/generate"
-
-
-def query_ollama(prompt, temperature=0.7, max_tokens=512):
-    import requests
-    try:
-        r = requests.post(OLLAMA_URL, json={"model": OLLAMA_MODEL, "prompt": prompt, "stream": False,
-                          "options": {"temperature": temperature, "num_predict": max_tokens}}, timeout=120)
-        r.raise_for_status()
-        return r.json().get("response", "")
-    except Exception as e:
-        print(f"Ollama error: {e}")
-        return None
+MAX_SAMPLES = 20
 
 
 def load_data():
@@ -30,65 +20,61 @@ def load_data():
     return df
 
 
-def run_summarization(df):
-    text_col = next((c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 50), df.select_dtypes("object").columns[0])
-    results = []
-    for i, text in enumerate(df[text_col].dropna().head(10)):
-        summary = query_ollama(f"Summarize concisely:\n\n{text[:2000]}\n\nSummary:")
-        if summary:
-            results.append({"original": text[:200], "summary": summary})
-            print(f"  [{i+1}] {summary[:100]}...")
-    return results
+def caption_images():
+    df = load_data()
+    # Auto-detect image column
+    img_col = next((c for c in df.column_names if "image" in c.lower()), df.column_names[0])
+    images = [df[i][img_col] for i in range(min(MAX_SAMPLES, len(df)))]
 
+    # ═══ PRIMARY: Qwen3-VL ═══
+    try:
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        from qwen_vl_utils import process_vision_info
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
+        processor = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
+        captions = []
+        for img in images:
+            pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
+            msgs = [{"role": "user", "content": [
+                {"type": "image", "image": pil_img},
+                {"type": "text", "text": "Describe this image in detail."}
+            ]}]
+            text = processor.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+            vis_inp = process_vision_info(msgs)
+            inputs = processor(text=[text], images=vis_inp[0], return_tensors="pt").to(model.device)
+            out_ids = model.generate(**inputs, max_new_tokens=128)
+            caption = processor.batch_decode(out_ids[:, inputs["input_ids"].shape[1]:],
+                                              skip_special_tokens=True)[0]
+            captions.append(caption)
+            print(f"  Qwen3-VL: {caption[:100]}...")
+        print(f"✓ Qwen3-VL captioned {len(captions)} images")
+    except Exception as e:
+        print(f"✗ Qwen3-VL: {e}")
 
-def run_translation(df):
-    """Translate with NLLB-200 (Meta) — 200 language pairs, offline."""
-    import torch
-    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    model_id = "facebook/nllb-200-distilled-600M"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_id).to(device)
-    text_col = df.select_dtypes("object").columns[0]
-    results = []
-    for i, text in enumerate(df[text_col].dropna().head(10)):
-        inputs = tokenizer(text[:512], return_tensors="pt", truncation=True).to(device)
-        translated_ids = model.generate(**inputs, forced_bos_token_id=tokenizer.convert_tokens_to_ids("eng_Latn"), max_new_tokens=256)
-        translated = tokenizer.decode(translated_ids[0], skip_special_tokens=True)
-        results.append({"original": text[:100], "translated": translated})
-        print(f"  [{i+1}] {translated[:100]}...")
-    return results
-
-
-def run_chatbot():
-    print("\n💬 Chatbot (type 'quit' to exit)")
-    history = []
-    while True:
-        user = input("\nYou: ").strip()
-        if user.lower() in ("quit", "exit", "q"): break
-        history.append(f"User: {user}")
-        resp = query_ollama(f"Continue:\n\n{'\n'.join(history[-6:])}\n\nAssistant:", temperature=0.8)
-        if resp:
-            history.append(f"Assistant: {resp}")
-            print(f"Bot: {resp}")
+    # ═══ ALTERNATIVE: Molmo 2 ═══
+    try:
+        from transformers import AutoModelForCausalLM, AutoProcessor as AP2
+        molmo = AutoModelForCausalLM.from_pretrained("allenai/Molmo-7B-D-0924",
+            torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True)
+        molmo_proc = AP2.from_pretrained("allenai/Molmo-7B-D-0924", trust_remote_code=True)
+        for img in images[:5]:
+            pil_img = img.convert("RGB") if hasattr(img, "convert") else Image.open(img).convert("RGB")
+            inputs = molmo_proc.process(images=[pil_img], text="Describe this image in detail.")
+            inputs = {k: v.to(molmo.device).unsqueeze(0) if hasattr(v, "to") else v for k, v in inputs.items()}
+            out = molmo.generate_from_batch(inputs, max_new_tokens=128, tokenizer=molmo_proc.tokenizer)
+            caption = molmo_proc.tokenizer.decode(out[0], skip_special_tokens=True)
+            print(f"  Molmo-2: {caption[:100]}...")
+        print(f"✓ Molmo-2 captioned {min(5, len(images))} images")
+    except Exception as e:
+        print(f"✗ Molmo-2: {e}")
 
 
 def main():
     print("=" * 60)
-    print(f"NLP GENERATION — {OLLAMA_MODEL} — Task: {TASK}")
+    print("IMAGE CAPTIONING / VLM — Qwen3-VL + Molmo 2")
     print("=" * 60)
-    test = query_ollama("Say hello.", max_tokens=10)
-    if not test:
-        print("⚠ Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
-        return
-    df = load_data()
-    if TASK == "summarization" and df is not None: run_summarization(df)
-    elif TASK == "translation" and df is not None: run_translation(df)
-    elif TASK == "chatbot": run_chatbot()
-    elif TASK == "generation": query_ollama("Write a creative story about AI:", temperature=0.9, max_tokens=1024)
-    else:
-        if df is not None: run_summarization(df)
-        else: run_chatbot()
+    caption_images()
 
 
 if __name__ == "__main__":
