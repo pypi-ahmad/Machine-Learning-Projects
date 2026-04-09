@@ -2,7 +2,7 @@
 
 > **Repository:** Machine-Learning-Projects  
 > **Total pipelines:** 315 (generated) + 26 pre-existing Data Analysis (PyCaret, not managed by generator)  
-> **Generator:** `_overhaul_v2.py` — 18 generator functions, 22 family→generator mappings  
+> **Generator:** `_overhaul_v2.py` — 19 generator functions, 23 family→generator mappings  
 > **Status:** ✅ **ALL MIGRATIONS COMPLETE** — every family upgraded, verified, committed  
 
 ---
@@ -25,6 +25,10 @@
 | `23a9e02` | 11 | NLP Clf | ModernBERT + XLM-R + TF-IDF/NB baseline + GLiNER NER |
 | `4434638` | 12 | Clustering | UMAP+HDBSCAN + GMM + K-Means baseline |
 | `a1c74d1` | 13 | Fraud/Anomaly | Calibrated GBDT trio + PyOD ECOD/COPOD/IForest + anomalib PatchCore |
+| `bf6a901` | 14 | NLP Similarity | New gen_nlp_similarity: BGE-M3 + Qwen3-Embedding + UMAP/HDBSCAN |
+| `cbe0f9f` | 15 | Time Series | ARIMA/Prophet baselines, FLAML lag-feature, MAE/MAPE metrics, compute docs |
+| `cce8b18` | 16 | RL | Q-learning educational baseline, SAC auto-dispatch, reward plotting |
+| `7407851` | 17 | Audio/Speech | Task-specific routing, compute docs, timing, voice cloning ref speaker |
 
 ---
 
@@ -119,7 +123,7 @@
 
 ---
 
-### 6. NLP Classification — 40 projects → `gen_nlp_clf`
+### 6. NLP Classification — 44 projects → `gen_nlp_clf`
 
 **Status:** ✅ Complete
 
@@ -150,11 +154,26 @@
 
 ---
 
-### 8. NLP Miscellaneous — 10 projects → `gen_nlp_gen`
+### 8a. NLP Similarity / Retrieval — 4 projects → `gen_nlp_similarity`
+
+**Status:** ✅ Complete
+
+| Model | Role | Notes |
+|-------|------|-------|
+| BGE-M3 | Primary embedding | `BAAI/bge-m3`, multilingual dense retrieval |
+| Qwen3-Embedding | Alternative embedding | `Qwen/Qwen3-Embedding-0.6B` |
+| TF-IDF + cosine | Baseline | Sparse retrieval comparison |
+| UMAP + HDBSCAN | Semantic clustering | Embedding-space cluster visualization |
+
+Covers: Text Similarity, Plagiarism Checker, Cross Language IR, Text Clustering
+
+---
+
+### 8b. NLP Miscellaneous — 6 projects → `gen_nlp_gen`
 
 **Status:** ✅ Complete (reuses `gen_nlp_gen`)
 
-Covers: Plagiarism checker, stop words analysis, text clustering/topic modeling, WhatsApp chat analysis, cross-language IR
+Covers: Stop words analysis, WhatsApp chat analysis, word clouds, NLP utilities
 
 ---
 
@@ -240,7 +259,7 @@ Covers: Dominant color, cartoonify, sketch, watermark, noise reduction
 
 ---
 
-### 16. Recommendation Systems — 18 projects → `gen_recommendation`
+### 16. Recommendation Systems — 19 projects → `gen_recommendation`
 
 **Status:** ✅ Complete
 
@@ -271,8 +290,9 @@ Covers: Dominant color, cartoonify, sketch, watermark, noise reduction
 | CatBoost | Lag-feature baseline | GPU |
 | XGBoost | Lag-feature baseline | CUDA |
 
-**Legacy removed:** ARIMA, Prophet, plain LSTM, StatsForecast  
-**FLAML/LazyPredict:** ❌ Not included (replaced by AutoGluon-TS)
+**Classical baselines kept:** ARIMA(5,1,0), Prophet (comparison only, not primary)  
+**FLAML:** ✅ Lag-feature tabular forecasting only (60s budget)  
+**LazyPredict:** ❌ Not included
 
 ---
 
@@ -286,7 +306,7 @@ Covers: Dominant color, cartoonify, sketch, watermark, noise reduction
 | SAC | Continuous control | When action space is continuous |
 | DQN | Discrete baseline | Comparison only |
 
-**Legacy removed:** Plain Q-learning, manual Q-tables
+**Q-learning:** Kept as educational baseline for small-state envs (FrozenLake, CliffWalking, Taxi)
 
 ---
 
@@ -336,7 +356,7 @@ Pokemon Generation Clustering — uses UMAP+HDBSCAN stack
 | Captioning/VLM | ❌ | ❌ | Multimodal — not applicable |
 | Medical Segmentation | ❌ | ❌ | Specialized segmentation — not applicable |
 | Recommendation | ❌ | ❌ | CF/hybrid/embedding — not applicable |
-| Time Series | ❌ | ❌ | Foundation forecasters — not applicable |
+| Time Series | ✅ (lag-feature only) | ❌ | FLAML on tabularized lag features; foundation models are primary |
 | RL | ❌ | ❌ | Policy optimization — not applicable |
 | Audio/Speech | ❌ | ❌ | Speech transformers — not applicable |
 
@@ -354,4 +374,5 @@ Pokemon Generation Clustering — uses UMAP+HDBSCAN stack
 - **17/17 Data Analysis pipelines** have pre-existing PyCaret errors (out of scope)
 - **All model stacks verified:** no legacy KNN/SVM/RandomForest/DecisionTree/AdaBoost/MLP as primary models in any generated pipeline
 - **Naive Bayes** appears only as TF-IDF baseline in NLP classification pipelines (40 projects) — intentional, not primary
-- **FLAML/LazyPredict** confirmed present only in `gen_tabular_clf` and `gen_tabular_reg`
+- **FLAML** confirmed present only in `gen_tabular_clf`, `gen_tabular_reg`, and `gen_timeseries` (lag-feature section)
+- **LazyPredict** confirmed present only in `gen_tabular_clf` and `gen_tabular_reg`
