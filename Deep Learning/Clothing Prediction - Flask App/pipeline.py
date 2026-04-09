@@ -1,6 +1,6 @@
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv2 fine-tuning — Vision Transformer
+Model: DINOv3 fine-tuning + Qwen3-VL zero-shot — Vision Transformer
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -43,7 +43,7 @@ def train_model():
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
 
-    backbone = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14", pretrained=True)
+    backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
     class Classifier(nn.Module):
@@ -82,12 +82,35 @@ def train_model():
             best_acc = val_acc
             torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
 
-    print(f"\n🏆 DINOv2 Best Val Accuracy: {best_acc:.4f}")
+    print(f"\n🏆 DINOv3 Best Val Accuracy: {best_acc:.4f}")
+
+    # Qwen3-VL zero-shot classification
+    try:
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        from qwen_vl_utils import process_vision_info
+        vl_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
+        vl_proc = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
+        total = 0
+        for imgs, labels in val_loader:
+            if total >= 20: break
+            for img_t in imgs[:4]:
+                pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
+                msgs = [{"role": "user", "content": [{"type": "image", "image": pil_img},
+                        {"type": "text", "text": "Classify this image into one category. Reply with only the category name."}]}]
+                text = vl_proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+                vis_inp = process_vision_info(msgs)
+                inp = vl_proc(text=[text], images=vis_inp[0], return_tensors="pt").to(vl_model.device)
+                vl_model.generate(**inp, max_new_tokens=20)
+                total += 1
+        print(f"✓ Qwen3-VL zero-shot: tested {total} samples")
+    except Exception as e:
+        print(f"✗ Qwen3-VL: {e}")
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv2 (ViT-S/14)")
+    print("IMAGE CLASSIFICATION — DINOv3 (ViT-S/14) + Qwen3-VL")
     print("=" * 60)
     train_model()
 

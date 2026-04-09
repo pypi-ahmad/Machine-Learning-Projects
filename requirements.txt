@@ -36,7 +36,11 @@ ultralytics>=8.3.0
 # ── AutoML & Baselines ─────────────────────────────────────
 # pycaret>=3.5.0      # not yet compatible with Python 3.13
 # lazypredict>=0.2.14  # not yet compatible with Python 3.13
-flaml>=2.3.0
+autogluon.tabular>=1.2.0
+autogluon.timeseries>=1.2.0
+
+# ── Tabular Deep Learning ───────────────────────────────────
+tabpfn>=2.0.0
 
 # ── Gradient Boosting (GPU) ─────────────────────────────────
 catboost>=1.2.7
@@ -48,6 +52,7 @@ scikit-learn>=1.6.1
 
 # ── Anomaly Detection ──────────────────────────────────────
 pyod>=2.0.0
+anomalib>=1.2.0
 
 # ── Clustering ──────────────────────────────────────────────
 umap-learn>=0.5.7
@@ -60,6 +65,7 @@ hdbscan>=0.8.40
 # ── Time Series ─────────────────────────────────────────────
 statsforecast>=2.0.0
 chronos-forecasting>=1.4.0
+timesfm>=2.0.0
 
 # ── Reinforcement Learning ──────────────────────────────────
 gymnasium>=1.1.0
@@ -84,6 +90,8 @@ seaborn>=0.13.2
 
 # ── NLP ─────────────────────────────────────────────────────
 nltk>=3.9.1
+gliner>=0.2.0
+qwen-vl-utils>=0.0.8
 
 # ── Audio ────────────────────────────────────────────────────
 librosa>=0.10.2

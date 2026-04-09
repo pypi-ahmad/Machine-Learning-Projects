@@ -1,6 +1,6 @@
 """
 Modern Time Series Forecasting Pipeline (April 2026)
-Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Models: AutoGluon TimeSeries + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -70,6 +70,49 @@ def forecast(df, target):
                 print(f"✓ {col} RMSE: {rmse:.4f}")
     except Exception as e: print(f"✗ StatsForecast: {e}")
 
+    # Chronos-2
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe2 = ChronosPipeline.from_pretrained("amazon/chronos-2-base",
+                   device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe2.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-2"] = y_pred
+        print(f"✓ Chronos-2 RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-2: {e}")
+
+    # TimesFM
+    try:
+        import timesfm
+        tfm = timesfm.TimesFm(
+            hparams=timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=32,
+                                            horizon_len=HORIZON),
+            checkpoint=timesfm.TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch"))
+        freq = [0] * 1  # freq=0 → daily
+        y_pred, _ = tfm.forecast([train], freq)
+        y_pred = y_pred[0][:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["TimesFM"] = y_pred
+        print(f"✓ TimesFM RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ TimesFM: {e}")
+
+    # AutoGluon TimeSeries
+    try:
+        from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
+        ts_df = pd.DataFrame({"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train})
+        ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
+        predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
+                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
+        predictor.fit(ts_data, time_limit=120, presets="best_quality")
+        ag_preds = predictor.predict(ts_data)
+        y_pred = ag_preds["mean"].values[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["AutoGluon-TS"] = y_pred
+        print(f"✓ AutoGluon-TS RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ AutoGluon-TS: {e}")
+
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
     ax.plot(range(len(train)), train, alpha=0.5, label="Train")
@@ -84,7 +127,7 @@ def forecast(df, target):
 
 def main():
     print("=" * 60)
-    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("TIME SERIES: AutoGluon + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast")
     print("=" * 60)
     df, target = load_data()
     forecast(df, target)

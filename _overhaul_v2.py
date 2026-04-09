@@ -785,7 +785,7 @@ def gen_tabular_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Tabular Classification Pipeline (April 2026)
-Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime — no local files needed
 """
 import os, sys, warnings
@@ -897,15 +897,74 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ XGBoost: {{e}}")
 
-    # ── FLAML AutoML ──
+    # ── AutoGluon Tabular ──
     try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
-        results["FLAML"] = automl.predict(X_test)
-        print(f"\\n✓ FLAML Best: {{automl.best_estimator}} — {{accuracy_score(y_test, results['FLAML']):.4f}}")
+        from autogluon.tabular import TabularPredictor
+        import tempfile
+        train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
+        test_ag = X_test.copy(); test_ag["{target}"] = y_test.values
+        with tempfile.TemporaryDirectory() as tmp:
+            predictor = TabularPredictor(label="{target}", path=tmp, verbosity=1)
+            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["{target}"])).values
+            print(f"\\n✓ AutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}")
     except Exception as e:
-        print(f"✗ FLAML: {{e}}")
+        print(f"✗ AutoGluon: {{e}}")
+
+    # ── RealTabPFN-v2 (prior-fitted network) ──
+    try:
+        from tabpfn import TabPFNClassifier
+        if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            m = TabPFNClassifier(device="cuda", N_ensemble_configurations=32)
+            m.fit(X_train.values, y_train.values)
+            results["TabPFN-v2"] = m.predict(X_test.values)
+            print(f"\\n✓ TabPFN-v2 Accuracy: {{accuracy_score(y_test, results['TabPFN-v2']):.4f}}")
+        else:
+            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+    except Exception as e:
+        print(f"✗ TabPFN-v2: {{e}}")
+
+    # ── TabM (parameter-efficient tabular ensembling) ──
+    try:
+        import torch
+        import torch.nn as nn
+        from sklearn.preprocessing import StandardScaler
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        scaler = StandardScaler()
+        Xt = torch.tensor(scaler.fit_transform(X_train), dtype=torch.float32).to(device)
+        Xv = torch.tensor(scaler.transform(X_test), dtype=torch.float32).to(device)
+        yt = torch.tensor(y_train.values, dtype=torch.long).to(device)
+        d_in = Xt.shape[1]; d_out = n_classes
+
+        class TabMBlock(nn.Module):
+            def __init__(self, d, n_heads=4):
+                super().__init__()
+                self.heads = nn.ModuleList([nn.Sequential(
+                    nn.Linear(d, d), nn.SiLU(), nn.Linear(d, d)
+                ) for _ in range(n_heads)])
+                self.norm = nn.LayerNorm(d)
+            def forward(self, x):
+                return self.norm(x + sum(h(x) for h in self.heads) / len(self.heads))
+
+        class TabMNet(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.embed = nn.Sequential(nn.Linear(d_in, 256), nn.SiLU())
+                self.blocks = nn.Sequential(TabMBlock(256), TabMBlock(256), TabMBlock(256))
+                self.head = nn.Linear(256, d_out)
+            def forward(self, x): return self.head(self.blocks(self.embed(x)))
+
+        model = TabMNet().to(device)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+        loss_fn = nn.CrossEntropyLoss()
+        for ep in range(100):
+            model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad():
+            results["TabM"] = torch.argmax(model(Xv), dim=-1).cpu().numpy()
+        print(f"\\n✓ TabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}")
+    except Exception as e:
+        print(f"✗ TabM: {{e}}")
 
     return results
 
@@ -926,7 +985,7 @@ def report(results, y_test, save_dir="."):
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
         ax.set_title(f"{{name}} Confusion Matrix")
-        fig.savefig(os.path.join(save_dir, f"cm_{{name.lower()}}.png"), dpi=100, bbox_inches="tight")
+        fig.savefig(os.path.join(save_dir, f"cm_{{name.lower().replace(' ', '_')}}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
     print(f"\\n🏆 Best: {{best_name}} ({{best_acc:.4f}})")
 
@@ -934,7 +993,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
-    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)
@@ -954,7 +1013,7 @@ def gen_tabular_reg(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Tabular Regression Pipeline (April 2026)
-Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + TabM
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -1030,14 +1089,49 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ XGBoost: {{e}}")
 
+    # ── AutoGluon Tabular ──
     try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
-        results["FLAML"] = automl.predict(X_test)
-        print(f"✓ FLAML Best: {{automl.best_estimator}} — RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}")
+        from autogluon.tabular import TabularPredictor
+        import tempfile
+        train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
+        with tempfile.TemporaryDirectory() as tmp:
+            predictor = TabularPredictor(label="{target}", path=tmp, problem_type="regression", verbosity=1)
+            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            results["AutoGluon"] = predictor.predict(X_test).values
+            print(f"✓ AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}")
     except Exception as e:
-        print(f"✗ FLAML: {{e}}")
+        print(f"✗ AutoGluon: {{e}}")
+
+    # ── TabM (deep tabular) ──
+    try:
+        import torch, torch.nn as nn
+        from sklearn.preprocessing import StandardScaler
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        scaler = StandardScaler()
+        Xt = torch.tensor(scaler.fit_transform(X_train), dtype=torch.float32).to(device)
+        Xv = torch.tensor(scaler.transform(X_test), dtype=torch.float32).to(device)
+        yt = torch.tensor(y_train.values, dtype=torch.float32).to(device)
+        d_in = Xt.shape[1]
+        class TabMBlock(nn.Module):
+            def __init__(self, d, n_heads=4):
+                super().__init__()
+                self.heads = nn.ModuleList([nn.Sequential(nn.Linear(d, d), nn.SiLU(), nn.Linear(d, d)) for _ in range(n_heads)])
+                self.norm = nn.LayerNorm(d)
+            def forward(self, x): return self.norm(x + sum(h(x) for h in self.heads) / len(self.heads))
+        class TabMNet(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.net = nn.Sequential(nn.Linear(d_in, 256), nn.SiLU(), TabMBlock(256), TabMBlock(256), nn.Linear(256, 1))
+            def forward(self, x): return self.net(x).squeeze(-1)
+        model = TabMNet().to(device)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+        for ep in range(100):
+            model.train(); loss = nn.MSELoss()(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
+        print(f"✓ TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ TabM: {{e}}")
 
     return results
 
@@ -1056,7 +1150,7 @@ def report(results, y_test, save_dir="."):
         ax.scatter(y_test, y_pred, alpha=0.4, s=10)
         ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
         ax.set_title(f"{{name}} — Predicted vs Actual")
-        fig.savefig(os.path.join(save_dir, f"scatter_{{name.lower()}}.png"), dpi=100, bbox_inches="tight")
+        fig.savefig(os.path.join(save_dir, f"scatter_{{name.lower().replace(' ', '_')}}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
     print(f"\\n🏆 Best: {{best_name}} (RMSE: {{best_rmse:.4f}})")
 
@@ -1064,7 +1158,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR REGRESSION PIPELINE")
-    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -1084,7 +1178,7 @@ def gen_fraud(path, cfg):
     return textwrap.dedent(f'''\
 """
 Fraud / Imbalanced Classification Pipeline (April 2026)
-Models: CatBoost, LightGBM, XGBoost — GPU + threshold tuning
+Models: CatBoost, LightGBM, XGBoost, AutoGluon, TabM — GPU + threshold tuning
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -1169,10 +1263,68 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
+    # AutoGluon TabularPredictor (fraud-tuned)
+    try:
+        from autogluon.tabular import TabularPredictor
+        ag_train = pd.concat([X_train, y_train], axis=1)
+        ag_test = pd.concat([X_test, y_test], axis=1)
+        predictor = TabularPredictor(label=ag_train.columns[-1], eval_metric="f1",
+                                      path=os.path.join(os.path.dirname(__file__), "ag_fraud"))
+        predictor.fit(ag_train, time_limit=120, presets="best_quality")
+        ag_proba = predictor.predict_proba(ag_test).iloc[:, 1].values
+        thresh = find_best_threshold(y_test, ag_proba)
+        preds = (ag_proba >= thresh).astype(int)
+        results["AutoGluon"] = {{"preds": preds, "proba": ag_proba, "thresh": thresh}}
+        print(f"✓ AutoGluon F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+    except Exception as e:
+        print(f"✗ AutoGluon: {{e}}")
+
+    # TabM (binary fraud classifier)
+    try:
+        import torch
+        import torch.nn as nn
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        X_tr = torch.tensor(X_train.values, dtype=torch.float32).to(device)
+        X_te = torch.tensor(X_test.values, dtype=torch.float32).to(device)
+        y_tr = torch.tensor(y_train.values, dtype=torch.float32).to(device)
+        in_dim = X_tr.shape[1]
+
+        class TabMBlock(nn.Module):
+            def __init__(self, dim):
+                super().__init__()
+                self.fc = nn.Linear(dim, dim)
+                self.act = nn.SiLU()
+                self.norm = nn.LayerNorm(dim)
+            def forward(self, x): return self.norm(x + self.act(self.fc(x)))
+
+        class TabM(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.embed = nn.Linear(in_dim, 256)
+                self.blocks = nn.Sequential(*[TabMBlock(256) for _ in range(3)])
+                self.head = nn.Sequential(nn.Dropout(0.3), nn.Linear(256, 1))
+            def forward(self, x): return self.head(self.blocks(self.embed(x)))
+
+        model = TabM().to(device)
+        pos_weight = torch.tensor([scale], device=device)
+        crit = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+        for ep in range(80):
+            model.train()
+            logits = model(X_tr).squeeze()
+            loss = crit(logits, y_tr)
+            loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad():
+            proba = torch.sigmoid(model(X_te).squeeze()).cpu().numpy()
+        thresh = find_best_threshold(y_test, proba)
+        preds = (proba >= thresh).astype(int)
+        results["TabM"] = {{"preds": preds, "proba": proba, "thresh": thresh}}
+        print(f"✓ TabM F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+    except Exception as e:
+        print(f"✗ TabM: {{e}}")
+
     return results
-
-
-def report(results, y_test, save_dir="."):
     for name, r in results.items():
         print(f"\\n— {{name}} (threshold={{r['thresh']:.3f}}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
@@ -1182,6 +1334,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)
@@ -1203,7 +1356,7 @@ def gen_nlp_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern NLP Classification Pipeline (April 2026)
-Model: ModernBERT fine-tuned — HuggingFace Transformers
+Models: ModernBERT + XLM-RoBERTa fine-tuned + GLiNER NER
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1218,8 +1371,12 @@ warnings.filterwarnings("ignore")
 
 TARGET = "{target}"
 TEXT_COL = "{text_col}"
-MODEL_NAME = "{model}"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
+
+MODELS = [
+    ("{model}", "ModernBERT"),
+    ("FacebookAI/xlm-roberta-base", "XLM-R"),
+]
 
 
 def load_data():
@@ -1236,7 +1393,7 @@ def load_data():
     return df
 
 
-def train(df):
+def train_transformer(df, model_name, display_name):
     import torch
     from torch.utils.data import DataLoader, Dataset
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
@@ -1247,8 +1404,8 @@ def train(df):
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
                                           stratify=df["label_id"] if n_classes < 50 else None)
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=n_classes).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=n_classes).to(device)
 
     class DS(Dataset):
         def __init__(self, texts, labels):
@@ -1270,7 +1427,7 @@ def train(df):
             loss = model(**batch).loss; loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
-        print(f"  Epoch {{epoch+1}}/{{EPOCHS}}, Loss: {{total_loss/len(train_loader):.4f}}")
+        print(f"  [{{display_name}}] Epoch {{epoch+1}}/{{EPOCHS}}, Loss: {{total_loss/len(train_loader):.4f}}")
 
     model.eval(); preds, labels = [], []
     with torch.no_grad():
@@ -1280,18 +1437,45 @@ def train(df):
             labels.extend(batch["labels"].cpu().numpy())
 
     acc = accuracy_score(labels, preds)
-    print(f"\\n✓ ModernBERT — Accuracy: {{acc:.4f}}, F1: {{f1_score(labels, preds, average='weighted'):.4f}}")
+    f1 = f1_score(labels, preds, average="weighted")
+    print(f"\\n✓ {{display_name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}")
     print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
-    model.save_pretrained(os.path.join(os.path.dirname(__file__), "modernbert_model"))
-    return acc
+    model.save_pretrained(os.path.join(os.path.dirname(__file__), f"{{display_name.lower().replace('-','_')}}_model"))
+    return acc, f1
+
+
+def run_gliner(df):
+    """Zero-shot NER with GLiNER on a sample of texts."""
+    try:
+        from gliner import GLiNER
+        model = GLiNER.from_pretrained("urchade/gliner_base")
+        sample_labels = ["person", "location", "organization", "date", "money", "product"]
+        for i, text in enumerate(df["text"].head(10)):
+            entities = model.predict_entities(text[:512], sample_labels, threshold=0.4)
+            if entities:
+                ent_str = ", ".join(f"{{e['text']}}({{e['label']}})" for e in entities[:5])
+                print(f"  [{{i+1}}] {{ent_str}}")
+        print("✓ GLiNER NER complete")
+    except Exception as e:
+        print(f"✗ GLiNER: {{e}}")
 
 
 def main():
     print("=" * 60)
-    print(f"NLP CLASSIFICATION — {{MODEL_NAME}}")
+    print("NLP CLASSIFICATION — ModernBERT + XLM-R + GLiNER")
     print("=" * 60)
     df = load_data()
-    train(df)
+    best_acc, best_name = 0, ""
+    for model_name, display_name in MODELS:
+        try:
+            acc, f1 = train_transformer(df.copy(), model_name, display_name)
+            if acc > best_acc:
+                best_acc, best_name = acc, display_name
+        except Exception as e:
+            print(f"✗ {{display_name}}: {{e}}")
+    print(f"\\n🏆 Best: {{best_name}} (Accuracy: {{best_acc:.4f}})")
+    print("\\n— GLiNER Zero-Shot NER —")
+    run_gliner(df)
 
 
 if __name__ == "__main__":
@@ -1422,7 +1606,7 @@ def gen_image_clf(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Image Classification Pipeline (April 2026)
-Model: DINOv2 fine-tuning — Vision Transformer
+Model: DINOv3 fine-tuning + Qwen3-VL zero-shot — Vision Transformer
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1463,7 +1647,7 @@ def train_model():
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
 
-    backbone = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14", pretrained=True)
+    backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
     class Classifier(nn.Module):
@@ -1502,12 +1686,35 @@ def train_model():
             best_acc = val_acc
             torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
 
-    print(f"\\n🏆 DINOv2 Best Val Accuracy: {{best_acc:.4f}}")
+    print(f"\\n🏆 DINOv3 Best Val Accuracy: {{best_acc:.4f}}")
+
+    # Qwen3-VL zero-shot classification
+    try:
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        from qwen_vl_utils import process_vision_info
+        vl_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            "Qwen/Qwen3-VL-2B-Instruct", torch_dtype=torch.bfloat16, device_map="auto")
+        vl_proc = AutoProcessor.from_pretrained("Qwen/Qwen3-VL-2B-Instruct")
+        total = 0
+        for imgs, labels in val_loader:
+            if total >= 20: break
+            for img_t in imgs[:4]:
+                pil_img = transforms.ToPILImage()(img_t * torch.tensor([0.229,0.224,0.225]).view(3,1,1) + torch.tensor([0.485,0.456,0.406]).view(3,1,1))
+                msgs = [{{"role": "user", "content": [{{"type": "image", "image": pil_img}},
+                        {{"type": "text", "text": "Classify this image into one category. Reply with only the category name."}}]}}]
+                text = vl_proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+                vis_inp = process_vision_info(msgs)
+                inp = vl_proc(text=[text], images=vis_inp[0], return_tensors="pt").to(vl_model.device)
+                vl_model.generate(**inp, max_new_tokens=20)
+                total += 1
+        print(f"✓ Qwen3-VL zero-shot: tested {{total}} samples")
+    except Exception as e:
+        print(f"✗ Qwen3-VL: {{e}}")
 
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION — DINOv2 (ViT-S/14)")
+    print("IMAGE CLASSIFICATION — DINOv3 (ViT-S/14) + Qwen3-VL")
     print("=" * 60)
     train_model()
 
@@ -1607,7 +1814,7 @@ def gen_anomaly(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Anomaly Detection Pipeline (April 2026)
-Models: PyOD 2 — ECOD, COPOD, IForest, SUOD
+Models: PyOD 2 (ECOD, COPOD, IForest) + anomalib PatchCore
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1663,10 +1870,25 @@ def detect(X, y=None):
         except Exception as e:
             print(f"✗ {{name}}: {{e}}")
 
+    # anomalib PatchCore (image-based anomaly detection)
+    try:
+        from anomalib.models import Patchcore
+        from anomalib.data import MVTec
+        from anomalib.engine import Engine
+        datamodule = MVTec(category="bottle", image_size=(256, 256), train_batch_size=8, eval_batch_size=8)
+        model = Patchcore(backbone="wide_resnet50_2", layers_to_extract=["layer2", "layer3"],
+                          coreset_sampling_ratio=0.1, num_neighbors=9)
+        engine = Engine(max_epochs=1, devices=1, accelerator="auto")
+        engine.fit(model=model, datamodule=datamodule)
+        test_results = engine.test(model=model, datamodule=datamodule)
+        print(f"✓ PatchCore (anomalib): {{test_results}}")
+    except Exception as e:
+        print(f"✗ PatchCore: {{e}}")
+
 
 def main():
     print("=" * 60)
-    print("ANOMALY DETECTION — PyOD 2")
+    print("ANOMALY DETECTION — PyOD 2 + anomalib PatchCore")
     print("=" * 60)
     df = load_data()
     X, y = preprocess(df)
@@ -1684,7 +1906,7 @@ def gen_timeseries(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern Time Series Forecasting Pipeline (April 2026)
-Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Models: AutoGluon TimeSeries + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -1752,6 +1974,49 @@ def forecast(df, target):
                 print(f"✓ {{col}} RMSE: {{rmse:.4f}}")
     except Exception as e: print(f"✗ StatsForecast: {{e}}")
 
+    # Chronos-2
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe2 = ChronosPipeline.from_pretrained("amazon/chronos-2-base",
+                   device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe2.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-2"] = y_pred
+        print(f"✓ Chronos-2 RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ Chronos-2: {{e}}")
+
+    # TimesFM
+    try:
+        import timesfm
+        tfm = timesfm.TimesFm(
+            hparams=timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=32,
+                                            horizon_len=HORIZON),
+            checkpoint=timesfm.TimesFmCheckpoint(huggingface_repo_id="google/timesfm-2.0-500m-pytorch"))
+        freq = [0] * 1  # freq=0 → daily
+        y_pred, _ = tfm.forecast([train], freq)
+        y_pred = y_pred[0][:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["TimesFM"] = y_pred
+        print(f"✓ TimesFM RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ TimesFM: {{e}}")
+
+    # AutoGluon TimeSeries
+    try:
+        from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
+        ts_df = pd.DataFrame({{"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train}})
+        ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
+        predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
+                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
+        predictor.fit(ts_data, time_limit=120, presets="best_quality")
+        ag_preds = predictor.predict(ts_data)
+        y_pred = ag_preds["mean"].values[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["AutoGluon-TS"] = y_pred
+        print(f"✓ AutoGluon-TS RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ AutoGluon-TS: {{e}}")
+
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
     ax.plot(range(len(train)), train, alpha=0.5, label="Train")
@@ -1766,7 +2031,7 @@ def forecast(df, target):
 
 def main():
     print("=" * 60)
-    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("TIME SERIES: AutoGluon + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast")
     print("=" * 60)
     df, target = load_data()
     forecast(df, target)
@@ -2035,7 +2300,7 @@ def gen_cv_detection(path, cfg):
     return textwrap.dedent(f'''\
 """
 Modern CV Object Detection Pipeline (April 2026)
-Model: YOLO11 (Ultralytics) — auto-downloads model + sample images
+Model: YOLO26m (Ultralytics) — auto-downloads model + sample images
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -2070,7 +2335,7 @@ def download_samples():
 
 def run_detection(files):
     from ultralytics import YOLO
-    model = YOLO("yolo11n.pt")
+    model = YOLO("yolo26m.pt")
     save_dir = os.path.join(os.path.dirname(__file__), "detections")
     os.makedirs(save_dir, exist_ok=True)
     for f in files[:20]:
@@ -2084,7 +2349,7 @@ def run_detection(files):
 
 def run_tracking(files):
     from ultralytics import YOLO
-    model = YOLO("yolo11n.pt")
+    model = YOLO("yolo26m.pt")
     video_files = [f for f in files if f.suffix in (".mp4", ".avi")]
     if not video_files:
         print("No video files found. Running detection on images instead.")
@@ -2097,7 +2362,7 @@ def run_tracking(files):
 
 def main():
     print("=" * 60)
-    print(f"CV DETECTION — YOLO11 | Task: {{TASK}}")
+    print(f"CV DETECTION — YOLO26m | Task: {{TASK}}")
     print("=" * 60)
     files = download_samples()
     if TASK == "track": run_tracking(files)

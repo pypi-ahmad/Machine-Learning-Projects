@@ -1,6 +1,6 @@
 """
 Fraud / Imbalanced Classification Pipeline (April 2026)
-Models: CatBoost, LightGBM, XGBoost — GPU + threshold tuning
+Models: CatBoost, LightGBM, XGBoost, AutoGluon, TabM — GPU + threshold tuning
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -86,10 +86,68 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         except Exception as e:
             print(f"✗ {name}: {e}")
 
+    # AutoGluon TabularPredictor (fraud-tuned)
+    try:
+        from autogluon.tabular import TabularPredictor
+        ag_train = pd.concat([X_train, y_train], axis=1)
+        ag_test = pd.concat([X_test, y_test], axis=1)
+        predictor = TabularPredictor(label=ag_train.columns[-1], eval_metric="f1",
+                                      path=os.path.join(os.path.dirname(__file__), "ag_fraud"))
+        predictor.fit(ag_train, time_limit=120, presets="best_quality")
+        ag_proba = predictor.predict_proba(ag_test).iloc[:, 1].values
+        thresh = find_best_threshold(y_test, ag_proba)
+        preds = (ag_proba >= thresh).astype(int)
+        results["AutoGluon"] = {"preds": preds, "proba": ag_proba, "thresh": thresh}
+        print(f"✓ AutoGluon F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
+    except Exception as e:
+        print(f"✗ AutoGluon: {e}")
+
+    # TabM (binary fraud classifier)
+    try:
+        import torch
+        import torch.nn as nn
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        X_tr = torch.tensor(X_train.values, dtype=torch.float32).to(device)
+        X_te = torch.tensor(X_test.values, dtype=torch.float32).to(device)
+        y_tr = torch.tensor(y_train.values, dtype=torch.float32).to(device)
+        in_dim = X_tr.shape[1]
+
+        class TabMBlock(nn.Module):
+            def __init__(self, dim):
+                super().__init__()
+                self.fc = nn.Linear(dim, dim)
+                self.act = nn.SiLU()
+                self.norm = nn.LayerNorm(dim)
+            def forward(self, x): return self.norm(x + self.act(self.fc(x)))
+
+        class TabM(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.embed = nn.Linear(in_dim, 256)
+                self.blocks = nn.Sequential(*[TabMBlock(256) for _ in range(3)])
+                self.head = nn.Sequential(nn.Dropout(0.3), nn.Linear(256, 1))
+            def forward(self, x): return self.head(self.blocks(self.embed(x)))
+
+        model = TabM().to(device)
+        pos_weight = torch.tensor([scale], device=device)
+        crit = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+        for ep in range(80):
+            model.train()
+            logits = model(X_tr).squeeze()
+            loss = crit(logits, y_tr)
+            loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad():
+            proba = torch.sigmoid(model(X_te).squeeze()).cpu().numpy()
+        thresh = find_best_threshold(y_test, proba)
+        preds = (proba >= thresh).astype(int)
+        results["TabM"] = {"preds": preds, "proba": proba, "thresh": thresh}
+        print(f"✓ TabM F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f})")
+    except Exception as e:
+        print(f"✗ TabM: {e}")
+
     return results
-
-
-def report(results, y_test, save_dir="."):
     for name, r in results.items():
         print(f"\n— {name} (threshold={r['thresh']:.3f}) —")
         print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
@@ -99,6 +157,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)

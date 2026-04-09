@@ -1,6 +1,6 @@
 """
 Modern Anomaly Detection Pipeline (April 2026)
-Models: PyOD 2 — ECOD, COPOD, IForest, SUOD
+Models: PyOD 2 (ECOD, COPOD, IForest) + anomalib PatchCore
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -57,10 +57,25 @@ def detect(X, y=None):
         except Exception as e:
             print(f"✗ {name}: {e}")
 
+    # anomalib PatchCore (image-based anomaly detection)
+    try:
+        from anomalib.models import Patchcore
+        from anomalib.data import MVTec
+        from anomalib.engine import Engine
+        datamodule = MVTec(category="bottle", image_size=(256, 256), train_batch_size=8, eval_batch_size=8)
+        model = Patchcore(backbone="wide_resnet50_2", layers_to_extract=["layer2", "layer3"],
+                          coreset_sampling_ratio=0.1, num_neighbors=9)
+        engine = Engine(max_epochs=1, devices=1, accelerator="auto")
+        engine.fit(model=model, datamodule=datamodule)
+        test_results = engine.test(model=model, datamodule=datamodule)
+        print(f"✓ PatchCore (anomalib): {test_results}")
+    except Exception as e:
+        print(f"✗ PatchCore: {e}")
+
 
 def main():
     print("=" * 60)
-    print("ANOMALY DETECTION — PyOD 2")
+    print("ANOMALY DETECTION — PyOD 2 + anomalib PatchCore")
     print("=" * 60)
     df = load_data()
     X, y = preprocess(df)

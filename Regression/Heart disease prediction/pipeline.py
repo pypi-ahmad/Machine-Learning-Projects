@@ -1,6 +1,6 @@
 """
 Modern Tabular Regression Pipeline (April 2026)
-Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + TabM
 Data: Auto-downloaded at runtime
 """
 import os, sys, warnings
@@ -77,14 +77,49 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ XGBoost: {e}")
 
+    # ── AutoGluon Tabular ──
     try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
-        results["FLAML"] = automl.predict(X_test)
-        print(f"✓ FLAML Best: {automl.best_estimator} — RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}")
+        from autogluon.tabular import TabularPredictor
+        import tempfile
+        train_ag = X_train.copy(); train_ag["target"] = y_train.values
+        with tempfile.TemporaryDirectory() as tmp:
+            predictor = TabularPredictor(label="target", path=tmp, problem_type="regression", verbosity=1)
+            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            results["AutoGluon"] = predictor.predict(X_test).values
+            print(f"✓ AutoGluon RMSE: {mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}")
     except Exception as e:
-        print(f"✗ FLAML: {e}")
+        print(f"✗ AutoGluon: {e}")
+
+    # ── TabM (deep tabular) ──
+    try:
+        import torch, torch.nn as nn
+        from sklearn.preprocessing import StandardScaler
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        scaler = StandardScaler()
+        Xt = torch.tensor(scaler.fit_transform(X_train), dtype=torch.float32).to(device)
+        Xv = torch.tensor(scaler.transform(X_test), dtype=torch.float32).to(device)
+        yt = torch.tensor(y_train.values, dtype=torch.float32).to(device)
+        d_in = Xt.shape[1]
+        class TabMBlock(nn.Module):
+            def __init__(self, d, n_heads=4):
+                super().__init__()
+                self.heads = nn.ModuleList([nn.Sequential(nn.Linear(d, d), nn.SiLU(), nn.Linear(d, d)) for _ in range(n_heads)])
+                self.norm = nn.LayerNorm(d)
+            def forward(self, x): return self.norm(x + sum(h(x) for h in self.heads) / len(self.heads))
+        class TabMNet(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.net = nn.Sequential(nn.Linear(d_in, 256), nn.SiLU(), TabMBlock(256), TabMBlock(256), nn.Linear(256, 1))
+            def forward(self, x): return self.net(x).squeeze(-1)
+        model = TabMNet().to(device)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+        for ep in range(100):
+            model.train(); loss = nn.MSELoss()(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
+        print(f"✓ TabM RMSE: {mean_squared_error(y_test, results['TabM'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ TabM: {e}")
 
     return results
 
@@ -103,7 +138,7 @@ def report(results, y_test, save_dir="."):
         ax.scatter(y_test, y_pred, alpha=0.4, s=10)
         ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
         ax.set_title(f"{name} — Predicted vs Actual")
-        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower().replace(' ', '_')}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
     print(f"\n🏆 Best: {best_name} (RMSE: {best_rmse:.4f})")
 
@@ -111,7 +146,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR REGRESSION PIPELINE")
-    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test = preprocess(df)

@@ -1,6 +1,6 @@
 """
 Modern NLP Classification Pipeline (April 2026)
-Model: ModernBERT fine-tuned — HuggingFace Transformers
+Models: ModernBERT + XLM-RoBERTa fine-tuned + GLiNER NER
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -15,8 +15,12 @@ warnings.filterwarnings("ignore")
 
 TARGET = "label"
 TEXT_COL = "text"
-MODEL_NAME = "answerdotai/ModernBERT-base"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
+
+MODELS = [
+    ("answerdotai/ModernBERT-base", "ModernBERT"),
+    ("FacebookAI/xlm-roberta-base", "XLM-R"),
+]
 
 
 def load_data():
@@ -34,7 +38,7 @@ def load_data():
     return df
 
 
-def train(df):
+def train_transformer(df, model_name, display_name):
     import torch
     from torch.utils.data import DataLoader, Dataset
     from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
@@ -45,8 +49,8 @@ def train(df):
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
                                           stratify=df["label_id"] if n_classes < 50 else None)
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=n_classes).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=n_classes).to(device)
 
     class DS(Dataset):
         def __init__(self, texts, labels):
@@ -68,7 +72,7 @@ def train(df):
             loss = model(**batch).loss; loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
-        print(f"  Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(train_loader):.4f}")
+        print(f"  [{display_name}] Epoch {epoch+1}/{EPOCHS}, Loss: {total_loss/len(train_loader):.4f}")
 
     model.eval(); preds, labels = [], []
     with torch.no_grad():
@@ -78,18 +82,45 @@ def train(df):
             labels.extend(batch["labels"].cpu().numpy())
 
     acc = accuracy_score(labels, preds)
-    print(f"\n✓ ModernBERT — Accuracy: {acc:.4f}, F1: {f1_score(labels, preds, average='weighted'):.4f}")
+    f1 = f1_score(labels, preds, average="weighted")
+    print(f"\n✓ {display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}")
     print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
-    model.save_pretrained(os.path.join(os.path.dirname(__file__), "modernbert_model"))
-    return acc
+    model.save_pretrained(os.path.join(os.path.dirname(__file__), f"{display_name.lower().replace('-','_')}_model"))
+    return acc, f1
+
+
+def run_gliner(df):
+    """Zero-shot NER with GLiNER on a sample of texts."""
+    try:
+        from gliner import GLiNER
+        model = GLiNER.from_pretrained("urchade/gliner_base")
+        sample_labels = ["person", "location", "organization", "date", "money", "product"]
+        for i, text in enumerate(df["text"].head(10)):
+            entities = model.predict_entities(text[:512], sample_labels, threshold=0.4)
+            if entities:
+                ent_str = ", ".join(f"{e['text']}({e['label']})" for e in entities[:5])
+                print(f"  [{i+1}] {ent_str}")
+        print("✓ GLiNER NER complete")
+    except Exception as e:
+        print(f"✗ GLiNER: {e}")
 
 
 def main():
     print("=" * 60)
-    print(f"NLP CLASSIFICATION — {MODEL_NAME}")
+    print("NLP CLASSIFICATION — ModernBERT + XLM-R + GLiNER")
     print("=" * 60)
     df = load_data()
-    train(df)
+    best_acc, best_name = 0, ""
+    for model_name, display_name in MODELS:
+        try:
+            acc, f1 = train_transformer(df.copy(), model_name, display_name)
+            if acc > best_acc:
+                best_acc, best_name = acc, display_name
+        except Exception as e:
+            print(f"✗ {display_name}: {e}")
+    print(f"\n🏆 Best: {best_name} (Accuracy: {best_acc:.4f})")
+    print("\n— GLiNER Zero-Shot NER —")
+    run_gliner(df)
 
 
 if __name__ == "__main__":

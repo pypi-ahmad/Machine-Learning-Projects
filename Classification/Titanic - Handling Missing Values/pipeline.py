@@ -1,6 +1,6 @@
 """
 Modern Tabular Classification Pipeline (April 2026)
-Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Models: CatBoost/LightGBM/XGBoost (GPU) + AutoGluon + RealTabPFN-v2 + TabM
 Data: Auto-downloaded at runtime — no local files needed
 """
 import os, sys, warnings
@@ -113,15 +113,74 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     except Exception as e:
         print(f"✗ XGBoost: {e}")
 
-    # ── FLAML AutoML ──
+    # ── AutoGluon Tabular ──
     try:
-        from flaml import AutoML
-        automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
-        results["FLAML"] = automl.predict(X_test)
-        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+        from autogluon.tabular import TabularPredictor
+        import tempfile
+        train_ag = X_train.copy(); train_ag["survived"] = y_train.values
+        test_ag = X_test.copy(); test_ag["survived"] = y_test.values
+        with tempfile.TemporaryDirectory() as tmp:
+            predictor = TabularPredictor(label="survived", path=tmp, verbosity=1)
+            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["survived"])).values
+            print(f"\n✓ AutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}")
     except Exception as e:
-        print(f"✗ FLAML: {e}")
+        print(f"✗ AutoGluon: {e}")
+
+    # ── RealTabPFN-v2 (prior-fitted network) ──
+    try:
+        from tabpfn import TabPFNClassifier
+        if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
+            m = TabPFNClassifier(device="cuda", N_ensemble_configurations=32)
+            m.fit(X_train.values, y_train.values)
+            results["TabPFN-v2"] = m.predict(X_test.values)
+            print(f"\n✓ TabPFN-v2 Accuracy: {accuracy_score(y_test, results['TabPFN-v2']):.4f}")
+        else:
+            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+    except Exception as e:
+        print(f"✗ TabPFN-v2: {e}")
+
+    # ── TabM (parameter-efficient tabular ensembling) ──
+    try:
+        import torch
+        import torch.nn as nn
+        from sklearn.preprocessing import StandardScaler
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        scaler = StandardScaler()
+        Xt = torch.tensor(scaler.fit_transform(X_train), dtype=torch.float32).to(device)
+        Xv = torch.tensor(scaler.transform(X_test), dtype=torch.float32).to(device)
+        yt = torch.tensor(y_train.values, dtype=torch.long).to(device)
+        d_in = Xt.shape[1]; d_out = n_classes
+
+        class TabMBlock(nn.Module):
+            def __init__(self, d, n_heads=4):
+                super().__init__()
+                self.heads = nn.ModuleList([nn.Sequential(
+                    nn.Linear(d, d), nn.SiLU(), nn.Linear(d, d)
+                ) for _ in range(n_heads)])
+                self.norm = nn.LayerNorm(d)
+            def forward(self, x):
+                return self.norm(x + sum(h(x) for h in self.heads) / len(self.heads))
+
+        class TabMNet(nn.Module):
+            def __init__(self):
+                super().__init__()
+                self.embed = nn.Sequential(nn.Linear(d_in, 256), nn.SiLU())
+                self.blocks = nn.Sequential(TabMBlock(256), TabMBlock(256), TabMBlock(256))
+                self.head = nn.Linear(256, d_out)
+            def forward(self, x): return self.head(self.blocks(self.embed(x)))
+
+        model = TabMNet().to(device)
+        opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
+        loss_fn = nn.CrossEntropyLoss()
+        for ep in range(100):
+            model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
+        model.eval()
+        with torch.no_grad():
+            results["TabM"] = torch.argmax(model(Xv), dim=-1).cpu().numpy()
+        print(f"\n✓ TabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}")
+    except Exception as e:
+        print(f"✗ TabM: {e}")
 
     return results
 
@@ -142,7 +201,7 @@ def report(results, y_test, save_dir="."):
         fig, ax = plt.subplots(figsize=(6, 5))
         sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
         ax.set_title(f"{name} Confusion Matrix")
-        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower().replace(' ', '_')}.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
     print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
 
@@ -150,7 +209,7 @@ def report(results, y_test, save_dir="."):
 def main():
     print("=" * 60)
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
-    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM")
     print("=" * 60)
     df = load_data()
     X_train, X_test, y_train, y_test, le = preprocess(df)

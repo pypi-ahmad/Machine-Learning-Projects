@@ -1,6 +1,6 @@
 """
 Modern CV Object Detection Pipeline (April 2026)
-Model: YOLO11 (Ultralytics) — auto-downloads model + sample images
+Model: YOLO26m (Ultralytics) — auto-downloads model + sample images
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -35,7 +35,7 @@ def download_samples():
 
 def run_detection(files):
     from ultralytics import YOLO
-    model = YOLO("yolo11n.pt")
+    model = YOLO("yolo26m.pt")
     save_dir = os.path.join(os.path.dirname(__file__), "detections")
     os.makedirs(save_dir, exist_ok=True)
     for f in files[:20]:
@@ -49,7 +49,7 @@ def run_detection(files):
 
 def run_tracking(files):
     from ultralytics import YOLO
-    model = YOLO("yolo11n.pt")
+    model = YOLO("yolo26m.pt")
     video_files = [f for f in files if f.suffix in (".mp4", ".avi")]
     if not video_files:
         print("No video files found. Running detection on images instead.")
@@ -62,7 +62,7 @@ def run_tracking(files):
 
 def main():
     print("=" * 60)
-    print(f"CV DETECTION — YOLO11 | Task: {TASK}")
+    print(f"CV DETECTION — YOLO26m | Task: {TASK}")
     print("=" * 60)
     files = download_samples()
     if TASK == "track": run_tracking(files)
