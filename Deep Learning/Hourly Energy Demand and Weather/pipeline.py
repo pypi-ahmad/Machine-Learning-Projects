@@ -1,6 +1,6 @@
 """
 Modern Time Series Forecasting Pipeline (April 2026)
-Models: AutoGluon TimeSeries + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast
+Models: AutoGluon TimeSeries + Chronos-Bolt + Chronos-2 + TimesFM + GBDT lag-feature baselines
 Data: Auto-downloaded at runtime
 """
 import os, warnings
@@ -41,7 +41,26 @@ def forecast(df, target):
     n = len(series); split = n - HORIZON
     train, test = series[:split], series[split:]
 
-    # Chronos-Bolt
+    # ═══ PRIMARY: AutoGluon TimeSeries ═══
+    try:
+        from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
+        ts_df = pd.DataFrame({"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train})
+        ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
+        predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
+                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
+        predictor.fit(ts_data, time_limit=180, presets="best_quality")
+        ag_preds = predictor.predict(ts_data)
+        y_pred = ag_preds["mean"].values[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["AutoGluon-TS"] = y_pred
+        print(f"✓ AutoGluon-TS RMSE: {rmse:.4f}")
+        lb = predictor.leaderboard(ts_data)
+        print(f"  AutoGluon leaderboard:\n{lb.head().to_string()}")
+    except Exception as e: print(f"✗ AutoGluon-TS: {e}")
+
+    # ═══ FOUNDATION MODELS ═══
+
+    # Chronos-Bolt (fast zero-shot)
     try:
         import torch
         from chronos import ChronosPipeline
@@ -54,22 +73,7 @@ def forecast(df, target):
         print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
     except Exception as e: print(f"✗ Chronos-Bolt: {e}")
 
-    # StatsForecast
-    try:
-        from statsforecast import StatsForecast
-        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
-        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
-        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
-        preds = sf.forecast(h=HORIZON, df=sf_df)
-        for col in preds.columns:
-            if col not in ("unique_id","ds"):
-                y_pred = preds[col].values[:len(test)]
-                rmse = mean_squared_error(test, y_pred, squared=False)
-                results[col] = y_pred
-                print(f"✓ {col} RMSE: {rmse:.4f}")
-    except Exception as e: print(f"✗ StatsForecast: {e}")
-
-    # Chronos-2
+    # Chronos-2 (universal forecasting)
     try:
         import torch
         from chronos import ChronosPipeline
@@ -82,7 +86,7 @@ def forecast(df, target):
         print(f"✓ Chronos-2 RMSE: {rmse:.4f}")
     except Exception as e: print(f"✗ Chronos-2: {e}")
 
-    # TimesFM
+    # TimesFM (Google foundation model)
     try:
         import timesfm
         tfm = timesfm.TimesFm(
@@ -97,53 +101,45 @@ def forecast(df, target):
         print(f"✓ TimesFM RMSE: {rmse:.4f}")
     except Exception as e: print(f"✗ TimesFM: {e}")
 
-    # AutoGluon TimeSeries
-    try:
-        from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
-        ts_df = pd.DataFrame({"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train})
-        ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
-        predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
-                                         path=os.path.join(os.path.dirname(__file__), "ag_ts"))
-        predictor.fit(ts_data, time_limit=120, presets="best_quality")
-        ag_preds = predictor.predict(ts_data)
-        y_pred = ag_preds["mean"].values[:len(test)]
-        rmse = mean_squared_error(test, y_pred, squared=False)
-        results["AutoGluon-TS"] = y_pred
-        print(f"✓ AutoGluon-TS RMSE: {rmse:.4f}")
-    except Exception as e: print(f"✗ AutoGluon-TS: {e}")
+    # ═══ TABULAR LAG-FEATURE BASELINES (GBDT) ═══
+    lags = [1, 2, 3, 5, 7, 14, 21]
+    lag_df = pd.DataFrame({"y": series})
+    for lg in lags:
+        lag_df[f"lag_{lg}"] = lag_df["y"].shift(lg)
+    lag_df["rolling_7"] = lag_df["y"].rolling(7).mean()
+    lag_df["rolling_14"] = lag_df["y"].rolling(14).mean()
+    lag_df["rolling_28"] = lag_df["y"].rolling(28).mean()
+    lag_df["diff_1"] = lag_df["y"].diff(1)
+    lag_df["diff_7"] = lag_df["y"].diff(7)
+    lag_df = lag_df.dropna()
+    offset = max(lags) + 28  # account for rolling window
+    lag_train = lag_df.iloc[:split - offset]
+    lag_test = lag_df.iloc[split - offset:split - offset + HORIZON]
 
-    # ── Baseline: lag-feature tabular reframing with FLAML ──
-    try:
-        from flaml import AutoML
-        lags = [1, 2, 3, 5, 7, 14, 21]
-        lag_df = pd.DataFrame({"y": series})
-        for lg in lags:
-            lag_df[f"lag_{lg}"] = lag_df["y"].shift(lg)
-        lag_df["rolling_7"] = lag_df["y"].rolling(7).mean()
-        lag_df["rolling_14"] = lag_df["y"].rolling(14).mean()
-        lag_df = lag_df.dropna()
-        lag_train = lag_df.iloc[:split - max(lags)]
-        lag_test = lag_df.iloc[split - max(lags):split - max(lags) + HORIZON]
-        if len(lag_test) >= HORIZON:
-            X_lag_tr = lag_train.drop(columns=["y"]); y_lag_tr = lag_train["y"]
-            X_lag_te = lag_test.drop(columns=["y"]); y_lag_te = lag_test["y"]
-            automl = AutoML()
-            automl.fit(X_lag_tr, y_lag_tr, task="regression", time_budget=60, verbose=0)
-            y_pred = automl.predict(X_lag_te)[:len(test)]
-            rmse = mean_squared_error(y_lag_te.values[:len(y_pred)], y_pred, squared=False)
-            results["FLAML-Lag"] = y_pred
-            print(f"✓ FLAML-Lag ({automl.best_estimator}) RMSE: {rmse:.4f}")
-    except Exception as e: print(f"✗ FLAML-Lag: {e}")
+    if len(lag_test) >= HORIZON:
+        X_lag_tr = lag_train.drop(columns=["y"]); y_lag_tr = lag_train["y"]
+        X_lag_te = lag_test.drop(columns=["y"]); y_lag_te = lag_test["y"]
 
-    # ── Baseline: LazyPredict on lag features ──
-    try:
-        from lazypredict.Supervised import LazyRegressor
-        if "X_lag_tr" in dir() and len(X_lag_tr) > 0:
-            lazy = LazyRegressor(verbose=0, ignore_warnings=True)
-            lazy_models, _ = lazy.fit(X_lag_tr, X_lag_te, y_lag_tr, y_lag_te)
-            print(f"\n✓ LazyPredict (lag-tabular) — Top 5 regressors:")
-            print(lazy_models.head().to_string())
-    except Exception as e: print(f"✗ LazyPredict-Lag: {e}")
+        for name, builder in [
+            ("LightGBM-Lag", lambda: __import__("lightgbm").LGBMRegressor(
+                n_estimators=500, learning_rate=0.05, max_depth=6,
+                device="gpu", verbose=-1, n_jobs=-1)),
+            ("CatBoost-Lag", lambda: __import__("catboost").CatBoostRegressor(
+                iterations=500, lr=0.05, depth=6, task_type="GPU",
+                devices="0", verbose=0)),
+            ("XGBoost-Lag", lambda: __import__("xgboost").XGBRegressor(
+                n_estimators=500, learning_rate=0.05, max_depth=6,
+                device="cuda", tree_method="hist", verbosity=0, n_jobs=-1)),
+        ]:
+            try:
+                m = builder()
+                m.fit(X_lag_tr, y_lag_tr)
+                y_pred = m.predict(X_lag_te)[:len(test)]
+                rmse = mean_squared_error(y_lag_te.values[:len(y_pred)], y_pred, squared=False)
+                results[name] = y_pred
+                print(f"✓ {name} RMSE: {rmse:.4f}")
+            except Exception as e:
+                print(f"✗ {name}: {e}")
 
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
@@ -159,7 +155,7 @@ def forecast(df, target):
 
 def main():
     print("=" * 60)
-    print("TIME SERIES: AutoGluon + Chronos-Bolt + Chronos-2 + TimesFM + StatsForecast + FLAML/LazyPredict")
+    print("TIME SERIES: AutoGluon-TS + Chronos-Bolt + Chronos-2 + TimesFM + LightGBM/CatBoost/XGBoost Lag")
     print("=" * 60)
     df, target = load_data()
     forecast(df, target)
