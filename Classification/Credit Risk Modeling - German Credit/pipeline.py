@@ -1,182 +1,164 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Credit risk modeling using the German Credit Dataset
-
-Auto-generated from: predicting_german_credit_default.ipynb
-Project: Credit risk modeling using the German Credit Dataset
-Category: Classification | Task: classification
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import matplotlib.pyplot as plt
-import numpy as np ; np.random.seed(sum(map(ord, "aesthetics")))
+import os, sys, warnings
+import numpy as np
 import pandas as pd
-from sklearn.datasets import make_classification
-from sklearn.model_selection import learning_curve
-from sklearn.metrics import classification_report,confusion_matrix, roc_curve, roc_auc_score, auc, accuracy_score
-from sklearn.model_selection import ShuffleSplit,train_test_split, cross_val_score, GridSearchCV
-from sklearn.preprocessing import OneHotEncoder, LabelEncoder, label_binarize, StandardScaler, MinMaxScaler
-import seaborn
-from pprint import pprint
-from lazypredict.Supervised import LazyClassifier
-from pycaret.classification import *
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-# Function for evaluation reports
-def get_eval1(clf, X,y):
-    # Cross Validation to test and anticipate overfitting problem
-    scores1 = cross_val_score(clf, X, y, cv=2, scoring='accuracy')
-    scores2 = cross_val_score(clf, X, y, cv=2, scoring='precision')
-    scores3 = cross_val_score(clf, X, y, cv=2, scoring='recall')
-    scores4 = cross_val_score(clf, X, y, cv=2, scoring='roc_auc')
-    
-    # The mean score and standard deviation of the score estimate
-    print("Cross Validation Accuracy: %0.2f (+/- %0.2f)" % (scores1.mean(), scores1.std()))
-    print("Cross Validation Precision: %0.2f (+/- %0.2f)" % (scores2.mean(), scores2.std()))
-    print("Cross Validation Recall: %0.2f (+/- %0.2f)" % (scores3.mean(), scores3.std()))
-    print("Cross Validation roc_auc: %0.2f (+/- %0.2f)" % (scores4.mean(), scores4.std()))
-    
-    return 
+warnings.filterwarnings("ignore")
 
-def get_eval2(clf, X_train, y_train,X_test, y_test):
-    # Cross Validation to test and anticipate overfitting problem
-    scores1 = cross_val_score(clf, X_test, y_test, cv=2, scoring='accuracy')
-    scores2 = cross_val_score(clf, X_test, y_test, cv=2, scoring='precision')
-    scores3 = cross_val_score(clf, X_test, y_test, cv=2, scoring='recall')
-    scores4 = cross_val_score(clf, X_test, y_test, cv=2, scoring='roc_auc')
-    
-    # The mean score and standard deviation of the score estimate
-    print("Cross Validation Accuracy: %0.2f (+/- %0.2f)" % (scores1.mean(), scores1.std()))
-    print("Cross Validation Precision: %0.2f (+/- %0.2f)" % (scores2.mean(), scores2.std()))
-    print("Cross Validation Recall: %0.2f (+/- %0.2f)" % (scores3.mean(), scores3.std()))
-    print("Cross Validation roc_auc: %0.2f (+/- %0.2f)" % (scores4.mean(), scores4.std()))
-    
-    return  
-  
-# Function to get roc curve
-def get_roc (y_test,y_pred):
-    # Compute ROC curve and ROC area for each class
-    fpr = dict()
-    tpr = dict()
-    roc_auc = dict()
-    fpr, tpr, _ = roc_curve(y_test, y_pred)
-    roc_auc = auc(fpr, tpr)
-    #Plot of a ROC curve
-    plt.figure()
-    lw = 2
-    plt.plot(fpr, tpr, color='darkorange',
-             label='ROC curve (area = %0.2f)' % roc_auc)
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.0])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic')
-    plt.legend(loc="upper left")
-    plt.show()
-    return
+TARGET = "class"
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+
+def load_data():
+    """Download dataset from the internet."""
+    from sklearn.datasets import fetch_openml
+    _d = fetch_openml(data_id=31, as_frame=True, parser="auto")
+    df = _d.frame
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target distribution:\n{df[TARGET].value_counts()}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{name} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- EVALUATION ──────────────────────────────────────────
-
-    #Importing necessary packages in Python 
-    import matplotlib.pyplot as plt 
-
-    import numpy as np ; np.random.seed(sum(map(ord, "aesthetics")))
-    import pandas as pd
-
-    from sklearn.datasets import make_classification 
-    from sklearn.model_selection import learning_curve 
-    #from sklearn.cross_validation import train_test_split 
-    #from sklearn.grid_search import GridSearchCV
-    #from sklearn.cross_validation import ShuffleSplit
-    from sklearn.metrics import classification_report,confusion_matrix, roc_curve, roc_auc_score, auc, accuracy_score
-    from sklearn.model_selection import ShuffleSplit,train_test_split, cross_val_score, GridSearchCV
-    from sklearn.preprocessing import OneHotEncoder, LabelEncoder, label_binarize, StandardScaler, MinMaxScaler
-
-    import seaborn 
-    seaborn.set_context('notebook') 
-    seaborn.set_style(style='darkgrid')
-
-    from pprint import pprint
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyClassifier
-
-            lazy_clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_clf.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.classification import *
-
-            clf_setup = setup(data=df, target='Risk', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Credit risk modeling using the German Credit Dataset")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

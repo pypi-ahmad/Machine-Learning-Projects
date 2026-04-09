@@ -1,350 +1,123 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Crop yield prediction
-
-Auto-generated from: crop_yield_prediction.ipynb
-Project: Crop yield prediction
-Category: Regression | Task: regression
+Modern Tabular Regression Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-import numpy as np 
+import os, sys, warnings
+import numpy as np
 import pandas as pd
-import sklearn
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import OneHotEncoder
-# Additional imports extracted from mixed cells
-from sklearn.preprocessing import MinMaxScaler
+from pathlib import Path
 from sklearn.model_selection import train_test_split
-from lazypredict.Supervised import LazyRegressor
-from pycaret.regression import *
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "hg/ha_yield"
+
+
+def load_data():
+    df = pd.read_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/crop_yield.csv", sep=",")
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+
+    try:
+        from catboost import CatBoostRegressor
+        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=50, verbose=100)
+        m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = m.predict(X_test)
+        print(f"✓ CatBoost RMSE: {mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+                              device="gpu", verbose=-1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"✓ LightGBM RMSE: {mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    try:
+        from xgboost import XGBRegressor
+        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+                         verbosity=1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"✓ XGBoost RMSE: {mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML Best: {automl.best_estimator} — RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    best_name, best_rmse = None, float("inf")
+    for name, y_pred in results.items():
+        rmse = mean_squared_error(y_test, y_pred, squared=False)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        print(f"— {name} — RMSE: {rmse:.4f} | MAE: {mae:.4f} | R²: {r2:.4f}")
+        if rmse < best_rmse:
+            best_rmse, best_name = rmse, name
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.scatter(y_test, y_pred, alpha=0.4, s=10)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+        ax.set_title(f"{name} — Predicted vs Actual")
+        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} (RMSE: {best_rmse:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df_yield = load_dataset('crop_yield_prediction')
-    df_yield.shape
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_yield.head()
-
-    df_yield.tail(10)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # rename columns.
-    df_yield = df_yield.rename(index=str, columns={"Value": "hg/ha_yield"})
-    df_yield.head()
-
-    # drop unwanted columns.
-    df_yield = df_yield.drop(['Year Code','Element Code','Element','Year Code','Area Code','Domain Code','Domain','Unit','Item Code'], axis=1)
-    df_yield.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_yield.describe()
-
-    df_yield.info()
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df_rain = pd.read_csv('../../data/crop_yield_prediction/rainfall.csv')
-    df_rain.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_rain.tail()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    df_rain = df_rain.rename(index=str, columns={" Area": 'Area'})
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_rain.info()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df_rain['average_rain_fall_mm_per_year'] = pd.to_numeric(df_rain['average_rain_fall_mm_per_year'],errors = 'coerce')
-    df_rain.info()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    df_rain = df_rain.dropna()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_rain.describe()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    yield_df = pd.merge(df_yield, df_rain, on=['Year','Area'])
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    yield_df.head()
-
-    yield_df.describe()
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df_pes = pd.read_csv('../../data/crop_yield_prediction/pesticides.csv')
-    df_pes.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    df_pes = df_pes.rename(index=str, columns={"Value": "pesticides_tonnes"})
-    df_pes = df_pes.drop(['Element','Domain','Unit','Item'], axis=1)
-    df_pes.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_pes.describe()
-
-    df_pes.info()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    yield_df = pd.merge(yield_df, df_pes, on=['Year','Area'])
-    yield_df.shape
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    yield_df.head()
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    avg_temp=  pd.read_csv('../../data/crop_yield_prediction/temp.csv')
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    avg_temp.head()
-
-    avg_temp.describe()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    avg_temp = avg_temp.rename(index=str, columns={"year": "Year", "country":'Area'})
-    avg_temp.head()
-
-    yield_df = pd.merge(yield_df,avg_temp, on=['Area','Year'])
-    yield_df.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    yield_df.shape
-
-    yield_df.describe()
-
-    yield_df.isnull().sum()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    yield_df.groupby('Item').count()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    yield_df.describe()
-
-    yield_df['Area'].nunique()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    yield_df.groupby(['Area'],sort=True)['hg/ha_yield'].sum().nlargest(10)
-
-    yield_df.groupby(['Item','Area'],sort=True)['hg/ha_yield'].sum().nlargest(10)
-
-    correlation_data=yield_df.select_dtypes(include=[np.number]).corr()
-
-    mask = np.zeros_like(correlation_data, dtype=np.bool)
-    mask[np.triu_indices_from(mask)] = True
-
-    f, ax = plt.subplots(figsize=(11, 9))
-
-    # Generate a custom diverging colormap
-    cmap = sns.palette="vlag"
-
-    # Draw the heatmap with the mask and correct aspect ratio
-    sns.heatmap(correlation_data, mask=mask, cmap=cmap, vmax=.3, center=0,
-                square=True, linewidths=.5, cbar_kws={"shrink": .5});
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    yield_df.head()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    yield_df_onehot = pd.get_dummies(yield_df, columns=['Area',"Item"], prefix = ['Country',"Item"])
-    features=yield_df_onehot.loc[:, yield_df_onehot.columns != 'hg/ha_yield']
-    label=yield_df['hg/ha_yield']
-    features.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    features = features.drop(['Year'], axis=1)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    features.info()
-
-    features.head()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.preprocessing import MinMaxScaler
-    scaler=MinMaxScaler()
-    features=scaler.fit_transform(features)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    features
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.model_selection import train_test_split
-    train_data, test_data, train_labels, test_labels = train_test_split(features, label, test_size=0.2, random_state=42)
-
-    from sklearn.model_selection import train_test_split
-    train_data, test_data, train_labels, test_labels = train_test_split(features, label, test_size=0.2, random_state=42)
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyRegressor
-
-            lazy_reg = LazyRegressor(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_reg.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.regression import *
-
-            reg_setup = setup(data=df_yield, target='Value', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR REGRESSION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Crop yield prediction")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

@@ -1,248 +1,93 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Store Item Demand Forecasting
-
-Auto-generated from: code.ipynb
-Project: Store Item Demand Forecasting
-Category: Time Series Analysis | Task: time_series
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
+import os, warnings
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-import seaborn as sns
-import lightgbm as lgb
-from statsmodels.tsa.holtwinters import SimpleExpSmoothing
-from sklearn.metrics import mean_absolute_error
-from statsmodels.tsa.holtwinters import ExponentialSmoothing
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.tsa.arima_model import ARIMA
-from statsmodels.tsa.seasonal import seasonal_decompose
-import statsmodels.api as sm
-import itertools
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-import warnings
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 500)
-warnings.filterwarnings('ignore')
-# Additional imports extracted from mixed cells
-from pycaret.time_series import *
+warnings.filterwarnings("ignore")
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-def random_noise(dataframe):
-    return np.random.normal(scale=1.6, size=(len(dataframe),))
-def lag_features(dataframe, lags):
-    for lag in lags:
-        dataframe['sales_lag_' + str(lag)] = dataframe.groupby(["store", "item"])['sales'].transform(
-            lambda x: x.shift(lag)) + random_noise(dataframe)
-    return dataframe
-
-df = lag_features(df, [91, 98, 105, 112, 119, 126, 182, 364, 546, 728])
-def roll_mean_features(dataframe, windows):
-    for window in windows:
-        dataframe['sales_roll_mean_' + str(window)] = dataframe.groupby(["store", "item"])['sales']. \
-                                                          transform(
-            lambda x: x.shift(1).rolling(window=window, min_periods=10, win_type="triang").mean()) + random_noise(
-            dataframe)
-    return dataframe
+TARGET = "sales"
+HORIZON = 30
 
 
-df = roll_mean_features(df, [365, 546, 730])
-def ewm_features(dataframe, alphas, lags):
-    for alpha in alphas:
-        for lag in lags:
-            dataframe['sales_ewm_alpha_' + str(alpha).replace(".", "") + "_lag_" + str(lag)] = \
-                dataframe.groupby(["store", "item"])['sales'].transform(lambda x: x.shift(lag).ewm(alpha=alpha).mean())
-    return dataframe
+def load_data():
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("thedevastator/store-item-demand-forecasting", split="train").to_pandas()
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {df.shape}, target: {target}")
+    return df, target
 
 
-alphas = [0.99, 0.95, 0.9, 0.8, 0.7, 0.5]
-lags = [91, 98, 105, 112, 180, 270, 365, 546, 728]
+def forecast(df, target):
+    results = {}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
 
-df = ewm_features(df, alphas, lags)
-df.tail()
-def smape(preds, target):
-    n = len(preds)
-    masked_arr = ~((preds == 0) & (target == 0))
-    preds, target = preds[masked_arr], target[masked_arr]
-    num = np.abs(preds - target)
-    denom = np.abs(preds) + np.abs(target)
-    smape_val = (200 * np.sum(num / denom)) / n
-    return smape_val
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
 
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {col} RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ StatsForecast: {e}")
 
-def lgbm_smape(preds, train_data):
-    labels = train_data.get_label()
-    smape_val = smape(np.expm1(preds), np.expm1(labels))
-    return 'SMAPE', smape_val, False
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    train = load_dataset('store_item_demand_forecasting')
-    test = pd.read_csv('data/test.csv', parse_dates=['date'])
-    df = pd.concat([train, test], sort=False)
-    df.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    print("Train setinin boyutu:",train.shape)
-    print("Test setinin boyutu:",test.shape)
-
-    df.shape
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df.quantile([0, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99, 1]).T
-
-    df["date"].min()
-
-    df["date"].max()
-
-    df["sales"].describe([0.10, 0.30, 0.50, 0.70, 0.80, 0.90, 0.95, 0.99])
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df["store"].nunique()
-
-    df["item"].nunique()
-
-    df.groupby(["store"])["item"].nunique()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df.groupby(["store", "item"]).agg({"sales": ["sum", "mean", "median", "std"]})
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    df['month'] = df.date.dt.month
-    df['day_of_month'] = df.date.dt.day
-    df['day_of_year'] = df.date.dt.dayofyear
-    df['week_of_year'] = df.date.dt.weekofyear
-    df['day_of_week'] = df.date.dt.dayofweek
-    df['year'] = df.date.dt.year
-    df["is_wknd"] = df.date.dt.weekday // 4
-    df['is_month_start'] = df.date.dt.is_month_start.astype(int)
-    df['is_month_end'] = df.date.dt.is_month_end.astype(int)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df.groupby(["store", "item", "month"]).agg({"sales": ["sum", "mean", "median", "std"]})
-
-    df.sort_values(by=['store', 'item', 'date'], axis=0, inplace=True)
-    df.head()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    df = pd.get_dummies(df, columns=['day_of_week', 'month'])
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    df['sales'] = np.log1p(df["sales"].values)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    train = df.loc[(df["date"] < "2017-01-01"), :]
-
-    val = df.loc[(df["date"] >= "2017-01-01") & (df["date"] < "2017-04-01"), :]
-
-    cols = [col for col in train.columns if col not in ['date', 'id', "sales", "year"]]
-
-    Y_train = train['sales']
-
-    X_train = train[cols]
-
-    Y_val = val['sales']
-
-    X_val = val[cols]
-
-    Y_train.shape, X_train.shape, Y_val.shape, X_val.shape
-
-    # LightGBM parameters
-    lgb_params = {'metric': {'mae'},
-                  'num_leaves': 10,
-                  'learning_rate': 0.02,
-                  'feature_fraction': 0.8,
-                  'max_depth': 5,
-                  'verbose': 0,
-                  'num_boost_round': 2000,
-                  'early_stopping_rounds': 200,
-                  'nthread': -1}
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-    from pycaret.time_series import *
-
-    ts_setup = setup(data=train, target='sales', fh=12, session_id=42, verbose=False)
-
-    # Compare models and select best
-    best_model = compare_models()
-
-    # Display comparison results
-    print(best_model)
-
-    # Plot forecast
-    plot_model(best_model, plot='forecast')
-
-    # Finalize the model
-    final_model = finalize_model(best_model)
-
-    # Make predictions
-    predictions = predict_model(final_model)
-    print(predictions)
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Store Item Demand Forecasting")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

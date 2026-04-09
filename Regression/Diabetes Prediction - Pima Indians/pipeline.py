@@ -1,309 +1,125 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Predicting diabetes using the prima indians diabetes dataset
-
-Auto-generated from: diabetes_prediction.ipynb
-Project: Predicting diabetes using the prima indians diabetes dataset
-Category: Regression | Task: regression
+Modern Tabular Regression Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os
+import os, sys, warnings
+import numpy as np
+import pandas as pd
+from pathlib import Path
 from sklearn.model_selection import train_test_split
-from lazypredict.Supervised import LazyClassifier
-from pycaret.classification import *
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "Outcome"
+
+
+def load_data():
+    from sklearn.datasets import fetch_openml
+    _d = fetch_openml(data_id=37, as_frame=True, parser="auto")
+    df = _d.frame
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+
+    try:
+        from catboost import CatBoostRegressor
+        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=50, verbose=100)
+        m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = m.predict(X_test)
+        print(f"✓ CatBoost RMSE: {mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+                              device="gpu", verbose=-1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"✓ LightGBM RMSE: {mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    try:
+        from xgboost import XGBRegressor
+        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+                         verbosity=1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"✓ XGBoost RMSE: {mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML Best: {automl.best_estimator} — RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    best_name, best_rmse = None, float("inf")
+    for name, y_pred in results.items():
+        rmse = mean_squared_error(y_test, y_pred, squared=False)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        print(f"— {name} — RMSE: {rmse:.4f} | MAE: {mae:.4f} | R²: {r2:.4f}")
+        if rmse < best_rmse:
+            best_rmse, best_name = rmse, name
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.scatter(y_test, y_pred, alpha=0.4, s=10)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+        ax.set_title(f"{name} — Predicted vs Actual")
+        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} (RMSE: {best_rmse:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    # This Python 3 environment comes with many helpful analytics libraries installed
-    # It is defined by the kaggle/python docker image: https://github.com/kaggle/docker-python
-    # For example, here's several helpful packages to load in 
-
-    import numpy as np # linear algebra
-    import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    # Input data files are available in the "../input/" directory.
-    # For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
-
-    import os
-    for dirname, _, filenames in os.walk('./archive/'):
-        for filename in filenames:
-            print(os.path.join(dirname, filename))
-
-    # Any results you write to the current directory are saved as output.
-
-    dataset = load_dataset('predicting_diabetes_using_the_prima_indians_diabetes_dataset')
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    dataset.head()
-
-    dataset.info()
-
-    dataset.isnull().sum()
-
-    dataset.describe()
-
-    dataset.Outcome.value_counts()
-
-    sns.countplot(x='Outcome', data=dataset)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    print(sns.distplot(dataset['Pregnancies']))
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.boxplot(data=dataset['Pregnancies'], ax=axes[0]);
-    sns.violinplot(data=dataset['Pregnancies'], ax=axes[1])
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(sns.distplot, 'Pregnancies') \
-     .add_legend()
-    plt.title('PDF with Pregnancies')
-    plt.show()
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(plt.scatter, 'Outcome', 'Pregnancies')\
-     .add_legend()
-    plt.title('Sebaran Pasien Berdasarkan Pregnancies')
-    plt.show()
-
-    print(sns.distplot(dataset['Glucose']))
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.boxplot(data=dataset['Glucose'], ax=axes[0]);
-    sns.violinplot(data=dataset['Glucose'], ax=axes[1]);
-
-    sns.FacetGrid(dataset, hue="Outcome", height=5) \
-     .map(sns.distplot, "Glucose") \
-     .add_legend()
-    plt.title('PDF with Glucose')
-    plt.show()
-
-    sns.FacetGrid(dataset, hue = 'Outcome', height = 5)\
-    .map(plt.scatter, 'Outcome', 'Glucose')\
-    .add_legend()
-    plt.title('Distribusi Pasien Berdasarkan Glucose')
-    plt.show()
-
-    sns.distplot(dataset['BloodPressure'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.boxplot(data=dataset['BloodPressure'], ax=axes[0]);
-    sns.violinplot(data=dataset['BloodPressure'], ax=axes[1]);
-
-    sns.FacetGrid(dataset, hue="Outcome", height=5) \
-     .map(sns.distplot, "BloodPressure") \
-     .add_legend()
-    plt.title('PDF with BloodPressure')
-    plt.show()
-
-    sns.FacetGrid(dataset, hue = 'Outcome', height = 5)\
-    .map(plt.scatter, 'Outcome', 'BloodPressure')\
-    .add_legend()
-    plt.title('Distribusi Pasien Berdasarkan BloodPressure')
-    plt.show()
-
-    sns.distplot(dataset['SkinThickness'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.boxplot(data=dataset['SkinThickness'], ax=axes[0]);
-    sns.violinplot(data=dataset['SkinThickness'], ax=axes[1]);
-
-    sns.FacetGrid(dataset, hue="Outcome", height = 5) \
-     .map(sns.distplot, "SkinThickness") \
-     .add_legend()
-    plt.title('PDF with SkinThickness')
-    plt.show()
-
-    sns.FacetGrid(dataset, hue = 'Outcome', height = 5)\
-    .map(plt.scatter, 'Outcome', 'SkinThickness')\
-    .add_legend()
-    plt.title('Distribusi Pasien Berdasarkan SkinThickness')
-    plt.show()
-
-    sns.distplot(dataset['Insulin'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.boxplot(data=dataset['Insulin'], ax=axes[0]);
-    sns.violinplot(data=dataset['Insulin'], ax=axes[1]);
-
-    sns.FacetGrid(dataset, hue="Outcome", height=5) \
-     .map(sns.distplot, "Insulin") \
-     .add_legend()
-    plt.title('PDF with Insulin')
-    plt.show()
-
-    sns.FacetGrid(dataset, hue = 'Outcome', height = 5)\
-    .map(plt.scatter, 'Outcome', 'Insulin')\
-    .add_legend()
-    plt.title('Distribusi Pasien Berdasarkan Insulin')
-    plt.show()
-
-    sns.distplot(dataset['BMI'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,5))
-    sns.barplot(data=dataset['BMI'], ax=axes[0]);
-    sns.violinplot(data=dataset['BMI'], ax=axes[1]);
-
-    sns.FacetGrid(dataset, hue='Outcome', height=5) \
-     .map(sns.distplot, 'BMI') \
-     .add_legend()
-    plt.title('PDF with BMI')
-    plt.show()
-
-    sns.FacetGrid(dataset, hue='Outcome', height=5) \
-     .map(plt.scatter, 'Outcome', 'BMI') \
-     .add_legend()
-    plt.title('Sebaran pasien berdasarkan BMI')
-    plt.show
-
-    sns.distplot(dataset['DiabetesPedigreeFunction'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,6))
-    sns.boxplot(data=dataset['DiabetesPedigreeFunction'], ax=axes[0]);
-    sns.violinplot(data=dataset['DiabetesPedigreeFunction'], ax=axes[1])
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(sns.distplot, 'DiabetesPedigreeFunction') \
-     .add_legend()
-    plt.title('PDF with DiabetesPedigreeFunction')
-    plt.show
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(plt.scatter, 'Outcome','DiabetesPedigreeFunction') \
-     .add_legend()
-    plt.title('Sebaran pasien berdasarkan DiabetesPedigreeFunction')
-    plt.show()
-
-    sns.distplot(dataset['Age'])
-
-    _, axes = plt.subplots(1,2, sharey=True, figsize=(10,6))
-    sns.boxplot(data=dataset['Age'], ax=axes[0]);
-    sns.violinplot(data=dataset['Age'], ax=axes[1])
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(sns.distplot, 'Age') \
-     .add_legend()
-    plt.title('PDF with Age')
-    plt.show
-
-    sns.FacetGrid(data=dataset, hue='Outcome', height=5) \
-     .map(plt.scatter, 'Outcome','Age') \
-     .add_legend()
-    plt.title('Sebaran pasien berdasarkan Age')
-    plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    sns.pairplot(data=dataset)
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.model_selection import train_test_split
-
-    # Define features and target
-    X = dataset.drop(columns=['Outcome'])
-    y = dataset['Outcome']
-
-    # Handle non-numeric columns for modeling
-    X = pd.get_dummies(X, drop_first=True)
-    X = X.fillna(0)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyClassifier
-
-            lazy_clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_clf.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.classification import *
-
-            clf_setup = setup(data=dataset, target='Outcome', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR REGRESSION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Predicting diabetes using the prima indians diabetes dataset")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

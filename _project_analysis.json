@@ -1,0 +1,6047 @@
+{
+  "Classification": {
+    "Adult Salary Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Advanced Credit Card Fraud Detection": {
+      "models": [
+        "KNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Autoencoder Fashion MNIST": {
+      "models": [
+        "ANN/MLP",
+        "Autoencoder",
+        "CNN",
+        "SGD"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Autoencoder for Customer Churn": {
+      "models": [
+        "ANN/MLP",
+        "Autoencoder",
+        "KNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bayesian Logistic Regression - Bank Marketing": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "ArviZ",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyMC3",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Boston House Classification": {
+      "models": [
+        "Linear Regression",
+        "Transformer"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Breast Cancer Detection": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "scikit-learn"
+      ]
+    },
+    "Breast Cancer Prediction": {
+      "models": [
+        "ANN/MLP",
+        "Decision Tree",
+        "Gradient Boosting",
+        "KNN",
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "CIFAR-10 Classification": {
+      "models": [
+        "CNN",
+        "GAN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "PyTorch"
+      ]
+    },
+    "Cotton Disease Prediction": {
+      "models": [
+        "ANN/MLP",
+        "GAN",
+        "InceptionV3",
+        "ResNet"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Credit Card Fraud - Imbalanced Dataset": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Credit Risk Modeling - German Credit": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Extra Trees",
+        "Gradient Boosting",
+        "Logistic Regression",
+        "Random Forest",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Customer Churn Prediction - Telecom": {
+      "models": [
+        "Decision Tree",
+        "Extra Trees",
+        "KNN",
+        "Logistic Regression",
+        "Naive Bayes",
+        "Random Forest",
+        "SVM/SVC",
+        "Voting",
+        "XGBoost"
+      ],
+      "tech": [
+        "LIME",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "SHAP",
+        "Seaborn",
+        "Statsmodels",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Customer Lifetime Value Prediction": {
+      "models": [
+        "Gradient Boosting",
+        "K-Means",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Customer Segmentation - E-Commerce": {
+      "models": [
+        "Agglomerative Clustering",
+        "Hierarchical Clustering",
+        "K-Means",
+        "PCA",
+        "Transformer"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "Plotly",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Cyberbullying Classification": {
+      "models": [
+        "Bag of Words",
+        "LSTM",
+        "NLTK",
+        "Naive Bayes",
+        "RNN",
+        "TF-IDF",
+        "Transformer",
+        "Word2Vec"
+      ],
+      "tech": [
+        "Gensim",
+        "Hugging Face",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Diabetes Classification": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Diabetes ML Analysis": {
+      "models": [
+        "ANN/MLP",
+        "Decision Tree",
+        "Gradient Boosting",
+        "KNN",
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Diabetes Prediction": {
+      "models": [
+        "Random Forest",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Digit Recognition - MNIST Sequence": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "SciPy",
+        "TensorFlow"
+      ]
+    },
+    "Dog vs Cat Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Drinking Water Potability": {
+      "models": [
+        "KNN",
+        "Logistic Regression",
+        "Naive Bayes",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Drug Classification": {
+      "models": [
+        "Gradient Boosting",
+        "LightGBM",
+        "NLTK",
+        "XGBoost"
+      ],
+      "tech": [
+        "LightGBM",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Earthquake Prediction": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Employee Turnover Analysis": {
+      "models": [
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Employee Turnover Prediction": {
+      "models": [
+        "Logistic Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Fashion MNIST Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "PyTorch"
+      ]
+    },
+    "Flower Species Classification": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Fraud Detection": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Garbage Classification": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Glass Classification": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Extra Trees",
+        "Gradient Boosting",
+        "KNN",
+        "LDA",
+        "Logistic Regression",
+        "Naive Bayes",
+        "PCA",
+        "Random Forest",
+        "SVM/SVC",
+        "Transformer",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Groundhog Day Predictions": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas"
+      ]
+    },
+    "H2O Higgs Boson": {
+      "models": [
+        "H2O",
+        "Random Forest"
+      ],
+      "tech": [
+        "H2O",
+        "Matplotlib",
+        "NumPy",
+        "Pandas"
+      ]
+    },
+    "Hand Digit Recognition": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Healthcare Heart Disease Prediction": {
+      "models": [
+        "Logistic Regression",
+        "Naive Bayes"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Heart Disease Prediction": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Income Classification": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Iris Dataset Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Loan Default Prediction": {
+      "models": [
+        "Naive Bayes"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Loan Prediction Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Logistic Regression Balanced": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Marketing Campaign Prediction": {
+      "models": [
+        "Bagging",
+        "Decision Tree",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Mobile Price Classification": {
+      "models": [
+        "Decision Tree",
+        "Gradient Boosting",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Movie Genre Classification": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Plant Disease Recognition": {
+      "models": [
+        "CNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "PyTorch"
+      ]
+    },
+    "Pneumonia Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "TensorFlow"
+      ]
+    },
+    "Simple Classification Problem": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "LDA",
+        "Logistic Regression",
+        "Naive Bayes",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Social Network Ads Analysis": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Gradient Boosting",
+        "KNN",
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "SONAR Rock vs Mine Prediction": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "PySpark",
+        "scikit-learn"
+      ]
+    },
+    "Spam Email Classification": {
+      "models": [
+        "NLTK",
+        "Naive Bayes"
+      ],
+      "tech": [
+        "NLTK",
+        "scikit-learn"
+      ]
+    },
+    "Student Performance Prediction": {
+      "models": [
+        "Decision Tree",
+        "Lasso",
+        "LightGBM",
+        "Linear Regression",
+        "Logistic Regression",
+        "Ridge",
+        "Transformer"
+      ],
+      "tech": [
+        "Hugging Face",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Titanic - Handling Missing Values": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "Titanic Survival Prediction": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Traffic Congestion Prediction": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GRU",
+        "LSTM",
+        "SGD",
+        "Voting"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Weather Classification - Decision Trees": {
+      "models": [
+        "Decision Tree"
+      ],
+      "tech": [
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Wine Quality Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Wine Quality Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Clustering": {
+    "Credit Card Customer Segmentation": {
+      "models": [
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Customer Segmentation": {
+      "models": [
+        "Agglomerative Clustering",
+        "DBSCAN",
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Customer Segmentation - Bank": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Financial Time Series Clustering": {
+      "models": [
+        "ARIMA",
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Housing Price Segmentation": {
+      "models": [
+        "K-Means",
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "KMeans Clustering - Imagery Analysis": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Mall Customer Segmentation": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Mall Customer Segmentation - Advanced": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Mall Customer Segmentation - Detailed": {
+      "models": [
+        "Agglomerative Clustering",
+        "DBSCAN",
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Mall Customer Segmentation Data": {
+      "models": [
+        "Agglomerative Clustering",
+        "DBSCAN",
+        "Gaussian Mixture",
+        "Hierarchical Clustering",
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Online Retail Customer Segmentation": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Gradient Boosting",
+        "K-Means",
+        "KNN",
+        "NLTK",
+        "PCA",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Online Retail Segmentation Analysis": {
+      "models": [],
+      "tech": [
+        "Pandas"
+      ]
+    },
+    "Spotify Song Cluster Analysis": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Turkiye Student Evaluation - Advanced": {
+      "models": [
+        "Agglomerative Clustering",
+        "Hierarchical Clustering",
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Turkiye Student Evaluation Analysis": {
+      "models": [
+        "Agglomerative Clustering",
+        "DBSCAN",
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Vehicle Crash Data Clustering": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Weather Data Clustering - KMeans": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Wholesale Customer Segmentation": {
+      "models": [
+        "Agglomerative Clustering",
+        "Hierarchical Clustering",
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Wholesale Segmentation Analysis": {
+      "models": [
+        "Decision Tree",
+        "Gaussian Mixture",
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Wine Segmentation": {
+      "models": [
+        "K-Means",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Computer Vision": {
+    "Captcha Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "OpenCV"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV"
+      ]
+    },
+    "Car and Pedestrian Tracker": {
+      "models": [
+        "Haar Cascade",
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Document Word Detection": {
+      "models": [
+        "OCR/Tesseract",
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV"
+      ]
+    },
+    "Dominant Color Analysis": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV"
+      ]
+    },
+    "Dominant Color Extraction": {
+      "models": [
+        "K-Means",
+        "OpenCV"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "scikit-learn"
+      ]
+    },
+    "Face Detection - OpenCV": {
+      "models": [
+        "Haar Cascade",
+        "OpenCV"
+      ],
+      "tech": [
+        "Matplotlib",
+        "OpenCV"
+      ]
+    },
+    "Face Expression Identifier": {
+      "models": [
+        "ResNet"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch"
+      ]
+    },
+    "Face Mask Detection": {
+      "models": [
+        "CNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pillow/PIL",
+        "PyTorch"
+      ]
+    },
+    "Face Recognition Door Lock - AWS Rekognition": {
+      "models": [],
+      "tech": []
+    },
+    "Gesture Control Media Player": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV",
+        "PyAutoGUI"
+      ]
+    },
+    "Home Security": {
+      "models": [
+        "Haar Cascade",
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Image Captioning": {
+      "models": [
+        "ANN/MLP",
+        "GAN",
+        "LSTM",
+        "NLTK",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "NLTK",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Image Cartoonify": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Image Text Extraction - OCR": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pillow/PIL",
+        "Tesseract"
+      ]
+    },
+    "Image to Sketch": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Image to Text Conversion - OCR": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pillow/PIL",
+        "Tesseract"
+      ]
+    },
+    "Image Watermark": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL"
+      ]
+    },
+    "Indian Classical Dance Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "TensorFlow"
+      ]
+    },
+    "Lane Finder": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV"
+      ]
+    },
+    "Live Smile Detector": {
+      "models": [
+        "Haar Cascade",
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV"
+      ]
+    },
+    "Noise Reduction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "SciPy"
+      ]
+    },
+    "QR Code Readability": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Room Security - Webcam": {
+      "models": [
+        "GAN",
+        "Haar Cascade",
+        "OpenCV"
+      ],
+      "tech": [
+        "Flask",
+        "OpenCV"
+      ]
+    },
+    "Traffic Sign Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Traffic Sign Recognizer": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN",
+        "SGD"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Conceptual": {
+    "Advanced Hyperparameter Tuning": {
+      "models": [
+        "TPOT"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Advanced SHAP Values": {
+      "models": [
+        "Random Forest"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "SHAP",
+        "scikit-learn"
+      ]
+    },
+    "Bayesian Statistics - PyMC3 and ArviZ": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "ArviZ",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyMC3",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Machine Learning with spaCy": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "SVM/SVC",
+        "Transformer",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn",
+        "spaCy"
+      ]
+    },
+    "NHANES Confidence Intervals": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels"
+      ]
+    },
+    "NHANES Hypothesis Testing": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels"
+      ]
+    },
+    "Practical Statistics in Python": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn"
+      ]
+    },
+    "Regression Diagnostics": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Statsmodels"
+      ]
+    },
+    "Supervised Learning - Part I": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "Lasso",
+        "Linear Regression",
+        "Logistic Regression",
+        "Ridge",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Supervised Learning - Part II": {
+      "models": [
+        "ANN/MLP",
+        "Decision Tree",
+        "Gradient Boosting",
+        "Naive Bayes",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Text Classification - Keras": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Threshold Selection - ROC Curve": {
+      "models": [
+        "AdaBoost",
+        "KNN",
+        "Logistic Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Working with Databases": {
+      "models": [],
+      "tech": [
+        "Pandas"
+      ]
+    },
+    "XGBoost Algorithm": {
+      "models": [
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "scikit-learn"
+      ]
+    },
+    "XGBoost with BOW and TF-IDF": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "TF-IDF",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Data Analysis": {
+    "2016 General Election Poll Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Requests",
+        "Seaborn"
+      ]
+    },
+    "911 Calls Exploratory Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "Airbnb Data Analysis": {
+      "models": [
+        "Decision Tree",
+        "Linear Regression",
+        "Logistic Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bank Payment Fraud Detection": {
+      "models": [
+        "K-Means",
+        "KNN",
+        "Random Forest",
+        "Voting",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "CLV Non-Contractual": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "CLV Online Retail": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Coffee Quality Analysis": {
+      "models": [
+        "Gradient Boosting",
+        "Logistic Regression",
+        "Random Forest",
+        "Transformer",
+        "t-SNE"
+      ],
+      "tech": [
+        "Hugging Face",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "COVID-19 Global Data Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "COVID-19 Tracking": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas"
+      ]
+    },
+    "Customer Lifetime Value Prediction": {
+      "models": [
+        "Gradient Boosting",
+        "K-Means",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Cybersecurity Anomaly Detection": {
+      "models": [
+        "Isolation Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Data Science Salaries Analysis": {
+      "models": [
+        "Gradient Boosting",
+        "Logistic Regression",
+        "Random Forest",
+        "t-SNE"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Drive Data Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "FIFA 21 Data Cleaning": {
+      "models": [
+        "KNN",
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "FIFA Data Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Food Delivery Analysis": {
+      "models": [
+        "NLTK"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Heart Failure Prediction": {
+      "models": [
+        "CNN",
+        "LSTM",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Indians Diabetes Prediction": {
+      "models": [
+        "KNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Medical Insurance Cost Analysis": {
+      "models": [
+        "Lasso",
+        "Linear Regression",
+        "Random Forest",
+        "Ridge"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Melbourne Housing Price Analysis": {
+      "models": [
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Mobile Price Prediction": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "Linear Regression",
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Outliers Detection": {
+      "models": [
+        "DBSCAN",
+        "Decision Tree",
+        "K-Means",
+        "KNN",
+        "Linear Regression",
+        "Logistic Regression",
+        "Naive Bayes",
+        "PCA",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Pokemon Data Analysis": {
+      "models": [
+        "CatBoost",
+        "LightGBM",
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC",
+        "XGBoost"
+      ],
+      "tech": [
+        "CatBoost",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Price Elasticity of Demand": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Statsmodels"
+      ]
+    },
+    "Principal Component Analysis - Detailed": {
+      "models": [
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "PySpark Basic DataFrame Operations": {
+      "models": [],
+      "tech": [
+        "PySpark"
+      ]
+    },
+    "Red Wine Quality Analysis": {
+      "models": [
+        "Decision Tree",
+        "Logistic Regression",
+        "Naive Bayes",
+        "PCA",
+        "Random Forest",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Sleep Health Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Spark DataFrames Exercise": {
+      "models": [],
+      "tech": [
+        "PySpark"
+      ]
+    },
+    "Spotify Health Analysis": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Student Alcohol Consumption Analysis": {
+      "models": [
+        "Decision Tree"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Student Performance Analysis": {
+      "models": [
+        "Logistic Regression",
+        "PCA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Titanic Data Analysis": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "Logistic Regression",
+        "Naive Bayes",
+        "Random Forest",
+        "SGD",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Titanic Exploratory Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Surprise"
+      ]
+    },
+    "Tokyo 2020 Tweets Frequency": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "Top Billionaires List Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Video Game Sales Analysis": {
+      "models": [
+        "Decision Tree",
+        "Linear Regression",
+        "Random Forest",
+        "SVM/SVC",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Wine Production Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "YouTube Trending Videos Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Deep Learning": {
+    "Advanced Churn Modeling": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Advanced ResNet-50": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN",
+        "ResNet",
+        "SGD"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "All Space Missions Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn"
+      ]
+    },
+    "Amazon Alexa Sentiment Analysis": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Random Forest",
+        "Transformer"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Amazon Stock Price Analysis": {
+      "models": [
+        "ARIMA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Arabic Character Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "OpenCV"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bank Marketing Analysis": {
+      "models": [
+        "K-Means"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bottle vs Can Classification": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch"
+      ]
+    },
+    "Brain MRI Segmentation": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN",
+        "OpenCV",
+        "ResNet",
+        "U-Net"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "Pillow/PIL",
+        "Plotly",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Brain Tumor Recognition": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Cactus Aerial Image Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Caffe Face Detector - OpenCV": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "PyTorch"
+      ]
+    },
+    "Campus Recruitment Analysis": {
+      "models": [
+        "LightGBM"
+      ],
+      "tech": [
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Cat and Dog Voice Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "TensorFlow"
+      ]
+    },
+    "Cat vs Dog Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Chatbot": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "Transformer",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn",
+        "spaCy"
+      ]
+    },
+    "ChatBot - Neural Network": {
+      "models": [
+        "NLTK",
+        "Transformer"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Clothing Prediction - Flask App": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Concrete Strength Prediction": {
+      "models": [
+        "Decision Tree",
+        "KNN",
+        "Linear Regression",
+        "Random Forest",
+        "Ridge",
+        "SVM/SVC",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "COVID-19 Drug Recovery": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SHAP",
+        "Seaborn"
+      ]
+    },
+    "COVID-19 Lung CT Scan Analysis": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Dance Form Identification": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Diabetic Retinopathy": {
+      "models": [
+        "OpenCV",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "Plotly",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Disease Prediction": {
+      "models": [
+        "ANN/MLP",
+        "Decision Tree",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Earthquake Prediction": {
+      "models": [
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Electric Car Temperature Prediction": {
+      "models": [
+        "CNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Face Gender and Ethnicity Recognizer": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "SGD"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Face Mask Detection": {
+      "models": [
+        "ANN/MLP",
+        "Haar Cascade",
+        "OpenCV",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Fingerprint Recognition": {
+      "models": [
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "GANs": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN",
+        "InceptionV3",
+        "U-Net",
+        "VGG"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Glass Detection": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Happy House Predictor": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Hourly Energy Demand and Weather": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn"
+      ]
+    },
+    "Image Colorization": {
+      "models": [
+        "Autoencoder",
+        "CNN",
+        "OpenCV",
+        "U-Net",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "IMDB Sentiment Analysis": {
+      "models": [
+        "Logistic Regression",
+        "NLTK",
+        "Naive Bayes",
+        "SVM/SVC",
+        "TF-IDF",
+        "Transformer"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Indian Startup Data Analysis": {
+      "models": [
+        "Lasso",
+        "Ridge",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Keep Babies Safe": {
+      "models": [
+        "ANN/MLP",
+        "Agglomerative Clustering",
+        "OCR/Tesseract",
+        "OpenCV",
+        "ResNet"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "Tesseract",
+        "scikit-learn"
+      ]
+    },
+    "Landmark Detection": {
+      "models": [
+        "ANN/MLP",
+        "GAN",
+        "SGD",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch"
+      ]
+    },
+    "Lego Brick Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch"
+      ]
+    },
+    "Movie Title Prediction": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "Transformer"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "News Category Prediction": {
+      "models": [
+        "ANN/MLP",
+        "Transformer"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Parkinson Pose Estimation": {
+      "models": [
+        "Decision Tree",
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Pneumonia Detection": {
+      "models": [
+        "ANN/MLP",
+        "GAN",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Pokemon Generation Clustering": {
+      "models": [
+        "Agglomerative Clustering",
+        "Gaussian Mixture",
+        "Hierarchical Clustering",
+        "K-Means",
+        "OpenCV"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Sentiment Analysis - Flask App": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "NLTK",
+        "Transformer"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Sheep Breed Classification - CNN": {
+      "models": [
+        "ANN/MLP",
+        "OpenCV",
+        "ResNet",
+        "VGG"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenCV",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Skin Cancer Recognition": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Stock Market Prediction": {
+      "models": [
+        "Bag of Words",
+        "Random Forest",
+        "Transformer"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Sudoku Solver - Neural Network": {
+      "models": [
+        "ANN/MLP",
+        "CNN"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Walking or Running Classification": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "World Currency Coin Detection": {
+      "models": [
+        "ANN/MLP",
+        "GAN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    }
+  },
+  "NLP": {
+    "Amazon Alexa Review Sentiment": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "Random Forest",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Amazon Sentiment Analysis": {
+      "models": [
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Autocorrect": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas"
+      ]
+    },
+    "BOW and TF-IDF with XGBoost": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "TF-IDF",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Clinton vs Trump Tweets Analysis": {
+      "models": [
+        "Naive Bayes",
+        "TF-IDF",
+        "Transformer"
+      ],
+      "tech": [
+        "Hugging Face",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Consumer Complaints Analysis": {
+      "models": [
+        "Bag of Words",
+        "Logistic Regression",
+        "Naive Bayes",
+        "Random Forest",
+        "SVM/SVC",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Cross Language Information Retrieval": {
+      "models": [
+        "NLTK",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK"
+      ]
+    },
+    "Disaster or Not Disaster": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "NLTK"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "TensorFlow"
+      ]
+    },
+    "DJIA Sentiment Analysis - News Headlines": {
+      "models": [
+        "Bag of Words",
+        "Logistic Regression",
+        "NLTK"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "DJIA Sentiment Analysis - Stock Prediction": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Document Summary Creator": {
+      "models": [
+        "NLTK",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "NLTK",
+        "spaCy"
+      ]
+    },
+    "Fake News Detection": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "GitHub Bugs Prediction": {
+      "models": [
+        "ANN/MLP",
+        "GRU",
+        "LSTM",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF",
+        "Transformer"
+      ],
+      "tech": [
+        "BeautifulSoup",
+        "Hugging Face",
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Hate Speech Detection": {
+      "models": [
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "IMDB Sentiment Analysis - Deep Learning": {
+      "models": [
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Gensim",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "IMDB Sentiment Review Analysis": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Keyword Extraction": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Keyword Research": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "Pandas"
+      ]
+    },
+    "Language Translation Model": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "Pandas",
+        "TensorFlow"
+      ]
+    },
+    "Language Translator": {
+      "models": [],
+      "tech": []
+    },
+    "Message Spam Detection": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Random Forest",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Movie Review Sentiments": {
+      "models": [
+        "Bag of Words",
+        "Bagging",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Named Entity Recognition": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Keras",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Next Word Prediction": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "NLTK"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "NLP for Other Languages": {
+      "models": [
+        "GAN",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Requests",
+        "spaCy"
+      ]
+    },
+    "Plagiarism Checker": {
+      "models": [
+        "TF-IDF"
+      ],
+      "tech": [
+        "scikit-learn"
+      ]
+    },
+    "Profanity Checker": {
+      "models": [],
+      "tech": []
+    },
+    "Restaurant Review Sentiment Analysis": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Resume Screening": {
+      "models": [
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Sentiment Analysis": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Sentiment Analysis - Flask Web App": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "NLTK"
+      ],
+      "tech": [
+        "Flask",
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Sentiment Analysis - Restaurant Reviews": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "SMS Spam Detection": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "SMS Spam Detection - Detailed": {
+      "models": [
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "SMS Spam Detection Analysis": {
+      "models": [
+        "Bag of Words",
+        "Logistic Regression",
+        "NLTK",
+        "Naive Bayes",
+        "Random Forest",
+        "SVM/SVC",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Spam Classifier": {
+      "models": [
+        "Bag of Words",
+        "NLTK"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Spam SMS Classification": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Spell Checker": {
+      "models": [],
+      "tech": []
+    },
+    "Spelling Correction": {
+      "models": [],
+      "tech": []
+    },
+    "Stop Words in 28 Languages": {
+      "models": [
+        "Word2Vec"
+      ],
+      "tech": [
+        "Gensim",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "TensorFlow"
+      ]
+    },
+    "Text Classification": {
+      "models": [
+        "ANN/MLP",
+        "AdaBoost",
+        "Bag of Words",
+        "CNN",
+        "Decision Tree",
+        "GAN",
+        "GRU",
+        "KNN",
+        "LSTM",
+        "Logistic Regression",
+        "NLTK",
+        "Naive Bayes",
+        "RNN",
+        "Random Forest",
+        "Ridge",
+        "SGD",
+        "SVM/SVC",
+        "TF-IDF",
+        "Transformer",
+        "Voting",
+        "Word2Vec",
+        "XGBoost",
+        "spaCy NLP",
+        "t-SNE"
+      ],
+      "tech": [
+        "BeautifulSoup",
+        "Gensim",
+        "Hugging Face",
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "TensorFlow",
+        "XGBoost",
+        "scikit-learn",
+        "spaCy"
+      ]
+    },
+    "Text Classification - Keras Consumer Complaints": {
+      "models": [
+        "ANN/MLP",
+        "LSTM"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Text Classification with NLP": {
+      "models": [
+        "ANN/MLP"
+      ],
+      "tech": [
+        "Keras",
+        "TensorFlow"
+      ]
+    },
+    "Text Clustering and Topic Modelling": {
+      "models": [
+        "K-Means",
+        "LDA",
+        "NLTK",
+        "PCA",
+        "TF-IDF",
+        "Transformer",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "Gensim",
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn",
+        "spaCy"
+      ]
+    },
+    "Text File Analysis": {
+      "models": [],
+      "tech": []
+    },
+    "Text Generation": {
+      "models": [
+        "ANN/MLP",
+        "CNN",
+        "GAN",
+        "GRU",
+        "LSTM",
+        "NLTK",
+        "RNN",
+        "ResNet",
+        "SGD",
+        "SVM/SVC",
+        "Transformer",
+        "VGG"
+      ],
+      "tech": [
+        "Hugging Face",
+        "Keras",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "TensorFlow"
+      ]
+    },
+    "Text Processing and Analysis": {
+      "models": [
+        "Bag of Words",
+        "NLTK",
+        "Transformer"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Text Similarity": {
+      "models": [
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Pillow/PIL",
+        "scikit-learn"
+      ]
+    },
+    "Text Summarization": {
+      "models": [
+        "NLTK"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Text Summarization - Medium": {
+      "models": [
+        "NLTK"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Text Summarization - Word Frequency": {
+      "models": [
+        "NLTK"
+      ],
+      "tech": [
+        "NLTK"
+      ]
+    },
+    "Text Summarization - Word Frequency Method": {
+      "models": [
+        "NLTK"
+      ],
+      "tech": [
+        "NLTK"
+      ]
+    },
+    "Three-Way Sentiment Analysis - Tweets": {
+      "models": [
+        "Decision Tree",
+        "Logistic Regression",
+        "NLTK",
+        "Word2Vec"
+      ],
+      "tech": [
+        "Gensim",
+        "NLTK",
+        "scikit-learn"
+      ]
+    },
+    "Twitter Sentiment Analysis": {
+      "models": [
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Twitter Sentiment Analysis - ML": {
+      "models": [
+        "Bag of Words",
+        "Logistic Regression",
+        "NLTK"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Twitter US Airline Sentiment": {
+      "models": [
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "US Election Prediction": {
+      "models": [
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "WhatsApp Chat Analysis": {
+      "models": [
+        "NLTK",
+        "Naive Bayes",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "WhatsApp Group Chat Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "Wikipedia Search Word Cloud": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pillow/PIL",
+        "Requests"
+      ]
+    }
+  },
+  "Python Scripts": {
+    "Age Calculator GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Alarm Clock": {
+      "models": [],
+      "tech": []
+    },
+    "Alphabetical File Organizer": {
+      "models": [],
+      "tech": []
+    },
+    "Attachment Downloader": {
+      "models": [],
+      "tech": []
+    },
+    "AudioBook Creator": {
+      "models": [],
+      "tech": [
+        "pyttsx3"
+      ]
+    },
+    "Auto Backup": {
+      "models": [],
+      "tech": []
+    },
+    "Auto Birthday Wisher": {
+      "models": [],
+      "tech": [
+        "Pandas"
+      ]
+    },
+    "Auto Draw": {
+      "models": [],
+      "tech": [
+        "PyAutoGUI"
+      ]
+    },
+    "Auto Fill Google Forms": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Automate Facebook bot": {
+      "models": [],
+      "tech": [
+        "PyAutoGUI",
+        "Selenium"
+      ]
+    },
+    "Automatic Certificate Generator": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Pillow/PIL"
+      ]
+    },
+    "Automatic FB login": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "AWS Endorsement Management": {
+      "models": [],
+      "tech": []
+    },
+    "Brick Breaker game": {
+      "models": [],
+      "tech": [
+        "Pygame"
+      ]
+    },
+    "Bubble Shooter Game": {
+      "models": [],
+      "tech": [
+        "Pygame"
+      ]
+    },
+    "Calculate Age": {
+      "models": [],
+      "tech": []
+    },
+    "Calculator App": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Calculator GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Calendar GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Chat bot": {
+      "models": [
+        "TF-IDF",
+        "Transformer"
+      ],
+      "tech": [
+        "Hugging Face",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Chrome Automation": {
+      "models": [],
+      "tech": []
+    },
+    "CLI Proxy Tester": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Requests"
+      ]
+    },
+    "CLI Todo App": {
+      "models": [],
+      "tech": []
+    },
+    "COVID-19 Real-Time Notification": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "COVID-19 Update Bot": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "CSV File Merger": {
+      "models": [],
+      "tech": [
+        "Pandas"
+      ]
+    },
+    "Currency Converter": {
+      "models": [
+        "SGD",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Currency Exchange Rates": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Current Weather Fetcher": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Decimal Binary Converter": {
+      "models": [],
+      "tech": []
+    },
+    "Desktop Notification Application": {
+      "models": [],
+      "tech": []
+    },
+    "Device Shutdown and Restart": {
+      "models": [],
+      "tech": []
+    },
+    "Dictionary GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Dictionary to Python Object": {
+      "models": [],
+      "tech": []
+    },
+    "Digital Clock": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Digital Clock With GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Discord Bot": {
+      "models": [],
+      "tech": []
+    },
+    "DNS Record Lookup": {
+      "models": [],
+      "tech": []
+    },
+    "Download Folder Organizer": {
+      "models": [],
+      "tech": []
+    },
+    "Duplicate File Remover": {
+      "models": [],
+      "tech": []
+    },
+    "Easy Video Player": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Email GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Email Sender": {
+      "models": [],
+      "tech": []
+    },
+    "Email Sender from CSV": {
+      "models": [],
+      "tech": []
+    },
+    "Email to CSV Store": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup"
+      ]
+    },
+    "Email Validator": {
+      "models": [],
+      "tech": []
+    },
+    "Facebook Auto Login": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Facebook DP Downloader": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Facebook Video Downloader": {
+      "models": [],
+      "tech": [
+        "Requests",
+        "Tkinter"
+      ]
+    },
+    "Fidget Spinner Game": {
+      "models": [],
+      "tech": []
+    },
+    "File and Folder Compressor": {
+      "models": [],
+      "tech": []
+    },
+    "File and Folder Encryption": {
+      "models": [],
+      "tech": []
+    },
+    "File Compare": {
+      "models": [],
+      "tech": []
+    },
+    "File Encryptor": {
+      "models": [],
+      "tech": []
+    },
+    "File Renamer": {
+      "models": [],
+      "tech": []
+    },
+    "File Splitter": {
+      "models": [],
+      "tech": [
+        "Pandas"
+      ]
+    },
+    "File Unzipper": {
+      "models": [],
+      "tech": []
+    },
+    "Flames Game": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Folder Splitter": {
+      "models": [
+        "GAN"
+      ],
+      "tech": []
+    },
+    "GeeksForGeeks Article Downloader": {
+      "models": [],
+      "tech": [
+        "Requests",
+        "Selenium"
+      ]
+    },
+    "Geocoding": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "GitHub Automation": {
+      "models": [],
+      "tech": []
+    },
+    "GitHub Repo Automation": {
+      "models": [],
+      "tech": []
+    },
+    "GOOGLE API": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Google Classroom Bot": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Google News Scraper": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Requests"
+      ]
+    },
+    "Hacker News Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Hangman Game": {
+      "models": [],
+      "tech": [
+        "Pygame"
+      ]
+    },
+    "Hello": {
+      "models": [],
+      "tech": []
+    },
+    "High Quality YouTube Video Downloader": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Hostname and IP Finder": {
+      "models": [],
+      "tech": []
+    },
+    "HTTP Status Code Checker": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Image Converter": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL"
+      ]
+    },
+    "Image File Size Reducer": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Image Meta Info Extractor": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL",
+        "Requests"
+      ]
+    },
+    "Image to PDF Converter": {
+      "models": [],
+      "tech": []
+    },
+    "Image to Speech": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": [
+        "Pillow/PIL",
+        "Tesseract"
+      ]
+    },
+    "IMDB Rating Finder": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Pandas",
+        "Requests"
+      ]
+    },
+    "Instagram Follow and Message Bot": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Instagram Follow Tracker": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Instagram Image Downloader": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Pandas",
+        "Requests",
+        "Selenium"
+      ]
+    },
+    "Instagram Liker Bot": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Instagram Profile Viewer": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Pillow/PIL",
+        "Requests"
+      ]
+    },
+    "Instagram Scraper": {
+      "models": [
+        "GAN"
+      ],
+      "tech": []
+    },
+    "Instagram Unfollower Tracker": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Internet Connection Checker": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Internet Speed Test": {
+      "models": [],
+      "tech": []
+    },
+    "IPL Statistics GUI": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests",
+        "Tkinter"
+      ]
+    },
+    "JPEG to PNG Converter": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL",
+        "Tkinter"
+      ]
+    },
+    "JSON to CSV Converter": {
+      "models": [],
+      "tech": []
+    },
+    "Leap Year Checker": {
+      "models": [],
+      "tech": []
+    },
+    "LinkedIn Connections Scraper": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Requests",
+        "Selenium"
+      ]
+    },
+    "LinkedIn Email Scraper": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "Live Cricket Score": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup"
+      ]
+    },
+    "Lyrics Genius API": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Medium Article Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Movie Info Telegram Bot": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Movie Information Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Multi-File String Search": {
+      "models": [],
+      "tech": []
+    },
+    "Music Player": {
+      "models": [],
+      "tech": [
+        "Pygame",
+        "Tkinter"
+      ]
+    },
+    "News Updater With Voice": {
+      "models": [],
+      "tech": [
+        "SpeechRecognition",
+        "pyttsx3"
+      ]
+    },
+    "News Website Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "NSE Stocks GUI": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests",
+        "Selenium",
+        "Tkinter"
+      ]
+    },
+    "Number Guessing Game": {
+      "models": [],
+      "tech": []
+    },
+    "Numbers to Words Converter": {
+      "models": [],
+      "tech": []
+    },
+    "Open Port Scanner": {
+      "models": [],
+      "tech": []
+    },
+    "PageSpeed API": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Paint App": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Password Hashing": {
+      "models": [],
+      "tech": []
+    },
+    "Password Manager CLI": {
+      "models": [
+        "GAN"
+      ],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Password Manager GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "PDF Merger": {
+      "models": [],
+      "tech": []
+    },
+    "PDF Reader with Voice": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": [
+        "Pillow/PIL",
+        "SpeechRecognition",
+        "Tesseract",
+        "pyttsx3"
+      ]
+    },
+    "PDF Text Extractor": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": [
+        "Pillow/PIL",
+        "Tesseract"
+      ]
+    },
+    "PDF to CSV Converter": {
+      "models": [],
+      "tech": []
+    },
+    "PDF to Text Converter": {
+      "models": [
+        "OCR/Tesseract"
+      ],
+      "tech": []
+    },
+    "PNG to ICO Converter": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL",
+        "Tkinter"
+      ]
+    },
+    "Pomodoro Timer GUI": {
+      "models": [],
+      "tech": [
+        "Pygame",
+        "Tkinter"
+      ]
+    },
+    "PyDoku": {
+      "models": [
+        "GAN"
+      ],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "PyQt5 Password Generator": {
+      "models": [
+        "GAN"
+      ],
+      "tech": [
+        "PyQt"
+      ]
+    },
+    "pyWeather": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "QR Code Generator": {
+      "models": [
+        "GAN"
+      ],
+      "tech": [
+        "Pillow/PIL"
+      ]
+    },
+    "Quotes Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Racing Bar Chart Animation": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Requests"
+      ]
+    },
+    "Random Email Generator": {
+      "models": [
+        "GAN"
+      ],
+      "tech": []
+    },
+    "Random Password Generator": {
+      "models": [
+        "GAN"
+      ],
+      "tech": []
+    },
+    "Random Wikipedia Article": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Random Word from List": {
+      "models": [],
+      "tech": []
+    },
+    "Raspberry Pi Sonoff": {
+      "models": [],
+      "tech": [
+        "Flask"
+      ]
+    },
+    "Recursive Password Generator": {
+      "models": [
+        "GAN"
+      ],
+      "tech": []
+    },
+    "Reddit Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests"
+      ]
+    },
+    "Rock Paper Scissors Game": {
+      "models": [],
+      "tech": []
+    },
+    "Screen Recorder": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "NumPy",
+        "OpenCV",
+        "Pillow/PIL"
+      ]
+    },
+    "Screenshot Capture": {
+      "models": [],
+      "tech": [
+        "PyAutoGUI"
+      ]
+    },
+    "Simple Stopwatch": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Sine vs Cosine": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy"
+      ]
+    },
+    "Site Blocker": {
+      "models": [],
+      "tech": []
+    },
+    "SMS Automation": {
+      "models": [],
+      "tech": [
+        "Twilio"
+      ]
+    },
+    "Snake Game GUI": {
+      "models": [],
+      "tech": [
+        "Pygame"
+      ]
+    },
+    "Spaceship Game": {
+      "models": [],
+      "tech": [
+        "Pygame"
+      ]
+    },
+    "Speech to Text": {
+      "models": [],
+      "tech": [
+        "SpeechRecognition"
+      ]
+    },
+    "Speech to Text Converter": {
+      "models": [],
+      "tech": [
+        "SpeechRecognition",
+        "pyttsx3"
+      ]
+    },
+    "Speed Test": {
+      "models": [],
+      "tech": []
+    },
+    "Spreadsheet Automation": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Plotly"
+      ]
+    },
+    "Take a Break Reminder": {
+      "models": [],
+      "tech": []
+    },
+    "Terminal Hangman Game": {
+      "models": [],
+      "tech": []
+    },
+    "Terminal Progress Bar - Image Resize": {
+      "models": [],
+      "tech": [
+        "Pillow/PIL"
+      ]
+    },
+    "Text Editor": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Text Encryption and Decryption": {
+      "models": [],
+      "tech": []
+    },
+    "Text Message Sender": {
+      "models": [],
+      "tech": [
+        "Twilio"
+      ]
+    },
+    "Text to Speech": {
+      "models": [],
+      "tech": []
+    },
+    "Tic Tac Toe": {
+      "models": [],
+      "tech": []
+    },
+    "Tic Tac Toe with AI": {
+      "models": [],
+      "tech": []
+    },
+    "Todo App": {
+      "models": [],
+      "tech": [
+        "Flask"
+      ]
+    },
+    "Tweet Fetcher and Store": {
+      "models": [],
+      "tech": [
+        "Tweepy"
+      ]
+    },
+    "Twitter Scraper": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Typing Speed Test": {
+      "models": [],
+      "tech": []
+    },
+    "Unique Words in File": {
+      "models": [],
+      "tech": []
+    },
+    "Unsplash Wallpaper Downloader": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "URL Shortener": {
+      "models": [],
+      "tech": []
+    },
+    "USSD Service Data": {
+      "models": [],
+      "tech": []
+    },
+    "Video Frame Capture": {
+      "models": [
+        "OpenCV"
+      ],
+      "tech": [
+        "OpenCV"
+      ]
+    },
+    "Video Splitter by Time": {
+      "models": [],
+      "tech": []
+    },
+    "Video to Audio Converter": {
+      "models": [],
+      "tech": []
+    },
+    "Voice Translator": {
+      "models": [],
+      "tech": [
+        "SpeechRecognition",
+        "pyttsx3"
+      ]
+    },
+    "Wallpaper Changer": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Weather App": {
+      "models": [],
+      "tech": [
+        "Requests",
+        "Tkinter"
+      ]
+    },
+    "Web Crawler Link Finder": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Web Page Summarizer": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "NLTK",
+        "Word2Vec",
+        "spaCy NLP"
+      ],
+      "tech": [
+        "Gensim",
+        "NLTK",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Website Blocker": {
+      "models": [],
+      "tech": []
+    },
+    "Website Connectivity Checker": {
+      "models": [],
+      "tech": [
+        "Requests"
+      ]
+    },
+    "Website Image Downloader": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests",
+        "Selenium"
+      ]
+    },
+    "Website Load Time Checker": {
+      "models": [],
+      "tech": []
+    },
+    "Website Snapshot": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "WhatsApp Auto Messenger": {
+      "models": [],
+      "tech": [
+        "PyAutoGUI"
+      ]
+    },
+    "WhatsApp Automation": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "WhatsApp Bot": {
+      "models": [],
+      "tech": []
+    },
+    "WiFi Password Retriever": {
+      "models": [],
+      "tech": []
+    },
+    "Wikipedia Infobox Scraper": {
+      "models": [],
+      "tech": [
+        "BeautifulSoup",
+        "Requests",
+        "Tkinter"
+      ]
+    },
+    "Wikipedia Scraper": {
+      "models": [],
+      "tech": []
+    },
+    "Wikipedia Summary GUI": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "Word Games": {
+      "models": [],
+      "tech": []
+    },
+    "Work Setup Automation": {
+      "models": [],
+      "tech": []
+    },
+    "XML to JSON Converter": {
+      "models": [],
+      "tech": []
+    },
+    "YouTube Audio Downloader": {
+      "models": [],
+      "tech": [
+        "MoviePy"
+      ]
+    },
+    "YouTube Comment Scraper": {
+      "models": [],
+      "tech": [
+        "Selenium"
+      ]
+    },
+    "YouTube Trending Feed Scraper": {
+      "models": [],
+      "tech": [
+        "Pandas",
+        "Selenium"
+      ]
+    },
+    "YouTube Video Downloader": {
+      "models": [],
+      "tech": [
+        "Tkinter"
+      ]
+    },
+    "ZIP File Extractor": {
+      "models": [],
+      "tech": []
+    }
+  },
+  "Recommendation Systems": {
+    "Article Recommendation System": {
+      "models": [
+        "NLTK",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Surprise",
+        "scikit-learn"
+      ]
+    },
+    "Articles Recommender": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "scikit-learn"
+      ]
+    },
+    "Book Recommendation System": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "scikit-learn"
+      ]
+    },
+    "Building Recommender in an Hour": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "scikit-learn"
+      ]
+    },
+    "Collaborative Filtering - TensorFlow": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "E-Commerce Recommendation System": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Event Recommendation System": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Hotel Recommendation System": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Million Songs Recommendation Engine": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas"
+      ]
+    },
+    "Movie Recommendation Engine": {
+      "models": [
+        "KNN"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "SciPy"
+      ]
+    },
+    "Movie Recommendation System": {
+      "models": [
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Movies Recommender": {
+      "models": [
+        "KNN"
+      ],
+      "tech": [
+        "Pandas",
+        "Surprise"
+      ]
+    },
+    "Music Recommendation System": {
+      "models": [
+        "K-Means",
+        "PCA",
+        "t-SNE"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "PyTorch",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Recipe Recommendation System": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Recommender Systems Fundamentals": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas"
+      ]
+    },
+    "Recommender with Surprise Library": {
+      "models": [
+        "KNN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Pandas",
+        "Plotly",
+        "Surprise"
+      ]
+    },
+    "Restaurant Recommendation System": {
+      "models": [
+        "Bag of Words",
+        "Linear Regression",
+        "Logistic Regression",
+        "NLTK",
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Seattle Hotels Recommender": {
+      "models": [
+        "Bag of Words",
+        "LDA",
+        "NLTK",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NLTK",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "scikit-learn"
+      ]
+    },
+    "TV Show Recommendation System": {
+      "models": [
+        "TF-IDF"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "PyTorch",
+        "SciPy",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Regression": {
+    "50 Startups Success Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Ad Demand Forecast - Avito": {
+      "models": [
+        "Bag of Words",
+        "CatBoost",
+        "LightGBM",
+        "Ridge",
+        "TF-IDF"
+      ],
+      "tech": [
+        "CatBoost",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bank Customer churn prediction": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bengaluru House Price Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "BigMart Sales Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Bike Sharing Demand Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Bitcoin Price Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "scikit-learn"
+      ]
+    },
+    "Bitcoin Price Prediction - Advanced": {
+      "models": [
+        "ARIMA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Black Friday Sales Analysis": {
+      "models": [
+        "Decision Tree",
+        "Extra Trees",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Black Friday Sales Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Boston Housing Analysis": {
+      "models": [
+        "Lasso",
+        "Linear Regression",
+        "Ridge"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Boston Housing Prediction Analysis": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "California Housing Prediction": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "TensorFlow"
+      ]
+    },
+    "Car Price Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Car Price Prediction - Feature Based": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "China GDP Estimation": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "scikit-learn"
+      ]
+    },
+    "Crop yield prediction": {
+      "models": [
+        "Decision Tree"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Data Scientist Salary Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Diabetes Prediction - Pima Indians": {
+      "models": [
+        "Logistic Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Employee Future Prediction": {
+      "models": [
+        "AdaBoost",
+        "Bagging",
+        "Decision Tree",
+        "Extra Trees",
+        "Gradient Boosting",
+        "KNN",
+        "LightGBM",
+        "Logistic Regression",
+        "Naive Bayes",
+        "Random Forest",
+        "SVM/SVC",
+        "Transformer",
+        "XGBoost"
+      ],
+      "tech": [
+        "Hugging Face",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Energy Usage Prediction - Buildings": {
+      "models": [
+        "Ridge"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Flight Delay Prediction": {
+      "models": [
+        "Decision Tree"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Flight Fare Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Future Sales Prediction": {
+      "models": [
+        "ARIMA",
+        "Exponential Smoothing",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "Surprise",
+        "scikit-learn"
+      ]
+    },
+    "Gold Price Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "scikit-learn"
+      ]
+    },
+    "Heart disease prediction": {
+      "models": [
+        "Logistic Regression",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Hotel Booking Cancellation Prediction": {
+      "models": [
+        "AdaBoost",
+        "CNN",
+        "CatBoost",
+        "Decision Tree",
+        "Extra Trees",
+        "Gradient Boosting",
+        "KNN",
+        "LSTM",
+        "LightGBM",
+        "Logistic Regression",
+        "Random Forest",
+        "SVM/SVC",
+        "Voting",
+        "XGBoost"
+      ],
+      "tech": [
+        "CatBoost",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "House Price - Regularized Linear and XGBoost": {
+      "models": [
+        "ElasticNet",
+        "XGBoost"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "House Price prediction": {
+      "models": [
+        "ElasticNet",
+        "Gradient Boosting",
+        "Lasso",
+        "LightGBM",
+        "Random Forest",
+        "Ridge",
+        "Transformer",
+        "XGBoost"
+      ],
+      "tech": [
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "House Price Prediction - Detailed": {
+      "models": [
+        "Lasso"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Insurance premium prediction": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "IPL First Innings Prediction - Advanced": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "IPL First Innings Score Prediction": {
+      "models": [
+        "AdaBoost",
+        "Decision Tree",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Job Salary prediction": {
+      "models": [
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Medical Cost Personal": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Mercari Price Suggestion - LightGBM": {
+      "models": [
+        "Bag of Words",
+        "LightGBM",
+        "TF-IDF"
+      ],
+      "tech": [
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "scikit-learn"
+      ]
+    },
+    "Rainfall Amount Prediction": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "Ridge"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Rainfall Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "scikit-learn"
+      ]
+    },
+    "Stock price prediction": {
+      "models": [
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Tesla Car Price Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "TPOT Mercedes Prediction": {
+      "models": [
+        "TPOT"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "TPOT",
+        "scikit-learn"
+      ]
+    },
+    "UCLA Admission Prediction": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Reinforcement Learning": {
+    "Cliff Walking": {
+      "models": [
+        "DQN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenAI Gym",
+        "PyTorch"
+      ]
+    },
+    "Frozen Lake": {
+      "models": [
+        "DQN",
+        "Q-Learning"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenAI Gym",
+        "PyTorch"
+      ]
+    },
+    "Gridworld Navigation": {
+      "models": [
+        "DQN"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenAI Gym",
+        "PyTorch"
+      ]
+    },
+    "Lunar Landing": {
+      "models": [
+        "ANN/MLP",
+        "DQN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "OpenAI Gym",
+        "PyTorch",
+        "TensorFlow"
+      ]
+    },
+    "Taxi Navigation": {
+      "models": [
+        "DQN",
+        "Q-Learning"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "OpenAI Gym",
+        "Pandas",
+        "PyTorch"
+      ]
+    }
+  },
+  "Speech and Audio processing": {
+    "Audio Denoising": {
+      "models": [
+        "U-Net"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Image Captioning": {
+      "models": [
+        "NLTK",
+        "Transformer"
+      ],
+      "tech": [
+        "Hugging Face",
+        "Matplotlib",
+        "NLTK",
+        "NumPy",
+        "Pillow/PIL",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Music Genre Prediction - Million Songs": {
+      "models": [
+        "CNN",
+        "Gradient Boosting",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Voice Cloning": {
+      "models": [
+        "Transformer"
+      ],
+      "tech": [
+        "Hugging Face",
+        "Matplotlib",
+        "NumPy",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Anomaly detection and fraud detection": {
+    "Anomaly Detection - Numenta Benchmark": {
+      "models": [
+        "Autoencoder",
+        "LSTM"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Anomaly Detection - Social Networks Twitter Bot": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Anomaly Detection in Images - CIFAR-10": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    },
+    "Banknote Authentication": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Breast Cancer Detection - Wisconsin Dataset": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Fraud Detection - IEEE-CIS": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Fraud Detection in Financial Transactions": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Fraudulent Credit Card Transaction Detection": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Insurance Fraud Detection": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Intrusion Detection": {
+      "models": [],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Traffic Flow Prediction - METR-LA": {
+      "models": [
+        "LSTM"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "PyTorch",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Associate Rule Learning": {
+    "Grocery Store": {
+      "models": [
+        "Apriori",
+        "FP-Growth"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Online News": {
+      "models": [
+        "Apriori",
+        "FP-Growth",
+        "TF-IDF"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Online Retail": {
+      "models": [
+        "Apriori",
+        "FP-Growth"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "Online video game store": {
+      "models": [
+        "Apriori",
+        "FP-Growth"
+      ],
+      "tech": [
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    }
+  },
+  "Time Series Analysis": {
+    "Cryptocurrency Price Forecasting": {
+      "models": [
+        "ARIMA",
+        "Linear Regression"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Electricity Demand Forecasting": {
+      "models": [
+        "ARIMA",
+        "Linear Regression",
+        "Random Forest"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Forecasting with ARIMA": {
+      "models": [
+        "ARIMA"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Statsmodels"
+      ]
+    },
+    "Gold Price Forecasting": {
+      "models": [
+        "Gradient Boosting",
+        "LightGBM"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Granger Causality Test": {
+      "models": [],
+      "tech": [
+        "Plotly",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Mini Course Sales Forecasting": {
+      "models": [
+        "ANN/MLP",
+        "AdaBoost",
+        "CatBoost",
+        "Extra Trees",
+        "Gradient Boosting",
+        "Hierarchical Clustering",
+        "KNN",
+        "Lasso",
+        "LightGBM",
+        "Random Forest",
+        "Ridge",
+        "Stacking",
+        "Transformer",
+        "Voting",
+        "XGBoost"
+      ],
+      "tech": [
+        "CatBoost",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Pollution Forecasting": {
+      "models": [
+        "CNN",
+        "LSTM",
+        "Linear Regression"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Power Consumption - LSTM": {
+      "models": [
+        "ANN/MLP",
+        "LSTM",
+        "RNN"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "SciPy",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Promotional Time Series": {
+      "models": [
+        "Prophet"
+      ],
+      "tech": [
+        "Matplotlib",
+        "Plotly",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Rossmann Store Sales Forecasting": {
+      "models": [
+        "Linear Regression",
+        "Prophet"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Smart Home Temperature Forecasting": {
+      "models": [
+        "CatBoost",
+        "KNN",
+        "Linear Regression",
+        "Random Forest",
+        "Ridge",
+        "SVM/SVC",
+        "Transformer",
+        "XGBoost"
+      ],
+      "tech": [
+        "CatBoost",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Plotly",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Solar Power Generation Forecasting": {
+      "models": [
+        "ARIMA",
+        "Linear Regression",
+        "SVM/SVC"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Stock Market Analysis - Tech Stocks": {
+      "models": [],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn"
+      ]
+    },
+    "Stock Price Forecasting": {
+      "models": [
+        "LSTM",
+        "Ridge"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Store Item Demand Forecasting": {
+      "models": [
+        "ARIMA",
+        "Exponential Smoothing",
+        "LightGBM",
+        "Linear Regression",
+        "OCR/Tesseract",
+        "SVM/SVC",
+        "Transformer"
+      ],
+      "tech": [
+        "BeautifulSoup",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    },
+    "Time Series Forecasting": {
+      "models": [
+        "ARIMA",
+        "Prophet"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Statsmodels"
+      ]
+    },
+    "Time Series Forecasting - Introduction": {
+      "models": [
+        "ANN/MLP",
+        "LSTM"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "TensorFlow"
+      ]
+    },
+    "Time Series with LSTM": {
+      "models": [
+        "ANN/MLP",
+        "LSTM"
+      ],
+      "tech": [
+        "Keras",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "TensorFlow",
+        "scikit-learn"
+      ]
+    },
+    "Traffic Forecast": {
+      "models": [
+        "Prophet"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "scikit-learn"
+      ]
+    },
+    "US Gasoline and Diesel Prices 1995-2021": {
+      "models": [
+        "AdaBoost",
+        "CatBoost",
+        "Decision Tree",
+        "ElasticNet",
+        "Extra Trees",
+        "Gradient Boosting",
+        "Lasso",
+        "LightGBM",
+        "Linear Regression",
+        "Random Forest",
+        "Ridge",
+        "SGD",
+        "XGBoost"
+      ],
+      "tech": [
+        "CatBoost",
+        "LightGBM",
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "XGBoost",
+        "scikit-learn"
+      ]
+    },
+    "Weather Forecasting": {
+      "models": [
+        "LDA",
+        "Random Forest",
+        "SGD"
+      ],
+      "tech": [
+        "Matplotlib",
+        "NumPy",
+        "Pandas",
+        "Seaborn",
+        "Statsmodels",
+        "scikit-learn"
+      ]
+    }
+  }
+}

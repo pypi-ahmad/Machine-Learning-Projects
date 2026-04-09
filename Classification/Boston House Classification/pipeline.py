@@ -1,301 +1,164 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Boston House Classification
-
-Auto-generated from: boston_house_classification.ipynb
-Project: Boston House Classification
-Category: Classification | Task: classification
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-import pandas as pd
-# Additional imports extracted from mixed cells
-import matplotlib.pyplot as plt
+import os, sys, warnings
 import numpy as np
+import pandas as pd
+from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import StratifiedShuffleSplit
-from pandas.plotting import scatter_matrix
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from lazypredict.Supervised import LazyRegressor
-from pycaret.regression import *
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "MEDV"
+
+
+def load_data():
+    """Download dataset from the internet."""
+    from sklearn.datasets import fetch_california_housing
+    _d = fetch_california_housing(as_frame=True)
+    df = _d.frame
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target distribution:\n{df[TARGET].value_counts()}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{name} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    housing = load_dataset('boston_house_classification')
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing.head()
-
-    housing.info()
-
-    housing['CHAS'].value_counts()
-
-    housing.describe()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # # For plotting histogram
-    import matplotlib.pyplot as plt
-    housing.hist(bins=50, figsize=(20, 15))
-
-    # For learning purpose
-    import numpy as np
-    def split_train_test(data, test_ratio):
-        np.random.seed(42)
-        shuffled = np.random.permutation(len(data))
-        print(shuffled)
-        test_set_size = int(len(data) * test_ratio)
-        test_indices = shuffled[:test_set_size]
-        train_indices = shuffled[test_set_size:] 
-        return data.iloc[train_indices], data.iloc[test_indices]
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.model_selection import train_test_split
-    train_set, test_set  = train_test_split(housing, test_size=0.2, random_state=42)
-    print(f"Rows in train set: {len(train_set)}\nRows in test set: {len(test_set)}\n")
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    from sklearn.model_selection import StratifiedShuffleSplit
-    split = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-    for train_index, test_index in split.split(housing, housing['CHAS']):
-        strat_train_set = housing.loc[train_index]
-        strat_test_set = housing.loc[test_index]
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    strat_test_set['CHAS'].value_counts()
-
-    strat_train_set['CHAS'].value_counts()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    95/7
-
-    376/28
-
-    housing = strat_train_set.copy()
-
-    corr_matrix = housing.corr()
-    corr_matrix['MEDV'].sort_values(ascending=False)
-
-    from pandas.plotting import scatter_matrix
-    attributes = ["MEDV", "RM", "ZN", "LSTAT"]
-    scatter_matrix(housing[attributes], figsize = (12,8))
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing.plot(kind="scatter", x="RM", y="MEDV", alpha=0.8)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    housing["TAXRM"] = housing['TAX']/housing['RM']
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    corr_matrix = housing.corr()
-    corr_matrix['MEDV'].sort_values(ascending=False)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing.plot(kind="scatter", x="TAXRM", y="MEDV", alpha=0.8)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    housing = strat_train_set.drop("MEDV", axis=1)
-    housing_labels = strat_train_set["MEDV"].copy()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    a = housing.dropna(subset=["RM"]) #Option 1
-    a.shape
-    # Note that the original housing dataframe will remain unchanged
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    housing.drop("RM", axis=1).shape # Option 2
-    # Note that there is no RM column and also note that the original housing dataframe will remain unchanged
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    median = housing["RM"].median() # Compute median for Option 3
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    housing["RM"].fillna(median) # Option 3
-    # Note that the original housing dataframe will remain unchanged
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing.shape
-
-    housing.describe() # before we started filling missing attributes
-
-
-
-    # --- MODEL TRAINING ──────────────────────────────────────
-
-    from sklearn.impute import SimpleImputer
-    imputer = SimpleImputer(strategy="median")
-    imputer.fit(housing)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    imputer.statistics_
-
-    X = imputer.transform(housing)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing_tr = pd.DataFrame(X, columns=housing.columns)
-
-    housing_tr.describe()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.pipeline import Pipeline
-    from sklearn.preprocessing import StandardScaler
-    my_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy="median")),
-        #     ..... add as many as you want in your pipeline
-        ('std_scaler', StandardScaler()),
-    ])
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    housing_num_tr = my_pipeline.fit_transform(housing)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    housing_num_tr.shape
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyRegressor
-
-            lazy_reg = LazyRegressor(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_reg.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.regression import *
-
-            reg_setup = setup(data=housing, target='MEDV', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Boston House Classification")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

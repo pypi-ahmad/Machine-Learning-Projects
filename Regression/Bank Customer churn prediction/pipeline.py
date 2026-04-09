@@ -1,300 +1,124 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Bank Customer churn prediction
-
-Auto-generated from: bank_customer_churn_prediction.ipynb
-Project: Bank Customer churn prediction
-Category: Regression | Task: regression
+Modern Tabular Regression Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-## REQUIRED LIBRARIES
-# For data wrangling 
+import os, sys, warnings
 import numpy as np
 import pandas as pd
-
-# For visualization
-import matplotlib.pyplot as plt
-import seaborn as sns
-pd.options.display.max_rows = None
-pd.options.display.max_columns = None
-# Additional imports extracted from mixed cells
+from pathlib import Path
 from sklearn.model_selection import train_test_split
-from lazypredict.Supervised import LazyClassifier
-from pycaret.classification import *
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-# data prep pipeline for test data
-def DfPrepPipeline(df_predict,df_train_Cols,minVec,maxVec):
-    # Add new features
-    df_predict['BalanceSalaryRatio'] = df_predict.Balance/df_predict.EstimatedSalary
-    df_predict['TenureByAge'] = df_predict.Tenure/(df_predict.Age - 18)
-    df_predict['CreditScoreGivenAge'] = df_predict.CreditScore/(df_predict.Age - 18)
-    # Reorder the columns
-    continuous_vars = ['CreditScore','Age','Tenure','Balance','NumOfProducts','EstimatedSalary','BalanceSalaryRatio',
-                   'TenureByAge','CreditScoreGivenAge']
-    cat_vars = ['HasCrCard','IsActiveMember',"Geography", "Gender"] 
-    df_predict = df_predict[['Exited'] + continuous_vars + cat_vars]
-    # Change the 0 in categorical variables to -1
-    df_predict.loc[df_predict.HasCrCard == 0, 'HasCrCard'] = -1
-    df_predict.loc[df_predict.IsActiveMember == 0, 'IsActiveMember'] = -1
-    # One hot encode the categorical variables
-    lst = ["Geography", "Gender"]
-    remove = list()
-    for i in lst:
-        for j in df_predict[i].unique():
-            df_predict[i+'_'+j] = np.where(df_predict[i] == j,1,-1)
-        remove.append(i)
-    df_predict = df_predict.drop(remove, axis=1)
-    # Ensure that all one hot encoded variables that appear in the train data appear in the subsequent data
-    L = list(set(df_train_Cols) - set(df_predict.columns))
-    for l in L:
-        df_predict[str(l)] = -1        
-    # MinMax scaling coontinuous variables based on min and max from the train data
-    df_predict[continuous_vars] = (df_predict[continuous_vars]-minVec)/(maxVec-minVec)
-    # Ensure that The variables are ordered in the same way as was ordered in the train set
-    df_predict = df_predict[df_train_Cols]
-    return df_predict
+warnings.filterwarnings("ignore")
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+TARGET = "Exited"
+
+
+def load_data():
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("aai510-group1/telecom-churn-dataset", split="train").to_pandas()
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+
+    try:
+        from catboost import CatBoostRegressor
+        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=50, verbose=100)
+        m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = m.predict(X_test)
+        print(f"✓ CatBoost RMSE: {mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+                              device="gpu", verbose=-1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"✓ LightGBM RMSE: {mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    try:
+        from xgboost import XGBRegressor
+        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+                         verbosity=1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"✓ XGBoost RMSE: {mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML Best: {automl.best_estimator} — RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    best_name, best_rmse = None, float("inf")
+    for name, y_pred in results.items():
+        rmse = mean_squared_error(y_test, y_pred, squared=False)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        print(f"— {name} — RMSE: {rmse:.4f} | MAE: {mae:.4f} | R²: {r2:.4f}")
+        if rmse < best_rmse:
+            best_rmse, best_name = rmse, name
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.scatter(y_test, y_pred, alpha=0.4, s=10)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+        ax.set_title(f"{name} — Predicted vs Actual")
+        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} (RMSE: {best_rmse:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    # Read the data frame
-    df = load_dataset('bank_customer_churn_prediction')
-    df.shape
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # Check columns list and missing values
-    df.isnull().sum()
-
-    # Get unique count for each variable
-    df.nunique()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # Drop the columns as explained above
-    df = df.drop(["RowNumber", "CustomerId", "Surname"], axis = 1)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # Review the top rows of what is left of the data frame
-    df.head()
-
-    # Check variable data types
-    df.dtypes
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    labels = 'Exited', 'Retained'
-    sizes = [df.Exited[df['Exited']==1].count(), df.Exited[df['Exited']==0].count()]
-    explode = (0, 0.1)
-    fig1, ax1 = plt.subplots(figsize=(10, 8))
-    ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
-            shadow=True, startangle=90)
-    ax1.axis('equal')
-    plt.title("Proportion of customer churned and retained", size = 20)
-    plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # We first review the 'Status' relation with categorical variables
-    fig, axarr = plt.subplots(2, 2, figsize=(20, 12))
-    sns.countplot(x='Geography', hue = 'Exited',data = df, ax=axarr[0][0])
-    sns.countplot(x='Gender', hue = 'Exited',data = df, ax=axarr[0][1])
-    sns.countplot(x='HasCrCard', hue = 'Exited',data = df, ax=axarr[1][0])
-    sns.countplot(x='IsActiveMember', hue = 'Exited',data = df, ax=axarr[1][1])
-
-    # Relations based on the continuous data attributes
-    fig, axarr = plt.subplots(3, 2, figsize=(20, 12))
-    sns.boxplot(y='CreditScore',x = 'Exited', hue = 'Exited',data = df, ax=axarr[0][0])
-    sns.boxplot(y='Age',x = 'Exited', hue = 'Exited',data = df , ax=axarr[0][1])
-    sns.boxplot(y='Tenure',x = 'Exited', hue = 'Exited',data = df, ax=axarr[1][0])
-    sns.boxplot(y='Balance',x = 'Exited', hue = 'Exited',data = df, ax=axarr[1][1])
-    sns.boxplot(y='NumOfProducts',x = 'Exited', hue = 'Exited',data = df, ax=axarr[2][0])
-    sns.boxplot(y='EstimatedSalary',x = 'Exited', hue = 'Exited',data = df, ax=axarr[2][1])
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # Split Train, test data
-    df_train = df.sample(frac=0.8,random_state=200)
-    df_test = df.drop(df_train.index)
-    print(len(df_train))
-    print(len(df_test))
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df_train['BalanceSalaryRatio'] = df_train.Balance/df_train.EstimatedSalary
-    sns.boxplot(y='BalanceSalaryRatio',x = 'Exited', hue = 'Exited',data = df_train)
-    plt.ylim(-1, 5)
-
-    # Given that tenure is a 'function' of age, we introduce a variable aiming to standardize tenure over age:
-    df_train['TenureByAge'] = df_train.Tenure/(df_train.Age)
-    sns.boxplot(y='TenureByAge',x = 'Exited', hue = 'Exited',data = df_train)
-    plt.ylim(-1, 1)
-    plt.show()
-
-    '''Lastly we introduce a variable to capture credit score given age to take into account credit behaviour visavis adult life
-    :-)'''
-    df_train['CreditScoreGivenAge'] = df_train.CreditScore/(df_train.Age)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # Resulting Data Frame
-    df_train.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # Arrange columns by data type for easier manipulation
-    continuous_vars = ['CreditScore',  'Age', 'Tenure', 'Balance','NumOfProducts', 'EstimatedSalary', 'BalanceSalaryRatio',
-                       'TenureByAge','CreditScoreGivenAge']
-    cat_vars = ['HasCrCard', 'IsActiveMember','Geography', 'Gender']
-    df_train = df_train[['Exited'] + continuous_vars + cat_vars]
-    df_train.head()
-
-    '''For the one hot variables, we change 0 to -1 so that the models can capture a negative relation 
-    where the attribute in inapplicable instead of 0'''
-    df_train.loc[df_train.HasCrCard == 0, 'HasCrCard'] = -1
-    df_train.loc[df_train.IsActiveMember == 0, 'IsActiveMember'] = -1
-    df_train.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # One hot encode the categorical variables
-    lst = ['Geography', 'Gender']
-    remove = list()
-    for i in lst:
-        if (df_train[i].dtype == np.str or df_train[i].dtype == np.object):
-            for j in df_train[i].unique():
-                df_train[i+'_'+j] = np.where(df_train[i] == j,1,-1)
-            remove.append(i)
-    df_train = df_train.drop(remove, axis=1)
-    df_train.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # minMax scaling the continuous variables
-    minVec = df_train[continuous_vars].min().copy()
-    maxVec = df_train[continuous_vars].max().copy()
-    df_train[continuous_vars] = (df_train[continuous_vars]-minVec)/(maxVec-minVec)
-    df_train.head()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.model_selection import train_test_split
-
-    # Define features and target
-    X = df.drop(columns=['Exited'])
-    y = df['Exited']
-
-    # Handle non-numeric columns for modeling
-    X = pd.get_dummies(X, drop_first=True)
-    X = X.fillna(0)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyClassifier
-
-            lazy_clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_clf.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.classification import *
-
-            clf_setup = setup(data=df, target='Exited', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR REGRESSION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Bank Customer churn prediction")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

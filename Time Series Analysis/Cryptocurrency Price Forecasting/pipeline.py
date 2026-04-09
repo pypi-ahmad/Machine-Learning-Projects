@@ -1,183 +1,94 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Cryptocurrency Price Forecasting
-
-Auto-generated from: code.ipynb
-Project: Cryptocurrency Price Forecasting
-Category: Time Series Analysis | Task: time_series
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import pandas as pd
-from pandas import DataFrame
+import os, warnings
 import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
-from datetime import datetime, timedelta
-from statsmodels.tsa.arima_model import ARIMA
-from statsmodels.tsa.statespace.sarimax import SARIMAX
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.seasonal import seasonal_decompose
-from scipy import stats
-import statsmodels.api as sm
-from itertools import product
-from math import sqrt
-from sklearn.metrics import mean_squared_error
-import warnings
-from pycaret.time_series import *
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "Close"
+HORIZON = 30
+
+
+def load_data():
+    import yfinance as yf
+    df = yf.download("BTC-USD", period="5y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {df.shape}, target: {target}")
+    return df, target
+
+
+def forecast(df, target):
+    results = {}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
+
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
+
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {col} RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ StatsForecast: {e}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- EVALUATION ──────────────────────────────────────────
-
-    import pandas as pd
-    from pandas import DataFrame
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    from datetime import datetime, timedelta
-    from statsmodels.tsa.arima_model import ARIMA
-    from statsmodels.tsa.statespace.sarimax import SARIMAX
-    from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-    from statsmodels.tsa.stattools import adfuller
-    from statsmodels.tsa.seasonal import seasonal_decompose
-    from scipy import stats
-    import statsmodels.api as sm
-    from itertools import product
-    from math import sqrt
-    from sklearn.metrics import mean_squared_error
-
-    import warnings
-    warnings.filterwarnings('ignore')
-
-
-    colors = ["windows blue", "amber", "faded green", "dusty purple"]
-    sns.set(rc={"figure.figsize": (20,10), "axes.titlesize" : 18, "axes.labelsize" : 12,
-                "xtick.labelsize" : 14, "ytick.labelsize" : 14 })
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    dateparse = lambda dates: pd.datetime.strptime(dates, '%Y-%m-%d')
-    df = load_dataset('cryptocurrency_price_forecasting')
-    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df.sample(5)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # Extract the bitcoin data only
-    btc=df[df['Symbol']=='BTC']
-    # Drop some columns
-    btc.drop(['Volume', 'Market Cap'],axis=1,inplace=True)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # Resampling to monthly frequency
-    btc_month = btc.resample('M').mean()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    #seasonal_decompose(btc_month.close, freq=12).plot()
-    seasonal_decompose(btc_month.Close, model='additive').plot()
-    print("Dickey–Fuller test: p=%f" % adfuller(btc_month.Close)[1])
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # Box-Cox Transformations
-    btc_month['close_box'], lmbda = stats.boxcox(btc_month.Close)
-    print("Dickey–Fuller test: p=%f" % adfuller(btc_month.close_box)[1])
-
-    # Seasonal differentiation (12 months)
-    btc_month['box_diff_seasonal_12'] = btc_month.close_box - btc_month.close_box.shift(12)
-    print("Dickey–Fuller test: p=%f" % adfuller(btc_month.box_diff_seasonal_12[12:])[1])
-
-    # Seasonal differentiation (3 months)
-    btc_month['box_diff_seasonal_3'] = btc_month.close_box - btc_month.close_box.shift(3)
-    print("Dickey–Fuller test: p=%f" % adfuller(btc_month.box_diff_seasonal_3[3:])[1])
-
-    # Regular differentiation
-    btc_month['box_diff2'] = btc_month.box_diff_seasonal_12 - btc_month.box_diff_seasonal_12.shift(1)
-
-    # STL-decomposition
-    seasonal_decompose(btc_month.box_diff2[13:]).plot()
-    print("Dickey–Fuller test: p=%f" % adfuller(btc_month.box_diff2[13:])[1])
-
-    #autocorrelation_plot(btc_month.close)
-    plot_acf(btc_month.Close[13:].values.squeeze(), lags=12)
-    plt.tight_layout()
-
-    # Initial approximation of parameters using Autocorrelation and Partial Autocorrelation Plots
-    ax = plt.subplot(211)
-    # Plot the autocorrelation function
-    #sm.graphics.tsa.plot_acf(btc_month.box_diff2[13:].values.squeeze(), lags=48, ax=ax)
-    plot_acf(btc_month.box_diff2[13:].values.squeeze(), lags=12, ax=ax)
-    ax = plt.subplot(212)
-    #sm.graphics.tsa.plot_pacf(btc_month.box_diff2[13:].values.squeeze(), lags=48, ax=ax)
-    plot_pacf(btc_month.box_diff2[13:].values.squeeze(), lags=12, ax=ax)
-    plt.tight_layout()
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-    from pycaret.time_series import *
-
-    ts_setup = setup(data=df, target='Close', fh=12, session_id=42, verbose=False)
-
-    # Compare models and select best
-    best_model = compare_models()
-
-    # Display comparison results
-    print(best_model)
-
-    # Plot forecast
-    plot_model(best_model, plot='forecast')
-
-    # Finalize the model
-    final_model = finalize_model(best_model)
-
-    # Make predictions
-    predictions = predict_model(final_model)
-    print(predictions)
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Cryptocurrency Price Forecasting")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

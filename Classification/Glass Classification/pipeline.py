@@ -1,320 +1,164 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Glass Classification
-
-Auto-generated from: Glass_classification.ipynb
-Project: Glass Classification
-Category: Classification | Task: classification
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
 """
-
+import os, sys, warnings
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-import numpy as np  # linear algebra
-import pandas as pd  # read and wrangle dataframes
-import matplotlib.pyplot as plt # visualization
-import seaborn as sns # statistical visualizations and aesthetics
-from sklearn.base import TransformerMixin # To create new classes for transformations
-from sklearn.preprocessing import (FunctionTransformer, StandardScaler) # preprocessing 
-from sklearn.decomposition import PCA # dimensionality reduction
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from scipy.stats import boxcox # data transform
-from sklearn.model_selection import (train_test_split, KFold , StratifiedKFold, 
-                                     cross_val_score, GridSearchCV, 
-                                     learning_curve, validation_curve) # model selection modules
-from sklearn.pipeline import Pipeline # streaming pipelines
-from sklearn.base import BaseEstimator, TransformerMixin # To create a box-cox transformation class
-from collections import Counter
-import warnings
-# load models
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from xgboost import (XGBClassifier, plot_importance)
-from sklearn.svm import SVC
-from sklearn.ensemble import (RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier)
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.naive_bayes import GaussianNB
-from time import time
+warnings.filterwarnings("ignore")
 
-warnings.filterwarnings('ignore')
-sns.set_style('whitegrid')
-# Additional imports extracted from mixed cells
-from lazypredict.Supervised import LazyClassifier
-from pycaret.classification import *
+TARGET = "Type"
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-# Detect observations with more than one outlier
 
-def outlier_hunt(df):
-    """
-    Takes a dataframe df of features and returns a list of the indices
-    corresponding to the observations containing more than 2 outliers. 
-    """
-    outlier_indices = []
-    
-    # iterate over features(columns)
-    for col in df.columns.tolist():
-        # 1st quartile (25%)
-        Q1 = np.percentile(df[col], 25)
-        
-        # 3rd quartile (75%)
-        Q3 = np.percentile(df[col],75)
-        
-        # Interquartile rrange (IQR)
-        IQR = Q3 - Q1
-        
-        # outlier step
-        outlier_step = 1.5 * IQR
-        
-        # Determine a list of indices of outliers for feature col
-        outlier_list_col = df[(df[col] < Q1 - outlier_step) | (df[col] > Q3 + outlier_step )].index
-        
-        # append the found outlier indices for col to the list of outlier indices 
-        outlier_indices.extend(outlier_list_col)
-        
-    # select observations containing more than 2 outliers
-    outlier_indices = Counter(outlier_indices)        
-    multiple_outliers = list( k for k, v in outlier_indices.items() if v > 2 )
-    
-    return multiple_outliers   
+def load_data():
+    """Download dataset from the internet."""
+    from sklearn.datasets import fetch_openml
+    _d = fetch_openml(data_id=41, as_frame=True, parser="auto")
+    df = _d.frame
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target distribution:\n{df[TARGET].value_counts()}")
+    return df
 
-print('The dataset contains %d observations with more than 2 outliers' %(len(outlier_hunt(df[features]))))
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{name} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df = load_dataset('glass_classification')
-    features = df.columns[:-1].tolist()
-    print(df.shape)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    features
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.head(15)
-
-    df.dtypes
-
-    df.describe()
-
-    df['Type'].value_counts()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    for feat in features:
-        skew = df[feat].skew()
-        sns.distplot(df[feat], kde= False, label='Skew = %.3f' %(skew), bins=30)
-        plt.legend(loc='best')
-        plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    plt.figure(figsize=(8,6))
-    sns.boxplot(data=df[features])
-    plt.show()
-
-    plt.figure(figsize=(8,8))
-    sns.pairplot(df[features],palette='coolwarm')
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    corr = df[features].corr()
-    plt.figure(figsize=(16,16))
-    sns.heatmap(corr, cbar = True,  square = True, annot=True, fmt= '.2f',annot_kws={'size': 15},
-               xticklabels= features, yticklabels= features, alpha = 0.7,   cmap= 'coolwarm')
-    plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.info()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    outlier_indices = outlier_hunt(df[features])
-    df = df.drop(outlier_indices).reset_index(drop=True)
-    print(df.shape)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    for feat in features:
-        skew = df[feat].skew()
-        sns.distplot(df[feat], kde=False, label='Skew = %.3f' %(skew), bins=30)
-        plt.legend(loc='best')
-        plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df['Type'].value_counts()
-
-    sns.countplot(df['Type'])
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # Define X as features and y as lablels
-    X = df[features] 
-    y = df['Type']
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # Check for missing or infinite values
-    print(X.isnull().sum())
-    print(np.isfinite(X).sum())
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    # Standardize the input features
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-
-    # Split the dataset into training and testing sets
-    seed = 7
-    test_size = 0.2
-    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=test_size, random_state=seed)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    features_boxcox = []
-
-    for feature in features:
-        bc_transformed, _ = boxcox(df[feature]+1)  # shift by 1 to avoid computing log of negative values
-        features_boxcox.append(bc_transformed)
-
-    features_boxcox = np.column_stack(features_boxcox)
-    df_bc = pd.DataFrame(data=features_boxcox, columns=features)
-    df_bc['Type'] = df['Type']
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df_bc.describe()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    for feature in features:
-        fig, ax = plt.subplots(1,2,figsize=(7,3.5))    
-        ax[0].hist(df[feature], color='blue', bins=30, alpha=0.3, label='Skew = %s' %(str(round(df[feature].skew(),3))) )
-        ax[0].set_title(str(feature))   
-        ax[0].legend(loc=0)
-        ax[1].hist(df_bc[feature], color='red', bins=30, alpha=0.3, label='Skew = %s' %(str(round(df_bc[feature].skew(),3))) )
-        ax[1].set_title(str(feature)+' after a Box-Cox transformation')
-        ax[1].legend(loc=0)
-        plt.show()
-
-    # check if skew is closer to zero after a box-cox transform
-    for feature in features:
-        delta = np.abs( df_bc[feature].skew() / df[feature].skew() )
-        if delta < 1.0 :
-            print('Feature %s is less skewed after a Box-Cox transform' %(feature))
-        else:
-            print('Feature %s is more skewed after a Box-Cox transform'  %(feature))
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyClassifier
-
-            lazy_clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_clf.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.classification import *
-
-            clf_setup = setup(data=df, target='Type', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Glass Classification")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

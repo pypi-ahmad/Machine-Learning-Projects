@@ -1,537 +1,164 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Drug Classification
-
-Auto-generated from: Drug_Classification.ipynb
-Project: Drug Classification
-Category: Classification | Task: classification
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
+import os, sys, warnings
 import numpy as np
 import pandas as pd
-
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
-# Importing Libraries for the Machine Learning Model
-from xgboost import XGBClassifier
-from lightgbm import LGBMModel,LGBMClassifier, plot_importance
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
-from sklearn.model_selection import train_test_split
-# Additional imports extracted from mixed cells
-from wordcloud import WordCloud
-from wordcloud import STOPWORDS
-from textblob import TextBlob
-from nltk.corpus import stopwords
-from collections import Counter
-import warnings; warnings.simplefilter('ignore')
-import nltk
-import string
-from nltk import ngrams
-from nltk.tokenize import word_tokenize
-from nltk.stem import SnowballStemmer
-from sklearn.preprocessing import LabelEncoder
-from lazypredict.Supervised import LazyClassifier
-from pycaret.classification import *
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-def review_clean(review): 
-    # changing to lower case
-    lower = review.str.lower()
-    
-    # Replacing the repeating pattern of &#039;
-    pattern_remove = lower.str.replace("&#039;", "")
-    
-    # Removing all the special Characters
-    special_remove = pattern_remove.str.replace(r'[^\w\d\s]',' ')
-    
-    # Removing all the non ASCII characters
-    ascii_remove = special_remove.str.replace(r'[^\x00-\x7F]+',' ')
-    
-    # Removing the leading and trailing Whitespaces
-    whitespace_remove = ascii_remove.str.replace(r'^\s+|\s+?$','')
-    
-    # Replacing multiple Spaces with Single Space
-    multiw_remove = whitespace_remove.str.replace(r'\s+',' ')
-    
-    # Replacing Two or more dots with one
-    dataframe = multiw_remove.str.replace(r'\.{2,}', ' ')
-    
-    return dataframe
-def sentiment(review):
-    # Sentiment polarity of the reviews
-    pol = []
-    for i in review:
-        analysis = TextBlob(i)
-        pol.append(analysis.sentiment.polarity)
-    return pol
+warnings.filterwarnings("ignore")
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+TARGET = "Drug"
+
+
+def load_data():
+    """Download dataset from the internet."""
+    from sklearn.datasets import fetch_openml
+    _d = fetch_openml(data_id=46045, as_frame=True, parser="auto")
+    df = _d.frame
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target distribution:\n{df[TARGET].value_counts()}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{name} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df = load_dataset('drug_classification')
-    test = pd.read_csv('../../data/drug_classification/drugsComTest_raw.csv')
-    df.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # as both the dataset contains same columns we can combine them for better analysis
-
-    data = pd.concat([df, test])
-    data.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # describing the data
-
-    data.describe()
-
-    # taking out information from the data
-
-    data.info()
-
-    # get the datatype of columns
-
-    data.dtypes
-
-    # checking if the data contains any NULL values
-
-    data.isnull().any()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    # let's see the words cloud for the reviews 
-
-    # most popular drugs
-
-    from wordcloud import WordCloud
-    from wordcloud import STOPWORDS
-
-    stopwords = set(STOPWORDS)
-
-    wordcloud = WordCloud(background_color = 'orange', stopwords = stopwords, width = 1200, height = 800).generate(str(data['drugName']))
-
-    plt.rcParams['figure.figsize'] = (15, 15)
-    plt.title('Word Cloud - Drug Names', fontsize = 25)
-    print(wordcloud)
-    plt.axis('off')
-    plt.imshow(wordcloud)
-    plt.show()
-
-    # This barplot shows the top 20 drugs with the 10/10 rating
-
-    # Setting the Parameter
-    sns.set(font_scale = 1.2, style = 'darkgrid')
-    plt.rcParams['figure.figsize'] = [15, 8]
-
-    rating = dict(data.loc[data.rating == 10, "drugName"].value_counts())
-    drugname = list(rating.keys())
-    drug_rating = list(rating.values())
-
-    sns_rating = sns.barplot(x = drugname[0:20], y = drug_rating[0:20])
-
-    sns_rating.set_title('Top 20 drugs with 10/10 rating')
-    sns_rating.set_ylabel("Number of Ratings")
-    sns_rating.set_xlabel("Drug Names")
-    plt.setp(sns_rating.get_xticklabels(), rotation=90);
-
-    # This barplot shows the Top 20 drugs with the 1/10 rating
-
-    # Setting the Parameter
-    sns.set(font_scale = 1.2, style = 'darkgrid')
-    plt.rcParams['figure.figsize'] = [15, 8]
-
-    rating = dict(data.loc[data.rating == 1, "drugName"].value_counts())
-    drugname = list(rating.keys())
-    drug_rating = list(rating.values())
-
-    sns_rating = sns.barplot(x = drugname[0:20], y = drug_rating[0:20], palette = 'winter')
-
-    sns_rating.set_title('Top 20 drugs with 1/10 rating')
-    sns_rating.set_ylabel("Number of Ratings")
-    sns_rating.set_xlabel("Drug Names")
-    plt.setp(sns_rating.get_xticklabels(), rotation=90);
-
-    # making a donut chart to represent share of each ratings
-
-    size = [68005, 46901, 36708, 25046, 12547, 10723, 8462, 6671]
-    colors = ['pink', 'cyan', 'maroon',  'magenta', 'orange', 'navy', 'lightgreen', 'yellow']
-    labels = "10", "1", "9", "8", "7", "5", "6", "4"
-
-    my_circle = plt.Circle((0, 0), 0.7, color = 'white')
-
-    plt.rcParams['figure.figsize'] = (10, 10)
-    plt.pie(size, colors = colors, labels = labels, autopct = '%.2f%%')
-    plt.axis('off')
-    plt.title('Pie Chart Representation of Ratings', fontsize = 25)
-    p = plt.gcf()
-    plt.gca().add_artist(my_circle)
-    plt.legend()
-    plt.show()
-
-    # A countplot of the ratings so we can see the distribution of the ratings
-    plt.rcParams['figure.figsize'] = [20,8]
-    sns.set(font_scale = 1.4, style = 'darkgrid')
-    fig, ax = plt.subplots(1, 2)
-
-    sns_1 = sns.countplot(data['rating'], palette = 'spring', order = list(range(10, 0, -1)), ax = ax[0])
-    sns_2 = sns.distplot(data['rating'], ax = ax[1])
-    sns_1.set_title('Count of Ratings')
-    sns_1.set_xlabel("Rating")
-
-    sns_2.set_title('Distribution of Ratings')
-    sns_2.set_xlabel("Rating")
-
-    # This barplot show the top 10 conditions the people are suffering.
-    cond = dict(data['condition'].value_counts())
-    top_condition = list(cond.keys())[0:10]
-    values = list(cond.values())[0:10]
-    sns.set(style = 'darkgrid', font_scale = 1.3)
-    plt.rcParams['figure.figsize'] = [18, 7]
-
-    sns_ = sns.barplot(x = top_condition, y = values, palette = 'winter')
-    sns_.set_title("Top 10 conditions")
-    sns_.set_xlabel("Conditions")
-    sns_.set_ylabel("Count");
-
-    # Top 10 drugs which are used for the top condition, that is Birth Control
-    df1 = data[data['condition'] == 'Birth Control']['drugName'].value_counts()[0: 10]
-    sns.set(font_scale = 1.2, style = 'darkgrid')
-
-    sns_ = sns.barplot(x = df1.index, y = df1.values, palette = 'summer')
-    sns_.set_xlabel('Drug Names')
-    sns_.set_title("Top 10 Drugs used for Birth Control")
-    plt.setp(sns_.get_xticklabels(), rotation = 90);
-
-    # let's see the words cloud for the reviews 
-
-    # most popular drugs
-
-    from wordcloud import WordCloud
-    from wordcloud import STOPWORDS
-
-    stopwords = set(STOPWORDS)
-
-    wordcloud = WordCloud(background_color = 'lightblue', stopwords = stopwords, width = 1200, height = 800).generate(str(data['review']))
-
-    plt.rcParams['figure.figsize'] = (15, 15)
-    plt.title('WORD CLOUD OF REVIEWS', fontsize = 25)
-    print(wordcloud)
-    plt.axis('off')
-    plt.imshow(wordcloud)
-    plt.show()
-
-    # feature engineering 
-    # let's make a new column review sentiment 
-
-    data.loc[(data['rating'] >= 5), 'Review_Sentiment'] = 1
-    data.loc[(data['rating'] < 5), 'Review_Sentiment'] = 0
-
-    data['Review_Sentiment'].value_counts()
-
-    # a pie chart to represent the sentiments of the patients
-
-    size = [161491, 53572]
-    colors = ['lightblue', 'navy']
-    labels = "Positive Sentiment","Negative Sentiment"
-    explode = [0, 0.1]
-
-    plt.rcParams['figure.figsize'] = (10, 10)
-    plt.pie(size, colors = colors, labels = labels, explode = explode, autopct = '%.2f%%')
-    plt.axis('off')
-    plt.title('Pie Chart Representation of Sentiments', fontsize = 25)
-    plt.legend()
-    plt.show()
-
-    # making Words cloud for the postive sentiments
-
-    positive_sentiments = " ".join([text for text in data['review'][data['Review_Sentiment'] == 1]])
-
-    from wordcloud import WordCloud
-    from wordcloud import STOPWORDS
-
-    stopwords = set(STOPWORDS)
-    wordcloud = WordCloud(background_color = 'magenta', stopwords = stopwords, width = 1200, height = 800).generate(positive_sentiments)
-
-    plt.rcParams['figure.figsize'] = (15, 15)
-    plt.title('Word Cloud of Positive Reviews', fontsize = 30)
-    print(wordcloud)
-    plt.axis('off')
-    plt.imshow(wordcloud)
-    plt.show()
-
-    # making wordscloud for the Negative sentiments
-
-    negative_sentiments = " ".join([text for text in data['review'][data['Review_Sentiment'] == 0]])
-
-    from wordcloud import WordCloud
-    from wordcloud import STOPWORDS
-
-    stopwords = set(STOPWORDS)
-    wordcloud = WordCloud(background_color = 'cyan', stopwords = stopwords, width = 1200, height = 800).generate(negative_sentiments)
-
-    plt.rcParams['figure.figsize'] = (15, 15)
-    plt.title('Word Cloud of Negative Reviews', fontsize = 30)
-    print(wordcloud)
-    plt.axis('off')
-    plt.imshow(wordcloud)
-    plt.show()
-
-    # converting the date into datetime format
-    data['date'] = pd.to_datetime(data['date'], errors = 'coerce')
-
-    # now extracting year from date
-    data['Year'] = data['date'].dt.year
-
-    # extracting the month from the date
-    data['month'] = data['date'].dt.month
-
-    # extracting the days from the date
-    data['day'] = data['date'].dt.day
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    # looking at the no. of reviews in each of the year
-
-    plt.rcParams['figure.figsize'] = (19, 8)
-    sns.countplot(data['Year'], palette ='colorblind')
-    plt.title('The No. of Reviews each year', fontsize = 30)
-    plt.xlabel('Year', fontsize = 15)
-    plt.ylabel('Count of Reviews', fontsize = 15)
-    plt.show()
-
-    # looking at the no. of reviews in each of the months
-
-    plt.rcParams['figure.figsize'] = (19, 8)
-    sns.countplot(data['month'], palette ='tab10')
-    plt.title('The No. of Reviews each Month', fontsize = 30)
-    plt.xlabel('Months', fontsize = 15)
-    plt.ylabel('Ratings', fontsize = 15)
-    plt.show()
-
-    # looking at the no. of reviews in each of the day
-
-    plt.rcParams['figure.figsize'] = (19, 8)
-    sns.countplot(data['day'], palette ='colorblind')
-    plt.title('The No. of Reviews each day', fontsize = 30)
-    plt.xlabel('Days', fontsize = 15)
-    plt.ylabel('Count of Reviews', fontsize = 15)
-    plt.show()
-
-    # plotting a dist plot
-
-    plt.rcParams['figure.figsize'] = (15, 8)
-    sns.distplot(data['usefulCount'], color = 'orange')
-    plt.title('The Distribution of Useful Counts', fontsize = 30)
-    plt.xlabel('Range of Useful Counts', fontsize = 15)
-    plt.ylabel('No. of Useful Counts', fontsize = 15)
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    data['review_clean'] = review_clean(data['review'])
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from textblob import TextBlob
-    from nltk.corpus import stopwords
-    from collections import Counter
-    import warnings; warnings.simplefilter('ignore')
-    import nltk
-    import string
-    from nltk import ngrams
-    from nltk.tokenize import word_tokenize 
-    from nltk.stem import SnowballStemmer
-
-    # Removing the stopwords
-    stop_words = set(stopwords.words('english'))
-    data['review_clean'] = data['review_clean'].apply(lambda x: ' '.join(word for word in x.split() if word not in stop_words))
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    # Removing the word stems using the Snowball Stemmer
-    Snow_ball = SnowballStemmer("english")
-    data['review_clean'] = data['review_clean'].apply(lambda x: " ".join(Snow_ball.stem(word) for word in x.split()))
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    data.head(3)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    data['sentiment'] = sentiment(data['review'])
-
-    data['sentiment_clean'] = sentiment(data['review_clean'])
-
-    # Cleaning the reviews without removing the stop words and using snowball stemmer
-    data['review_clean_ss'] = review_clean(data['review'])
-    data['sentiment_clean_ss'] = sentiment(data['review_clean_ss'])
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    data = data.dropna(how="any", axis=0)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    #Word count in each review
-    data['count_word']=data["review_clean_ss"].apply(lambda x: len(str(x).split()))
-
-    #Unique word count 
-    data['count_unique_word']=data["review_clean_ss"].apply(lambda x: len(set(str(x).split())))
-
-    #Letter count
-    data['count_letters']=data["review_clean_ss"].apply(lambda x: len(str(x)))
-
-    #punctuation count
-    data["count_punctuations"] = data["review"].apply(lambda x: len([c for c in str(x) if c in string.punctuation]))
-
-    #upper case words count
-    data["count_words_upper"] = data["review"].apply(lambda x: len([w for w in str(x).split() if w.isupper()]))
-
-    #title case words count
-    data["count_words_title"] = data["review"].apply(lambda x: len([w for w in str(x).split() if w.istitle()]))
-
-    #Number of stopwords
-    data["count_stopwords"] = data["review"].apply(lambda x: len([w for w in str(x).lower().split() if w in stop_words]))
-
-    #Average length of the words
-    data["mean_word_len"] = data["review_clean_ss"].apply(lambda x: np.mean([len(w) for w in str(x).split()]))
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    data.columns
-
-    # Correlation Heatmap of the features engineered
-    plt.rcParams['figure.figsize'] = [17,15]
-    sns.set(font_scale = 1.2)
-    corr = data.select_dtypes(include = 'int64').corr()
-    sns_ = sns.heatmap(corr, annot = True, cmap = 'Wistia')
-    plt.setp(sns_.get_xticklabels(), rotation = 45);
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    # Label Encoding Drugname and Conditions
-    from sklearn.preprocessing import LabelEncoder
-    label_encoder_feat = {}
-    for feature in ['drugName', 'condition']:
-        label_encoder_feat[feature] = LabelEncoder()
-        data[feature] = label_encoder_feat[feature].fit_transform(data[feature])
-
-    # Defining Features and splitting the data as train and test set
-
-    features = data[['condition', 'usefulCount', 'sentiment', 'day', 'month', 'Year',
-                       'sentiment_clean_ss', 'count_word', 'count_unique_word', 'count_letters',
-                       'count_punctuations', 'count_words_upper', 'count_words_title',
-                       'count_stopwords', 'mean_word_len']]
-
-    target = data['Review_Sentiment']
-
-    X_train, X_test, y_train, y_test = train_test_split(features, target, test_size = 0.3, random_state = 42)
-    print ("The Train set size ", X_train.shape)
-    print ("The Test set size ", X_test.shape)
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- LAZYPREDICT BASELINE ────────────────────────
-
-            from lazypredict.Supervised import LazyClassifier
-
-            lazy_clf = LazyClassifier(verbose=0, ignore_warnings=True, custom_metric=None)
-            models, predictions = lazy_clf.fit(X_train, X_test, y_train, y_test)
-
-            print(models)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-            from pycaret.classification import *
-
-            clf_setup = setup(data=df, target='Drug', session_id=42, verbose=False)
-
-            # Compare models and select best
-            best_model = compare_models()
-
-            # Display comparison results
-            print(best_model)
-
-            # Evaluate the best model
-            evaluate_model(best_model)
-
-            # Finalize the model (train on full dataset)
-            final_model = finalize_model(best_model)
-
-            print('Final model:', final_model)
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Drug Classification")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

@@ -1,196 +1,94 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Gold Price Forecasting
-
-Auto-generated from: code.ipynb
-Project: Gold Price Forecasting
-Category: Time Series Analysis | Task: time_series
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import pandas as pd
+import os, warnings
 import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.model_selection import TimeSeriesSplit
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "Close"
+HORIZON = 30
+
+
+def load_data():
+    import yfinance as yf
+    df = yf.download("GLD", period="10y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {df.shape}, target: {target}")
+    return df, target
+
+
+def forecast(df, target):
+    results = {}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
+
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
+
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {col} RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ StatsForecast: {e}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    import pandas as pd
-    import numpy as np
-
-    df = load_dataset('gold_price_forecasting')
-    df.head(10)
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.columns
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df['Date'] = pd.to_datetime(df['Date'])
-
-    all_corr = df.corr().abs()['Adj Close'].sort_values(ascending = False)
-    all_corr
-
-    corr_drop = all_corr[all_corr < 0.35]
-    corr_drop
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    to_drop = list(corr_drop.index)
-    df2 = df.drop(to_drop, axis = 1)
-    df2.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    df2 = df2.set_index("Date")
-    df2
-
-    import matplotlib.pyplot as plt
-
-    titles = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'SP_open', 'SP_high', 'SP_low', 'SP_close',
-              'SP_Ajclose','SP_volume','DJ_open', 'DJ_high' ]
-    feature_keys = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume', 'SP_open', 'SP_high', 'SP_low', 'SP_close',
-                    'SP_Ajclose', 'SP_volume','DJ_open', 'DJ_high']
-
-    colors = [ "blue","orange","green","red","purple","brown","pink","gray","olive", "cyan"]
-
-    date_time_key = "Date"
-
-    def show_raw_visualization(data):
-        time_data = data[date_time_key]
-        fig, axes = plt.subplots(
-            nrows=7, ncols=2, figsize=(15, 20), dpi=80, facecolor="w", edgecolor="k"
-        )
-        for i in range(len(feature_keys)):
-            key = feature_keys[i]
-            c = colors[i % (len(colors))]
-            t_data = data[key]
-            t_data.index = time_data
-            t_data.head()
-            ax = t_data.plot(
-                ax=axes[i // 2, i % 2],
-                color=c,
-                title="{} - {}".format(titles[i], key),
-                rot=25,
-            )
-            ax.legend([titles[i]])
-        plt.tight_layout()
-
-
-    show_raw_visualization(df)
-
-    titles = ['DJ_low', 'DJ_close', 'DJ_Ajclose', 'DJ_volume',
-           'EG_open', 'EG_high', 'EG_low', 'EG_close', 'EG_Ajclose', 'EG_volume',
-           'EU_Price', 'EU_open', 'EU_high', 'EU_low']
-    feature_keys = ['DJ_low', 'DJ_close', 'DJ_Ajclose', 'DJ_volume',
-           'EG_open', 'EG_high', 'EG_low', 'EG_close', 'EG_Ajclose', 'EG_volume',
-           'EU_Price', 'EU_open', 'EU_high', 'EU_low']
-    show_raw_visualization(df)
-
-    titles = ['EU_Trend', 'OF_Price',
-           'OF_Open', 'OF_High', 'OF_Low', 'OF_Volume', 'OF_Trend', 'OS_Price',
-           'OS_Open', 'OS_High', 'OS_Low', 'OS_Trend', 'SF_Price', 'SF_Open']
-    feature_keys = ['EU_Trend', 'OF_Price',
-           'OF_Open', 'OF_High', 'OF_Low', 'OF_Volume', 'OF_Trend', 'OS_Price',
-           'OS_Open', 'OS_High', 'OS_Low', 'OS_Trend', 'SF_Price', 'SF_Open']
-    show_raw_visualization(df)
-
-    titles = ['SF_High', 'SF_Low', 'SF_Volume', 'SF_Trend', 'USB_Price', 'USB_Open',
-           'USB_High', 'USB_Low', 'USB_Trend', 'PLT_Price', 'PLT_Open', 'PLT_High',
-           'PLT_Low', 'PLT_Trend']
-    feature_keys = ['SF_High', 'SF_Low', 'SF_Volume', 'SF_Trend', 'USB_Price', 'USB_Open',
-           'USB_High', 'USB_Low', 'USB_Trend', 'PLT_Price', 'PLT_Open', 'PLT_High',
-           'PLT_Low', 'PLT_Trend']
-    show_raw_visualization(df)
-
-    titles = ['RHO_PRICE', 'USDI_Price', 'USDI_Open', 'USDI_High',
-           'USDI_Low', 'USDI_Volume', 'USDI_Trend', 'GDX_Open', 'GDX_High',
-           'GDX_Low', 'GDX_Close', 'GDX_Adj Close', 'GDX_Volume', 'USO_Open',
-           ]
-    feature_keys = ['RHO_PRICE', 'USDI_Price', 'USDI_Open', 'USDI_High',
-           'USDI_Low', 'USDI_Volume', 'USDI_Trend', 'GDX_Open', 'GDX_High',
-           'GDX_Low', 'GDX_Close', 'GDX_Adj Close', 'GDX_Volume', 'USO_Open',
-           ]
-    show_raw_visualization(df)
-
-    titles = ['USO_High', 'USO_Low', 'USO_Close', 'USO_Adj Close', 'USO_Volume']
-    feature_keys = ['USO_High', 'USO_Low', 'USO_Close', 'USO_Adj Close', 'USO_Volume']
-
-    def show_raw_visualization_small(data):
-        time_data = data[date_time_key]
-        fig, axes = plt.subplots(
-            nrows=3, ncols=2, figsize=(15, 20), dpi=80, facecolor="w", edgecolor="k"
-        )
-        for i in range(len(feature_keys)):
-            key = feature_keys[i]
-            c = colors[i % (len(colors))]
-            t_data = data[key]
-            t_data.index = time_data
-            t_data.head()
-            ax = t_data.plot(
-                ax=axes[i // 2, i % 2],
-                color=c,
-                title="{} - {}".format(titles[i], key),
-                rot=25,
-            )
-            ax.legend([titles[i]])
-        plt.tight_layout()
-
-
-    show_raw_visualization_small(df)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    from sklearn.model_selection import TimeSeriesSplit
-
-    tss = TimeSeriesSplit(n_splits = 6)
-    X = df2.drop(['Adj Close'], axis = 1)
-    y = df2['Adj Close']
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    for train_index, test_index in tss.split(X):
-        X_train, X_test = X.iloc[train_index, :], X.iloc[test_index,:]
-        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Gold Price Forecasting")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

@@ -1,239 +1,75 @@
-#!/usr/bin/env python3
 """
-Full pipeline for 1 Customer segmentation for a bank
-
-Auto-generated from: 1 Customer segmentation for a bank.ipynb
-Project: 1 Customer segmentation for a bank
-Category: Clustering | Task: clustering
+Modern Clustering Pipeline (April 2026)
+Models: UMAP + HDBSCAN + GMM
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-import pandas as pd
+import os, warnings
 import numpy as np
-import seaborn as sns
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import KMeans, AffinityPropagation
-import warnings
+
 warnings.filterwarnings("ignore")
-# Additional imports extracted from mixed cells
-import seaborn as sns
-import scipy.stats as stats
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from pycaret.clustering import *
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-def scatters(data, h=None, pal=None):
-    fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(8,8))
-    sns.scatterplot(x="Credit amount",y="Duration", hue=h, palette=pal, data=data, ax=ax1)
-    sns.scatterplot(x="Age",y="Credit amount", hue=h, palette=pal, data=data, ax=ax2)
-    sns.scatterplot(x="Age",y="Duration", hue=h, palette=pal, data=data, ax=ax3)
-    plt.tight_layout()
-def boxes(x,y,h,r=45):
-    fig, ax = plt.subplots(figsize=(10,6))
-    box = sns.boxplot(x=x,y=y, hue=h, data=data)
-    box.set_xticklabels(box.get_xticklabels(), rotation=r)
-    fig.subplots_adjust(bottom=0.2)
-    plt.tight_layout()
-def distributions(df):
-    fig, (ax1, ax2, ax3) = plt.subplots(3,1, figsize=(8,8))
-    sns.distplot(df["Age"], ax=ax1)
-    sns.distplot(df["Credit amount"], ax=ax2)
-    sns.distplot(df["Duration"], ax=ax3)
-    plt.tight_layout()
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+def load_data():
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("scikit-learn/bank-marketing", split="train").to_pandas()
+    # Drop ID-like columns
+    for c in df.columns:
+        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        df[cat_cols] = oe.fit_transform(df[cat_cols])
+    return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
+
+
+def cluster(X):
+    results = {}
+    try:
+        import umap, hdbscan
+        X_umap = umap.UMAP(n_components=2, random_state=42).fit_transform(X)
+        labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
+        n = len(set(labels)) - (1 if -1 in labels else 0)
+        results["HDBSCAN"] = {"labels": labels, "embedding": X_umap, "n": n}
+        mask = labels >= 0
+        sil = silhouette_score(X_umap[mask], labels[mask]) if mask.sum() > 1 and n > 1 else 0
+        print(f"✓ HDBSCAN: {n} clusters, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ HDBSCAN: {e}")
+
+    try:
+        from sklearn.mixture import GaussianMixture
+        bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
+        best_k = range(2, 11)[np.argmin(bics)]
+        labels = GaussianMixture(n_components=best_k, random_state=42).fit_predict(X)
+        sil = silhouette_score(X, labels) if best_k > 1 else 0
+        results["GMM"] = {"labels": labels, "n": best_k}
+        print(f"✓ GMM: k={best_k}, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ GMM: {e}")
+
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    data = load_dataset('customer_segmentation_for_a_bank')
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    data.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    data.drop(data.columns[0], inplace=True, axis=1)
-    print("Database has {} obserwations (customers) and {} columns (attributes).".format(data.shape[0],data.shape[1]))
-    print("Missing values in each column:\n{}".format(data.isnull().sum()))
-    print("Columns data types:\n{}".format(data.dtypes))
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    n_unique = data.nunique()
-    print("Number of unique values:\n{}".format(n_unique))
-
-    print("Unique values in each categorical column:")
-    for col in data.select_dtypes(include=[object]):
-        print(col,":", data[col].unique())
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    scatters(data, h="Sex")
-
-    import seaborn as sns
-    import scipy.stats as stats
-    import matplotlib.pyplot as plt
-
-    # Assuming you have 'data' as your dataset
-
-    r1 = sns.jointplot(x="Credit amount", y="Duration", data=data, kind="reg", height=8)
-
-    # Calculate Pearson correlation coefficient
-    pearson_corr, _ = stats.pearsonr(data["Credit amount"], data["Duration"])
-
-    # Annotate the plot with the Pearson correlation coefficient
-    r1.ax_joint.annotate(f"Pearson Corr: {pearson_corr:.2f}", xy=(0.6, 0.9), xycoords="axes fraction")
-
-    plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    sns.lmplot(x="Credit amount",y="Duration", hue="Sex", data=data, palette="Set1", aspect=2)
-    plt.show()
-
-    sns.lmplot(x="Credit amount",y="Duration", hue="Housing", data=data, palette="Set1", aspect=2)
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-
-    # Assuming you have 'data' as your dataset
-
-    sns.jointplot(x="Credit amount", y="Duration", data=data, kind="kde", space=0, color="g", height=8)
-    plt.show()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    n_credits = data.groupby("Purpose")["Age"].count().rename("Count").reset_index()
-    n_credits.sort_values(by=["Count"], ascending=False, inplace=True)
-
-    plt.figure(figsize=(10,6))
-    bar = sns.barplot(x="Purpose",y="Count",data=n_credits)
-    bar.set_xticklabels(bar.get_xticklabels(), rotation=60)
-    plt.ylabel("Number of granted credits")
-    plt.tight_layout()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    boxes("Purpose","Credit amount","Sex")
-
-    boxes("Purpose","Duration","Sex")
-
-    boxes("Housing","Credit amount","Sex",r=0)
-
-    boxes("Job","Credit amount","Sex",r=0)
-
-    boxes("Job","Duration","Sex",r=0)
-
-    from mpl_toolkits.mplot3d import Axes3D 
-    fig = plt.figure(figsize=(10,6))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(data["Credit amount"], data["Duration"], data["Age"])
-    ax.set_xlabel("Credit amount")
-    ax.set_ylabel("Duration")
-    ax.set_zlabel("Age")
-
-    #Selecting columns for clusterisation with k-means
-    selected_cols = ["Age","Credit amount", "Duration"]
-    cluster_data = data.loc[:,selected_cols]
-
-    distributions(cluster_data)
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    cluster_log = np.log(cluster_data)
-    distributions(cluster_log)
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- PYCARET AUTOML ──────────────────────────────
-
-            from pycaret.clustering import *
-
-            clust_setup = setup(data=data, normalize=True, session_id=42, verbose=False)
-
-            # Create K-Means model
-            kmeans_model = create_model('kmeans')
-            print(kmeans_model)
-
-            # Assign cluster labels to data
-            clustered_df = assign_model(kmeans_model)
-            clustered_df.head()
-
-            # Evaluate clustering
-            plot_model(kmeans_model, plot='elbow')
-
-            # Silhouette plot
-            plot_model(kmeans_model, plot='silhouette')
-
-            # Distribution plot
-            plot_model(kmeans_model, plot='distribution')
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("CLUSTERING: UMAP + HDBSCAN + GMM")
+    print("=" * 60)
+    df = load_data()
+    X = preprocess(df)
+    cluster(X)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for 1 Customer segmentation for a bank")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

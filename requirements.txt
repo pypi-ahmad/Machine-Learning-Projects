@@ -1,6 +1,7 @@
 # ============================================================
 # Deep Learning Projects Monorepo — Requirements
 # Python 3.10+ | PyTorch-only (NO TensorFlow) | CUDA 13.0
+# April 2026 Overhaul — Modern Model Stack
 # ============================================================
 #
 # INSTALL ORDER (GPU):
@@ -23,21 +24,54 @@ datasets>=3.5.0
 accelerate>=1.6.0
 evaluate>=0.4.4
 tokenizers>=0.21.1
+sentence-transformers>=4.0.0
 
 # ── Computer Vision ─────────────────────────────────────────
 timm>=1.0.15
 opencv-python>=4.12.0
 Pillow>=11.2.0
 albumentations>=2.0.0
+ultralytics>=8.3.0
 
 # ── AutoML & Baselines ─────────────────────────────────────
-pycaret>=3.5.0
-lazypredict>=0.2.14
+# pycaret>=3.5.0      # not yet compatible with Python 3.13
+# lazypredict>=0.2.14  # not yet compatible with Python 3.13
+flaml>=2.3.0
+
+# ── Gradient Boosting (GPU) ─────────────────────────────────
+catboost>=1.2.7
+xgboost>=3.0.0
+lightgbm>=4.6.0
 
 # ── Classical ML ────────────────────────────────────────────
 scikit-learn>=1.6.1
-xgboost>=3.0.0
-lightgbm>=4.6.0
+
+# ── Anomaly Detection ──────────────────────────────────────
+pyod>=2.0.0
+
+# ── Clustering ──────────────────────────────────────────────
+umap-learn>=0.5.7
+hdbscan>=0.8.40
+
+# ── Recommendation ──────────────────────────────────────────
+# implicit>=0.7.2  # requires C++ build tools on Windows
+# lightfm>=1.17  # not yet compatible with Python 3.13
+
+# ── Time Series ─────────────────────────────────────────────
+statsforecast>=2.0.0
+chronos-forecasting>=1.4.0
+
+# ── Reinforcement Learning ──────────────────────────────────
+gymnasium>=1.1.0
+stable-baselines3>=2.4.0
+
+# ── Face / Pose ─────────────────────────────────────────────
+# mediapipe>=0.10.21  # not yet compatible with Python 3.13
+insightface>=0.7.3
+
+# ── OCR ─────────────────────────────────────────────────────
+# paddleocr>=2.9.0       # not yet compatible with Python 3.13
+# paddlepaddle-gpu>=3.0.0 # not yet compatible with Python 3.13
 
 # ── Data & Numeric ──────────────────────────────────────────
 numpy>=2.2.0
@@ -54,9 +88,7 @@ nltk>=3.9.1
 # ── Audio ────────────────────────────────────────────────────
 librosa>=0.10.2
 soundfile>=0.13.1
-
-# ── Reinforcement Learning ──────────────────────────────────
-gymnasium>=1.1.0
+# TTS>=0.22.0  # Coqui TTS — not yet compatible with Python 3.13
 
 # ── Association Rule Learning ───────────────────────────────
 mlxtend>=0.23.4
@@ -67,5 +99,5 @@ pyyaml>=6.0.2
 requests>=2.32.0
 
 # ── Dataset Download ────────────────────────────────────────
+yfinance>=0.2.40
 opendatasets>=0.1.22
-kaggle>=1.7.4

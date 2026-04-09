@@ -1,163 +1,76 @@
-#!/usr/bin/env python3
 """
-Full pipeline for 9 Clustering financial time series
-
-Auto-generated from: 9 Clustering financial time series.ipynb
-Project: 9 Clustering financial time series
-Category: Clustering | Task: clustering
+Modern Clustering Pipeline (April 2026)
+Models: UMAP + HDBSCAN + GMM
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import os
-import pandas as pd
+import os, warnings
 import numpy as np
-import random
-import itertools
-from arch import arch_model
-from scipy.stats import shapiro
-from scipy.stats import probplot
-from statsmodels.stats.diagnostic import het_arch
-from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-from statsmodels.stats.diagnostic import acorr_ljungbox
-from matplotlib import pyplot as plt
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from pycaret.clustering import *
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+
+def load_data():
+    import yfinance as yf
+    df = yf.download("SPY", period="5y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    # Drop ID-like columns
+    for c in df.columns:
+        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        df[cat_cols] = oe.fit_transform(df[cat_cols])
+    return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
+
+
+def cluster(X):
+    results = {}
+    try:
+        import umap, hdbscan
+        X_umap = umap.UMAP(n_components=2, random_state=42).fit_transform(X)
+        labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
+        n = len(set(labels)) - (1 if -1 in labels else 0)
+        results["HDBSCAN"] = {"labels": labels, "embedding": X_umap, "n": n}
+        mask = labels >= 0
+        sil = silhouette_score(X_umap[mask], labels[mask]) if mask.sum() > 1 and n > 1 else 0
+        print(f"✓ HDBSCAN: {n} clusters, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ HDBSCAN: {e}")
+
+    try:
+        from sklearn.mixture import GaussianMixture
+        bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
+        best_k = range(2, 11)[np.argmin(bics)]
+        labels = GaussianMixture(n_components=best_k, random_state=42).fit_predict(X)
+        sil = silhouette_score(X, labels) if best_k > 1 else 0
+        results["GMM"] = {"labels": labels, "n": best_k}
+        print(f"✓ GMM: k={best_k}, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ GMM: {e}")
+
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    import os
-    import pandas as pd
-    import numpy as np
-    import random
-    import itertools
-    from arch import arch_model
-    from scipy.stats import shapiro
-    from scipy.stats import probplot
-    from statsmodels.stats.diagnostic import het_arch
-    from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-    from statsmodels.stats.diagnostic import acorr_ljungbox
-
-    from matplotlib import pyplot as plt
-    plt.style.use('fivethirtyeight') 
-    plt.rcParams['xtick.labelsize'] = 10
-    plt.rcParams['ytick.labelsize'] = 10
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    path = '../../data/clustering_financial_time_series/all_stocks_5yr.csv'
-    csvs = [os.path.join(path, file) for file in os.listdir(path) if file.endswith('.csv')]
-
-    df = pd.DataFrame()
-    for file in random.sample(range(1, len(csvs)), 8):
-        stock_df = load_dataset('clustering_financial_time_series')
-        stock_df.index = pd.DatetimeIndex(stock_df.date)
-        name = stock_df['Name'].iloc[0]
-        df[name] = stock_df['close']
-
-    df.plot(figsize=(10, 5), title='Closing Price for 8 Random Stocks')
-    df.head()
-
-    import os
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-
-    stock = 'TDG'
-    file_path = '../../data/clustering_financial_time_series/all_stocks_5yr.csv'
-    file_name = f'{stock}_data.csv'
-    file_full_path = os.path.join(file_path, file_name)
-
-    df = pd.read_csv(file_full_path)
-    df.index = pd.DatetimeIndex(df.date)
-    df = df.drop(columns=['open', 'high', 'low', 'volume', 'date', 'Name'])
-    df['pct_change'] = 100 * df['close'].pct_change()
-    df.dropna(inplace=True)
-
-    df['close'].plot(figsize=(10, 5), title=f'{stock} Closing Price 2013-2018')
-    plt.show()
-
-    df['pct_change'].plot(figsize=(10, 5), title=f'{stock} Percent Change in Closing Price')
-    plt.show()
-
-    acf = plot_acf(df['pct_change'], lags=30)
-    pacf = plot_pacf(df['pct_change'], lags=30)
-    acf.suptitle(f'{stock} Percent Change Autocorrelation and Partial Autocorrelation', fontsize=20)
-    acf.set_figheight(5)
-    acf.set_figwidth(15)
-    pacf.set_figheight(5)
-    pacf.set_figwidth(15)
-    plt.show()
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- PYCARET AUTOML ──────────────────────────────
-
-            from pycaret.clustering import *
-
-            clust_setup = setup(data=df, normalize=True, session_id=42, verbose=False)
-
-            # Create K-Means model
-            kmeans_model = create_model('kmeans')
-            print(kmeans_model)
-
-            # Assign cluster labels to data
-            clustered_df = assign_model(kmeans_model)
-            clustered_df.head()
-
-            # Evaluate clustering
-            plot_model(kmeans_model, plot='elbow')
-
-            # Silhouette plot
-            plot_model(kmeans_model, plot='silhouette')
-
-            # Distribution plot
-            plot_model(kmeans_model, plot='distribution')
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("CLUSTERING: UMAP + HDBSCAN + GMM")
+    print("=" * 60)
+    df = load_data()
+    X = preprocess(df)
+    cluster(X)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for 9 Clustering financial time series")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

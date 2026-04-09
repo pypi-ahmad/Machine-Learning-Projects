@@ -1,0 +1,2359 @@
+"""
+Master overhaul script v2: generates modern pipeline.py for every project.
+ALL data is auto-downloaded at runtime — no prior CSV files needed.
+Run: python _overhaul_all.py
+
+Data sources: HuggingFace datasets, sklearn, torchvision, yfinance, UCI, OpenML, direct URLs
+"""
+import os, sys, textwrap
+from pathlib import Path
+
+BASE = Path(r"e:\Github\Machine-Learning-Projects")
+sys.path.insert(0, str(BASE))
+
+
+def write_pipeline(project_rel_path, content):
+    proj_dir = BASE / project_rel_path
+    if not proj_dir.exists():
+        print(f"  SKIP (not found): {project_rel_path}")
+        return False
+    out = proj_dir / "pipeline.py"
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(content)
+    return True
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# DATA LOADING SNIPPETS — each returns 4-space-indented code producing `df`
+# ════════════════════════════════════════════════════════════════════════════════
+
+def _hf(dataset_name, split="train", config=None, columns=None):
+    """HuggingFace datasets.load_dataset → df"""
+    cfg = f', "{config}"' if config else ""
+    col_filter = ""
+    if columns:
+        col_filter = f"\n    df = df[{columns}]"
+    return f'    from datasets import load_dataset as _hf_load\n    df = _hf_load("{dataset_name}"{cfg}, split="{split}").to_pandas(){col_filter}'
+
+def _sklearn(func_name):
+    """sklearn.datasets → df"""
+    return f'    from sklearn.datasets import {func_name}\n    _d = {func_name}()\n    df = pd.DataFrame(_d.data, columns=_d.feature_names); df["target"] = _d.target'
+
+def _sklearn_fetch(func_name, target_rename=None):
+    """sklearn fetch_ functions (auto-download)"""
+    rename = ""
+    if target_rename:
+        rename = f'\n    df.rename(columns={{"{target_rename}": "target"}}, inplace=True)'
+    return f'    from sklearn.datasets import {func_name}\n    _d = {func_name}(as_frame=True)\n    df = _d.frame{rename}'
+
+def _url_csv(url, sep=","):
+    """Direct CSV download from URL"""
+    return f'    df = pd.read_csv("{url}", sep="{sep}")'
+
+def _yfinance(ticker, period="10y"):
+    """Yahoo Finance stock data"""
+    return f'    import yfinance as yf\n    df = yf.download("{ticker}", period="{period}", auto_adjust=True).reset_index()\n    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]'
+
+def _torchvision(dataset_cls, n_classes=10):
+    """torchvision dataset → returns special flag for image pipeline"""
+    return f"__torchvision__{dataset_cls}__{n_classes}"
+
+def _openml(data_id, target=None):
+    """OpenML dataset by ID"""
+    t = f', target_column="{target}"' if target else ""
+    return f'    from sklearn.datasets import fetch_openml\n    _d = fetch_openml(data_id={data_id}{t}, as_frame=True, parser="auto")\n    df = _d.frame'
+
+def _seaborn(name):
+    """Seaborn built-in dataset"""
+    return f'    import seaborn as _sns\n    df = _sns.load_dataset("{name}")'
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# PROJECT → DATA SOURCE MAPPING  (every project has an online source)
+# ════════════════════════════════════════════════════════════════════════════════
+
+# ── FAMILY 1: TABULAR CLASSIFICATION ──
+TABULAR_CLF = {
+    "Classification/Adult Salary Prediction": {
+        "target": "income",
+        "data": _hf("scikit-learn/adult-census-income"),
+    },
+    "Classification/Breast Cancer Detection": {
+        "target": "target",
+        "data": _sklearn("load_breast_cancer"),
+    },
+    "Classification/Breast Cancer Prediction": {
+        "target": "diagnosis",
+        "data": _openml(1510),
+    },
+    "Classification/Credit Risk Modeling - German Credit": {
+        "target": "class",
+        "data": _openml(31),
+    },
+    "Classification/Customer Churn Prediction - Telecom": {
+        "target": "Churn",
+        "data": _hf("aai510-group1/telecom-churn-dataset"),
+    },
+    "Classification/Customer Lifetime Value Prediction": {
+        "target": "Response",
+        "data": _hf("vkrishna90/vehicle-insurance-customer-data"),
+    },
+    "Classification/Diabetes Classification": {
+        "target": "Outcome",
+        "data": _openml(37),  # Pima Indians diabetes
+    },
+    "Classification/Diabetes ML Analysis": {
+        "target": "Outcome",
+        "data": _openml(37),
+    },
+    "Classification/Drinking Water Potability": {
+        "target": "Potability",
+        "data": _hf("scikit-learn/water-potability"),
+    },
+    "Classification/Drug Classification": {
+        "target": "Drug",
+        "data": _openml(46045),
+    },
+    "Classification/Employee Turnover Analysis": {
+        "target": "left",
+        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+    },
+    "Classification/Employee Turnover Prediction": {
+        "target": "left",
+        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+    },
+    "Classification/Flower Species Classification": {
+        "target": "target",
+        "data": _sklearn("load_iris"),
+    },
+    "Classification/Glass Classification": {
+        "target": "Type",
+        "data": _openml(41),  # Glass Identification
+    },
+    "Classification/Groundhog Day Predictions": {
+        "target": "Punxsutawney Phil",
+        "data": _url_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/refs/heads/main/data/2024/2024-01-30/groundhogs.csv"),
+    },
+    "Classification/Hand Digit Recognition": {
+        "target": "target",
+        "data": _sklearn("load_digits"),
+    },
+    "Classification/Healthcare Heart Disease Prediction": {
+        "target": "target",
+        "data": _hf("codesignal/heart-disease-prediction"),
+    },
+    "Classification/Heart Disease Prediction": {
+        "target": "target",
+        "data": _hf("codesignal/heart-disease-prediction"),
+    },
+    "Classification/Income Classification": {
+        "target": "income",
+        "data": _hf("scikit-learn/adult-census-income"),
+    },
+    "Classification/Iris Dataset Analysis": {
+        "target": "target",
+        "data": _sklearn("load_iris"),
+    },
+    "Classification/Loan Default Prediction": {
+        "target": "loan_status",
+        "data": _hf("ErenalpCet/Loan-Prediction"),
+    },
+    "Classification/Loan Prediction Analysis": {
+        "target": "Loan_Status",
+        "data": _hf("ErenalpCet/Loan-Prediction"),
+    },
+    "Classification/Logistic Regression Balanced": {
+        "target": "y",
+        "data": _hf("scikit-learn/bank-marketing"),
+    },
+    "Classification/Marketing Campaign Prediction": {
+        "target": "Response",
+        "data": _hf("vijaygkd/Marketing_Campaign"),
+    },
+    "Classification/Mobile Price Classification": {
+        "target": "price_range",
+        "data": _openml(44126),
+    },
+    "Classification/Simple Classification Problem": {
+        "target": "target",
+        "data": _sklearn("load_iris"),
+    },
+    "Classification/Social Network Ads Analysis": {
+        "target": "Purchased",
+        "data": _url_csv("https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/Social%20Network%20Ads.csv"),
+    },
+    "Classification/Student Performance Prediction": {
+        "target": "G3",
+        "data": _openml(42352),  # Student performance
+    },
+    "Classification/Titanic - Handling Missing Values": {
+        "target": "survived",
+        "data": _seaborn("titanic"),
+    },
+    "Classification/Titanic Survival Prediction": {
+        "target": "survived",
+        "data": _seaborn("titanic"),
+    },
+    "Classification/Weather Classification - Decision Trees": {
+        "target": "RainTomorrow",
+        "data": _hf("Zaherrr/Weather-Dataset"),
+    },
+    "Classification/Wine Quality Analysis": {
+        "target": "quality",
+        "data": _openml(287),  # wine quality red
+    },
+    "Classification/Wine Quality Prediction": {
+        "target": "quality",
+        "data": _openml(287),
+    },
+    "Classification/Autoencoder for Customer Churn": {
+        "target": "Churn",
+        "data": _hf("aai510-group1/telecom-churn-dataset"),
+    },
+    "Classification/Bayesian Logistic Regression - Bank Marketing": {
+        "target": "y",
+        "data": _hf("scikit-learn/bank-marketing"),
+    },
+    "Classification/Boston House Classification": {
+        "target": "MEDV",
+        "data": _sklearn_fetch("fetch_california_housing"),
+    },
+    "Classification/H2O Higgs Boson": {
+        "target": "class",
+        "data": _openml(44129),  # Higgs
+    },
+    "Classification/Earthquake Prediction": {
+        "target": "magnitude",
+        "data": _url_csv("https://raw.githubusercontent.com/datasets/earthquake/main/data/earthquake.csv"),
+    },
+    "Classification/SONAR Rock vs Mine Prediction": {
+        "target": "Class",
+        "data": _openml(40),  # Sonar
+    },
+    "Classification/Traffic Congestion Prediction": {
+        "target": "traffic_situation",
+        "data": _hf("mfumanelli/traffic-prediction"),
+    },
+    "Classification/Diabetes Prediction": {
+        "target": "Outcome",
+        "data": _openml(37),
+    },
+    "Deep Learning/Advanced Churn Modeling": {
+        "target": "Exited",
+        "data": _hf("aai510-group1/telecom-churn-dataset"),
+    },
+    "Deep Learning/Bank Marketing Analysis": {
+        "target": "y",
+        "data": _hf("scikit-learn/bank-marketing"),
+    },
+    "Deep Learning/Campus Recruitment Analysis": {
+        "target": "status",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset3/refs/heads/master/Placement_Data_Full_Class.csv"),
+    },
+    "Deep Learning/COVID-19 Drug Recovery": {
+        "target": "Recovered",
+        "data": _url_csv("https://raw.githubusercontent.com/datasets/covid-19/main/data/time-series-19-covid-combined.csv"),
+    },
+    "Deep Learning/Disease Prediction": {
+        "target": "prognosis",
+        "data": _hf("saravan2024/Disease-Symptom"),
+    },
+}
+
+# ── FAMILY 2: TABULAR REGRESSION ──
+TABULAR_REG = {
+    "Regression/Boston Housing Analysis": {
+        "target": "target",
+        "data": _sklearn_fetch("fetch_california_housing"),
+    },
+    "Regression/Boston Housing Prediction Analysis": {
+        "target": "target",
+        "data": _sklearn_fetch("fetch_california_housing"),
+    },
+    "Regression/House Price Prediction - Detailed": {
+        "target": "price",
+        "data": _hf("leostelon/KC-House-Data"),
+    },
+    "Regression/House Price prediction": {
+        "target": "SalePrice",
+        "data": _hf("leostelon/house-prices-advanced-regression"),
+    },
+    "Regression/Insurance premium prediction": {
+        "target": "charges",
+        "data": _openml(43463),
+    },
+    "Regression/Gold Price Prediction": {
+        "target": "Close",
+        "data": _yfinance("GLD"),
+    },
+    "Regression/Flight Fare Prediction": {
+        "target": "Price",
+        "data": _hf("thedevastator/flight-price-prediction-data"),
+    },
+    "Regression/Car Price Prediction": {
+        "target": "selling_price",
+        "data": _hf("Xenova/used-cars"),
+    },
+    "Regression/Data Scientist Salary Prediction": {
+        "target": "salary_in_usd",
+        "data": _hf("inductiva/ds-salaries"),
+    },
+    "Regression/Medical Cost Personal": {
+        "target": "charges",
+        "data": _openml(43463),
+    },
+    "Regression/Bengaluru House Price Prediction": {
+        "target": "price",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/bangalore.csv"),
+    },
+    "Regression/BigMart Sales Prediction": {
+        "target": "Item_Outlet_Sales",
+        "data": _hf("saurabh1212/Bigmart-Sales-Data"),
+    },
+    "Regression/Bike Sharing Demand Analysis": {
+        "target": "cnt",
+        "data": _openml(42712),
+    },
+    "Regression/Black Friday Sales Prediction": {
+        "target": "Purchase",
+        "data": _hf("puspendert/Black-Friday-Sales-Prediction"),
+    },
+    "Regression/Black Friday Sales Analysis": {
+        "target": "Purchase",
+        "data": _hf("puspendert/Black-Friday-Sales-Prediction"),
+    },
+    "Regression/Bitcoin Price Prediction": {
+        "target": "Close",
+        "data": _yfinance("BTC-USD"),
+    },
+    "Regression/Bitcoin Price Prediction - Advanced": {
+        "target": "Close",
+        "data": _yfinance("BTC-USD"),
+    },
+    "Regression/California Housing Prediction": {
+        "target": "target",
+        "data": _sklearn_fetch("fetch_california_housing"),
+    },
+    "Regression/Car Price Prediction - Feature Based": {
+        "target": "selling_price",
+        "data": _hf("Xenova/used-cars"),
+    },
+    "Regression/China GDP Estimation": {
+        "target": "Value",
+        "data": _url_csv("https://raw.githubusercontent.com/datasets/gdp/master/data/gdp.csv"),
+    },
+    "Regression/Crop yield prediction": {
+        "target": "hg/ha_yield",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/crop_yield.csv"),
+    },
+    "Regression/Diabetes Prediction - Pima Indians": {
+        "target": "Outcome",
+        "data": _openml(37),
+    },
+    "Regression/Employee Future Prediction": {
+        "target": "LeaveOrNot",
+        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+    },
+    "Regression/Energy Usage Prediction - Buildings": {
+        "target": "Heating Load",
+        "data": _openml(242),  # Energy efficiency
+    },
+    "Regression/Flight Delay Prediction": {
+        "target": "dep_delayed_15min",
+        "data": _hf("vitaliy-datamonster/flight-delays"),
+    },
+    "Regression/Future Sales Prediction": {
+        "target": "Sales",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv"),
+    },
+    "Regression/Heart disease prediction": {
+        "target": "target",
+        "data": _hf("codesignal/heart-disease-prediction"),
+    },
+    "Regression/Hotel Booking Cancellation Prediction": {
+        "target": "is_canceled",
+        "data": _hf("Tirumala/hotel_booking_demand"),
+    },
+    "Regression/House Price - Regularized Linear and XGBoost": {
+        "target": "SalePrice",
+        "data": _hf("leostelon/house-prices-advanced-regression"),
+    },
+    "Regression/IPL First Innings Prediction - Advanced": {
+        "target": "total",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/ipl_data.csv"),
+    },
+    "Regression/IPL First Innings Score Prediction": {
+        "target": "total",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/ipl_data.csv"),
+    },
+    "Regression/Job Salary prediction": {
+        "target": "salary_in_usd",
+        "data": _hf("inductiva/ds-salaries"),
+    },
+    "Regression/Mercari Price Suggestion - LightGBM": {
+        "target": "price",
+        "data": _hf("thedevastator/mercari-price-prediction"),
+    },
+    "Regression/Rainfall Amount Prediction": {
+        "target": "PRCP",
+        "data": _hf("Zaherrr/Weather-Dataset"),
+    },
+    "Regression/Rainfall Prediction": {
+        "target": "PRCP",
+        "data": _hf("Zaherrr/Weather-Dataset"),
+    },
+    "Regression/Stock price prediction": {
+        "target": "Close",
+        "data": _yfinance("AAPL"),
+    },
+    "Regression/TPOT Mercedes Prediction": {
+        "target": "y",
+        "data": _openml(42570),
+    },
+    "Regression/Tesla Car Price Prediction": {
+        "target": "Close",
+        "data": _yfinance("TSLA"),
+    },
+    "Regression/UCLA Admission Prediction": {
+        "target": "Chance of Admit",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/admission_predict.csv"),
+    },
+    "Regression/50 Startups Success Prediction": {
+        "target": "Profit",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/50_Startups.csv"),
+    },
+    "Regression/Bank Customer churn prediction": {
+        "target": "Exited",
+        "data": _hf("aai510-group1/telecom-churn-dataset"),
+    },
+    "Regression/Ad Demand Forecast - Avito": {
+        "target": "deal_probability",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv"),
+    },
+    "Deep Learning/Concrete Strength Prediction": {
+        "target": "csMPa",
+        "data": _openml(4353),  # Concrete compressive strength
+    },
+    "Deep Learning/Earthquake Prediction": {
+        "target": "magnitude",
+        "data": _url_csv("https://raw.githubusercontent.com/datasets/earthquake/main/data/earthquake.csv"),
+    },
+}
+
+# ── FAMILY 3: FRAUD / IMBALANCED ──
+FRAUD = {
+    "Classification/Advanced Credit Card Fraud Detection": {
+        "target": "Class",
+        "data": _hf("imodels/credit-card"),
+    },
+    "Classification/Credit Card Fraud - Imbalanced Dataset": {
+        "target": "Class",
+        "data": _hf("imodels/credit-card"),
+    },
+    "Classification/Fraud Detection": {
+        "target": "isFraud",
+        "data": _hf("vitaliy-datamonster/fraud-detection"),
+    },
+    "Anomaly detection and fraud detection/Fraud Detection in Financial Transactions": {
+        "target": "isFraud",
+        "data": _hf("vitaliy-datamonster/fraud-detection"),
+    },
+    "Anomaly detection and fraud detection/Insurance Fraud Detection": {
+        "target": "fraud_reported",
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/insurance_fraud.csv"),
+    },
+    "Anomaly detection and fraud detection/Fraud Detection - IEEE-CIS": {
+        "target": "isFraud",
+        "data": _hf("vitaliy-datamonster/fraud-detection"),
+    },
+    "Anomaly detection and fraud detection/Fraudulent Credit Card Transaction Detection": {
+        "target": "Class",
+        "data": _hf("imodels/credit-card"),
+    },
+}
+
+# ── FAMILY 4: ANOMALY DETECTION ──
+ANOMALY = {
+    "Anomaly detection and fraud detection/Anomaly Detection - Numenta Benchmark": {
+        "data": _hf("VictorSanh/anomaly-detection"),
+    },
+    "Anomaly detection and fraud detection/Anomaly Detection - Social Networks Twitter Bot": {
+        "data": _openml(44307),  # bot detection
+    },
+    "Anomaly detection and fraud detection/Anomaly Detection in Images - CIFAR-10": {
+        "data": '    from sklearn.datasets import load_digits\n    _d = load_digits()\n    df = pd.DataFrame(_d.data); df["target"] = _d.target',
+    },
+    "Anomaly detection and fraud detection/Banknote Authentication": {
+        "data": _openml(1462),  # banknote
+    },
+    "Anomaly detection and fraud detection/Breast Cancer Detection - Wisconsin Dataset": {
+        "data": _sklearn("load_breast_cancer"),
+    },
+    "Anomaly detection and fraud detection/Intrusion Detection": {
+        "data": _sklearn_fetch("fetch_kddcup99"),
+    },
+    "Anomaly detection and fraud detection/Traffic Flow Prediction - METR-LA": {
+        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/traffic_volume.csv"),
+    },
+}
+
+# ── FAMILY 5: CLUSTERING ──
+CLUSTERING = {
+    "Clustering/Credit Card Customer Segmentation": {"data": _hf("imodels/credit-card")},
+    "Clustering/Customer Segmentation": {"data": _openml(1590)},
+    "Clustering/Customer Segmentation - Bank": {"data": _hf("scikit-learn/bank-marketing")},
+    "Clustering/Financial Time Series Clustering": {"data": _yfinance("SPY", "5y")},
+    "Clustering/Housing Price Segmentation": {"data": _sklearn_fetch("fetch_california_housing")},
+    "Clustering/KMeans Clustering - Imagery Analysis": {"data": _sklearn("load_digits")},
+    "Clustering/Mall Customer Segmentation": {"data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/Mall_Customers.csv")},
+    "Clustering/Mall Customer Segmentation - Advanced": {"data": _openml(1590)},
+    "Clustering/Mall Customer Segmentation - Detailed": {"data": _openml(1590)},
+    "Clustering/Mall Customer Segmentation Data": {"data": _openml(1590)},
+    "Clustering/Online Retail Customer Segmentation": {"data": _hf("nazlicanto/e-commerce")},
+    "Clustering/Online Retail Segmentation Analysis": {"data": _hf("nazlicanto/e-commerce")},
+    "Clustering/Spotify Song Cluster Analysis": {"data": _hf("maharshipandya/spotify-tracks-dataset")},
+    "Clustering/Turkiye Student Evaluation - Advanced": {"data": _openml(1523)},
+    "Clustering/Turkiye Student Evaluation Analysis": {"data": _openml(1523)},
+    "Clustering/Vehicle Crash Data Clustering": {"data": _url_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/bad-drivers/bad-drivers.csv")},
+    "Clustering/Weather Data Clustering - KMeans": {"data": _hf("Zaherrr/Weather-Dataset")},
+    "Clustering/Wholesale Customer Segmentation": {"data": _openml(1511)},
+    "Clustering/Wholesale Segmentation Analysis": {"data": _openml(1511)},
+    "Clustering/Wine Segmentation": {"data": _sklearn("load_wine")},
+    "Classification/Customer Segmentation - E-Commerce": {"data": _hf("nazlicanto/e-commerce")},
+}
+
+# ── FAMILY 6: NLP CLASSIFICATION ──
+NLP_CLF = {
+    "Classification/Cyberbullying Classification": {"target": "cyberbullying_type", "text_col": "tweet_text", "data": _hf("mtbench101/cyberbullying_tweets")},
+    "Classification/Movie Genre Classification": {"target": "genre", "text_col": "description", "data": _hf("datadrivenscience/movies-genres-prediction")},
+    "Classification/Spam Email Classification": {"target": "label", "text_col": "text", "data": _hf("TrainingDataPro/email-spam-classification")},
+    "NLP/Amazon Alexa Review Sentiment": {"target": "feedback", "text_col": "verified_reviews", "data": _hf("mesolitica/amazon-alexa-review")},
+    "NLP/Amazon Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("mteb/amazon_polarity")},
+    "NLP/Clinton vs Trump Tweets Analysis": {"target": "label", "text_col": "text", "data": _hf("SetFit/tweet_eval_stance_hillary")},
+    "NLP/Consumer Complaints Analysis": {"target": "product", "text_col": "text", "data": _hf("consumer-finance-complaints/consumer_complaints")},
+    "NLP/Disaster or Not Disaster": {"target": "target", "text_col": "text", "data": _hf("venetis/disaster_tweets")},
+    "NLP/DJIA Sentiment Analysis - News Headlines": {"target": "label", "text_col": "text", "data": _hf("financial_phrasebank", split="train", config="sentences_50agree")},
+    "NLP/DJIA Sentiment Analysis - Stock Prediction": {"target": "label", "text_col": "text", "data": _hf("financial_phrasebank", split="train", config="sentences_50agree")},
+    "NLP/Fake News Detection": {"target": "label", "text_col": "text", "data": _hf("GonzaloA/fake_news")},
+    "NLP/GitHub Bugs Prediction": {"target": "label", "text_col": "text", "data": _hf("bigcode/the-stack-github-issues", split="train")},
+    "NLP/Hate Speech Detection": {"target": "label", "text_col": "tweet", "data": _hf("hate_speech18")},
+    "NLP/IMDB Sentiment Analysis - Deep Learning": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/IMDB Sentiment Review Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/Message Spam Detection": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/Movie Review Sentiments": {"target": "label", "text_col": "text", "data": _hf("rotten_tomatoes")},
+    "NLP/Restaurant Review Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("scikit-learn/restaurant-reviews")},
+    "NLP/Resume Screening": {"target": "Category", "text_col": "Resume", "data": _hf("Pravincoder/Resume_Dataset")},
+    "NLP/Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/Sentiment Analysis - Flask Web App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/Sentiment Analysis - Restaurant Reviews": {"target": "label", "text_col": "text", "data": _hf("scikit-learn/restaurant-reviews")},
+    "NLP/SMS Spam Detection": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/SMS Spam Detection - Detailed": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/SMS Spam Detection Analysis": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/Spam Classifier": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/Spam SMS Classification": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
+    "NLP/Text Classification": {"target": "label", "text_col": "text", "data": _hf("SetFit/20_newsgroups")},
+    "NLP/Text Classification - Keras Consumer Complaints": {"target": "product", "text_col": "text", "data": _hf("consumer-finance-complaints/consumer_complaints")},
+    "NLP/Text Classification with NLP": {"target": "label", "text_col": "text", "data": _hf("SetFit/20_newsgroups")},
+    "NLP/Three-Way Sentiment Analysis - Tweets": {"target": "sentiment", "text_col": "text", "data": _hf("mteb/tweet_sentiment_extraction")},
+    "NLP/Twitter Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
+    "NLP/Twitter Sentiment Analysis - ML": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
+    "NLP/Twitter US Airline Sentiment": {"target": "airline_sentiment", "text_col": "text", "data": _hf("osanseviero/twitter-airline-sentiment")},
+    "NLP/US Election Prediction": {"target": "label", "text_col": "text", "data": _hf("SetFit/tweet_eval_stance_hillary")},
+    "Deep Learning/Amazon Alexa Sentiment Analysis": {"target": "feedback", "text_col": "verified_reviews", "data": _hf("mesolitica/amazon-alexa-review")},
+    "Deep Learning/IMDB Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "Deep Learning/News Category Prediction": {"target": "category", "text_col": "headline", "data": _hf("heegyu/news-category-dataset")},
+    "Deep Learning/Sentiment Analysis - Flask App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+}
+
+# ── FAMILY 7: NLP GENERATION ──
+NLP_GEN = {
+    "NLP/Document Summary Creator": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Language Translation Model": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
+    "NLP/Language Translator": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
+    "NLP/Next Word Prediction": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Text Generation": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Text Summarization": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Text Summarization - Medium": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Text Summarization - Word Frequency": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Text Summarization - Word Frequency Method": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Spell Checker": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Spelling Correction": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Autocorrect": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/NLP for Other Languages": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
+    "Deep Learning/Chatbot": {"task": "chatbot", "data": _hf("Alizimal/daily-dialogs")},
+    "Deep Learning/ChatBot - Neural Network": {"task": "chatbot", "data": _hf("Alizimal/daily-dialogs")},
+    "Deep Learning/Movie Title Prediction": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+}
+
+# ── FAMILY 8: IMAGE CLASSIFICATION ──
+IMAGE_CLF = {
+    "Classification/Autoencoder Fashion MNIST": {"dataset": "FashionMNIST", "n_classes": 10},
+    "Classification/CIFAR-10 Classification": {"dataset": "CIFAR10", "n_classes": 10},
+    "Classification/Cotton Disease Prediction": {"dataset": "hf:smaranjitghose/cotton-disease-dataset", "n_classes": 4},
+    "Classification/Digit Recognition - MNIST Sequence": {"dataset": "MNIST", "n_classes": 10},
+    "Classification/Dog vs Cat Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
+    "Classification/Fashion MNIST Analysis": {"dataset": "FashionMNIST", "n_classes": 10},
+    "Classification/Garbage Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 6},
+    "Classification/Plant Disease Recognition": {"dataset": "hf:mhammad/PlantVillage", "n_classes": 38},
+    "Classification/Pneumonia Classification": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
+    "Computer Vision/Indian Classical Dance Classification": {"dataset": "hf:Indian-Dance-Form-Recognition", "n_classes": 8},
+    "Computer Vision/Traffic Sign Recognition": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
+    "Computer Vision/Traffic Sign Recognizer": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
+    "Deep Learning/Advanced ResNet-50": {"dataset": "CIFAR10", "n_classes": 10},
+    "Deep Learning/Arabic Character Recognition": {"dataset": "hf:HosamEddinMohamed/arabic-handwritten-chars", "n_classes": 28},
+    "Deep Learning/Bottle vs Can Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 2},
+    "Deep Learning/Brain Tumor Recognition": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 4},
+    "Deep Learning/Cactus Aerial Image Recognition": {"dataset": "hf:IQTLabs/aerial-cactus-identification", "n_classes": 2},
+    "Deep Learning/Cat vs Dog Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
+    "Deep Learning/Clothing Prediction - Flask App": {"dataset": "FashionMNIST", "n_classes": 10},
+    "Deep Learning/Dance Form Identification": {"dataset": "hf:Indian-Dance-Form-Recognition", "n_classes": 8},
+    "Deep Learning/Diabetic Retinopathy": {"dataset": "hf:aharley/diabetic-retinopathy-detection", "n_classes": 5},
+    "Deep Learning/Fingerprint Recognition": {"dataset": "hf:Antoinegg1/fingerprint", "n_classes": 10},
+    "Deep Learning/Glass Detection": {"dataset": "CIFAR10", "n_classes": 2},
+    "Deep Learning/Happy House Predictor": {"dataset": "hf:Falah/happy_house", "n_classes": 2},
+    "Deep Learning/Keep Babies Safe": {"dataset": "CIFAR10", "n_classes": 2},
+    "Deep Learning/Lego Brick Classification": {"dataset": "hf:LEGO-Brick-Images", "n_classes": 16},
+    "Deep Learning/Pneumonia Detection": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
+    "Deep Learning/Sheep Breed Classification - CNN": {"dataset": "CIFAR10", "n_classes": 4},
+    "Deep Learning/Skin Cancer Recognition": {"dataset": "hf:marmal88/skin_cancer", "n_classes": 7},
+    "Deep Learning/Walking or Running Classification": {"dataset": "CIFAR10", "n_classes": 2},
+    "Deep Learning/World Currency Coin Detection": {"dataset": "CIFAR10", "n_classes": 10},
+}
+
+# ── FAMILY 9: CV DETECTION (YOLO) ──
+CV_DETECTION = {
+    "Computer Vision/Car and Pedestrian Tracker": {"task": "track"},
+    "Computer Vision/Document Word Detection": {"task": "detect"},
+    "Computer Vision/Lane Finder": {"task": "detect"},
+    "Computer Vision/Captcha Recognition": {"task": "detect"},
+    "Deep Learning/Landmark Detection": {"task": "detect"},
+}
+
+# ── FAMILY 10: FACE/GESTURE ──
+FACE_GESTURE = {
+    "Computer Vision/Face Detection - OpenCV": {"task": "face_detection"},
+    "Computer Vision/Face Expression Identifier": {"task": "face_detection"},
+    "Computer Vision/Face Mask Detection": {"task": "face_detection"},
+    "Computer Vision/Gesture Control Media Player": {"task": "hand_gesture"},
+    "Computer Vision/Home Security": {"task": "face_detection"},
+    "Computer Vision/Live Smile Detector": {"task": "face_detection"},
+    "Computer Vision/Room Security - Webcam": {"task": "face_detection"},
+    "Computer Vision/Face Recognition Door Lock - AWS Rekognition": {"task": "face_recognition"},
+    "Deep Learning/Caffe Face Detector - OpenCV": {"task": "face_detection"},
+    "Deep Learning/Face Gender and Ethnicity Recognizer": {"task": "face_recognition"},
+    "Deep Learning/Face Mask Detection": {"task": "face_detection"},
+    "Deep Learning/Parkinson Pose Estimation": {"task": "pose"},
+}
+
+# ── FAMILY 11: OCR ──
+OCR = {
+    "Computer Vision/Image Text Extraction - OCR": {},
+    "Computer Vision/Image to Text Conversion - OCR": {},
+    "Computer Vision/QR Code Readability": {},
+}
+
+# ── FAMILY 12: RECOMMENDATION ──
+RECOMMENDATION = {
+    "Recommendation Systems/Article Recommendation System": {"data": _hf("heegyu/news-category-dataset")},
+    "Recommendation Systems/Articles Recommender": {"data": _hf("heegyu/news-category-dataset")},
+    "Recommendation Systems/Book Recommendation System": {"data": _hf("zhengyun21/Book-Crossing")},
+    "Recommendation Systems/Building Recommender in an Hour": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Collaborative Filtering - TensorFlow": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/E-Commerce Recommendation System": {"data": _hf("nazlicanto/e-commerce")},
+    "Recommendation Systems/Event Recommendation System": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Hotel Recommendation System": {"data": _hf("Yelp/yelp_review_full")},
+    "Recommendation Systems/Million Songs Recommendation Engine": {"data": _hf("maharshipandya/spotify-tracks-dataset")},
+    "Recommendation Systems/Movie Recommendation Engine": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Movie Recommendation System": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Movies Recommender": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Music Recommendation System": {"data": _hf("maharshipandya/spotify-tracks-dataset")},
+    "Recommendation Systems/Recipe Recommendation System": {"data": _hf("Hieu-Pham/kaggle_food_recipes")},
+    "Recommendation Systems/Recommender Systems Fundamentals": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Recommender with Surprise Library": {"data": _hf("reczilla/movielens-100k")},
+    "Recommendation Systems/Restaurant Recommendation System": {"data": _hf("Yelp/yelp_review_full")},
+    "Recommendation Systems/Seattle Hotels Recommender": {"data": _hf("Yelp/yelp_review_full")},
+    "Recommendation Systems/TV Show Recommendation System": {"data": _hf("reczilla/movielens-100k")},
+}
+
+# ── FAMILY 13: TIME SERIES ──
+TIME_SERIES = {
+    "Time Series Analysis/Cryptocurrency Price Forecasting": {"target": "Close", "data": _yfinance("BTC-USD", "5y")},
+    "Time Series Analysis/Electricity Demand Forecasting": {"target": "value", "data": _hf("EnergyStatisticsDatasets/electricity_demand")},
+    "Time Series Analysis/Forecasting with ARIMA": {"target": "Close", "data": _yfinance("SPY", "10y")},
+    "Time Series Analysis/Gold Price Forecasting": {"target": "Close", "data": _yfinance("GLD", "10y")},
+    "Time Series Analysis/Granger Causality Test": {"target": "Close", "data": _yfinance("AAPL", "5y")},
+    "Time Series Analysis/Mini Course Sales Forecasting": {"target": "Sales", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv")},
+    "Time Series Analysis/Pollution Forecasting": {"target": "pollution", "data": _hf("juanma9613/Beijing-PM2.5-dataset")},
+    "Time Series Analysis/Power Consumption - LSTM": {"target": "Global_active_power", "data": _hf("Ammok/Household_Power_Consumption")},
+    "Time Series Analysis/Promotional Time Series": {"target": "Sales", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv")},
+    "Time Series Analysis/Rossmann Store Sales Forecasting": {"target": "Sales", "data": _hf("thedevastator/rossmann-store-sales")},
+    "Time Series Analysis/Smart Home Temperature Forecasting": {"target": "temperature", "data": _hf("Zaherrr/Weather-Dataset")},
+    "Time Series Analysis/Solar Power Generation Forecasting": {"target": "power", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/solar_power.csv")},
+    "Time Series Analysis/Stock Market Analysis - Tech Stocks": {"target": "Close", "data": _yfinance("AAPL MSFT GOOGL AMZN NVDA", "5y")},
+    "Time Series Analysis/Stock Price Forecasting": {"target": "Close", "data": _yfinance("AAPL", "10y")},
+    "Time Series Analysis/Store Item Demand Forecasting": {"target": "sales", "data": _hf("thedevastator/store-item-demand-forecasting")},
+    "Time Series Analysis/Time Series Forecasting": {"target": "Close", "data": _yfinance("SPY", "10y")},
+    "Time Series Analysis/Time Series Forecasting - Introduction": {"target": "Close", "data": _yfinance("SPY", "5y")},
+    "Time Series Analysis/Time Series with LSTM": {"target": "Close", "data": _yfinance("AAPL", "10y")},
+    "Time Series Analysis/Traffic Forecast": {"target": "traffic_volume", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/traffic_volume.csv")},
+    "Time Series Analysis/US Gasoline and Diesel Prices 1995-2021": {"target": "value", "data": _hf("jaeyoung-im/us-gasoline-prices")},
+    "Time Series Analysis/Weather Forecasting": {"target": "temp", "data": _hf("Zaherrr/Weather-Dataset")},
+    "Deep Learning/Amazon Stock Price Analysis": {"target": "Close", "data": _yfinance("AMZN", "10y")},
+    "Deep Learning/Hourly Energy Demand and Weather": {"target": "demand", "data": _hf("Ammok/Household_Power_Consumption")},
+    "Deep Learning/Stock Market Prediction": {"target": "Close", "data": _yfinance("AAPL", "10y")},
+    "Deep Learning/Electric Car Temperature Prediction": {"target": "temperature", "data": _hf("Zaherrr/Weather-Dataset")},
+}
+
+# ── FAMILY 14: REINFORCEMENT LEARNING ──
+RL = {
+    "Reinforcement Learning/Cliff Walking": {"env": "CliffWalking-v0", "algo": "PPO"},
+    "Reinforcement Learning/Frozen Lake": {"env": "FrozenLake-v1", "algo": "PPO"},
+    "Reinforcement Learning/Gridworld Navigation": {"env": "CartPole-v1", "algo": "PPO"},
+    "Reinforcement Learning/Lunar Landing": {"env": "LunarLander-v3", "algo": "PPO"},
+    "Reinforcement Learning/Taxi Navigation": {"env": "Taxi-v3", "algo": "PPO"},
+}
+
+# ── FAMILY 15: AUDIO / SPEECH ──
+AUDIO = {
+    "Speech and Audio processing/Audio Denoising": {"task": "denoising", "data": _hf("edinburghcstr/vctk")},
+    "Speech and Audio processing/Music Genre Prediction - Million Songs": {"task": "classification", "data": _hf("marsyas/gtzan")},
+    "Speech and Audio processing/Voice Cloning": {"task": "cloning", "data": _hf("edinburghcstr/vctk")},
+    "Deep Learning/Cat and Dog Voice Recognition": {"task": "classification", "data": _hf("google/speech_commands", config="v0.02")},
+}
+
+# ── MISC NLP (text utilities — Keyword, Plagiarism, etc.) ──
+NLP_MISC = {
+    "NLP/Keyword Extraction": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Keyword Research": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Named Entity Recognition": {"target": "ner_tags", "text_col": "tokens", "data": _hf("conll2003")},
+    "NLP/Plagiarism Checker": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("hate_speech18")},
+    "NLP/Stop Words in 28 Languages": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/Text Clustering and Topic Modelling": {"task": "summarization", "data": _hf("SetFit/20_newsgroups")},
+    "NLP/Text File Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Text Processing and Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Text Similarity": {"task": "generation", "data": _hf("mteb/stsbenchmark-sts")},
+    "NLP/WhatsApp Chat Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/WhatsApp Group Chat Analysis": {"task": "summarization", "data": _hf("EdinburghNLP/xsum")},
+    "NLP/Wikipedia Search Word Cloud": {"task": "summarization", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "NLP/BOW and TF-IDF with XGBoost": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/Cross Language Information Retrieval": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
+}
+
+# ── MISC CV ──
+CV_MISC = {
+    "Computer Vision/Dominant Color Analysis": {"task": "detect"},
+    "Computer Vision/Dominant Color Extraction": {"task": "detect"},
+    "Computer Vision/Image Cartoonify": {"task": "detect"},
+    "Computer Vision/Image to Sketch": {"task": "detect"},
+    "Computer Vision/Image Watermark": {"task": "detect"},
+    "Computer Vision/Noise Reduction": {"task": "detect"},
+}
+
+# Image captioning / colorization → NLP gen family
+CV_NLP_MISC = {
+    "Computer Vision/Image Captioning": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
+}
+
+# ── MISC Deep Learning ──
+DL_IMAGE_MISC = {
+    "Deep Learning/Brain MRI Segmentation": {"dataset": "hf:mateuszbuda/brain-segmentation", "n_classes": 2},
+    "Deep Learning/GANs": {"dataset": "MNIST", "n_classes": 10},
+    "Deep Learning/COVID-19 Lung CT Scan Analysis": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 2},
+    "Deep Learning/Sudoku Solver - Neural Network": {"dataset": "MNIST", "n_classes": 10},
+}
+DL_TABULAR_MISC = {
+    "Deep Learning/All Space Missions Analysis": {"target": "MissionStatus", "data": _url_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/refs/heads/main/data/2019/2019-01-15/launches.csv")},
+    "Deep Learning/Indian Startup Data Analysis": {"target": "AmountInUSD", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/indian_startup_funding.csv")},
+}
+DL_CLUSTER_MISC = {
+    "Deep Learning/Pokemon Generation Clustering": {"data": _url_csv("https://raw.githubusercontent.com/lgreski/pokemonData/master/Pokemon.csv")},
+}
+DL_NLP_MISC = {
+    "Deep Learning/Image Colorization": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
+    "Speech and Audio processing/Image Captioning": {"task": "generation", "data": _hf("nlphuji/flickr30k")},
+}
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# PIPELINE TEMPLATES (inline — all data downloaded at runtime)
+# ════════════════════════════════════════════════════════════════════════════════
+
+def gen_tabular_clf(path, cfg):
+    target = cfg["target"]
+    data_load = cfg["data"]
+    return textwrap.dedent(f'''\
+"""
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
+"""
+import os, sys, warnings
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+warnings.filterwarnings("ignore")
+
+TARGET = "{target}"
+
+
+def load_data():
+    """Download dataset from the internet."""
+{data_load}
+    print(f"Dataset shape: {{df.shape}}")
+    print(f"Target distribution:\\n{{df[TARGET].value_counts()}}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {{X_train.shape}}, Test: {{X_test.shape}}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {{}}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\\n✓ CatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}")
+    except Exception as e:
+        print(f"✗ CatBoost: {{e}}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\\n✓ LightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}")
+    except Exception as e:
+        print(f"✗ LightGBM: {{e}}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\\n✓ XGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}")
+    except Exception as e:
+        print(f"✗ XGBoost: {{e}}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\\n✓ FLAML Best: {{automl.best_estimator}} — {{accuracy_score(y_test, results['FLAML']):.4f}}")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\\n— {{name}} —  Accuracy: {{acc:.4f}}  |  F1: {{f1:.4f}}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{{name}} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{{name.lower()}}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\\n🏆 Best: {{best_name}} ({{best_acc:.4f}})")
+
+
+def main():
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_tabular_reg(path, cfg):
+    target = cfg["target"]
+    data_load = cfg["data"]
+    return textwrap.dedent(f'''\
+"""
+Modern Tabular Regression Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime
+"""
+import os, sys, warnings
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+TARGET = "{target}"
+
+
+def load_data():
+{data_load}
+    print(f"Dataset shape: {{df.shape}}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {{}}
+
+    try:
+        from catboost import CatBoostRegressor
+        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=50, verbose=100)
+        m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = m.predict(X_test)
+        print(f"✓ CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ CatBoost: {{e}}")
+
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+                              device="gpu", verbose=-1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"✓ LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ LightGBM: {{e}}")
+
+    try:
+        from xgboost import XGBRegressor
+        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+                         verbosity=1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"✓ XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ XGBoost: {{e}}")
+
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML Best: {{automl.best_estimator}} — RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}")
+    except Exception as e:
+        print(f"✗ FLAML: {{e}}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\\n" + "=" * 60)
+    best_name, best_rmse = None, float("inf")
+    for name, y_pred in results.items():
+        rmse = mean_squared_error(y_test, y_pred, squared=False)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        print(f"— {{name}} — RMSE: {{rmse:.4f}} | MAE: {{mae:.4f}} | R²: {{r2:.4f}}")
+        if rmse < best_rmse:
+            best_rmse, best_name = rmse, name
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.scatter(y_test, y_pred, alpha=0.4, s=10)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+        ax.set_title(f"{{name}} — Predicted vs Actual")
+        fig.savefig(os.path.join(save_dir, f"scatter_{{name.lower()}}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\\n🏆 Best: {{best_name}} (RMSE: {{best_rmse:.4f}})")
+
+
+def main():
+    print("=" * 60)
+    print("MODERN TABULAR REGRESSION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_fraud(path, cfg):
+    target = cfg["target"]
+    data_load = cfg["data"]
+    return textwrap.dedent(f'''\
+"""
+Fraud / Imbalanced Classification Pipeline (April 2026)
+Models: CatBoost, LightGBM, XGBoost — GPU + threshold tuning
+Data: Auto-downloaded at runtime
+"""
+import os, sys, warnings
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import (
+    classification_report, f1_score,
+    precision_recall_curve, average_precision_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+warnings.filterwarnings("ignore")
+
+TARGET = "{target}"
+
+
+def load_data():
+{data_load}
+    print(f"Dataset shape: {{df.shape}}")
+    print(f"Fraud rate: {{df[TARGET].mean():.4%}}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]; X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols: X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+
+def find_best_threshold(y_true, y_proba):
+    prec, rec, thresholds = precision_recall_curve(y_true, y_proba)
+    f1s = 2 * prec * rec / (prec + rec + 1e-8)
+    idx = np.argmax(f1s)
+    return thresholds[idx] if idx < len(thresholds) else 0.5
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {{}}
+    scale = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+
+    for name, builder in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
+            iterations=1000, lr=0.03, depth=8, task_type="GPU", devices="0",
+            scale_pos_weight=scale, eval_metric="F1", early_stopping_rounds=50, verbose=100)),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
+            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            device="gpu", scale_pos_weight=scale, verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
+            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            device="cuda", tree_method="hist", scale_pos_weight=scale,
+            eval_metric="aucpr", early_stopping_rounds=50, verbosity=1, n_jobs=-1)),
+    ]:
+        try:
+            m = builder()
+            if name == "LightGBM":
+                import lightgbm as lgb
+                m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+                      callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+            else:
+                m.fit(X_train, y_train, eval_set=[(X_test, y_test)] if name == "XGBoost"
+                      else (X_test, y_test), verbose=100 if name == "XGBoost" else None)
+            proba = m.predict_proba(X_test)[:, 1]
+            thresh = find_best_threshold(y_test, proba)
+            preds = (proba >= thresh).astype(int)
+            results[name] = {{"preds": preds, "proba": proba, "thresh": thresh}}
+            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}})")
+        except Exception as e:
+            print(f"✗ {{name}}: {{e}}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    for name, r in results.items():
+        print(f"\\n— {{name}} (threshold={{r['thresh']:.3f}}) —")
+        print(classification_report(y_test, r["preds"], target_names=["Legit", "Fraud"]))
+        print(f"  AUPRC: {{average_precision_score(y_test, r['proba']):.4f}}  ROC-AUC: {{roc_auc_score(y_test, r['proba']):.4f}}")
+
+
+def main():
+    print("=" * 60)
+    print("FRAUD / IMBALANCED CLASSIFICATION PIPELINE")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_nlp_clf(path, cfg):
+    target = cfg.get("target", "label")
+    text_col = cfg.get("text_col", "text")
+    data_load = cfg["data"]
+    model = cfg.get("model", "answerdotai/ModernBERT-base")
+    return textwrap.dedent(f'''\
+"""
+Modern NLP Classification Pipeline (April 2026)
+Model: ModernBERT fine-tuned — HuggingFace Transformers
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score, classification_report, f1_score
+import matplotlib; matplotlib.use("Agg")
+
+warnings.filterwarnings("ignore")
+
+TARGET = "{target}"
+TEXT_COL = "{text_col}"
+MODEL_NAME = "{model}"
+MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
+
+
+def load_data():
+{data_load}
+    # Auto-detect text column
+    text_col = TEXT_COL
+    if text_col not in df.columns:
+        candidates = [c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 20]
+        text_col = candidates[0] if candidates else df.select_dtypes("object").columns[0]
+    target = TARGET if TARGET in df.columns else df.columns[-1]
+    df = df[[text_col, target]].dropna()
+    df.columns = ["text", "label"]
+    print(f"Dataset: {{len(df)}} samples")
+    return df
+
+
+def train(df):
+    import torch
+    from torch.utils.data import DataLoader, Dataset
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification, get_linear_schedule_with_warmup
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    le = LabelEncoder(); df["label_id"] = le.fit_transform(df["label"])
+    n_classes = len(le.classes_)
+    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42,
+                                          stratify=df["label_id"] if n_classes < 50 else None)
+
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=n_classes).to(device)
+
+    class DS(Dataset):
+        def __init__(self, texts, labels):
+            self.enc = tokenizer(texts, truncation=True, padding="max_length", max_length=MAX_LEN, return_tensors="pt")
+            self.labels = torch.tensor(labels, dtype=torch.long)
+        def __len__(self): return len(self.labels)
+        def __getitem__(self, i): return {{**{{k: v[i] for k, v in self.enc.items()}}, "labels": self.labels[i]}}
+
+    train_loader = DataLoader(DS(train_df["text"].tolist(), train_df["label_id"].tolist()), batch_size=BATCH_SIZE, shuffle=True)
+    test_loader = DataLoader(DS(test_df["text"].tolist(), test_df["label_id"].tolist()), batch_size=BATCH_SIZE)
+
+    opt = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
+    sched = get_linear_schedule_with_warmup(opt, int(0.1 * len(train_loader) * EPOCHS), len(train_loader) * EPOCHS)
+
+    for epoch in range(EPOCHS):
+        model.train(); total_loss = 0
+        for batch in train_loader:
+            batch = {{k: v.to(device) for k, v in batch.items()}}
+            loss = model(**batch).loss; loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            opt.step(); sched.step(); opt.zero_grad(); total_loss += loss.item()
+        print(f"  Epoch {{epoch+1}}/{{EPOCHS}}, Loss: {{total_loss/len(train_loader):.4f}}")
+
+    model.eval(); preds, labels = [], []
+    with torch.no_grad():
+        for batch in test_loader:
+            batch = {{k: v.to(device) for k, v in batch.items()}}
+            preds.extend(torch.argmax(model(**batch).logits, dim=-1).cpu().numpy())
+            labels.extend(batch["labels"].cpu().numpy())
+
+    acc = accuracy_score(labels, preds)
+    print(f"\\n✓ ModernBERT — Accuracy: {{acc:.4f}}, F1: {{f1_score(labels, preds, average='weighted'):.4f}}")
+    print(classification_report(labels, preds, target_names=le.classes_.astype(str), zero_division=0))
+    model.save_pretrained(os.path.join(os.path.dirname(__file__), "modernbert_model"))
+    return acc
+
+
+def main():
+    print("=" * 60)
+    print(f"NLP CLASSIFICATION — {{MODEL_NAME}}")
+    print("=" * 60)
+    df = load_data()
+    train(df)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_nlp_gen(path, cfg):
+    task = cfg.get("task", "summarization")
+    data_load = cfg.get("data", "    df = None")
+    return textwrap.dedent(f'''\
+"""
+Modern NLP Generation Pipeline (April 2026)
+Model: Qwen3-Instruct via Ollama (local GPU inference)
+Data: Auto-downloaded at runtime
+"""
+import os, json, warnings
+import pandas as pd
+warnings.filterwarnings("ignore")
+
+TASK = "{task}"
+OLLAMA_MODEL = "qwen3:8b"
+OLLAMA_URL = "http://localhost:11434/api/generate"
+
+
+def query_ollama(prompt, temperature=0.7, max_tokens=512):
+    import requests
+    try:
+        r = requests.post(OLLAMA_URL, json={{"model": OLLAMA_MODEL, "prompt": prompt, "stream": False,
+                          "options": {{"temperature": temperature, "num_predict": max_tokens}}}}, timeout=120)
+        r.raise_for_status()
+        return r.json().get("response", "")
+    except Exception as e:
+        print(f"Ollama error: {{e}}")
+        return None
+
+
+def load_data():
+{data_load}
+    return df
+
+
+def run_summarization(df):
+    text_col = next((c for c in df.columns if df[c].dtype == "object" and df[c].str.len().mean() > 50), df.select_dtypes("object").columns[0])
+    results = []
+    for i, text in enumerate(df[text_col].dropna().head(10)):
+        summary = query_ollama(f"Summarize concisely:\\n\\n{{text[:2000]}}\\n\\nSummary:")
+        if summary:
+            results.append({{"original": text[:200], "summary": summary}})
+            print(f"  [{{i+1}}] {{summary[:100]}}...")
+    return results
+
+
+def run_translation(df):
+    text_col = df.select_dtypes("object").columns[0]
+    results = []
+    for i, text in enumerate(df[text_col].dropna().head(10)):
+        translated = query_ollama(f"Translate to English:\\n\\n{{text[:1000]}}\\n\\nTranslation:")
+        if translated:
+            results.append({{"original": text[:100], "translated": translated}})
+            print(f"  [{{i+1}}] {{translated[:100]}}...")
+    return results
+
+
+def run_chatbot():
+    print("\\n💬 Chatbot (type 'quit' to exit)")
+    history = []
+    while True:
+        user = input("\\nYou: ").strip()
+        if user.lower() in ("quit", "exit", "q"): break
+        history.append(f"User: {{user}}")
+        resp = query_ollama(f"Continue:\\n\\n{{'\\n'.join(history[-6:])}}\\n\\nAssistant:", temperature=0.8)
+        if resp:
+            history.append(f"Assistant: {{resp}}")
+            print(f"Bot: {{resp}}")
+
+
+def main():
+    print("=" * 60)
+    print(f"NLP GENERATION — {{OLLAMA_MODEL}} — Task: {{TASK}}")
+    print("=" * 60)
+    test = query_ollama("Say hello.", max_tokens=10)
+    if not test:
+        print("⚠ Ollama not reachable. Run: ollama serve && ollama pull " + OLLAMA_MODEL)
+        return
+    df = load_data()
+    if TASK == "summarization" and df is not None: run_summarization(df)
+    elif TASK == "translation" and df is not None: run_translation(df)
+    elif TASK == "chatbot": run_chatbot()
+    elif TASK == "generation": query_ollama("Write a creative story about AI:", temperature=0.9, max_tokens=1024)
+    else:
+        if df is not None: run_summarization(df)
+        else: run_chatbot()
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_image_clf(path, cfg):
+    ds = cfg.get("dataset", "CIFAR10")
+    n_classes = cfg.get("n_classes", 10)
+    # Determine data loading code
+    if ds.startswith("hf:"):
+        hf_name = ds[3:]
+        ds_load = f'''    from datasets import load_dataset as _hf_load
+    hf_ds = _hf_load("{hf_name}", split="train")
+    # Convert HF image dataset to torchvision-style
+    class HFImageDataset(Dataset):
+        def __init__(self, hf_dataset, transform=None):
+            self.ds = hf_dataset; self.transform = transform
+            img_col = next((c for c in hf_dataset.column_names if "image" in c.lower()), hf_dataset.column_names[0])
+            lbl_col = next((c for c in hf_dataset.column_names if "label" in c.lower()), hf_dataset.column_names[-1])
+            self.img_col, self.lbl_col = img_col, lbl_col
+        def __len__(self): return len(self.ds)
+        def __getitem__(self, i):
+            img = self.ds[i][self.img_col].convert("RGB") if hasattr(self.ds[i][self.img_col], "convert") else Image.open(self.ds[i][self.img_col]).convert("RGB")
+            lbl = self.ds[i][self.lbl_col]
+            return self.transform(img) if self.transform else img, lbl
+    train_ds = HFImageDataset(hf_ds, transform=get_transforms(True))
+    n_classes = len(set(hf_ds[next(c for c in hf_ds.column_names if "label" in c.lower())]))'''
+    else:
+        ds_load = f'''    from torchvision import datasets as tv_datasets
+    train_ds = tv_datasets.{ds}(root="./data", train=True, download=True, transform=get_transforms(True))
+    n_classes = {n_classes}'''
+
+    return textwrap.dedent(f'''\
+"""
+Modern Image Classification Pipeline (April 2026)
+Model: DINOv2 fine-tuning — Vision Transformer
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, Dataset, random_split
+from torchvision import transforms
+from PIL import Image
+from sklearn.metrics import accuracy_score, classification_report
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+
+
+def get_transforms(train=True):
+    if train:
+        return transforms.Compose([
+            transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
+            transforms.ColorJitter(0.2, 0.2, 0.2), transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ])
+    return transforms.Compose([
+        transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ])
+
+
+def train_model():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+{ds_load}
+
+    val_size = max(1, int(0.2 * len(train_ds)))
+    train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
+    train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
+    val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
+
+    backbone = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14", pretrained=True)
+    embed_dim = 384  # ViT-S/14
+
+    class Classifier(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.backbone = backbone
+            self.head = nn.Sequential(nn.LayerNorm(embed_dim), nn.Linear(embed_dim, 256),
+                                      nn.GELU(), nn.Dropout(0.3), nn.Linear(256, n_classes))
+            for p in self.backbone.parameters(): p.requires_grad = False
+        def forward(self, x):
+            feat = self.backbone(x)
+            return self.head(feat)
+
+    model = Classifier().to(device)
+    criterion = nn.CrossEntropyLoss()
+    opt = torch.optim.AdamW(model.head.parameters(), lr=LR, weight_decay=0.01)
+
+    best_acc = 0
+    for epoch in range(EPOCHS):
+        model.train(); total_loss = 0
+        for imgs, labels in train_loader:
+            imgs, labels = imgs.to(device), labels.to(device)
+            loss = criterion(model(imgs), labels); loss.backward()
+            opt.step(); opt.zero_grad(); total_loss += loss.item()
+        if epoch == 2:
+            for p in model.backbone.parameters(): p.requires_grad = True
+            opt = torch.optim.AdamW(model.parameters(), lr=LR * 0.1, weight_decay=0.01)
+        model.eval(); preds, gts = [], []
+        with torch.no_grad():
+            for imgs, labels in val_loader:
+                preds.extend(torch.argmax(model(imgs.to(device)), dim=-1).cpu().numpy())
+                gts.extend(labels.numpy())
+        val_acc = accuracy_score(gts, preds)
+        print(f"  Epoch {{epoch+1}}/{{EPOCHS}} — Loss: {{total_loss/len(train_loader):.4f}} — Val Acc: {{val_acc:.4f}}")
+        if val_acc > best_acc:
+            best_acc = val_acc
+            torch.save(model.state_dict(), os.path.join(os.path.dirname(__file__), "best_model.pth"))
+
+    print(f"\\n🏆 DINOv2 Best Val Accuracy: {{best_acc:.4f}}")
+
+
+def main():
+    print("=" * 60)
+    print("IMAGE CLASSIFICATION — DINOv2 (ViT-S/14)")
+    print("=" * 60)
+    train_model()
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+# No template imports needed — all generators are inline below
+
+
+# ── Specialized generators that embed data download ──
+
+def gen_clustering(path, cfg):
+    data_load = cfg.get("data", '    raise FileNotFoundError("No data source configured")')
+    return textwrap.dedent(f'''\
+"""
+Modern Clustering Pipeline (April 2026)
+Models: UMAP + HDBSCAN + GMM
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+
+def load_data():
+{data_load}
+    # Drop ID-like columns
+    for c in df.columns:
+        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    print(f"Dataset shape: {{df.shape}}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        df[cat_cols] = oe.fit_transform(df[cat_cols])
+    return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
+
+
+def cluster(X):
+    results = {{}}
+    try:
+        import umap, hdbscan
+        X_umap = umap.UMAP(n_components=2, random_state=42).fit_transform(X)
+        labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
+        n = len(set(labels)) - (1 if -1 in labels else 0)
+        results["HDBSCAN"] = {{"labels": labels, "embedding": X_umap, "n": n}}
+        mask = labels >= 0
+        sil = silhouette_score(X_umap[mask], labels[mask]) if mask.sum() > 1 and n > 1 else 0
+        print(f"✓ HDBSCAN: {{n}} clusters, silhouette={{sil:.4f}}")
+    except Exception as e: print(f"✗ HDBSCAN: {{e}}")
+
+    try:
+        from sklearn.mixture import GaussianMixture
+        bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
+        best_k = range(2, 11)[np.argmin(bics)]
+        labels = GaussianMixture(n_components=best_k, random_state=42).fit_predict(X)
+        sil = silhouette_score(X, labels) if best_k > 1 else 0
+        results["GMM"] = {{"labels": labels, "n": best_k}}
+        print(f"✓ GMM: k={{best_k}}, silhouette={{sil:.4f}}")
+    except Exception as e: print(f"✗ GMM: {{e}}")
+
+    return results
+
+
+def main():
+    print("=" * 60)
+    print("CLUSTERING: UMAP + HDBSCAN + GMM")
+    print("=" * 60)
+    df = load_data()
+    X = preprocess(df)
+    cluster(X)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_anomaly(path, cfg):
+    data_load = cfg.get("data", '    raise FileNotFoundError("No data")')
+    return textwrap.dedent(f'''\
+"""
+Modern Anomaly Detection Pipeline (April 2026)
+Models: PyOD 2 — ECOD, COPOD, IForest, SUOD
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder
+from sklearn.metrics import classification_report, roc_auc_score, f1_score
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+
+def load_data():
+{data_load}
+    print(f"Dataset shape: {{df.shape}}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    label_col = next((c for c in df.columns if c.lower() in ("label","class","target","anomaly","outlier")), None)
+    y = None
+    if label_col:
+        y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
+    for c in df.columns:
+        if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
+    cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        df[cat_cols] = oe.fit_transform(df[cat_cols])
+    return StandardScaler().fit_transform(df.select_dtypes(include=["number"])), y
+
+
+def detect(X, y=None):
+    for name, Builder in [
+        ("ECOD", lambda: __import__("pyod.models.ecod", fromlist=["ECOD"]).ECOD(contamination=0.05)),
+        ("COPOD", lambda: __import__("pyod.models.copod", fromlist=["COPOD"]).COPOD(contamination=0.05)),
+        ("IForest", lambda: __import__("sklearn.ensemble", fromlist=["IsolationForest"]).IsolationForest(contamination=0.05, random_state=42)),
+    ]:
+        try:
+            m = Builder()
+            if "IForest" in name:
+                preds = m.fit_predict(X); labels = (preds == -1).astype(int)
+            else:
+                m.fit(X); labels = m.labels_
+            print(f"✓ {{name}}: {{labels.sum()}} anomalies ({{labels.mean():.2%}})")
+            if y is not None and len(set(y)) > 1:
+                print(f"  F1: {{f1_score(y, labels):.4f}}")
+        except Exception as e:
+            print(f"✗ {{name}}: {{e}}")
+
+
+def main():
+    print("=" * 60)
+    print("ANOMALY DETECTION — PyOD 2")
+    print("=" * 60)
+    df = load_data()
+    X, y = preprocess(df)
+    detect(X, y)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_timeseries(path, cfg):
+    target = cfg.get("target", "Close")
+    data_load = cfg["data"]
+    return textwrap.dedent(f'''\
+"""
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+TARGET = "{target}"
+HORIZON = 30
+
+
+def load_data():
+{data_load}
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {{df.shape}}, target: {{target}}")
+    return df, target
+
+
+def forecast(df, target):
+    results = {{}}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
+
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {{e}}")
+
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({{"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train}})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {{col}} RMSE: {{rmse:.4f}}")
+    except Exception as e: print(f"✗ StatsForecast: {{e}}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
+
+
+def main():
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_recommendation(path, cfg):
+    data_load = cfg.get("data", '    raise FileNotFoundError("No data")')
+    return textwrap.dedent(f'''\
+"""
+Modern Recommendation Pipeline (April 2026)
+Models: implicit (ALS/BPR), LightFM, Sentence Transformers
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+import numpy as np
+import pandas as pd
+from scipy.sparse import csr_matrix
+from sklearn.preprocessing import LabelEncoder
+import matplotlib; matplotlib.use("Agg")
+
+warnings.filterwarnings("ignore")
+
+
+def load_data():
+{data_load}
+    print(f"Dataset shape: {{df.shape}}")
+    return df
+
+
+def detect_columns(df):
+    cols = {{c.lower(): c for c in df.columns}}
+    user = next((cols[k] for k in cols if "user" in k), df.columns[0])
+    item = next((cols[k] for k in cols if any(x in k for x in ["item","movie","book","product","title"])), df.columns[1])
+    rating = next((cols[k] for k in cols if any(x in k for x in ["rating","score"])), None)
+    content = next((cols[k] for k in cols if any(x in k for x in ["title","name","description"])), None)
+    return user, item, rating, content
+
+
+def train(df):
+    user_col, item_col, rating_col, content_col = detect_columns(df)
+    print(f"Columns — user: {{user_col}}, item: {{item_col}}, rating: {{rating_col}}")
+
+    ue, ie = LabelEncoder(), LabelEncoder()
+    df["u"] = ue.fit_transform(df[user_col]); df["i"] = ie.fit_transform(df[item_col])
+    vals = df[rating_col].values.astype(np.float32) if rating_col else np.ones(len(df), dtype=np.float32)
+    mat = csr_matrix((vals, (df["u"].values, df["i"].values)), shape=(df["u"].nunique(), df["i"].nunique()))
+
+    try:
+        from implicit.als import AlternatingLeastSquares
+        als = AlternatingLeastSquares(factors=128, iterations=30, use_gpu=True)
+        als.fit(mat)
+        print(f"✓ ALS trained ({{df['u'].nunique()}} users, {{df['i'].nunique()}} items)")
+    except Exception as e: print(f"✗ ALS: {{e}}")
+
+    try:
+        from implicit.bpr import BayesianPersonalizedRanking
+        bpr = BayesianPersonalizedRanking(factors=128, iterations=100, use_gpu=True)
+        bpr.fit(mat)
+        print("✓ BPR trained")
+    except Exception as e: print(f"✗ BPR: {{e}}")
+
+    if content_col:
+        try:
+            from sentence_transformers import SentenceTransformer
+            from sklearn.metrics.pairwise import cosine_similarity
+            items = df[[item_col, content_col]].drop_duplicates(subset=[item_col]).head(1000)
+            model = SentenceTransformer("BAAI/bge-m3")
+            embs = model.encode(items[content_col].fillna("").tolist(), batch_size=32)
+            sim = cosine_similarity(embs)
+            print(f"✓ Content-based: {{len(items)}} items embedded")
+        except Exception as e: print(f"✗ Content-based: {{e}}")
+
+
+def main():
+    print("=" * 60)
+    print("RECOMMENDATION: implicit + LightFM + SentenceTransformers")
+    print("=" * 60)
+    df = load_data()
+    train(df)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_rl(path, cfg):
+    env = cfg.get("env", "CartPole-v1")
+    algo = cfg.get("algo", "PPO")
+    return textwrap.dedent(f'''\
+"""
+Modern Reinforcement Learning Pipeline (April 2026)
+Models: PPO (default), SAC (continuous) — Stable-Baselines3
+Data: Gymnasium environments (auto-downloaded)
+"""
+import os, warnings
+import numpy as np
+import gymnasium as gym
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+warnings.filterwarnings("ignore")
+
+ENV_NAME = "{env}"
+ALGO = "{algo}"
+TOTAL_TIMESTEPS = 100_000
+
+
+def train_agent():
+    from stable_baselines3 import PPO, SAC
+    from stable_baselines3.common.evaluation import evaluate_policy
+    from stable_baselines3.common.callbacks import EvalCallback
+
+    env = gym.make(ENV_NAME)
+    eval_env = gym.make(ENV_NAME)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+
+    eval_callback = EvalCallback(eval_env, best_model_save_path=save_dir,
+        log_path=save_dir, eval_freq=5000, n_eval_episodes=10, deterministic=True)
+
+    if ALGO == "SAC":
+        model = SAC("MlpPolicy", env, learning_rate=3e-4, buffer_size=100_000,
+                     batch_size=256, tau=0.005, gamma=0.99, verbose=1, device="auto")
+    else:
+        model = PPO("MlpPolicy", env, learning_rate=3e-4, n_steps=2048, batch_size=64,
+                     n_epochs=10, gamma=0.99, gae_lambda=0.95, clip_range=0.2,
+                     ent_coef=0.01, verbose=1, device="auto")
+
+    print(f"Training {{ALGO}} on {{ENV_NAME}} for {{TOTAL_TIMESTEPS}} steps...")
+    model.learn(total_timesteps=TOTAL_TIMESTEPS, callback=eval_callback)
+    mean_reward, std_reward = evaluate_policy(model, eval_env, n_eval_episodes=20)
+    print(f"\\n✓ {{ALGO}} — Mean Reward: {{mean_reward:.2f}} ± {{std_reward:.2f}}")
+    model.save(os.path.join(save_dir, f"{{ALGO.lower()}}_{{ENV_NAME}}"))
+    env.close(); eval_env.close()
+    return model, mean_reward
+
+
+def main():
+    print("=" * 60)
+    print(f"REINFORCEMENT LEARNING — {{ALGO}} on {{ENV_NAME}}")
+    print("=" * 60)
+    model, reward = train_agent()
+    print(f"\\n🏆 Final Mean Reward: {{reward:.2f}}")
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_audio(path, cfg):
+    task = cfg.get("task", "transcription")
+    data_load = cfg.get("data", "    df = None")
+    # Re-indent data_load to 12 spaces for nesting inside try: inside if: inside function
+    data_load_12 = "\n".join("        " + line if line.strip() else line for line in data_load.split("\n"))
+    return textwrap.dedent(f'''\
+"""
+Modern Audio/Speech Pipeline (April 2026)
+Models: Whisper large-v3-turbo (ASR), Wav2Vec2 (clf), XTTS-v2 (TTS)
+Data: Auto-downloaded at runtime from HuggingFace
+"""
+import os, json, warnings
+import numpy as np
+
+warnings.filterwarnings("ignore")
+
+TASK = "{task}"
+
+
+def download_audio_samples():
+    """Download audio samples from HuggingFace datasets."""
+    from datasets import load_dataset
+    import soundfile as sf
+
+    save_dir = os.path.join(os.path.dirname(__file__), "audio_data")
+    os.makedirs(save_dir, exist_ok=True)
+
+    if TASK == "classification":
+        try:
+{data_load_12}
+            if df is not None:
+                print(f"Loaded dataset: {{len(df)}} samples")
+                return save_dir, df
+        except Exception:
+            pass
+        ds = load_dataset("google/speech_commands", "v0.02", split="train[:100]")
+    else:
+        ds = load_dataset("hf-internal-testing/librispeech_asr_dummy", "clean", split="validation[:20]")
+
+    paths = []
+    for i, sample in enumerate(ds):
+        audio = sample.get("audio", sample)
+        if isinstance(audio, dict):
+            arr, sr = np.array(audio["array"]), audio["sampling_rate"]
+            out_path = os.path.join(save_dir, f"sample_{{i:03d}}.wav")
+            sf.write(out_path, arr, sr)
+            paths.append(out_path)
+
+    print(f"Downloaded {{len(paths)}} audio samples to {{save_dir}}")
+    return save_dir, paths
+
+
+def run_whisper(audio_dir):
+    import torch
+    from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    torch_dtype = torch.float16 if device == "cuda" else torch.float32
+    model_id = "openai/whisper-large-v3-turbo"
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True).to(device)
+    processor = AutoProcessor.from_pretrained(model_id)
+    asr = pipeline("automatic-speech-recognition", model=model, tokenizer=processor.tokenizer,
+                   feature_extractor=processor.feature_extractor, torch_dtype=torch_dtype, device=device)
+
+    from pathlib import Path
+    audio_files = list(Path(audio_dir).glob("*.wav")) + list(Path(audio_dir).glob("*.flac"))
+    results = []
+    for f in audio_files[:10]:
+        result = asr(str(f), return_timestamps=True)
+        results.append({{"file": f.name, "text": result["text"]}})
+        print(f"  ✓ {{f.name}}: {{result['text'][:100]}}...")
+    return results
+
+
+def run_voice_cloning():
+    try:
+        from TTS.api import TTS
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+        out_path = os.path.join(os.path.dirname(__file__), "tts_output.wav")
+        tts.tts_to_file(text="Hello, this is a text to speech sample using XTTS version 2.", file_path=out_path)
+        print(f"✓ TTS output → {{out_path}}")
+    except Exception as e:
+        print(f"✗ XTTS: {{e}}")
+
+
+def main():
+    print("=" * 60)
+    print(f"AUDIO/SPEECH — Task: {{TASK}}")
+    print("=" * 60)
+    audio_dir, data = download_audio_samples()
+    if TASK in ("transcription", "denoising"):
+        results = run_whisper(audio_dir)
+        if results:
+            out = os.path.join(os.path.dirname(__file__), "transcriptions.json")
+            with open(out, "w", encoding="utf-8") as f: json.dump(results, f, indent=2)
+            print(f"Saved to {{out}}")
+    elif TASK == "cloning": run_voice_cloning()
+    elif TASK == "classification":
+        print(f"Audio classification data loaded: {{type(data)}}")
+    else:
+        results = run_whisper(audio_dir)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_cv_detection(path, cfg):
+    task = cfg.get("task", "detect")
+    return textwrap.dedent(f'''\
+"""
+Modern CV Object Detection Pipeline (April 2026)
+Model: YOLO11 (Ultralytics) — auto-downloads model + sample images
+Data: Auto-downloaded at runtime
+"""
+import os, warnings
+from pathlib import Path
+import urllib.request
+
+warnings.filterwarnings("ignore")
+
+TASK = "{task}"
+
+SAMPLE_URLS = [
+    "https://ultralytics.com/images/bus.jpg",
+    "https://ultralytics.com/images/zidane.jpg",
+]
+
+
+def download_samples():
+    save_dir = Path(os.path.dirname(__file__)) / "sample_images"
+    save_dir.mkdir(exist_ok=True)
+    paths = []
+    for url in SAMPLE_URLS:
+        fname = save_dir / url.split("/")[-1]
+        if not fname.exists():
+            urllib.request.urlretrieve(url, str(fname))
+        paths.append(fname)
+    exts = (".jpg", ".jpeg", ".png", ".bmp")
+    for ext in exts:
+        paths.extend([p for p in Path(os.path.dirname(__file__)).rglob(f"*{{ext}}") if p not in paths])
+    print(f"{{len(paths)}} images available")
+    return paths
+
+
+def run_detection(files):
+    from ultralytics import YOLO
+    model = YOLO("yolo11n.pt")
+    save_dir = os.path.join(os.path.dirname(__file__), "detections")
+    os.makedirs(save_dir, exist_ok=True)
+    for f in files[:20]:
+        results = model(str(f))
+        for r in results:
+            r.save(filename=os.path.join(save_dir, f.name))
+            if r.boxes is not None:
+                print(f"  ✓ {{f.name}}: {{len(r.boxes)}} objects detected")
+    print(f"Results saved to {{save_dir}}")
+
+
+def run_tracking(files):
+    from ultralytics import YOLO
+    model = YOLO("yolo11n.pt")
+    video_files = [f for f in files if f.suffix in (".mp4", ".avi")]
+    if not video_files:
+        print("No video files found. Running detection on images instead.")
+        run_detection(files)
+        return
+    for v in video_files[:3]:
+        model.track(str(v), persist=True, save=True, project=os.path.dirname(__file__), name="tracking")
+        print(f"  ✓ Tracked: {{v.name}}")
+
+
+def main():
+    print("=" * 60)
+    print(f"CV DETECTION — YOLO11 | Task: {{TASK}}")
+    print("=" * 60)
+    files = download_samples()
+    if TASK == "track": run_tracking(files)
+    else: run_detection(files)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_face_gesture(path, cfg):
+    task = cfg.get("task", "face_detection")
+    return textwrap.dedent(f'''\
+"""
+Modern Face/Hand/Gesture Pipeline (April 2026)
+Models: MediaPipe (face/hand/pose), InsightFace (recognition)
+Data: Auto-downloads LFW face samples at runtime
+"""
+import os, warnings
+import numpy as np
+from pathlib import Path
+
+warnings.filterwarnings("ignore")
+
+TASK = "{task}"
+
+
+def download_face_samples():
+    """Download LFW face images from sklearn."""
+    from sklearn.datasets import fetch_lfw_people
+    import cv2
+
+    save_dir = Path(os.path.dirname(__file__)) / "face_samples"
+    save_dir.mkdir(exist_ok=True)
+
+    if list(save_dir.glob("*.jpg")):
+        return list(save_dir.glob("*.jpg"))
+
+    lfw = fetch_lfw_people(min_faces_per_person=20, resize=1.0)
+    paths = []
+    for i in range(min(30, len(lfw.images))):
+        img = (lfw.images[i] * 255).astype(np.uint8) if lfw.images[i].max() <= 1 else lfw.images[i].astype(np.uint8)
+        p = save_dir / f"face_{{i:03d}}.jpg"
+        cv2.imwrite(str(p), img)
+        paths.append(p)
+    print(f"Downloaded {{len(paths)}} face images")
+    return paths
+
+
+def run_mediapipe_face(files):
+    import cv2, mediapipe as mp
+    mp_face = mp.solutions.face_detection
+    mp_draw = mp.solutions.drawing_utils
+    save_dir = os.path.join(os.path.dirname(__file__), "face_results")
+    os.makedirs(save_dir, exist_ok=True)
+
+    with mp_face.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face:
+        for f in files[:20]:
+            img = cv2.imread(str(f))
+            if img is None: continue
+            rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            results = face.process(rgb)
+            n = 0
+            if results.detections:
+                n = len(results.detections)
+                for det in results.detections: mp_draw.draw_detection(img, det)
+            out_path = os.path.join(save_dir, f.name)
+            cv2.imwrite(out_path, img)
+            print(f"  ✓ {{f.name}}: {{n}} faces")
+    print(f"Results saved to {{save_dir}}")
+
+
+def run_insightface(files):
+    try:
+        import cv2
+        from insightface.app import FaceAnalysis
+        app = FaceAnalysis(providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
+        app.prepare(ctx_id=0, det_size=(640, 640))
+        save_dir = os.path.join(os.path.dirname(__file__), "insightface_results")
+        os.makedirs(save_dir, exist_ok=True)
+        for f in files[:20]:
+            img = cv2.imread(str(f))
+            if img is None: continue
+            faces = app.get(img)
+            for face in faces:
+                bbox = face.bbox.astype(int)
+                cv2.rectangle(img, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 255, 0), 2)
+            cv2.imwrite(os.path.join(save_dir, f.name), img)
+            print(f"  ✓ {{f.name}}: {{len(faces)}} faces")
+    except Exception as e:
+        print(f"✗ InsightFace: {{e}}")
+
+
+def run_hand_gesture():
+    import cv2, mediapipe as mp
+    mp_hands = mp.solutions.hands; mp_draw = mp.solutions.drawing_utils
+    print("Starting webcam hand detection... Press 'q' to quit.")
+    cap = cv2.VideoCapture(0)
+    with mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.5) as hands:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret: break
+            results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+            if results.multi_hand_landmarks:
+                for lm in results.multi_hand_landmarks: mp_draw.draw_landmarks(frame, lm, mp_hands.HAND_CONNECTIONS)
+            cv2.imshow("Hand Gesture", frame)
+            if cv2.waitKey(1) & 0xFF == ord("q"): break
+    cap.release(); cv2.destroyAllWindows()
+
+
+def run_pose(files):
+    import cv2, mediapipe as mp
+    mp_pose = mp.solutions.pose; mp_draw = mp.solutions.drawing_utils
+    save_dir = os.path.join(os.path.dirname(__file__), "pose_results"); os.makedirs(save_dir, exist_ok=True)
+    with mp_pose.Pose(min_detection_confidence=0.5) as pose:
+        for f in files[:20]:
+            img = cv2.imread(str(f))
+            if img is None: continue
+            results = pose.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+            if results.pose_landmarks: mp_draw.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+            cv2.imwrite(os.path.join(save_dir, f.name), img)
+            print(f"  ✓ {{f.name}}")
+
+
+def main():
+    print("=" * 60)
+    print(f"FACE/HAND/GESTURE — {{TASK}}")
+    print("=" * 60)
+    files = download_face_samples()
+    if TASK == "face_detection": run_mediapipe_face(files); run_insightface(files)
+    elif TASK == "hand_gesture": run_hand_gesture()
+    elif TASK == "pose": run_pose(files)
+    elif TASK == "face_recognition": run_insightface(files)
+    else: run_mediapipe_face(files)
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+def gen_ocr(path, cfg):
+    return textwrap.dedent('''\
+"""
+Modern OCR Pipeline (April 2026)
+Model: PaddleOCR (GPU, multilingual)
+Data: Auto-downloads sample document images at runtime
+"""
+import os, json, warnings
+from pathlib import Path
+import urllib.request
+
+warnings.filterwarnings("ignore")
+
+SAMPLE_URLS = [
+    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img_12.jpg",
+    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img623.jpg",
+]
+
+
+def download_samples():
+    save_dir = Path(os.path.dirname(__file__)) / "ocr_samples"
+    save_dir.mkdir(exist_ok=True)
+    paths = []
+    for url in SAMPLE_URLS:
+        fname = save_dir / url.split("/")[-1]
+        if not fname.exists():
+            urllib.request.urlretrieve(url, str(fname))
+        paths.append(fname)
+    # Also gather any local images
+    for ext in (".jpg", ".jpeg", ".png", ".bmp", ".tiff"):
+        paths.extend([p for p in Path(os.path.dirname(__file__)).rglob(f"*{ext}") if p not in paths])
+    print(f"{len(paths)} images available for OCR")
+    return paths
+
+
+def run_ocr(files):
+    from paddleocr import PaddleOCR
+    ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=True)
+    results = []
+    for f in files[:30]:
+        result = ocr.ocr(str(f), cls=True)
+        texts = []
+        if result and result[0]:
+            for line in result[0]:
+                texts.append({"text": line[1][0], "confidence": line[1][1]})
+        full_text = " ".join(t["text"] for t in texts)
+        results.append({"file": f.name, "full_text": full_text, "lines": texts, "n_lines": len(texts)})
+        print(f"  ✓ {f.name}: {len(texts)} lines — '{full_text[:80]}...'")
+    return results
+
+
+def main():
+    print("=" * 60)
+    print("OCR — PaddleOCR (GPU)")
+    print("=" * 60)
+    files = download_samples()
+    results = run_ocr(files)
+    out_path = os.path.join(os.path.dirname(__file__), "ocr_results.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    print(f"\\n✓ Saved to {out_path}: {len(results)} files, {sum(r['n_lines'] for r in results)} lines")
+
+
+if __name__ == "__main__":
+    main()
+''')
+
+
+# ════════════════════════════════════════════════════════════════════════════════
+# MAIN: Generate all pipelines
+# ════════════════════════════════════════════════════════════════════════════════
+
+def main():
+    total = 0
+    families = [
+        ("Tabular Classification", TABULAR_CLF, gen_tabular_clf),
+        ("Tabular Regression", TABULAR_REG, gen_tabular_reg),
+        ("Fraud / Imbalanced", FRAUD, gen_fraud),
+        ("Anomaly Detection", ANOMALY, gen_anomaly),
+        ("Clustering", CLUSTERING, gen_clustering),
+        ("NLP Classification", NLP_CLF, gen_nlp_clf),
+        ("NLP Generation", NLP_GEN, gen_nlp_gen),
+        ("NLP Misc", NLP_MISC, gen_nlp_gen),
+        ("Image Classification", IMAGE_CLF, gen_image_clf),
+        ("CV Detection", CV_DETECTION, gen_cv_detection),
+        ("CV Misc", CV_MISC, gen_cv_detection),
+        ("Face/Gesture", FACE_GESTURE, gen_face_gesture),
+        ("OCR", OCR, gen_ocr),
+        ("Recommendation", RECOMMENDATION, gen_recommendation),
+        ("Time Series", TIME_SERIES, gen_timeseries),
+        ("Reinforcement Learning", RL, gen_rl),
+        ("Audio/Speech", AUDIO, gen_audio),
+        ("DL Image Misc", DL_IMAGE_MISC, gen_image_clf),
+        ("DL Tabular Misc", DL_TABULAR_MISC, gen_tabular_reg),
+        ("DL Cluster Misc", DL_CLUSTER_MISC, gen_clustering),
+        ("DL NLP Misc", DL_NLP_MISC, gen_nlp_gen),
+        ("CV NLP Misc", CV_NLP_MISC, gen_nlp_gen),
+    ]
+
+    for family_name, projects, generator in families:
+        print(f"\n{'='*3} {family_name} {'='*3}")
+        for path, cfg in projects.items():
+            try:
+                content = generator(path, cfg)
+                if write_pipeline(path, content):
+                    total += 1
+                    print(f"  ✓ {path}")
+            except Exception as e:
+                print(f"  ✗ {path}: {e}")
+
+    print(f"\n{'='*60}")
+    print(f"TOTAL PIPELINES GENERATED: {total}")
+    print(f"{'='*60}")
+
+
+if __name__ == "__main__":
+    main()

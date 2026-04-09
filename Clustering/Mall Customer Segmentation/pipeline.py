@@ -1,190 +1,74 @@
-#!/usr/bin/env python3
 """
-Full pipeline for 4 Mall customer segmentation
-
-Auto-generated from: 4 Mall customer segmentation.ipynb
-Project: 4 Mall customer segmentation
-Category: Clustering | Task: clustering
+Modern Clustering Pipeline (April 2026)
+Models: UMAP + HDBSCAN + GMM
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-plt.style.use('fivethirtyeight')
-# Additional imports extracted from mixed cells
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, OrdinalEncoder
+from sklearn.metrics import silhouette_score, calinski_harabasz_score
+import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly as py
-import plotly.graph_objs as go
-from sklearn.cluster import KMeans
-import warnings
-import os
-from pycaret.clustering import *
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+
+def load_data():
+    df = pd.read_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/Mall_Customers.csv", sep=",")
+    # Drop ID-like columns
+    for c in df.columns:
+        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    df[num_cols] = df[num_cols].fillna(df[num_cols].median())
+    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        df[cat_cols] = oe.fit_transform(df[cat_cols])
+    return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
+
+
+def cluster(X):
+    results = {}
+    try:
+        import umap, hdbscan
+        X_umap = umap.UMAP(n_components=2, random_state=42).fit_transform(X)
+        labels = hdbscan.HDBSCAN(min_cluster_size=15).fit_predict(X_umap)
+        n = len(set(labels)) - (1 if -1 in labels else 0)
+        results["HDBSCAN"] = {"labels": labels, "embedding": X_umap, "n": n}
+        mask = labels >= 0
+        sil = silhouette_score(X_umap[mask], labels[mask]) if mask.sum() > 1 and n > 1 else 0
+        print(f"✓ HDBSCAN: {n} clusters, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ HDBSCAN: {e}")
+
+    try:
+        from sklearn.mixture import GaussianMixture
+        bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
+        best_k = range(2, 11)[np.argmin(bics)]
+        labels = GaussianMixture(n_components=best_k, random_state=42).fit_predict(X)
+        sil = silhouette_score(X, labels) if best_k > 1 else 0
+        results["GMM"] = {"labels": labels, "n": best_k}
+        print(f"✓ GMM: k={best_k}, silhouette={sil:.4f}")
+    except Exception as e: print(f"✗ GMM: {e}")
+
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    USE_AUTOML = True  # Set to False to skip AutoML comparison
-
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    import numpy as np # linear algebra
-    import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-    import matplotlib.pyplot as plt 
-    import seaborn as sns 
-    import plotly as py
-    import plotly.graph_objs as go
-    from sklearn.cluster import KMeans
-    import warnings
-    import os
-    warnings.filterwarnings("ignore")
-    py.offline.init_notebook_mode(connected = True)
-    #print(os.listdir("../input"))
-
-    df = load_dataset('mall_customer_segmentation')
-    df.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.shape
-
-    df.describe()
-
-    df.dtypes
-
-    df.isnull().sum()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    plt.figure(1 , figsize = (15 , 6))
-    n = 0 
-    for x in ['Age' , 'Annual Income (k$)' , 'Spending Score (1-100)']:
-        n += 1
-        plt.subplot(1 , 3 , n)
-        plt.subplots_adjust(hspace =0.5 , wspace = 0.5)
-        sns.distplot(df[x] , bins = 20)
-        plt.title('Distplot of {}'.format(x))
-    plt.show()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    plt.figure(1 , figsize = (15 , 5))
-    sns.countplot(y = 'Gender' , data = df)
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    plt.figure(1 , figsize = (15 , 7))
-    n = 0 
-    for x in ['Age' , 'Annual Income (k$)' , 'Spending Score (1-100)']:
-        for y in ['Age' , 'Annual Income (k$)' , 'Spending Score (1-100)']:
-            n += 1
-            plt.subplot(3 , 3 , n)
-            plt.subplots_adjust(hspace = 0.5 , wspace = 0.5)
-            sns.regplot(x = x , y = y , data = df)
-            plt.ylabel(y.split()[0]+' '+y.split()[1] if len(y.split()) > 1 else y )
-    plt.show()
-
-    plt.figure(1 , figsize = (15 , 6))
-    for gender in ['Male' , 'Female']:
-        plt.scatter(x = 'Age' , y = 'Annual Income (k$)' , data = df[df['Gender'] == gender] ,
-                    s = 200 , alpha = 0.5 , label = gender)
-    plt.xlabel('Age'), plt.ylabel('Annual Income (k$)') 
-    plt.title('Age vs Annual Income w.r.t Gender')
-    plt.legend()
-    plt.show()
-
-    plt.figure(1 , figsize = (15 , 6))
-    for gender in ['Male' , 'Female']:
-        plt.scatter(x = 'Annual Income (k$)',y = 'Spending Score (1-100)' ,
-                    data = df[df['Gender'] == gender] ,s = 200 , alpha = 0.5 , label = gender)
-    plt.xlabel('Annual Income (k$)'), plt.ylabel('Spending Score (1-100)') 
-    plt.title('Annual Income vs Spending Score w.r.t Gender')
-    plt.legend()
-    plt.show()
-
-    plt.figure(1 , figsize = (15 , 7))
-    n = 0 
-    for cols in ['Age' , 'Annual Income (k$)' , 'Spending Score (1-100)']:
-        n += 1 
-        plt.subplot(1 , 3 , n)
-        plt.subplots_adjust(hspace = 0.5 , wspace = 0.5)
-        sns.violinplot(x = cols , y = 'Gender' , data = df , palette = 'vlag')
-        sns.swarmplot(x = cols , y = 'Gender' , data = df)
-        plt.ylabel('Gender' if n == 1 else '')
-        plt.title('Boxplots & Swarmplots' if n == 2 else '')
-    plt.show()
-
-
-
-    # --- AUTOML COMPARISON ────────────────────────────────────
-
-    if USE_AUTOML:
-
-        try:
-
-            # --- PYCARET AUTOML ──────────────────────────────
-
-            from pycaret.clustering import *
-
-            clust_setup = setup(data=df, normalize=True, session_id=42, verbose=False)
-
-            # Create K-Means model
-            kmeans_model = create_model('kmeans')
-            print(kmeans_model)
-
-            # Assign cluster labels to data
-            clustered_df = assign_model(kmeans_model)
-            clustered_df.head()
-
-            # Evaluate clustering
-            plot_model(kmeans_model, plot='elbow')
-
-            # Silhouette plot
-            plot_model(kmeans_model, plot='silhouette')
-
-            # Distribution plot
-            plot_model(kmeans_model, plot='distribution')
-
-
-
-        except ImportError:
-
-            print('[AutoML] LazyPredict/PyCaret not installed — skipping AutoML block')
-
-        except Exception as _automl_err:
-
-            print(f'[AutoML] AutoML block failed: {_automl_err}')
+    print("=" * 60)
+    print("CLUSTERING: UMAP + HDBSCAN + GMM")
+    print("=" * 60)
+    df = load_data()
+    X = preprocess(df)
+    cluster(X)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for 4 Mall customer segmentation")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

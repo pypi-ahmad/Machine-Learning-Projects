@@ -1,0 +1,941 @@
+=== Classification ===
+  Adult Salary Prediction:
+    Untitled.ipynb
+  Advanced Credit Card Fraud Detection:
+    Handling_Imbalanced_Data-Under_Sampling.ipynb
+  Autoencoder Fashion MNIST:
+    Autoencoder_Fashion_MNIST.ipynb
+  Autoencoder for Customer Churn:
+    Autoencoder for Customer Churn.ipynb
+  Bayesian Logistic Regression - Bank Marketing:
+    Bayesian Logistic Regression_bank marketing.ipynb
+  Boston House Classification:
+    boston_house_classification.ipynb
+    evaluate.py
+    pipeline.py
+    test_boston_house_classification.py
+    train.py
+  Breast Cancer Detection:
+    Untitled.ipynb
+  Breast Cancer Prediction:
+    breast_cancer_predict.ipynb
+  CIFAR-10 Classification:
+    04_image_classification_with_CNN(Colab).ipynb
+  Cotton Disease Prediction:
+    Cotton_Disease_inceptionv3.ipynb
+    Cotton_Disease_Resnet50.ipynb
+  Credit Card Fraud - Imbalanced Dataset:
+    Hanling_Imbalanced_Data.ipynb
+  Credit Risk Modeling - German Credit:
+    predicting_german_credit_default.ipynb
+    evaluate.py
+    pipeline.py
+    test_credit_risk_modeling_using_the_german_credit_dataset.py
+    train.py
+  Customer Churn Prediction - Telecom:
+    customer-churn-prediction-on-telecom-dataset.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_customer_churn_for_a_telecom_company.py
+    train.py
+  Customer Lifetime Value Prediction:
+    customer-lifetime-value-prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_customer_lifetime_value.py
+    train.py
+  Customer Segmentation - E-Commerce:
+    evaluate.py
+    pipeline.py
+    test_customer_segmentation_for_an_ecommerce_company.py
+    train.py
+  Cyberbullying Classification:
+    Cyberbullying_classification.ipynb
+    evaluate.py
+    pipeline.py
+    test_cyberbullying_classification.py
+  Diabetes Classification:
+    Diabetes Classification.ipynb
+  Diabetes ML Analysis:
+    Machine Learning for Diabetes.ipynb
+  Diabetes Prediction:
+    Diabetes Prediction using PySpark.ipynb
+    Diabetes Prediction.ipynb
+  Digit Recognition - MNIST Sequence:
+    digit_recognition-mnist-sequence.ipynb
+  Dog vs Cat Classification:
+    main.ipynb
+  Drinking Water Potability:
+    drinking-water-potability(1).ipynb
+  Drug Classification:
+    Drug_Classification.ipynb
+    evaluate.py
+    pipeline.py
+    test_drug_classification.py
+    train.py
+  Earthquake Prediction:
+    Untitled.ipynb
+  Employee Turnover Analysis:
+    Employee_Turnover.ipynb
+  Employee Turnover Prediction:
+    Untitled.ipynb
+  Fashion MNIST Analysis:
+    F_Mnist_model.ipynb
+  Flower Species Classification:
+    Untitled.ipynb
+  Fraud Detection:
+    Untitled.ipynb
+  Garbage Classification:
+    Garbage_Classification.ipynb
+    pipeline.py
+    test_garbage_classification.py
+  Glass Classification:
+    Glass_classification.ipynb
+    evaluate.py
+    pipeline.py
+    test_glass_classification.py
+    train.py
+  Groundhog Day Predictions:
+    ground-hog-day-predictions(1).ipynb
+  H2O Higgs Boson:
+    H2O Higgs Boson.ipynb
+  Hand Digit Recognition:
+    Untitled.ipynb
+  Healthcare Heart Disease Prediction:
+    Untitled.ipynb
+  Heart Disease Prediction:
+    Heart Disease Prediction.ipynb
+  Income Classification:
+    Untitled.ipynb
+  Iris Dataset Analysis:
+    Iris Dataset Analysis - Classification.ipynb
+  Loan Default Prediction:
+    loan-default-prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_loan_default.py
+    train.py
+  Loan Prediction Analysis:
+    Loan Prediction Analysis - Classification.ipynb
+  Logistic Regression Balanced:
+    Logistic Regression balanced.ipynb
+  Marketing Campaign Prediction:
+    predict-response-by-using-random forest(1).ipynb
+  Mobile Price Classification:
+    Mobile_price_classification.ipynb
+    evaluate.py
+    pipeline.py
+    test_mobile_price_classification.py
+    train.py
+  Movie Genre Classification:
+    movies_genre_classification.ipynb
+    pipeline.py
+    test_movie_genre_classification.py
+  Plant Disease Recognition:
+    recognition-plant-diseases-by-leaf.ipynb
+  Pneumonia Classification:
+    pneumonia.ipynb
+  Simple Classification Problem:
+    Solving A Simple Classification Problem with Python.ipynb
+  Social Network Ads Analysis:
+    prediction-of-if-the-item-is-purchase(1).ipynb
+  SONAR Rock vs Mine Prediction:
+    SONAR Rock vs Mine Prediction Pyspark.ipynb
+    SONAR Rock vs Mine Prediction.ipynb
+  Spam Email Classification:
+    spam_email_classification.ipynb
+  Student Performance Prediction:
+    student-performance-explained.ipynb
+    evaluate.py
+    pipeline.py
+    test_student_performance_prediction.py
+    train.py
+  Titanic - Handling Missing Values:
+    Missing _Value3.ipynb
+    Missing_Value 2.ipynb
+    Missing-Value1.ipynb
+  Titanic Survival Prediction:
+    Untitled.ipynb
+  Traffic Congestion Prediction:
+    traffic_prediction.ipynb
+    pipeline.py
+    test_traffic_congestion_prediction.py
+  Weather Classification - Decision Trees:
+    Weather Data Classification using Decision Trees.ipynb
+  Wine Quality Analysis:
+    Wine Quality Prediction Analysis.ipynb
+  Wine Quality Prediction:
+    prediction-of-quality-of-wine.ipynb
+=== Regression ===
+  50 Startups Success Prediction:
+    Multiple_Linear_Regression.ipynb
+  Ad Demand Forecast - Avito:
+    Ad Demand Forecast Avito.ipynb
+  Bank Customer churn prediction:
+    bank_customer_churn_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_bank_customer_churn_prediction.py
+    train.py
+  Bengaluru House Price Prediction:
+    Bengaluru house price prediction.ipynb
+  BigMart Sales Prediction:
+    Bigmart Sales Prediction Analysis - Regression.ipynb
+  Bike Sharing Demand Analysis:
+    Bike Sharing Demand Analysis - Regression.ipynb
+  Bitcoin Price Prediction:
+    Untitled.ipynb
+  Bitcoin Price Prediction - Advanced:
+    bitcoin_price_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_the_price_of_bitcoin.py
+    train.py
+  Black Friday Sales Analysis:
+    Black Friday Sales Prediction Analysis - Regression.ipynb
+  Black Friday Sales Prediction:
+    Black Friday Sales Prediction Analysis - Regression.ipynb
+  Boston Housing Analysis:
+    Ridge_And_Lasso_Regression.ipynb
+  Boston Housing Prediction Analysis:
+    Boston Housing Prediction - Regression.ipynb
+  California Housing Prediction:
+    a_features.ipynb
+  Car Price Prediction:
+    Untitled.ipynb
+  Car Price Prediction - Feature Based:
+    car_price_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_car_prices_using_the_car_features.py
+    train.py
+  China GDP Estimation:
+    ChinaGDP.ipynb
+  Crop yield prediction:
+    crop_yield_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_crop_yield_prediction.py
+    train.py
+  Data Scientist Salary Prediction:
+    Data Scientist's Salary Prediction.ipynb
+  Diabetes Prediction - Pima Indians:
+    diabetes_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_diabetes_using_the_prima_indians_diabetes_dataset.py
+    train.py
+  Employee Future Prediction:
+    employee_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_employee_future_prediction.py
+    train.py
+  Energy Usage Prediction - Buildings:
+    energy_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_energy_usage_in_buildings.py
+    train.py
+  Flight Delay Prediction:
+    predict_flight_cancelled.ipynb
+    evaluate.py
+    pipeline.py
+    test_flight_delay_prediction.py
+    train.py
+  Flight Fare Prediction:
+    Untitled.ipynb
+  Future Sales Prediction:
+    sales_forecasting.ipynb
+    evaluate.py
+    pipeline.py
+    test_prediction_future_sales.py
+    train.py
+  Gold Price Prediction:
+    Untitled.ipynb
+  Heart disease prediction:
+    heart_disease_predictions.ipynb
+    evaluate.py
+    pipeline.py
+    test_heart_disease_prediction.py
+    train.py
+  Hotel Booking Cancellation Prediction:
+    hotel_booking_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_hotel_booking_cancellation_prediction.py
+    train.py
+  House Price - Regularized Linear and XGBoost:
+    Modeling House Price with Regularized Linear Model _ Xgboost.ipynb
+  House Price prediction:
+    House_Prices_Prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_house_price_prediction.py
+    train.py
+  House Price Prediction - Detailed:
+    Data Analysis.ipynb
+    Feature_Engineering.ipynb
+    Feature_Selection.ipynb
+  Insurance premium prediction:
+    predicting_insurance_premium.ipynb
+    evaluate.py
+    pipeline.py
+    test_insurance_premium_prediction.py
+    train.py
+  IPL First Innings Prediction - Advanced:
+    First Innings Score Prediction - IPL.ipynb
+  IPL First Innings Score Prediction:
+    First Innings Score Prediction - IPL.ipynb
+  Job Salary prediction:
+    job_salary_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_job_salary_prediction.py
+    train.py
+  Medical Cost Personal:
+    medical-cost-personal-datasets(1).ipynb
+  Mercari Price Suggestion - LightGBM:
+    Mercari Price Suggestion Lightgbm.ipynb
+  Rainfall Amount Prediction:
+    rain_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_predicting_rainfall_amount.py
+    train.py
+  Rainfall Prediction:
+    RainPrediction2.ipynb
+  Stock price prediction:
+    netflix_stock_price_prediction.ipynb
+    evaluate.py
+    pipeline.py
+    test_stock_price_prediction.py
+    train.py
+  Tesla Car Price Prediction:
+    eda-linear-regression(1).ipynb
+  TPOT Mercedes Prediction:
+    TPOT Mercedes.ipynb
+  UCLA Admission Prediction:
+    Predicting Admission into UCLA.ipynb
+=== Anomaly detection and fraud detection ===
+  Anomaly Detection - Numenta Benchmark:
+    run.py
+  Anomaly Detection - Social Networks Twitter Bot:
+    run.py
+  Anomaly Detection in Images - CIFAR-10:
+    run.py
+  Banknote Authentication:
+    run.py
+  Breast Cancer Detection - Wisconsin Dataset:
+    run.py
+  Fraud Detection - IEEE-CIS:
+    run.py
+  Fraud Detection in Financial Transactions:
+    run.py
+  Fraudulent Credit Card Transaction Detection:
+    run.py
+  Insurance Fraud Detection:
+    run.py
+  Intrusion Detection:
+    run.py
+  Traffic Flow Prediction - METR-LA:
+    run.py
+=== Clustering ===
+  Credit Card Customer Segmentation:
+    2 Credit Card customer segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_credit_card_customer_segmentation.py
+    train.py
+  Customer Segmentation:
+    K-Means.ipynb
+  Customer Segmentation - Bank:
+    1 Customer segmentation for a bank.ipynb
+    evaluate.py
+    pipeline.py
+    test_customer_segmentation_for_a_bank.py
+    train.py
+  Financial Time Series Clustering:
+    9 Clustering financial time series.ipynb
+    evaluate.py
+    pipeline.py
+    test_clustering_financial_time_series.py
+    train.py
+  Housing Price Segmentation:
+    6 Housing price segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_housing_price_segmentation.py
+    train.py
+  KMeans Clustering - Imagery Analysis:
+    KMeans Clustering for Imagery Analysis.ipynb
+  Mall Customer Segmentation:
+    4 Mall customer segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_mall_customer_segmentation.py
+    train.py
+  Mall Customer Segmentation - Advanced:
+    Mall Customer Segmentation.ipynb
+  Mall Customer Segmentation - Detailed:
+    Mall Customer Segmentation.ipynb
+  Mall Customer Segmentation Data:
+    customer-insights-kmeans-gaussian(1).ipynb
+  Online Retail Customer Segmentation:
+    3 Online retail customer segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_online_retail_customer_segmentation.py
+    train.py
+  Online Retail Segmentation Analysis:
+    Customer_Segmentation_Online_Retail.ipynb
+  Spotify Song Cluster Analysis:
+    7 spotify song cluster analysis.ipynb
+    evaluate.py
+    pipeline.py
+    test_spotify_song_cluster_analysis.py
+    train.py
+  Turkiye Student Evaluation - Advanced:
+    Turkiye Student Evaluation Analysis - Clustering.ipynb
+  Turkiye Student Evaluation Analysis:
+    Turkiye Student Evaluation Analysis - Clustering.ipynb
+  Vehicle Crash Data Clustering:
+    10 Clustering vehicle crash data.ipynb
+    evaluate.py
+    pipeline.py
+    test_clustering_vehicle_crash_data_for_safety_analysi.py
+    train.py
+  Weather Data Clustering - KMeans:
+    Weather Data Clustering using k-Means.ipynb
+  Wholesale Customer Segmentation:
+    8 Wholesale customer segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_wholesale_customer_segmentation.py
+    train.py
+  Wholesale Segmentation Analysis:
+    Customer_Segmentation_Whosale.ipynb
+  Wine Segmentation:
+    5 Wine segmentation.ipynb
+    evaluate.py
+    pipeline.py
+    test_wine_segmentation.py
+    train.py
+=== NLP ===
+  Amazon Alexa Review Sentiment:
+    alexa-amazon-reviews(1).ipynb
+    test_alexa_reviews.py
+  Amazon Sentiment Analysis:
+    AmazonCentiment_Analysis.ipynb
+    test_amazon_sentiment.py
+  Autocorrect:
+    Autocorrect .ipynb
+    test_autocorrect.py
+  BOW and TF-IDF with XGBoost:
+    BOW_TFIDF_Xgboost_update.ipynb
+  Clinton vs Trump Tweets Analysis:
+    Hillary Clinton and Donald Trump tweets (2).ipynb
+    test_clinton_trump_tweets.py
+  Consumer Complaints Analysis:
+    Consumer_complaints.ipynb
+  Cross Language Information Retrieval:
+    Cross Language Information Retrieval.ipynb
+  Disaster or Not Disaster:
+    NLP.ipynb
+  DJIA Sentiment Analysis - News Headlines:
+    Stock Sentiment Analysis.ipynb
+  DJIA Sentiment Analysis - Stock Prediction:
+    Stock Sentiment Analysis.ipynb
+    test_stock_sentiment.py
+  Document Summary Creator:
+    main.py
+    preprocessing.py
+    summary_make.py
+  Fake News Detection:
+    Fake News Detection.ipynb
+    test_fake_news.py
+  GitHub Bugs Prediction:
+    github-bugs-prediction-using-transformer.ipynb
+    test_github_bugs.py
+  Hate Speech Detection:
+    HateSpeechDetection.ipynb
+    test_hate_speech.py
+  IMDB Sentiment Analysis - Deep Learning:
+    sentiment-analysis-with-ml.ipynb
+    test_imdb_deep_learning.py
+  IMDB Sentiment Review Analysis:
+    Untitled.ipynb
+  Keyword Extraction:
+    4.KeywordExtraction.ipynb
+    test_keyword_extraction.py
+  Keyword Research:
+    KeywordResearch.ipynb
+    test_keyword_research.py
+  Language Translation Model:
+    english-rnn-attempt.ipynb
+  Language Translator:
+    translator.py
+  Message Spam Detection:
+    Dataset_Cleaning.py
+    Message_Spam_Detection.py
+  Movie Review Sentiments:
+    MoviewReviewSentiment.ipynb
+    test_movie_sentiment.py
+  Named Entity Recognition:
+    NameEnitityRecognition.ipynb
+    test_ner.py
+  Next Word Prediction:
+    NextWordPrediction.ipynb
+    test_next_word.py
+  NLP for Other Languages:
+    NLP_for_Other_languages.ipynb
+    test_nlp_other_languages.py
+  Plagiarism Checker:
+    plagiarism.py
+  Profanity Checker:
+    checkText.py
+    openFile.py
+  Restaurant Review Sentiment Analysis:
+    Sentiment Analysis of Restaurant Reviews.ipynb
+    test_restaurant_reviews.py
+  Resume Screening:
+    resumeScreening.ipynb
+    test_resume_screening.py
+  Sentiment Analysis:
+    centimentAnalysis.ipynb
+    test_sentiment_analysis.py
+  Sentiment Analysis - Flask Web App:
+    Sentiment_Analysis_IMDB.ipynb
+    test_flask_sentiment.py
+  Sentiment Analysis - Restaurant Reviews:
+    Sentiment Analysis of Restaurant Reviews.ipynb
+  SMS Spam Detection:
+    SMSspam detection.ipynb
+    test_sms_spam.py
+  SMS Spam Detection - Detailed:
+    SMS Spam Detection Analysis - NLP.ipynb
+    test_sms_spam_analysis.py
+  SMS Spam Detection Analysis:
+    SMS Spam Detection Analysis - NLP.ipynb
+  Spam Classifier:
+    Untitled.ipynb
+  Spam SMS Classification:
+    Spam SMS Classication.ipynb
+    test_spam_sms_classification.py
+  Spell Checker:
+    spell_checker.py
+  Spelling Correction:
+    CorrectSpelling.ipynb
+    test_correct_spelling.py
+  Stop Words in 28 Languages:
+    hindi-stop-words-w2v(1).ipynb
+    test_hindi_stopwords.py
+  Text Classification: [NO .ipynb/.py files]
+  Text Classification - Keras Consumer Complaints:
+    Text Classification keras_consumer_complaints.ipynb
+  Text Classification with NLP:
+    textClassification.ipynb
+    test_text_classification.py
+  Text Clustering and Topic Modelling: [NO .ipynb/.py files]
+  Text File Analysis:
+    textfile_analysis.py
+  Text Generation: [NO .ipynb/.py files]
+  Text Processing and Analysis: [NO .ipynb/.py files]
+  Text Similarity:
+    word-cloud-in-python-for-beginners.ipynb
+    test_text_similarity.py
+  Text Summarization:
+    TextSummarization.ipynb
+    test_text_summarization.py
+  Text Summarization - Medium:
+    Untitled.ipynb
+  Text Summarization - Word Frequency:
+    Text Summarization using Word Frequency - NLP.ipynb
+    test_text_summarization_freq.py
+  Text Summarization - Word Frequency Method:
+    Text Summarization using Word Frequency - NLP.ipynb
+  Three-Way Sentiment Analysis - Tweets:
+    3-Way Sentiment Analysis for Tweets.ipynb
+  Twitter Sentiment Analysis:
+    TwiterSentimentAnalysis.ipynb
+    test_twitter_sentiment.py
+  Twitter Sentiment Analysis - ML:
+    Twitter Sentiment Analysis - NLP.ipynb
+  Twitter US Airline Sentiment:
+    Twitter US Sentiment Analysis.ipynb
+    test_airline_sentiment.py
+  US Election Prediction:
+    PredictUSelection.ipynb
+    test_predict_us_election.py
+  WhatsApp Chat Analysis:
+    NLP for whatsapp status.ipynb
+    test_whatsapp_sentiment.py
+  WhatsApp Group Chat Analysis:
+    WhatsappGroupChatAnalysis.ipynb
+    test_whatsapp_analysis.py
+  Wikipedia Search Word Cloud:
+    wiki-search-cloud.py
+=== Computer Vision ===
+  Captcha Recognition:
+    captcha-recognition.ipynb
+  Car and Pedestrian Tracker:
+    Car_And_Pedestrain_Tracker.py
+  Document Word Detection:
+    Word_detection.py
+  Dominant Color Analysis:
+    find-color.py
+  Dominant Color Extraction:
+    Dominant color Extraction.ipynb
+  Face Detection - OpenCV:
+    Face Detection (OpenCV) - Computer Vision.ipynb
+  Face Expression Identifier:
+    face-exp-resnet.ipynb
+  Face Mask Detection:
+    notebookf9ab511482.ipynb
+  Face Recognition Door Lock - AWS Rekognition:
+    main.py
+    recognition.py
+    train.py
+  Gesture Control Media Player:
+    vlc-Gesture-Control.py
+  Home Security:
+    detctor.py
+    send_mail.py
+  Image Captioning:
+    Image_caption_Project.ipynb
+    image_caption_project.py
+  Image Cartoonify:
+    easy_cartoonify.py
+  Image Text Extraction - OCR:
+    Image to text (OCR).ipynb
+  Image to Sketch:
+    sketchScript.py
+  Image to Text Conversion - OCR:
+    Image to text (OCR).ipynb
+  Image Watermark:
+    watermark.py
+  Indian Classical Dance Classification:
+    main.ipynb
+  Lane Finder:
+    finding_lanes.py
+  Live Smile Detector:
+    Smile.py
+  Noise Reduction:
+    Noise Reduction Script.py
+  QR Code Readability:
+    qr-codes-readability.ipynb
+  Room Security - Webcam:
+    camera.py
+    main.py
+  Traffic Sign Recognition:
+    rgb_classifier_recognition.ipynb
+  Traffic Sign Recognizer:
+    Traffic-Sign-Recognition.ipynb
+=== Deep Learning ===
+  Advanced Churn Modeling:
+    churn-modelling(1).ipynb
+    run.py
+  Advanced ResNet-50:
+    full-trained-densenet.ipynb
+    run.py
+  All Space Missions Analysis:
+    space-missions-analysis(1).ipynb
+    run.py
+  Amazon Alexa Sentiment Analysis:
+    alexa-amazon-reviews(1).ipynb
+    run.py
+  Amazon Stock Price Analysis:
+    stock-price-analysis(1).ipynb
+    run.py
+  Arabic Character Recognition:
+    arabic-characters-recognition.ipynb
+    run.py
+  Bank Marketing Analysis:
+    bank-marketing(1).ipynb
+    run.py
+  Bottle vs Can Classification:
+    starter-bottles-and-cans-images-aa8808c7-4.ipynb
+    run.py
+  Brain MRI Segmentation:
+    brain-mri-detection-segmentation-resunet.ipynb
+    run.py
+  Brain Tumor Recognition:
+    brain-tumor-densenet201.ipynb
+    run.py
+  Cactus Aerial Image Recognition:
+    cactus-or-no-cactus.ipynb
+    run.py
+  Caffe Face Detector - OpenCV:
+    doom-patrol-cv2.ipynb
+    run.py
+  Campus Recruitment Analysis:
+    campus-recruitment(1).ipynb
+    run.py
+  Cat and Dog Voice Recognition:
+    cat-dog-audio-classify-conv2d.ipynb
+    run.py
+    utils.py
+  Cat vs Dog Classification:
+    cnn-dogs-vs-cats.ipynb
+    run.py
+  Chatbot:
+    simple-chatbot.ipynb
+    run.py
+  ChatBot - Neural Network:
+    Chatbot(1).ipynb
+    run.py
+  Clothing Prediction - Flask App:
+    Clothing_Classification_CNN.ipynb
+    run.py
+  Concrete Strength Prediction:
+    eda-concrete-strength-prediction-r2-0-93.ipynb
+    run.py
+  COVID-19 Drug Recovery:
+    covid19-drug-discovery(1).ipynb
+    run.py
+  COVID-19 Lung CT Scan Analysis:
+    covid-19-with-cnn-final-exam.ipynb
+    run.py
+  Dance Form Identification:
+    indian-dance-classification.ipynb
+    run.py
+  Diabetic Retinopathy:
+    diabetic-retinopathy-thesis.ipynb
+    run.py
+  Disease Prediction:
+    disease-prediction(1).ipynb
+    run.py
+  Earthquake Prediction:
+    earthquake-prediction.ipynb
+    run.py
+  Electric Car Temperature Prediction:
+    cnn-motortemperature-regression.ipynb
+    run.py
+  Face Gender and Ethnicity Recognizer:
+    keras-tuner-multi-output-cnn.ipynb
+    run.py
+  Face Mask Detection:
+    mask-detection.ipynb
+    run.py
+  Fingerprint Recognition:
+    fingerprint-reconstructor-using-autoencoder.ipynb
+    run.py
+  GANs: [NO .ipynb/.py files]
+  Glass Detection:
+    glasses-detection.ipynb
+    run.py
+  Happy House Predictor:
+    happy house.ipynb
+    run.py
+  Hourly Energy Demand and Weather:
+    energy-interpolation(1).ipynb
+    run.py
+  Image Colorization:
+    image-colorization-with-unet-auto-encoders.ipynb
+    run.py
+  IMDB Sentiment Analysis:
+    sentiment-analysis-with-ml(1).ipynb
+    run.py
+  Indian Startup Data Analysis:
+    indian-startup-data-analysis(1).ipynb
+    run.py
+  Keep Babies Safe:
+    Keep babies safe solution.ipynb
+    run.py
+  Landmark Detection:
+    Landmark Detection solution.ipynb
+    run.py
+  Lego Brick Classification:
+    lego-block-classification.ipynb
+    run.py
+  Movie Title Prediction:
+    movie-title-predictor(1).ipynb
+    run.py
+  News Category Prediction:
+    news-category-prediction-word-embeddings(1).ipynb
+    run.py
+  Parkinson Pose Estimation:
+    parkinson-s-pose-estimation-feature-extraction(1).ipynb
+    run.py
+  Pneumonia Detection:
+    Pneumonia Detection.ipynb
+    run.py
+  Pokemon Generation Clustering:
+    pokemons-stats-clustering.ipynb
+    run.py
+  Sentiment Analysis - Flask App:
+    Sentiment_Analysis_IMDB.ipynb
+    run.py
+  Sheep Breed Classification - CNN:
+    classification-of-sheep-breed.ipynb
+    run.py
+  Skin Cancer Recognition:
+    skin-cancer-detection-starter.ipynb
+    run.py
+  Stock Market Prediction:
+    stock-sentiment-analysis-classification-nlp.ipynb
+    run.py
+  Sudoku Solver - Neural Network:
+    neural-nets-as-sudoku-solvers(1).ipynb
+    run.py
+  Walking or Running Classification:
+    ip-with-dense-net201.ipynb
+    run.py
+  World Currency Coin Detection:
+    coin-prediction-using-keras-cnn-mobilenet.ipynb
+    run.py
+=== Recommendation Systems ===
+  Article Recommendation System:
+    10 Article Recommendation System.ipynb
+    run.py
+  Articles Recommender:
+    Articles Rec System Implicit.ipynb
+  Book Recommendation System:
+    7 Book recommendation system.ipynb
+    run.py
+  Building Recommender in an Hour:
+    Build Recommender System in an Hour - Part 2.ipynb
+  Collaborative Filtering - TensorFlow:
+    Collaborative Filtering Model with TensorFlow.ipynb
+  E-Commerce Recommendation System:
+    2. E-commerce Product recommendation.ipynb
+    run.py
+  Event Recommendation System:
+    1 Event recommendation system.ipynb
+    run.py
+  Hotel Recommendation System:
+    4 Hotel Recommendation system.ipynb
+    run.py
+  Million Songs Recommendation Engine:
+    Million Songs Data - Recommendation Engine.ipynb
+    Recommenders.py
+  Movie Recommendation Engine:
+    Movie_Recommendation_Engine.ipynb
+  Movie Recommendation System:
+    5 Movie Recommendation system.ipynb
+    run.py
+  Movies Recommender:
+    Movielens Recommender Metrics.ipynb
+  Music Recommendation System:
+    6 Music Recommendation system.ipynb
+    run.py
+  Recipe Recommendation System:
+    8 Recipe Recommendation System.ipynb
+    run.py
+  Recommender Systems Fundamentals:
+    Recommender Systems - The Fundamentals.ipynb
+  Recommender with Surprise Library:
+    Building Recommender System with Surprise.ipynb
+  Restaurant Recommendation System:
+    3  Restaurant recommendation system.ipynb
+    run.py
+  Seattle Hotels Recommender:
+    Seattle Hotels Recommender.ipynb
+  TV Show Recommendation System:
+    11 TV Shows recommendation system.ipynb
+    run.py
+=== Time Series Analysis ===
+  Cryptocurrency Price Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_cryptocurrency_price_forecasting.py
+    train.py
+  Electricity Demand Forecasting:
+    code.ipynb
+    pipeline.py
+    test_electricity_demand_forecasting.py
+  Forecasting with ARIMA:
+    Untitled.ipynb
+  Gold Price Forecasting:
+    code.ipynb
+    pipeline.py
+    test_gold_price_forecasting.py
+  Granger Causality Test:
+    Granger Causality Test.ipynb
+  Mini Course Sales Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_minicourse_sales_forecasting.py
+  Pollution Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_pollution_forecasting.py
+    train.py
+  Power Consumption - LSTM:
+    LSTM Time Series Power Consumption.ipynb
+  Promotional Time Series:
+    Promotional Time Series .ipynb
+  Rossmann Store Sales Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_rossmann_store_sales_forecasting.py
+    train.py
+  Smart Home Temperature Forecasting:
+    code.ipynb
+    pipeline.py
+    test_smart_home_s_temperature_forecasting.py
+  Solar Power Generation Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_solar_power_generation_forecasting.py
+    train.py
+  Stock Market Analysis - Tech Stocks:
+    Stock Market Analysis for Tech Stocks.ipynb
+  Stock Price Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_stock_price_forecasting.py
+    train.py
+  Store Item Demand Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_store_item_demand_forecasting.py
+    train.py
+  Time Series Forecasting:
+    Time Series Forecastings.ipynb
+  Time Series Forecasting - Introduction:
+    time_serires_forecasting.ipynb
+  Time Series with LSTM:
+    Untitled.ipynb
+  Traffic Forecast:
+    Traffic Forecast - Time Series Analysis.ipynb
+  US Gasoline and Diesel Prices 1995-2021:
+    gasoline-price-predictions-97-acc-0-overfitting.ipynb
+  Weather Forecasting:
+    code.ipynb
+    evaluate.py
+    pipeline.py
+    test_weather_forecasting.py
+    train.py
+=== Reinforcement Learning ===
+  Cliff Walking:
+    9. Cliff walking.ipynb
+    run.py
+  Frozen Lake:
+    11. Frozen Lake.ipynb
+    run.py
+  Gridworld Navigation:
+    8. Gridworld Navigation.ipynb
+    run.py
+  Lunar Landing:
+    3. Lunar landing.ipynb
+    run.py
+  Taxi Navigation:
+    1. Reinforcement Learning for Taxis.ipynb
+    run.py
+=== Speech and Audio processing ===
+  Audio Denoising:
+    run.py
+  Image Captioning:
+    run.py
+  Music Genre Prediction - Million Songs:
+    run.py
+  Voice Cloning:
+    run.py

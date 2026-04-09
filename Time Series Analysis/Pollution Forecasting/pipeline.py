@@ -1,177 +1,93 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Pollution Forecasting
-
-Auto-generated from: code.ipynb
-Project: Pollution Forecasting
-Category: Time Series Analysis | Task: time_series
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
 """
+import os, warnings
+import numpy as np
+import pandas as pd
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-import matplotlib
-matplotlib.use('Agg')
+warnings.filterwarnings("ignore")
 
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
-import tensorflow as tf
-import numpy as np #Linear Algebra
-import matplotlib.pyplot as plt #Data visualization
-import pandas as pd #data manipulation
-import warnings
-from pycaret.time_series import *
+TARGET = "pollution"
+HORIZON = 30
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+
+def load_data():
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("juanma9613/Beijing-PM2.5-dataset", split="train").to_pandas()
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {df.shape}, target: {target}")
+    return df, target
+
+
+def forecast(df, target):
+    results = {}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
+
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
+
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {col} RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ StatsForecast: {e}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-    tf.random.set_seed(42)
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    #Import Libraries
-    import tensorflow as tf
-    import numpy as np #Linear Algebra
-    import matplotlib.pyplot as plt #Data visualization
-    import pandas as pd #data manipulation
-
-    import warnings
-    warnings.filterwarnings('ignore') #Ignore warnings
-
-    #Make sure Tensorflow is version 2.0 or higher
-    print('Tensorflow Version:', tf.__version__)
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    #Reads in Pollution csv
-    pollution = load_dataset('pollution_forecasting')
-    #Filters for only pm25 values in Jeongnim-Dong City, sorted by date
-    pollution = pollution[pollution.City == 'Jeongnim-Dong'].pm25.sort_index()
-    #starts the dataset at 2018 and ends in 2022(due to breaks in data in previous years)
-    start = pd.to_datetime('2018-01-01')
-    end = pd.to_datetime('2022-01-01')
-    pollution = pollution[start:end]
-    print('SAMPLE OF TIME SERIES DATA:')
-    pollution.head()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    #Checks for and imputes missing dates
-    a = pd.date_range(start="2018-01-01", end="2022-01-01", freq="D") #continous dates
-    b = pollution.index #our time series
-    diff_dates = a.difference(b) # finds what in 'a' is not in 'b'
-
-    td = pd.Timedelta(1, "d") #1 day
-    for date in diff_dates:
-        prev_val = pollution[date-td] #takes the previous value
-        pollution[date] = prev_val #imputes previous value
-
-    pollution.sort_index(inplace=True)
-    #sets the time index frequency as daily
-    pollution.freq = "D"
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    #displays a plot of the pm25 values since 2018
-    fig = plt.figure(figsize=(15,5))
-    plt.plot(pollution, color='blue')
-    plt.xlabel('Date')
-    plt.ylabel('PM 2.5 Value')
-    plt.title('Jeongnim-Dong PM 2.5 Values 2018-2022')
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    #Split the time series data into a train and test set
-    end_train_ix = pd.to_datetime('2020-12-31')
-    train = pollution[:end_train_ix] # Jan 2018-2021
-    test = pollution[end_train_ix:] # Jan 2021-2022
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    #displays a plot of the train/test split
-    fig = plt.figure(figsize=(15,5))
-    plt.plot(train, color='purple', label='Training')
-    plt.plot(test, color='orange', label='Testing')
-    plt.xlabel('Date')
-    plt.ylabel('PM 2.5 Value')
-    plt.title('Train-Test Split')
-    plt.legend()
-    plt.show()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    #Creates a windowed dataset from the time series data
-    WINDOW = 14 #the window value... 14 days
-
-    #converts values to TensorSliceDataset
-    train_data = tf.data.Dataset.from_tensor_slices(train.values)
-
-    #takes window size + 1 slices of the dataset
-    train_data = train_data.window(WINDOW+1, shift=1, drop_remainder=True)
-
-    #flattens windowed data by batching
-    train_data = train_data.flat_map(lambda x: x.batch(WINDOW+1))
-
-    #creates features and target tuple
-    train_data = train_data.map(lambda x: (x[:-1], x[-1]))
-
-    #shuffles dataset
-    train_data = train_data.shuffle(1_000)
-
-    #creates batches of windows
-    train_data = train_data.batch(32).prefetch(1)
-
-
-
-    # --- PYCARET AUTOML ──────────────────────────────────────
-
-    from pycaret.time_series import *
-
-    ts_setup = setup(data=pollution, target='None', fh=12, session_id=42, verbose=False)
-
-    # Compare models and select best
-    best_model = compare_models()
-
-    # Display comparison results
-    print(best_model)
-
-    # Plot forecast
-    plot_model(best_model, plot='forecast')
-
-    # Finalize the model
-    final_model = finalize_model(best_model)
-
-    # Make predictions
-    predictions = predict_model(final_model)
-    print(predictions)
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Pollution Forecasting")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

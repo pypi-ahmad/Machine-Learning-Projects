@@ -1,318 +1,163 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Traffic Congestion Prediction
-
-Auto-generated from: traffic_prediction.ipynb
-Project: Traffic Congestion Prediction
-Category: Classification | Task: time_series
+Modern Tabular Classification Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime — no local files needed
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Importing Libraries
+import os, sys, warnings
 import numpy as np
 import pandas as pd
+from pathlib import Path
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.metrics import (
+    accuracy_score, classification_report, f1_score,
+    roc_auc_score, confusion_matrix
+)
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
-import datetime
-import tensorflow
-from statsmodels.tsa.stattools import adfuller
-from sklearn.preprocessing import MinMaxScaler
-from tensorflow import keras
-from keras import callbacks
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Conv2D, Flatten, Dense, LSTM, Dropout, GRU, Bidirectional
-from tensorflow.keras.optimizers import SGD
-import math
-from sklearn.metrics import mean_squared_error
 
-import warnings
 warnings.filterwarnings("ignore")
-# Additional imports extracted from mixed cells
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import os
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-# Normalize Function
-def Normalize(df,col):
-    average = df[col].mean()
-    stdev = df[col].std()
-    df_normalized = (df[col] - average) / stdev
-    df_normalized = df_normalized.to_frame()
-    return df_normalized, average, stdev
+TARGET = "traffic_situation"
 
-# Differencing Function
-def Difference(df,col, interval):
-    diff = []
-    for i in range(interval, len(df)):
-        value = df[col][i] - df[col][i - interval]
-        diff.append(value)
-    return diff
-#Stationary Check for the time series Augmented Dickey Fuller test
-def Stationary_check(df):
-    check = adfuller(df.dropna())
-    print(f"ADF Statistic: {check[0]}")
-    print(f"p-value: {check[1]}")
-    print("Critical Values:")
-    for key, value in check[4].items():
-        print('\t%s: %.3f' % (key, value))
-    if check[0] > check[4]["1%"]:
-        print("Time Series is Non-Stationary")
-    else:
-        print("Time Series is Stationary") 
-  
 
-#Checking if the series is stationary
+def load_data():
+    """Download dataset from the internet."""
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("mfumanelli/traffic-prediction", split="train").to_pandas()
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target distribution:\n{df[TARGET].value_counts()}")
+    return df
 
-List_df_ND = [ df_N1["Diff"], df_N2["Diff"], df_N3["Diff"], df_N4["Diff"]] 
-print("Checking the transformed series for stationarity:")
-for i in List_df_ND:
-    print("\n")
-    Stationary_check(i)
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+
+    le_target = None
+    if df[TARGET].dtype == "object" or df[TARGET].dtype.name == "category":
+        le_target = LabelEncoder()
+        df[TARGET] = le_target.fit_transform(df[TARGET])
+
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
+
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42,
+        stratify=y if y.nunique() < 50 else None
+    )
+    print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+    return X_train, X_test, y_train, y_test, le_target
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+    n_classes = y_train.nunique()
+    is_binary = n_classes == 2
+
+    # ── CatBoost (GPU) ──
+    try:
+        from catboost import CatBoostClassifier
+        cb = CatBoostClassifier(
+            iterations=1000, learning_rate=0.05, depth=8,
+            task_type="GPU", devices="0",
+            eval_metric="AUC" if is_binary else "MultiClass",
+            early_stopping_rounds=50, verbose=100,
+            auto_class_weights="Balanced",
+        )
+        cb.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = cb.predict(X_test).flatten()
+        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    # ── LightGBM (GPU) ──
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    # ── XGBoost (CUDA) ──
+    try:
+        from xgboost import XGBClassifier
+        m = XGBClassifier(
+            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            device="cuda", tree_method="hist",
+            eval_metric="auc" if is_binary else "mlogloss",
+            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+        )
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    # ── FLAML AutoML ──
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="classification", time_budget=120, metric="accuracy")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"\n✓ FLAML Best: {automl.best_estimator} — {accuracy_score(y_test, results['FLAML']):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    print("MODEL COMPARISON")
+    print("=" * 60)
+    best_name, best_acc = None, 0
+    for name, y_pred in results.items():
+        acc = accuracy_score(y_test, y_pred)
+        f1 = f1_score(y_test, y_pred, average="weighted")
+        print(f"\n— {name} —  Accuracy: {acc:.4f}  |  F1: {f1:.4f}")
+        print(classification_report(y_test, y_pred, zero_division=0))
+        if acc > best_acc:
+            best_acc, best_name = acc, name
+        cm = confusion_matrix(y_test, y_pred)
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax)
+        ax.set_title(f"{name} Confusion Matrix")
+        fig.savefig(os.path.join(save_dir, f"cm_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-    tf.random.set_seed(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    # This Python 3 environment comes with many helpful analytics libraries installed
-    # It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
-    # For example, here's several helpful packages to load
-
-    import numpy as np # linear algebra
-    import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-
-    # Input data files are available in the read-only "../input/" directory
-    # For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
-
-    import os
-    for dirname, _, filenames in os.walk('./archive/'):
-        for filename in filenames:
-            print(os.path.join(dirname, filename))
-
-    # You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
-    # You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
-
-    #Loading Data
-    data = load_dataset('traffic_congestion_prediction')
-    data.head()
-
-
-
-    # --- FEATURE ENGINEERING ─────────────────────────────────
-
-    data["DateTime"]= pd.to_datetime(data["DateTime"])
-    data = data.drop(["ID"], axis=1) #dropping IDs
-    data.info()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    #df to be used for EDA
-    df=data.copy() 
-    #Let's plot the Timeseries
-    colors = [ "#FFD4DB","#BBE7FE","#D3B5E5","#dfe2b6"]
-    plt.figure(figsize=(20,4),facecolor="#627D78")
-    Time_series=sns.lineplot(x=df['DateTime'],y="Vehicles",data=df, hue="Junction", palette=colors)
-    Time_series.set_title("Traffic On Junctions Over Years")
-    Time_series.set_ylabel("Number of Vehicles")
-    Time_series.set_xlabel("Date")
-
-    #Exploring more features 
-    df["Year"]= df['DateTime'].dt.year
-    df["Month"]= df['DateTime'].dt.month
-    df["Date_no"]= df['DateTime'].dt.day
-    df["Hour"]= df['DateTime'].dt.hour
-    df["Day"]= df.DateTime.dt.strftime("%A")
-    df.head()
-
-    #Let's plot the Timeseries
-    new_features = [ "Year","Month", "Date_no", "Hour", "Day"]
-
-    for i in new_features:
-        plt.figure(figsize=(10,2),facecolor="#627D78")
-        ax=sns.lineplot(x=df[i],y="Vehicles",data=df, hue="Junction", palette=colors )
-        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-
-    plt.figure(figsize=(12,5),facecolor="#627D78")
-    count = sns.countplot(data=df, x =df["Year"], hue="Junction", palette=colors)
-    count.set_title("Count Of Traffic On Junctions Over Years")
-    count.set_ylabel("Number of Vehicles")
-    count.set_xlabel("Date")
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    corrmat = df.corr()
-    plt.subplots(figsize=(10,10),facecolor="#627D78")
-    sns.heatmap(corrmat,cmap= "Pastel2",annot=True,square=True, )
-
-    sns.pairplot(data=df, hue= "Junction",palette=colors)
-
-    #Pivoting data fron junction 
-    df_J = data.pivot(columns="Junction", index="DateTime")
-    df_J.describe()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    #Creating new sets
-    df_1 = df_J[[('Vehicles', 1)]]
-    df_2 = df_J[[('Vehicles', 2)]]
-    df_3 = df_J[[('Vehicles', 3)]]
-    df_4 = df_J[[('Vehicles', 4)]]
-    df_4 = df_4.dropna() #Junction 4 has limited data only for a few months
-
-    #Dropping level one in dfs's index as it is a multi index data frame
-    list_dfs = [df_1, df_2, df_3, df_4]
-    for i in list_dfs:
-        i.columns= i.columns.droplevel(level=1)   
-
-    #Function to plot comparitive plots of dataframes
-    def Sub_Plots4(df_1, df_2,df_3,df_4,title):
-        fig, axes = plt.subplots(4, 1, figsize=(15, 8),facecolor="#627D78", sharey=True)
-        fig.suptitle(title)
-        #J1
-        pl_1=sns.lineplot(ax=axes[0],data=df_1,color=colors[0])
-        #pl_1=plt.ylabel()
-        axes[0].set(ylabel ="Junction 1")
-        #J2
-        pl_2=sns.lineplot(ax=axes[1],data=df_2,color=colors[1])
-        axes[1].set(ylabel ="Junction 2")
-        #J3
-        pl_3=sns.lineplot(ax=axes[2],data=df_3,color=colors[2])
-        axes[2].set(ylabel ="Junction 3")
-        #J4
-        pl_4=sns.lineplot(ax=axes[3],data=df_4,color=colors[3])
-        axes[3].set(ylabel ="Junction 4")
-    
-    
-    #Plotting the dataframe to check for stationarity
-    Sub_Plots4(df_1.Vehicles, df_2.Vehicles,df_3.Vehicles,df_4.Vehicles,"Dataframes Before Transformation")
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    #Normalizing and Differencing to make the series stationary 
-    df_N1, av_J1, std_J1 = Normalize(df_1, "Vehicles")
-    Diff_1 = Difference(df_N1, col="Vehicles", interval=(24*7)) #taking a week's diffrence
-    df_N1 = df_N1[24*7:]
-    df_N1.columns = ["Norm"]
-    df_N1["Diff"]= Diff_1
-
-    df_N2, av_J2, std_J2 = Normalize(df_2, "Vehicles")
-    Diff_2 = Difference(df_N2, col="Vehicles", interval=(24)) #taking a day's diffrence
-    df_N2 = df_N2[24:]
-    df_N2.columns = ["Norm"]
-    df_N2["Diff"]= Diff_2
-
-    df_N3, av_J3, std_J3 = Normalize(df_3, "Vehicles")
-    Diff_3 = Difference(df_N3, col="Vehicles", interval=1) #taking an hour's diffrence
-    df_N3 = df_N3[1:]
-    df_N3.columns = ["Norm"]
-    df_N3["Diff"]= Diff_3
-
-    df_N4, av_J4, std_J4 = Normalize(df_4, "Vehicles")
-    Diff_4 = Difference(df_N4, col="Vehicles", interval=1) #taking an hour's diffrence
-    df_N4 = df_N4[1:]
-    df_N4.columns = ["Norm"]
-    df_N4["Diff"]= Diff_4
-
-    Sub_Plots4(df_N1.Diff, df_N2.Diff,df_N3.Diff,df_N4.Diff,"Dataframes After Transformation")
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    #Differencing created some NA values as we took a weeks data into consideration while difrencing
-    df_J1 = df_N1["Diff"].dropna()
-    df_J1 = df_J1.to_frame()
-
-    df_J2 = df_N2["Diff"].dropna()
-    df_J2 = df_J2.to_frame()
-
-    df_J3 = df_N3["Diff"].dropna()
-    df_J3 = df_J3.to_frame()
-
-    df_J4 = df_N4["Diff"].dropna()
-    df_J4 = df_J4.to_frame()
-
-    #Splitting the dataset
-    def Split_data(df):
-        training_size = int(len(df)*0.90)
-        data_len = len(df)
-        train, test = df[0:training_size],df[training_size:data_len] 
-        train, test = train.values.reshape(-1, 1), test.values.reshape(-1, 1)
-        return train, test
-    #Splitting the training and test datasets 
-    J1_train, J1_test = Split_data(df_J1)
-    J2_train, J2_test = Split_data(df_J2)
-    J3_train, J3_test = Split_data(df_J3)
-    J4_train, J4_test = Split_data(df_J4)
-
-    #Target and Feature
-    def TnF(df):
-        end_len = len(df)
-        X = []
-        y = []
-        steps = 32
-        for i in range(steps, end_len):
-            X.append(df[i - steps:i, 0])
-            y.append(df[i, 0])
-        X, y = np.array(X), np.array(y)
-        return X ,y
-
-    #fixing the shape of X_test and X_train
-    def FeatureFixShape(train, test):
-        train = np.reshape(train, (train.shape[0], train.shape[1], 1))
-        test = np.reshape(test, (test.shape[0],test.shape[1],1))
-        return train, test
-
-    #Assigning features and target 
-    X_trainJ1, y_trainJ1 = TnF(J1_train)
-    X_testJ1, y_testJ1 = TnF(J1_test)
-    X_trainJ1, X_testJ1 = FeatureFixShape(X_trainJ1, X_testJ1)
-
-    X_trainJ2, y_trainJ2 = TnF(J2_train)
-    X_testJ2, y_testJ2 = TnF(J2_test)
-    X_trainJ2, X_testJ2 = FeatureFixShape(X_trainJ2, X_testJ2)
-
-    X_trainJ3, y_trainJ3 = TnF(J3_train)
-    X_testJ3, y_testJ3 = TnF(J3_test)
-    X_trainJ3, X_testJ3 = FeatureFixShape(X_trainJ3, X_testJ3)
-
-    X_trainJ4, y_trainJ4 = TnF(J4_train)
-    X_testJ4, y_testJ4 = TnF(J4_test)
-    X_trainJ4, X_testJ4 = FeatureFixShape(X_trainJ4, X_testJ4)
+    print("=" * 60)
+    print("MODERN TABULAR CLASSIFICATION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test, le = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Traffic Congestion Prediction")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

@@ -1,186 +1,93 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Weather Forecasting
-
-Auto-generated from: code.ipynb
-Project: Weather Forecasting
-Category: Time Series Analysis | Task: time_series
+Modern Time Series Forecasting Pipeline (April 2026)
+Models: Chronos-Bolt, StatsForecast (ETS/Theta/ARIMA)
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# This Python 3 environment comes with many helpful analytics libraries installed
-# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
-# For example, here's several helpful packages to load
-
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-# Importing the libraries
+import os, warnings
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import SGDRegressor
-from sklearn.model_selection import cross_validate
-# Additional imports extracted from mixed cells
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import matplotlib; matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-# ======================================================================
-# HELPER FUNCTIONS (from notebook)
-# ======================================================================
-def feature_engineering(df):
-    df = df.drop(["Date"],axis=1)
-    print(df.dtypes.value_counts()) # Compte les nombre de types de variables
-    return(df)
-def imputation(df):
-    #df = df.fillna(-999)
-    df = df.dropna(axis=0)
-    return df
-def encodage(df):
-    return df
-def preprocessing(df):
-    df = imputation(df)
-    df = encodage(df)
-    df = feature_engineering(df)
+warnings.filterwarnings("ignore")
 
-    X = df.drop(['Next_Tmax','Next_Tmin'],axis=1)
-    y_max = df["Next_Tmax"]
-    y_min = df["Next_Tmin"]
+TARGET = "temp"
+HORIZON = 30
 
-    print(X.shape)
-    print(y_max.shape)
 
-    return X,y_max,y_min
+def load_data():
+    from datasets import load_dataset as _hf_load
+    df = _hf_load("Zaherrr/Weather-Dataset", split="train").to_pandas()
+    # Auto-detect date and target
+    target = TARGET
+    if target not in df.columns:
+        for c in df.select_dtypes("number").columns:
+            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+                target = c; break
+        else:
+            target = df.select_dtypes("number").columns[-1]
+    for c in df.columns:
+        if "date" in c.lower() or "time" in c.lower():
+            df[c] = pd.to_datetime(df[c], errors="coerce")
+            df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
+    print(f"Dataset: {df.shape}, target: {target}")
+    return df, target
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+
+def forecast(df, target):
+    results = {}
+    series = df[target].dropna().values.astype(float)
+    n = len(series); split = n - HORIZON
+    train, test = series[:split], series[split:]
+
+    # Chronos-Bolt
+    try:
+        import torch
+        from chronos import ChronosPipeline
+        pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
+                  device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
+        context = torch.tensor(train, dtype=torch.float32)
+        y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
+        rmse = mean_squared_error(test, y_pred, squared=False)
+        results["Chronos-Bolt"] = y_pred
+        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ Chronos-Bolt: {e}")
+
+    # StatsForecast
+    try:
+        from statsforecast import StatsForecast
+        from statsforecast.models import AutoETS, AutoTheta, AutoARIMA
+        sf_df = pd.DataFrame({"unique_id": ["s"]*split, "ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        sf = StatsForecast(models=[AutoETS(season_length=7), AutoTheta(season_length=7)], freq="D", n_jobs=-1)
+        preds = sf.forecast(h=HORIZON, df=sf_df)
+        for col in preds.columns:
+            if col not in ("unique_id","ds"):
+                y_pred = preds[col].values[:len(test)]
+                rmse = mean_squared_error(test, y_pred, squared=False)
+                results[col] = y_pred
+                print(f"✓ {col} RMSE: {rmse:.4f}")
+    except Exception as e: print(f"✗ StatsForecast: {e}")
+
+    # Plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.plot(range(len(train)), train, alpha=0.5, label="Train")
+    ax.plot(range(len(train), len(train)+len(test)), test, linewidth=2, label="Actual")
+    for name, y_pred in results.items():
+        ax.plot(range(len(train), len(train)+len(y_pred)), y_pred, "--", label=name)
+    ax.legend(); ax.set_title("Forecast Comparison")
+    fig.savefig(os.path.join(os.path.dirname(__file__), "forecast.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return results
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    # Importing the data set
-    df = load_dataset('weather_forecasting')
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    pd.set_option('display.max_row',25) #Affiche au plus 25 éléments dans les résultats de pandas
-    pd.set_option('display.max_column',25) #Affiche au plus 25 éléments dans les résultats de pandas
-    df.head()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.dtypes.value_counts() # Compte les nombre de types de variables
-
-    df.shape
-
-    plt.figure(figsize=(20,10))
-    sns.heatmap(df.isna(),cbar=False)
-    plt.show()
-    print((df.isna().sum()/df.shape[0]*100).sort_values(ascending=False))
-
-    plt.figure(figsize=(18, 6), dpi=80)
-    plt.plot(df["Next_Tmax"],label="Next_Tmax")
-    plt.plot(df["Next_Tmin"],label="Next_Tmin")
-    plt.legend()
-    plt.show()
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    for col in ["Next_Tmax","Next_Tmin"]:
-        plt.figure()
-        sns.displot(df[col],kind='kde')
-        plt.show()
-    print(df["Next_Tmax"].mean())
-    print(df["Next_Tmax"].std())
-    print(df["Next_Tmin"].mean())
-    print(df["Next_Tmin"].std())
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    plt.figure()
-    sns.heatmap(pd.crosstab(df['Next_Tmax'],df['Next_Tmin']))
-    plt.show()
-
-    sns.heatmap(df.corr())
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    # Importing the data set
-    df = pd.read_csv('data.csv')
-    Save = df.copy()
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    from sklearn.model_selection import train_test_split
-    trainset, testset = train_test_split(df, test_size=0.2, random_state=0)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    X_train, y_min_train, y_max_train = preprocessing(trainset)
-    X_test, y_min_test, y_max_test = preprocessing(testset)
-
-
-
-    # --- MODEL TRAINING ──────────────────────────────────────
-
-    reg_max = make_pipeline(StandardScaler(),
-                        SGDRegressor(loss='squared_error', penalty='l2', max_iter=1000, tol=1e-3))
-    reg_max.fit(X_train, y_max_train)
-
-    reg_min = make_pipeline(StandardScaler(),
-                        SGDRegressor(loss='squared_error', penalty='l2', max_iter=1000, tol=1e-3))
-    reg_min.fit(X_train, y_min_train)
-
-    cv_results_min = cross_validate(reg_min, X_train, y_min_train, cv=5, scoring=('r2', "neg_root_mean_squared_error"), return_train_score=True)
-    cv_results_max = cross_validate(reg_max, X_train, y_max_train, cv=5, scoring=('r2', "neg_root_mean_squared_error"), return_train_score=True)
-
-    print('Pour le Next_Tmin :')
-    print('Test RMSE :' , -cv_results_min['test_neg_root_mean_squared_error'].mean())
-    print('Test r2 :' , cv_results_min['test_r2'].mean())
-    print("Train RMSE :" , -cv_results_min['train_neg_root_mean_squared_error'].mean())
-    print("Train r2 :" , cv_results_min['train_r2'].mean())
-    print("*------------------------------------------*")
-    print('Pour le Next_Tmax :')
-    print('Test RMSE :' , -cv_results_max['test_neg_root_mean_squared_error'].mean())
-    print('Test r2 :' , cv_results_max['test_r2'].mean())
-    print("Train RMSE :" , -cv_results_max['train_neg_root_mean_squared_error'].mean())
-    print("Train r2 :" , cv_results_max['train_r2'].mean())
+    print("=" * 60)
+    print("TIME SERIES: Chronos-Bolt + StatsForecast")
+    print("=" * 60)
+    df, target = load_data()
+    forecast(df, target)
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Weather Forecasting")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()

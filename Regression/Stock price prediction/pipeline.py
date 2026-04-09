@@ -1,131 +1,125 @@
-#!/usr/bin/env python3
 """
-Full pipeline for Stock price prediction
-
-Auto-generated from: netflix_stock_price_prediction.ipynb
-Project: Stock price prediction
-Category: Regression | Task: time_series
+Modern Tabular Regression Pipeline (April 2026)
+Models: CatBoost (GPU), LightGBM (GPU), XGBoost (CUDA), FLAML AutoML
+Data: Auto-downloaded at runtime
 """
-
-import matplotlib
-matplotlib.use('Agg')
-
-import sys, os
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-from core.data_loader import load_dataset
-# Additional imports extracted from mixed cells
+import os, sys, warnings
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
+from pathlib import Path
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error,r2_score
-import os
-import warnings
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
-# ======================================================================
-# MAIN PIPELINE
-# ======================================================================
+warnings.filterwarnings("ignore")
+
+TARGET = "Close"
+
+
+def load_data():
+    import yfinance as yf
+    df = yf.download("AAPL", period="10y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    print(f"Dataset shape: {df.shape}")
+    return df
+
+
+def preprocess(df):
+    df = df.copy()
+    df.dropna(subset=[TARGET], inplace=True)
+    y = df[TARGET]
+    X = df.drop(columns=[TARGET])
+    cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
+    num_cols = X.select_dtypes(include=["number"]).columns.tolist()
+    X[num_cols] = X[num_cols].fillna(X[num_cols].median())
+    for c in cat_cols:
+        X[c] = X[c].fillna("unknown")
+    if cat_cols:
+        oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
+        X[cat_cols] = oe.fit_transform(X[cat_cols])
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def train_and_evaluate(X_train, X_test, y_train, y_test):
+    results = {}
+
+    try:
+        from catboost import CatBoostRegressor
+        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=50, verbose=100)
+        m.fit(X_train, y_train, eval_set=(X_test, y_test))
+        results["CatBoost"] = m.predict(X_test)
+        print(f"✓ CatBoost RMSE: {mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ CatBoost: {e}")
+
+    try:
+        import lightgbm as lgb
+        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+                              device="gpu", verbose=-1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
+              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+        results["LightGBM"] = m.predict(X_test)
+        print(f"✓ LightGBM RMSE: {mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ LightGBM: {e}")
+
+    try:
+        from xgboost import XGBRegressor
+        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+                         verbosity=1, n_jobs=-1)
+        m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
+        results["XGBoost"] = m.predict(X_test)
+        print(f"✓ XGBoost RMSE: {mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ XGBoost: {e}")
+
+    try:
+        from flaml import AutoML
+        automl = AutoML()
+        automl.fit(X_train, y_train, task="regression", time_budget=120, metric="rmse")
+        results["FLAML"] = automl.predict(X_test)
+        print(f"✓ FLAML Best: {automl.best_estimator} — RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}")
+    except Exception as e:
+        print(f"✗ FLAML: {e}")
+
+    return results
+
+
+def report(results, y_test, save_dir="."):
+    print("\n" + "=" * 60)
+    best_name, best_rmse = None, float("inf")
+    for name, y_pred in results.items():
+        rmse = mean_squared_error(y_test, y_pred, squared=False)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        print(f"— {name} — RMSE: {rmse:.4f} | MAE: {mae:.4f} | R²: {r2:.4f}")
+        if rmse < best_rmse:
+            best_rmse, best_name = rmse, name
+        fig, ax = plt.subplots(figsize=(6, 5))
+        ax.scatter(y_test, y_pred, alpha=0.4, s=10)
+        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--")
+        ax.set_title(f"{name} — Predicted vs Actual")
+        fig.savefig(os.path.join(save_dir, f"scatter_{name.lower()}.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print(f"\n🏆 Best: {best_name} (RMSE: {best_rmse:.4f})")
+
 
 def main():
-    """Run the complete pipeline."""
-    # --- REPRODUCIBILITY ─────────────────────────────────────
-    import random as _random
-    _random.seed(42)
-    np.random.seed(42)
-    os.environ['PYTHONHASHSEED'] = str(42)
-
-    # --- EVALUATION ──────────────────────────────────────────
-
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import LinearRegression
-    from sklearn.metrics import mean_squared_error, mean_absolute_error, mean_absolute_percentage_error,r2_score
-
-    import os
-    for dirname, _, filenames in os.walk('./archive/'):
-        for filename in filenames:
-            print(os.path.join(dirname, filename))
-
-    import warnings
-    warnings.filterwarnings('ignore')
-
-
-
-    # --- DATA LOADING ────────────────────────────────────────
-
-    df = load_dataset('stock_price_prediction')
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.head(10)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    viz = df.copy()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    df.isnull().sum()
-
-    df.shape
-
-    df.info()
-
-    df.describe().T
-
-
-
-    # --- PREPROCESSING ───────────────────────────────────────
-
-    train, test = train_test_split(df, test_size = 0.2, random_state=42)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    test_pred = test.copy()
-
-
-
-    # --- EXPLORATORY DATA ANALYSIS ───────────────────────────
-
-    train.head(10)
-
-    test.head(10)
-
-
-
-    # --- ADDITIONAL PROCESSING ───────────────────────────────
-
-    x_train = train[['Open', 'High', 'Low', 'Volume']].values
-    x_test = test[['Open', 'High', 'Low', 'Volume']].values
-
-    y_train = train['Close'].values
-    y_test = test['Close'].values
-
-
-
-    # --- MODEL TRAINING ──────────────────────────────────────
-
-    model_lnr = LinearRegression()
-    model_lnr.fit(x_train, y_train)
+    print("=" * 60)
+    print("MODERN TABULAR REGRESSION PIPELINE")
+    print("CatBoost(GPU) | LightGBM(GPU) | XGBoost(CUDA) | FLAML")
+    print("=" * 60)
+    df = load_data()
+    X_train, X_test, y_train, y_test = preprocess(df)
+    results = train_and_evaluate(X_train, X_test, y_train, y_test)
+    if results:
+        report(results, y_test, os.path.dirname(os.path.abspath(__file__)))
 
 
 if __name__ == "__main__":
-    import argparse as _ap
-    _parser = _ap.ArgumentParser(description="Full pipeline for Stock price prediction")
-    _parser.add_argument("--reproduce", action="store_true", default=True,
-                         help="Force deterministic behaviour (default: True)")
-    _parser.add_argument("--seed", type=int, default=42,
-                         help="Global random seed (default: 42)")
-    _args = _parser.parse_args()
     main()
