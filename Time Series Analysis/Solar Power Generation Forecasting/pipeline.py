@@ -1,9 +1,31 @@
 """
 Modern Time Series Forecasting Pipeline (April 2026)
-Models: AutoGluon TimeSeries + Chronos-Bolt + Chronos-2 + TimesFM + GBDT lag-feature baselines
+
+Primary models (foundation-model forecasting):
+  - AutoGluon TimeSeries  (AutoML ensemble, ~3 min fit with time_limit=180)
+  - Chronos-Bolt          (Amazon zero-shot foundation model, ~30s on GPU)
+  - Chronos-2             (Amazon universal foundation model, ~60s on GPU)
+  - TimesFM               (Google foundation model, ~20s on GPU)
+
+Classical baselines (kept for comparison only):
+  - ARIMA(5,1,0)          (statsmodels, fast, CPU-only, <5s)
+  - Prophet               (Meta, fast, CPU-only, <10s)
+
+Tabular lag-feature baselines:
+  - LightGBM / CatBoost / XGBoost (GBDT with lag features, ~10s each on GPU)
+  - FLAML AutoML           (automated lag-feature model selection, 60s budget)
+
+Compute requirements:
+  - GPU recommended for foundation models (RTX 3060+ / 8 GB VRAM minimum)
+  - AutoGluon-TS: 4+ GB RAM, ~3 min on CPU, ~1 min on GPU
+  - Chronos / TimesFM: GPU strongly recommended (CPU fallback 5-10x slower)
+  - Classical baselines (ARIMA / Prophet / GBDT): CPU-only, <30s each
+  - FLAML: CPU-only, budget-capped at 60s
+
+Metrics: RMSE, MAE, MAPE (where denominator is non-zero)
 Data: Auto-downloaded at runtime
 """
-import os, warnings
+import os, warnings, time
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error, mean_absolute_error
@@ -14,6 +36,23 @@ warnings.filterwarnings("ignore")
 
 TARGET = "power"
 HORIZON = 30
+
+
+def mape_score(y_true, y_pred):
+    mask = y_true != 0
+    if mask.sum() == 0:
+        return float("nan")
+    return float(np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100)
+
+
+def score(name, y_true, y_pred, table):
+    rmse = mean_squared_error(y_true, y_pred, squared=False)
+    mae = mean_absolute_error(y_true, y_pred)
+    mp = mape_score(y_true, y_pred)
+    table.append({"Model": name, "RMSE": rmse, "MAE": mae, "MAPE(%)": mp})
+    mp_s = f"{mp:.2f}%" if not np.isnan(mp) else "N/A"
+    print(f"  {name}: RMSE={rmse:.4f}  MAE={mae:.4f}  MAPE={mp_s}")
+    return rmse
 
 
 def load_data():
@@ -36,12 +75,14 @@ def load_data():
 
 def forecast(df, target):
     results = {}
+    metrics = []
     series = df[target].dropna().values.astype(float)
     n = len(series); split = n - HORIZON
     train, test = series[:split], series[split:]
 
     # ═══ PRIMARY: AutoGluon TimeSeries ═══
     try:
+        t0 = time.time()
         from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
         ts_df = pd.DataFrame({"item_id": ["s"] * split, "timestamp": pd.date_range("2020-01-01", periods=split, freq="D"), "target": train})
         ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
@@ -50,43 +91,48 @@ def forecast(df, target):
         predictor.fit(ts_data, time_limit=180, presets="best_quality")
         ag_preds = predictor.predict(ts_data)
         y_pred = ag_preds["mean"].values[:len(test)]
-        rmse = mean_squared_error(test, y_pred, squared=False)
         results["AutoGluon-TS"] = y_pred
-        print(f"✓ AutoGluon-TS RMSE: {rmse:.4f}")
+        print(f"✓ AutoGluon-TS ({time.time()-t0:.1f}s)")
+        score("AutoGluon-TS", test, y_pred, metrics)
         lb = predictor.leaderboard(ts_data)
-        print(f"  AutoGluon leaderboard:\n{lb.head().to_string()}")
+        print("  Leaderboard (top 5):")
+        for line in lb.head().to_string().splitlines():
+            print(f"    {line}")
     except Exception as e: print(f"✗ AutoGluon-TS: {e}")
 
     # ═══ FOUNDATION MODELS ═══
 
     # Chronos-Bolt (fast zero-shot)
     try:
+        t0 = time.time()
         import torch
         from chronos import ChronosPipeline
         pipe = ChronosPipeline.from_pretrained("amazon/chronos-bolt-base",
                   device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
-        rmse = mean_squared_error(test, y_pred, squared=False)
         results["Chronos-Bolt"] = y_pred
-        print(f"✓ Chronos-Bolt RMSE: {rmse:.4f}")
+        print(f"✓ Chronos-Bolt ({time.time()-t0:.1f}s)")
+        score("Chronos-Bolt", test, y_pred, metrics)
     except Exception as e: print(f"✗ Chronos-Bolt: {e}")
 
     # Chronos-2 (universal forecasting)
     try:
+        t0 = time.time()
         import torch
         from chronos import ChronosPipeline
         pipe2 = ChronosPipeline.from_pretrained("amazon/chronos-2-base",
                    device_map="cuda" if torch.cuda.is_available() else "cpu", torch_dtype=torch.float32)
         context = torch.tensor(train, dtype=torch.float32)
         y_pred = np.median(pipe2.predict(context, HORIZON)[0].numpy(), axis=0)[:len(test)]
-        rmse = mean_squared_error(test, y_pred, squared=False)
         results["Chronos-2"] = y_pred
-        print(f"✓ Chronos-2 RMSE: {rmse:.4f}")
+        print(f"✓ Chronos-2 ({time.time()-t0:.1f}s)")
+        score("Chronos-2", test, y_pred, metrics)
     except Exception as e: print(f"✗ Chronos-2: {e}")
 
     # TimesFM (Google foundation model)
     try:
+        t0 = time.time()
         import timesfm
         tfm = timesfm.TimesFm(
             hparams=timesfm.TimesFmHparams(backend="gpu", per_core_batch_size=32,
@@ -95,12 +141,41 @@ def forecast(df, target):
         freq = [0] * 1  # freq=0 → daily
         y_pred, _ = tfm.forecast([train], freq)
         y_pred = y_pred[0][:len(test)]
-        rmse = mean_squared_error(test, y_pred, squared=False)
         results["TimesFM"] = y_pred
-        print(f"✓ TimesFM RMSE: {rmse:.4f}")
+        print(f"✓ TimesFM ({time.time()-t0:.1f}s)")
+        score("TimesFM", test, y_pred, metrics)
     except Exception as e: print(f"✗ TimesFM: {e}")
 
-    # ═══ TABULAR LAG-FEATURE BASELINES (GBDT) ═══
+    # ═══ CLASSICAL BASELINES (comparison only) ═══
+
+    # ARIMA (statsmodels)
+    try:
+        t0 = time.time()
+        from statsmodels.tsa.arima.model import ARIMA
+        model = ARIMA(train, order=(5, 1, 0))
+        fitted = model.fit()
+        y_pred = fitted.forecast(steps=HORIZON)[:len(test)]
+        results["ARIMA(5,1,0)"] = y_pred
+        print(f"✓ ARIMA(5,1,0) baseline ({time.time()-t0:.1f}s)")
+        score("ARIMA(5,1,0)", test, y_pred, metrics)
+    except Exception as e: print(f"✗ ARIMA: {e}")
+
+    # Prophet (Meta)
+    try:
+        t0 = time.time()
+        from prophet import Prophet
+        p_df = pd.DataFrame({"ds": pd.date_range("2020-01-01", periods=split, freq="D"), "y": train})
+        m = Prophet(yearly_seasonality=True, weekly_seasonality=True, daily_seasonality=False)
+        m.fit(p_df)
+        future = m.make_future_dataframe(periods=HORIZON)
+        fc = m.predict(future)
+        y_pred = fc["yhat"].values[-HORIZON:][:len(test)]
+        results["Prophet"] = y_pred
+        print(f"✓ Prophet baseline ({time.time()-t0:.1f}s)")
+        score("Prophet", test, y_pred, metrics)
+    except Exception as e: print(f"✗ Prophet: {e}")
+
+    # ═══ TABULAR LAG-FEATURE BASELINES (GBDT + FLAML) ═══
     lags = [1, 2, 3, 5, 7, 14, 21]
     lag_df = pd.DataFrame({"y": series})
     for lg in lags:
@@ -131,14 +206,42 @@ def forecast(df, target):
                 device="cuda", tree_method="hist", verbosity=0, n_jobs=-1)),
         ]:
             try:
+                t0 = time.time()
                 m = builder()
                 m.fit(X_lag_tr, y_lag_tr)
                 y_pred = m.predict(X_lag_te)[:len(test)]
-                rmse = mean_squared_error(y_lag_te.values[:len(y_pred)], y_pred, squared=False)
                 results[name] = y_pred
-                print(f"✓ {name} RMSE: {rmse:.4f}")
+                print(f"✓ {name} ({time.time()-t0:.1f}s)")
+                score(name, y_lag_te.values[:len(y_pred)], y_pred, metrics)
             except Exception as e:
                 print(f"✗ {name}: {e}")
+
+        # FLAML AutoML on lag features (tabularized forecasting only)
+        try:
+            t0 = time.time()
+            from flaml import AutoML
+            flaml_model = AutoML()
+            flaml_model.fit(X_lag_tr, y_lag_tr, task="regression", time_budget=60,
+                           metric="rmse", verbose=0)
+            y_pred = flaml_model.predict(X_lag_te)[:len(test)]
+            results["FLAML-Lag"] = y_pred
+            best = flaml_model.best_estimator
+            print(f"✓ FLAML-Lag [best: {best}] ({time.time()-t0:.1f}s)")
+            score("FLAML-Lag", y_lag_te.values[:len(y_pred)], y_pred, metrics)
+        except Exception as e:
+            print(f"✗ FLAML-Lag: {e}")
+
+    # ═══ METRICS SUMMARY ═══
+    if metrics:
+        print("")
+        print("=" * 65)
+        print("METRICS SUMMARY")
+        print("=" * 65)
+        summary = pd.DataFrame(metrics).sort_values("RMSE")
+        print(summary.to_string(index=False))
+        summary.to_csv(os.path.join(os.path.dirname(__file__), "metrics.csv"), index=False)
+        best_model = summary.iloc[0]["Model"]
+        print(f"  → Best model by RMSE: {best_model}")
 
     # Plot
     fig, ax = plt.subplots(figsize=(14, 5))
@@ -154,7 +257,9 @@ def forecast(df, target):
 
 def main():
     print("=" * 60)
-    print("TIME SERIES: AutoGluon-TS + Chronos-Bolt + Chronos-2 + TimesFM + LightGBM/CatBoost/XGBoost Lag")
+    print("TIME SERIES FORECASTING — April 2026")
+    print("Primary: AutoGluon-TS, Chronos-Bolt, Chronos-2, TimesFM")
+    print("Baselines: ARIMA, Prophet, LightGBM/CatBoost/XGBoost Lag, FLAML")
     print("=" * 60)
     df, target = load_data()
     forecast(df, target)
