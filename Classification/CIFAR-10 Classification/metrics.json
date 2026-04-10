@@ -1,0 +1,12 @@
+{
+  "DINOv2": {
+    "val_accuracy": 0.806,
+    "epochs": 3,
+    "time_s": 92.5
+  },
+  "ConvNeXtV2": {
+    "val_accuracy": 0.55,
+    "epochs": 2,
+    "time_s": 63.0
+  }
+}

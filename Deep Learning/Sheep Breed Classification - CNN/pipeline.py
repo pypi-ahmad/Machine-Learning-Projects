@@ -114,7 +114,10 @@ def train_model():
         import timm
         t1 = time.perf_counter()
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
-        convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
+        for _name, _param in convnext.named_parameters():
+            if "head" not in _name:
+                _param.requires_grad = False
+        convnext_opt = torch.optim.AdamW(filter(lambda p: p.requires_grad, convnext.parameters()), lr=LR * 0.5, weight_decay=0.01)
         for epoch in range(2):
             convnext.train(); total_loss = 0
             for imgs, labels in train_loader:

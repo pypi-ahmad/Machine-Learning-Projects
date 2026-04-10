@@ -297,11 +297,129 @@
   "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder Fashion MNIST\\Autoencoder Fashion MNIST.ipynb",
   "project": "Autoencoder Fashion MNIST",
   "family": "Classification",
-  "status": "cell_error",
-  "time_s": 1823.0,
+  "status": "success",
+  "time_s": 164.0,
   "artifacts": [
-   "confusion_matrix.png"
+   "confusion_matrix.png",
+   "metrics.json"
   ],
-  "error": "-------------------"
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\CIFAR-10 Classification\\CIFAR-10 Classification.ipynb",
+  "project": "CIFAR-10 Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 174.0,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Cotton Disease Prediction\\Cotton Disease Prediction.ipynb",
+  "project": "Cotton Disease Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 171.2,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Credit Card Fraud - Imbalanced Dataset\\Credit Card Fraud - Imbalanced Dataset.ipynb",
+  "project": "Credit Card Fraud - Imbalanced Dataset",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 215.0,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Credit Risk Modeling - German Credit\\Credit Risk Modeling - German Credit.ipynb",
+  "project": "Credit Risk Modeling - German Credit",
+  "family": "Classification",
+  "status": "cell_error",
+  "time_s": 14.4,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": "\u001b[31mKeyError\u001b[39m: 'Risk'"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Churn Prediction - Telecom\\Customer Churn Prediction - Telecom.ipynb",
+  "project": "Customer Churn Prediction - Telecom",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 158.0,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Lifetime Value Prediction\\Customer Lifetime Value Prediction.ipynb",
+  "project": "Customer Lifetime Value Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 158.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Segmentation - E-Commerce\\Customer Segmentation - E-Commerce.ipynb",
+  "project": "Customer Segmentation - E-Commerce",
+  "family": "Classification",
+  "status": "cell_error",
+  "time_s": 20.6,
+  "artifacts": [
+   "shokunin_United_Kingdom_map.png"
+  ],
+  "error": "\u001b[31mUnicodeDecodeError\u001b[39m: 'utf-8' codec can't decode byte 0xa3 in position 79780: invalid start byte"
  }
 ]
