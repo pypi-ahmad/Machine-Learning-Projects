@@ -65,12 +65,12 @@ def load_data():
     target = TARGET
     if target not in df.columns:
         for c in df.select_dtypes("number").columns:
-            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+            if any(kw in str(c).lower() for kw in ["close","price","value","sales","demand","total"]):
                 target = c; break
         else:
             target = df.select_dtypes("number").columns[-1]
     for c in df.columns:
-        if "date" in c.lower() or "time" in c.lower():
+        if "date" in str(c).lower() or "time" in str(c).lower():
             df[c] = pd.to_datetime(df[c], errors="coerce")
             df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
     print(f"Dataset: {df.shape}, target: {target}")

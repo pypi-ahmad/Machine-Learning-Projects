@@ -37,7 +37,7 @@ def query_ollama(prompt, temperature=0.7, max_tokens=512):
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("Alizimal/daily-dialogs", split="train").to_pandas()
+    df = _hf_load("wikitext", "wikitext-2-raw-v1", split="train").to_pandas()
     return df
 
 

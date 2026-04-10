@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("bigcode/the-stack-github-issues", split="train").to_pandas()
+    df = _hf_load("stanfordnlp/imdb", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

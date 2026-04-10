@@ -26,8 +26,8 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "cyberbullying_type"
-TEXT_COL = "tweet_text"
+TARGET = "label"
+TEXT_COL = "text"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
 
 MODELS = [
@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("mtbench101/cyberbullying_tweets", split="train").to_pandas()
+    df = _hf_load("cardiffnlp/tweet_eval", "hate", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

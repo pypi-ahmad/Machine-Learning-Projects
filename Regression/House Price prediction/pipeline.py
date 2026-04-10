@@ -23,12 +23,22 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "SalePrice"
+TARGET = "price"
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("leostelon/house-prices-advanced-regression", split="train").to_pandas()
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "kc_house_data.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("harlfoxem/housesalesprediction", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "kc_house_data.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded harlfoxem/housesalesprediction from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -160,9 +170,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["SalePrice"] = y_train.values
+        train_ag = X_train.copy(); train_ag["price"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="SalePrice", path=tmp, problem_type="regression", verbosity=1)
+            predictor = TabularPredictor(label="price", path=tmp, problem_type="regression", verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0

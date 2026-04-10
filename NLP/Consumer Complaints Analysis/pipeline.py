@@ -26,7 +26,7 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "product"
+TARGET = "label"
 TEXT_COL = "text"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
 
@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("consumer-finance-complaints/consumer_complaints", split="train").to_pandas()
+    df = _hf_load("stanfordnlp/imdb", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

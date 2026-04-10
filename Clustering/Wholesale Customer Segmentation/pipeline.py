@@ -21,9 +21,10 @@ def load_data():
     from sklearn.datasets import fetch_openml
     _d = fetch_openml(data_id=1511, as_frame=True, parser="auto")
     df = _d.frame
+    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {df.shape}")
     return df
 

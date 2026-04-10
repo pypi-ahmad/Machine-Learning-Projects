@@ -26,8 +26,8 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "feedback"
-TEXT_COL = "verified_reviews"
+TARGET = "label"
+TEXT_COL = "text"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
 
 MODELS = [
@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("mesolitica/amazon-alexa-review", split="train").to_pandas()
+    df = _hf_load("stanfordnlp/imdb", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

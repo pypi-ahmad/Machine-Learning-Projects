@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-TARGET = "temperature"
+TARGET = "Close"
 HORIZON = 30
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,18 +58,19 @@ def score(name, y_true, y_pred, table):
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("Zaherrr/Weather-Dataset", split="train").to_pandas()
+    import yfinance as yf
+    df = yf.download("SPY", period="5y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
     # Auto-detect date and target
     target = TARGET
     if target not in df.columns:
         for c in df.select_dtypes("number").columns:
-            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+            if any(kw in str(c).lower() for kw in ["close","price","value","sales","demand","total"]):
                 target = c; break
         else:
             target = df.select_dtypes("number").columns[-1]
     for c in df.columns:
-        if "date" in c.lower() or "time" in c.lower():
+        if "date" in str(c).lower() or "time" in str(c).lower():
             df[c] = pd.to_datetime(df[c], errors="coerce")
             df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
     print(f"Dataset: {df.shape}, target: {target}")

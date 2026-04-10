@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-TARGET = "traffic_volume"
+TARGET = "charges"
 HORIZON = 30
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -58,17 +58,28 @@ def score(name, y_true, y_pred, table):
 
 
 def load_data():
-    df = pd.read_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/traffic_volume.csv", sep=",")
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "insurance.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("mirichoi0218/insurance", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "insurance.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded mirichoi0218/insurance from Kaggle")
+    df = pd.read_csv(_fp)
     # Auto-detect date and target
     target = TARGET
     if target not in df.columns:
         for c in df.select_dtypes("number").columns:
-            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+            if any(kw in str(c).lower() for kw in ["close","price","value","sales","demand","total"]):
                 target = c; break
         else:
             target = df.select_dtypes("number").columns[-1]
     for c in df.columns:
-        if "date" in c.lower() or "time" in c.lower():
+        if "date" in str(c).lower() or "time" in str(c).lower():
             df[c] = pd.to_datetime(df[c], errors="coerce")
             df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
     print(f"Dataset: {df.shape}, target: {target}")

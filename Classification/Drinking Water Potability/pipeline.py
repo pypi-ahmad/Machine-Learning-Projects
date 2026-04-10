@@ -24,13 +24,15 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "Potability"
+TARGET = "class"
 
 
 def load_data():
     """Download dataset from the internet."""
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("scikit-learn/water-potability", split="train").to_pandas()
+    from sklearn.datasets import fetch_openml
+    _d = fetch_openml(data_id=44, as_frame=True, parser="auto")
+    df = _d.frame
+    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df
@@ -194,14 +196,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["Potability"] = y_train.values
-        test_ag = X_test.copy(); test_ag["Potability"] = y_test.values
+        train_ag = X_train.copy(); train_ag["class"] = y_train.values
+        test_ag = X_test.copy(); test_ag["class"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="Potability", path=tmp, verbosity=1)
+            predictor = TabularPredictor(label="class", path=tmp, verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
-            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Potability"])).values
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["class"])).values
             try:
-                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Potability"])).values
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["class"])).values
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0

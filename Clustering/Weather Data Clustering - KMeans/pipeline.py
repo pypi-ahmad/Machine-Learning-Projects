@@ -18,11 +18,12 @@ warnings.filterwarnings("ignore")
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("Zaherrr/Weather-Dataset", split="train").to_pandas()
+    import yfinance as yf
+    df = yf.download("SPY", period="5y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {df.shape}")
     return df
 

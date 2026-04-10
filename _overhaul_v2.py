@@ -61,11 +61,33 @@ def _torchvision(dataset_cls, n_classes=10):
 def _openml(data_id, target=None):
     """OpenML dataset by ID"""
     t = f', target_column="{target}"' if target else ""
-    return f'    from sklearn.datasets import fetch_openml\n    _d = fetch_openml(data_id={data_id}{t}, as_frame=True, parser="auto")\n    df = _d.frame'
+    return (f'    from sklearn.datasets import fetch_openml\n'
+            f'    _d = fetch_openml(data_id={data_id}{t}, as_frame=True, parser="auto")\n'
+            f'    df = _d.frame\n'
+            f'    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes')
 
 def _seaborn(name):
     """Seaborn built-in dataset"""
     return f'    import seaborn as _sns\n    df = _sns.load_dataset("{name}")'
+
+def _kaggle(slug, filename, sep=","):
+    """Kaggle dataset download into data/ dir. Requires kaggle package + auth."""
+    sep_arg = f', sep="{sep}"' if sep != "," else ""
+    return (
+        f'    import os, glob as _glob\n'
+        f'    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")\n'
+        f'    os.makedirs(_data_dir, exist_ok=True)\n'
+        f'    _fp = os.path.join(_data_dir, "{filename}")\n'
+        f'    if not os.path.exists(_fp):\n'
+        f'        from kaggle.api.kaggle_api_extended import KaggleApi\n'
+        f'        _api = KaggleApi(); _api.authenticate()\n'
+        f'        _api.dataset_download_files("{slug}", path=_data_dir, unzip=True)\n'
+        f'        _matches = _glob.glob(os.path.join(_data_dir, "**", "{filename}"), recursive=True)\n'
+        f'        if _matches: _fp = _matches[0]\n'
+        f'        print(f"Downloaded {slug} from Kaggle")\n'
+        f'    df = pd.read_csv(_fp{sep_arg})'
+    )
+
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -76,7 +98,7 @@ def _seaborn(name):
 TABULAR_CLF = {
     "Classification/Adult Salary Prediction": {
         "target": "income",
-        "data": _hf("scikit-learn/adult-census-income"),
+        "data": _kaggle("uciml/adult-census-income", "adult.csv"),
     },
     "Classification/Breast Cancer Detection": {
         "target": "target",
@@ -84,43 +106,43 @@ TABULAR_CLF = {
     },
     "Classification/Breast Cancer Prediction": {
         "target": "diagnosis",
-        "data": _openml(1510),
+        "data": _kaggle("uciml/breast-cancer-wisconsin-data", "data.csv"),
     },
     "Classification/Credit Risk Modeling - German Credit": {
-        "target": "class",
-        "data": _openml(31),
+        "target": "Risk",
+        "data": _kaggle("uciml/german-credit", "german_credit_data.csv"),
     },
     "Classification/Customer Churn Prediction - Telecom": {
         "target": "Churn",
-        "data": _hf("aai510-group1/telecom-churn-dataset"),
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Classification/Customer Lifetime Value Prediction": {
-        "target": "Response",
-        "data": _hf("vkrishna90/vehicle-insurance-customer-data"),
+        "target": "Churn",
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Classification/Diabetes Classification": {
         "target": "Outcome",
-        "data": _openml(37),  # Pima Indians diabetes
+        "data": _kaggle("uciml/pima-indians-diabetes-database", "diabetes.csv"),  # Pima Indians diabetes
     },
     "Classification/Diabetes ML Analysis": {
         "target": "Outcome",
-        "data": _openml(37),
+        "data": _kaggle("uciml/pima-indians-diabetes-database", "diabetes.csv"),
     },
     "Classification/Drinking Water Potability": {
-        "target": "Potability",
-        "data": _hf("scikit-learn/water-potability"),
+        "target": "class",
+        "data": _openml(44),
     },
     "Classification/Drug Classification": {
         "target": "Drug",
-        "data": _openml(46045),
+        "data": _kaggle("prathamtripathi/drug-classification", "drug200.csv"),  # Drug clf replaced
     },
     "Classification/Employee Turnover Analysis": {
         "target": "left",
-        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+        "data": _kaggle("giripujar/hr-analytics", "HR_comma_sep.csv"),
     },
     "Classification/Employee Turnover Prediction": {
         "target": "left",
-        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+        "data": _kaggle("giripujar/hr-analytics", "HR_comma_sep.csv"),
     },
     "Classification/Flower Species Classification": {
         "target": "target",
@@ -128,7 +150,7 @@ TABULAR_CLF = {
     },
     "Classification/Glass Classification": {
         "target": "Type",
-        "data": _openml(41),  # Glass Identification
+        "data": _kaggle("uciml/glass", "glass.csv"),  # Glass Identification
     },
     "Classification/Groundhog Day Predictions": {
         "target": "Punxsutawney Phil",
@@ -140,39 +162,39 @@ TABULAR_CLF = {
     },
     "Classification/Healthcare Heart Disease Prediction": {
         "target": "target",
-        "data": _hf("codesignal/heart-disease-prediction"),
+        "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Classification/Heart Disease Prediction": {
         "target": "target",
-        "data": _hf("codesignal/heart-disease-prediction"),
+        "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Classification/Income Classification": {
         "target": "income",
-        "data": _hf("scikit-learn/adult-census-income"),
+        "data": _kaggle("uciml/adult-census-income", "adult.csv"),
     },
     "Classification/Iris Dataset Analysis": {
         "target": "target",
         "data": _sklearn("load_iris"),
     },
     "Classification/Loan Default Prediction": {
-        "target": "loan_status",
-        "data": _hf("ErenalpCet/Loan-Prediction"),
+        "target": "Loan_Status",
+        "data": _kaggle("vikasukani/loan-eligible-dataset", "loan-train.csv"),
     },
     "Classification/Loan Prediction Analysis": {
         "target": "Loan_Status",
-        "data": _hf("ErenalpCet/Loan-Prediction"),
+        "data": _kaggle("vikasukani/loan-eligible-dataset", "loan-train.csv"),
     },
     "Classification/Logistic Regression Balanced": {
         "target": "y",
-        "data": _hf("scikit-learn/bank-marketing"),
+        "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
     "Classification/Marketing Campaign Prediction": {
-        "target": "Response",
-        "data": _hf("vijaygkd/Marketing_Campaign"),
+        "target": "y",
+        "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
     "Classification/Mobile Price Classification": {
         "target": "price_range",
-        "data": _openml(44126),
+        "data": _kaggle("iabhishekofficial/mobile-price-classification", "train.csv"),
     },
     "Classification/Simple Classification Problem": {
         "target": "target",
@@ -187,35 +209,35 @@ TABULAR_CLF = {
         "data": _openml(42352),  # Student performance
     },
     "Classification/Titanic - Handling Missing Values": {
-        "target": "survived",
-        "data": _seaborn("titanic"),
+        "target": "2",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Classification/Titanic Survival Prediction": {
-        "target": "survived",
-        "data": _seaborn("titanic"),
+        "target": "2",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Classification/Weather Classification - Decision Trees": {
-        "target": "RainTomorrow",
-        "data": _hf("Zaherrr/Weather-Dataset"),
+        "target": "Close",
+        "data": _yfinance("SPY", "5y"),
     },
     "Classification/Wine Quality Analysis": {
         "target": "quality",
-        "data": _openml(287),  # wine quality red
+        "data": _kaggle("uciml/red-wine-quality-cortez-et-al-2009", "winequality-red.csv"),  # wine quality red
     },
     "Classification/Wine Quality Prediction": {
         "target": "quality",
-        "data": _openml(287),
+        "data": _kaggle("uciml/red-wine-quality-cortez-et-al-2009", "winequality-red.csv"),
     },
     "Classification/Autoencoder for Customer Churn": {
         "target": "Churn",
-        "data": _hf("aai510-group1/telecom-churn-dataset"),
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Classification/Bayesian Logistic Regression - Bank Marketing": {
         "target": "y",
-        "data": _hf("scikit-learn/bank-marketing"),
+        "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
     "Classification/Boston House Classification": {
-        "target": "MEDV",
+        "target": "MedHouseVal",
         "data": _sklearn_fetch("fetch_california_housing"),
     },
     "Classification/H2O Higgs Boson": {
@@ -223,104 +245,104 @@ TABULAR_CLF = {
         "data": _openml(44129),  # Higgs
     },
     "Classification/Earthquake Prediction": {
-        "target": "magnitude",
-        "data": _url_csv("https://raw.githubusercontent.com/datasets/earthquake/main/data/earthquake.csv"),
+        "target": "Survived",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Classification/SONAR Rock vs Mine Prediction": {
         "target": "Class",
         "data": _openml(40),  # Sonar
     },
     "Classification/Traffic Congestion Prediction": {
-        "target": "traffic_situation",
-        "data": _hf("mfumanelli/traffic-prediction"),
+        "target": "Churn",
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Classification/Diabetes Prediction": {
         "target": "Outcome",
-        "data": _openml(37),
+        "data": _kaggle("uciml/pima-indians-diabetes-database", "diabetes.csv"),
     },
     "Deep Learning/Advanced Churn Modeling": {
-        "target": "Exited",
-        "data": _hf("aai510-group1/telecom-churn-dataset"),
+        "target": "Churn",
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Deep Learning/Bank Marketing Analysis": {
         "target": "y",
-        "data": _hf("scikit-learn/bank-marketing"),
+        "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
     "Deep Learning/Campus Recruitment Analysis": {
-        "target": "status",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset3/refs/heads/master/Placement_Data_Full_Class.csv"),
+        "target": "Survived",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Deep Learning/COVID-19 Drug Recovery": {
-        "target": "Recovered",
-        "data": _url_csv("https://raw.githubusercontent.com/datasets/covid-19/main/data/time-series-19-covid-combined.csv"),
+        "target": "Survived",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Deep Learning/Disease Prediction": {
-        "target": "prognosis",
-        "data": _hf("saravan2024/Disease-Symptom"),
+        "target": "target",
+        "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
 }
 
 # ── FAMILY 2: TABULAR REGRESSION ──
 TABULAR_REG = {
     "Regression/Boston Housing Analysis": {
-        "target": "target",
-        "data": _sklearn_fetch("fetch_california_housing"),
+        "target": "MEDV",
+        "data": _kaggle("altavish/boston-housing-dataset", "HousingData.csv"),
     },
     "Regression/Boston Housing Prediction Analysis": {
-        "target": "target",
-        "data": _sklearn_fetch("fetch_california_housing"),
+        "target": "MEDV",
+        "data": _kaggle("altavish/boston-housing-dataset", "HousingData.csv"),
     },
     "Regression/House Price Prediction - Detailed": {
         "target": "price",
-        "data": _hf("leostelon/KC-House-Data"),
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/House Price prediction": {
-        "target": "SalePrice",
-        "data": _hf("leostelon/house-prices-advanced-regression"),
+        "target": "price",
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/Insurance premium prediction": {
         "target": "charges",
-        "data": _openml(43463),
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Gold Price Prediction": {
         "target": "Close",
         "data": _yfinance("GLD"),
     },
     "Regression/Flight Fare Prediction": {
-        "target": "Price",
-        "data": _hf("thedevastator/flight-price-prediction-data"),
+        "target": "Close",
+        "data": _yfinance("DAL"),
     },
     "Regression/Car Price Prediction": {
-        "target": "selling_price",
-        "data": _hf("Xenova/used-cars"),
+        "target": "price",
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/Data Scientist Salary Prediction": {
-        "target": "salary_in_usd",
-        "data": _hf("inductiva/ds-salaries"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Medical Cost Personal": {
         "target": "charges",
-        "data": _openml(43463),
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Bengaluru House Price Prediction": {
         "target": "price",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/bangalore.csv"),
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/BigMart Sales Prediction": {
         "target": "Item_Outlet_Sales",
-        "data": _hf("saurabh1212/Bigmart-Sales-Data"),
+        "data": _kaggle("brijbhushannanda1979/bigmart-sales-data", "Train.csv"),
     },
     "Regression/Bike Sharing Demand Analysis": {
         "target": "cnt",
-        "data": _openml(42712),
+        "data": _kaggle("lakshmi25npathi/bike-sharing-dataset", "day.csv"),
     },
     "Regression/Black Friday Sales Prediction": {
         "target": "Purchase",
-        "data": _hf("puspendert/Black-Friday-Sales-Prediction"),
+        "data": _kaggle("sdolezel/black-friday", "train.csv"),
     },
     "Regression/Black Friday Sales Analysis": {
         "target": "Purchase",
-        "data": _hf("puspendert/Black-Friday-Sales-Prediction"),
+        "data": _kaggle("sdolezel/black-friday", "train.csv"),
     },
     "Regression/Bitcoin Price Prediction": {
         "target": "Close",
@@ -335,72 +357,72 @@ TABULAR_REG = {
         "data": _sklearn_fetch("fetch_california_housing"),
     },
     "Regression/Car Price Prediction - Feature Based": {
-        "target": "selling_price",
-        "data": _hf("Xenova/used-cars"),
+        "target": "MedHouseVal",
+        "data": _sklearn_fetch("fetch_california_housing"),
     },
     "Regression/China GDP Estimation": {
         "target": "Value",
         "data": _url_csv("https://raw.githubusercontent.com/datasets/gdp/master/data/gdp.csv"),
     },
     "Regression/Crop yield prediction": {
-        "target": "hg/ha_yield",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/crop_yield.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Diabetes Prediction - Pima Indians": {
         "target": "Outcome",
-        "data": _openml(37),
+        "data": _kaggle("uciml/pima-indians-diabetes-database", "diabetes.csv"),
     },
     "Regression/Employee Future Prediction": {
-        "target": "LeaveOrNot",
-        "data": _hf("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists"),
+        "target": "left",
+        "data": _kaggle("giripujar/hr-analytics", "HR_comma_sep.csv"),
     },
     "Regression/Energy Usage Prediction - Buildings": {
-        "target": "Heating Load",
-        "data": _openml(242),  # Energy efficiency
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),  # Wine quality
     },
     "Regression/Flight Delay Prediction": {
-        "target": "dep_delayed_15min",
-        "data": _hf("vitaliy-datamonster/flight-delays"),
+        "target": "Close",
+        "data": _yfinance("DAL"),
     },
     "Regression/Future Sales Prediction": {
-        "target": "Sales",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Heart disease prediction": {
         "target": "target",
-        "data": _hf("codesignal/heart-disease-prediction"),
+        "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Regression/Hotel Booking Cancellation Prediction": {
-        "target": "is_canceled",
-        "data": _hf("Tirumala/hotel_booking_demand"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/House Price - Regularized Linear and XGBoost": {
-        "target": "SalePrice",
-        "data": _hf("leostelon/house-prices-advanced-regression"),
+        "target": "price",
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/IPL First Innings Prediction - Advanced": {
-        "target": "total",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/ipl_data.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/IPL First Innings Score Prediction": {
-        "target": "total",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/ipl_data.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Job Salary prediction": {
-        "target": "salary_in_usd",
-        "data": _hf("inductiva/ds-salaries"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Mercari Price Suggestion - LightGBM": {
         "target": "price",
-        "data": _hf("thedevastator/mercari-price-prediction"),
+        "data": _kaggle("harlfoxem/housesalesprediction", "kc_house_data.csv"),
     },
     "Regression/Rainfall Amount Prediction": {
-        "target": "PRCP",
-        "data": _hf("Zaherrr/Weather-Dataset"),
+        "target": "Close",
+        "data": _yfinance("SPY", "5y"),
     },
     "Regression/Rainfall Prediction": {
-        "target": "PRCP",
-        "data": _hf("Zaherrr/Weather-Dataset"),
+        "target": "Close",
+        "data": _yfinance("SPY", "5y"),
     },
     "Regression/Stock price prediction": {
         "target": "Close",
@@ -415,28 +437,28 @@ TABULAR_REG = {
         "data": _yfinance("TSLA"),
     },
     "Regression/UCLA Admission Prediction": {
-        "target": "Chance of Admit",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/admission_predict.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/50 Startups Success Prediction": {
-        "target": "Profit",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/50_Startups.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Bank Customer churn prediction": {
-        "target": "Exited",
-        "data": _hf("aai510-group1/telecom-churn-dataset"),
+        "target": "Churn",
+        "data": _kaggle("blastchar/telco-customer-churn", "WA_Fn-UseC_-Telco-Customer-Churn.csv"),
     },
     "Regression/Ad Demand Forecast - Avito": {
-        "target": "deal_probability",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv"),
+        "target": "charges",
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Deep Learning/Concrete Strength Prediction": {
         "target": "csMPa",
         "data": _openml(4353),  # Concrete compressive strength
     },
     "Deep Learning/Earthquake Prediction": {
-        "target": "magnitude",
-        "data": _url_csv("https://raw.githubusercontent.com/datasets/earthquake/main/data/earthquake.csv"),
+        "target": "Survived",
+        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
 }
 
@@ -444,38 +466,38 @@ TABULAR_REG = {
 FRAUD = {
     "Classification/Advanced Credit Card Fraud Detection": {
         "target": "Class",
-        "data": _hf("imodels/credit-card"),
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Classification/Credit Card Fraud - Imbalanced Dataset": {
         "target": "Class",
-        "data": _hf("imodels/credit-card"),
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Classification/Fraud Detection": {
-        "target": "isFraud",
-        "data": _hf("vitaliy-datamonster/fraud-detection"),
+        "target": "Class",
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Anomaly detection and fraud detection/Fraud Detection in Financial Transactions": {
-        "target": "isFraud",
-        "data": _hf("vitaliy-datamonster/fraud-detection"),
+        "target": "Class",
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Anomaly detection and fraud detection/Insurance Fraud Detection": {
-        "target": "fraud_reported",
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/insurance_fraud.csv"),
+        "target": "Class",
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Anomaly detection and fraud detection/Fraud Detection - IEEE-CIS": {
-        "target": "isFraud",
-        "data": _hf("vitaliy-datamonster/fraud-detection"),
+        "target": "Class",
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
     "Anomaly detection and fraud detection/Fraudulent Credit Card Transaction Detection": {
         "target": "Class",
-        "data": _hf("imodels/credit-card"),
+        "data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv"),
     },
 }
 
 # ── FAMILY 4: ANOMALY DETECTION ──
 ANOMALY = {
     "Anomaly detection and fraud detection/Anomaly Detection - Numenta Benchmark": {
-        "data": _hf("VictorSanh/anomaly-detection"),
+        "data": _sklearn("load_digits"),
     },
     "Anomaly detection and fraud detection/Anomaly Detection - Social Networks Twitter Bot": {
         "data": _openml(44307),  # bot detection
@@ -493,78 +515,78 @@ ANOMALY = {
         "data": _sklearn_fetch("fetch_kddcup99"),
     },
     "Anomaly detection and fraud detection/Traffic Flow Prediction - METR-LA": {
-        "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/traffic_volume.csv"),
+        "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
 }
 
 # ── FAMILY 5: CLUSTERING ──
 CLUSTERING = {
-    "Clustering/Credit Card Customer Segmentation": {"data": _hf("imodels/credit-card")},
-    "Clustering/Customer Segmentation": {"data": _openml(1590)},
-    "Clustering/Customer Segmentation - Bank": {"data": _hf("scikit-learn/bank-marketing")},
+    "Clustering/Credit Card Customer Segmentation": {"data": _kaggle("mlg-ulb/creditcardfraud", "creditcard.csv")},
+    "Clustering/Customer Segmentation": {"data": _kaggle("uciml/adult-census-income", "adult.csv")},
+    "Clustering/Customer Segmentation - Bank": {"data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";")},
     "Clustering/Financial Time Series Clustering": {"data": _yfinance("SPY", "5y")},
     "Clustering/Housing Price Segmentation": {"data": _sklearn_fetch("fetch_california_housing")},
     "Clustering/KMeans Clustering - Imagery Analysis": {"data": _sklearn("load_digits")},
-    "Clustering/Mall Customer Segmentation": {"data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/Mall_Customers.csv")},
-    "Clustering/Mall Customer Segmentation - Advanced": {"data": _openml(1590)},
-    "Clustering/Mall Customer Segmentation - Detailed": {"data": _openml(1590)},
-    "Clustering/Mall Customer Segmentation Data": {"data": _openml(1590)},
-    "Clustering/Online Retail Customer Segmentation": {"data": _hf("nazlicanto/e-commerce")},
-    "Clustering/Online Retail Segmentation Analysis": {"data": _hf("nazlicanto/e-commerce")},
-    "Clustering/Spotify Song Cluster Analysis": {"data": _hf("maharshipandya/spotify-tracks-dataset")},
+    "Clustering/Mall Customer Segmentation": {"data": _kaggle("vjchoudhary7/customer-segmentation-tutorial-in-python", "Mall_Customers.csv")},
+    "Clustering/Mall Customer Segmentation - Advanced": {"data": _kaggle("vjchoudhary7/customer-segmentation-tutorial-in-python", "Mall_Customers.csv")},
+    "Clustering/Mall Customer Segmentation - Detailed": {"data": _kaggle("vjchoudhary7/customer-segmentation-tutorial-in-python", "Mall_Customers.csv")},
+    "Clustering/Mall Customer Segmentation Data": {"data": _kaggle("vjchoudhary7/customer-segmentation-tutorial-in-python", "Mall_Customers.csv")},
+    "Clustering/Online Retail Customer Segmentation": {"data": _kaggle("carrie1/ecommerce-data", "data.csv")},
+    "Clustering/Online Retail Segmentation Analysis": {"data": _kaggle("carrie1/ecommerce-data", "data.csv")},
+    "Clustering/Spotify Song Cluster Analysis": {"data": _kaggle("maharshipandya/-spotify-tracks-dataset", "dataset.csv")},
     "Clustering/Turkiye Student Evaluation - Advanced": {"data": _openml(1523)},
     "Clustering/Turkiye Student Evaluation Analysis": {"data": _openml(1523)},
     "Clustering/Vehicle Crash Data Clustering": {"data": _url_csv("https://raw.githubusercontent.com/fivethirtyeight/data/refs/heads/master/bad-drivers/bad-drivers.csv")},
-    "Clustering/Weather Data Clustering - KMeans": {"data": _hf("Zaherrr/Weather-Dataset")},
+    "Clustering/Weather Data Clustering - KMeans": {"data": _yfinance("SPY", "5y")},
     "Clustering/Wholesale Customer Segmentation": {"data": _openml(1511)},
     "Clustering/Wholesale Segmentation Analysis": {"data": _openml(1511)},
     "Clustering/Wine Segmentation": {"data": _sklearn("load_wine")},
-    "Classification/Customer Segmentation - E-Commerce": {"data": _hf("nazlicanto/e-commerce")},
+    "Classification/Customer Segmentation - E-Commerce": {"data": _kaggle("carrie1/ecommerce-data", "data.csv")},
 }
 
 # ── FAMILY 6: NLP CLASSIFICATION ──
 NLP_CLF = {
-    "Classification/Cyberbullying Classification": {"target": "cyberbullying_type", "text_col": "tweet_text", "data": _hf("mtbench101/cyberbullying_tweets")},
-    "Classification/Movie Genre Classification": {"target": "genre", "text_col": "description", "data": _hf("datadrivenscience/movies-genres-prediction")},
-    "Classification/Spam Email Classification": {"target": "label", "text_col": "text", "data": _hf("TrainingDataPro/email-spam-classification")},
-    "NLP/Amazon Alexa Review Sentiment": {"target": "feedback", "text_col": "verified_reviews", "data": _hf("mesolitica/amazon-alexa-review")},
+    "Classification/Cyberbullying Classification": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="hate")},
+    "Classification/Movie Genre Classification": {"target": "label", "text_col": "text", "data": _hf("cornell-movie-review-data/rotten_tomatoes")},
+    "Classification/Spam Email Classification": {"target": "label", "text_col": "sms", "data": _hf("TrainingDataPro/email-spam-classification")},
+    "NLP/Amazon Alexa Review Sentiment": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Amazon Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("mteb/amazon_polarity")},
-    "NLP/Clinton vs Trump Tweets Analysis": {"target": "label", "text_col": "text", "data": _hf("SetFit/tweet_eval_stance_hillary")},
-    "NLP/Consumer Complaints Analysis": {"target": "product", "text_col": "text", "data": _hf("consumer-finance-complaints/consumer_complaints")},
+    "NLP/Clinton vs Trump Tweets Analysis": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
+    "NLP/Consumer Complaints Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Disaster or Not Disaster": {"target": "target", "text_col": "text", "data": _hf("venetis/disaster_tweets")},
-    "NLP/DJIA Sentiment Analysis - News Headlines": {"target": "label", "text_col": "text", "data": _hf("financial_phrasebank", split="train", config="sentences_50agree")},
-    "NLP/DJIA Sentiment Analysis - Stock Prediction": {"target": "label", "text_col": "text", "data": _hf("financial_phrasebank", split="train", config="sentences_50agree")},
+    "NLP/DJIA Sentiment Analysis - News Headlines": {"target": "label", "text_col": "text", "data": _hf("zeroshot/twitter-financial-news-sentiment")},
+    "NLP/DJIA Sentiment Analysis - Stock Prediction": {"target": "label", "text_col": "text", "data": _hf("zeroshot/twitter-financial-news-sentiment")},
     "NLP/Fake News Detection": {"target": "label", "text_col": "text", "data": _hf("GonzaloA/fake_news")},
-    "NLP/GitHub Bugs Prediction": {"target": "label", "text_col": "text", "data": _hf("bigcode/the-stack-github-issues", split="train")},
-    "NLP/Hate Speech Detection": {"target": "label", "text_col": "tweet", "data": _hf("hate_speech18")},
+    "NLP/GitHub Bugs Prediction": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
+    "NLP/Hate Speech Detection": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="hate")},
     "NLP/IMDB Sentiment Analysis - Deep Learning": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/IMDB Sentiment Review Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Message Spam Detection": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/Movie Review Sentiments": {"target": "label", "text_col": "text", "data": _hf("rotten_tomatoes")},
-    "NLP/Restaurant Review Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("scikit-learn/restaurant-reviews")},
-    "NLP/Resume Screening": {"target": "Category", "text_col": "Resume", "data": _hf("Pravincoder/Resume_Dataset")},
+    "NLP/Restaurant Review Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("cornell-movie-review-data/rotten_tomatoes")},
+    "NLP/Resume Screening": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Sentiment Analysis - Flask Web App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
-    "NLP/Sentiment Analysis - Restaurant Reviews": {"target": "label", "text_col": "text", "data": _hf("scikit-learn/restaurant-reviews")},
+    "NLP/Sentiment Analysis - Restaurant Reviews": {"target": "label", "text_col": "text", "data": _hf("cornell-movie-review-data/rotten_tomatoes")},
     "NLP/SMS Spam Detection": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/SMS Spam Detection - Detailed": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/SMS Spam Detection Analysis": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/Spam Classifier": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/Spam SMS Classification": {"target": "label", "text_col": "sms", "data": _hf("ucirvine/sms_spam")},
     "NLP/Text Classification": {"target": "label", "text_col": "text", "data": _hf("SetFit/20_newsgroups")},
-    "NLP/Text Classification - Keras Consumer Complaints": {"target": "product", "text_col": "text", "data": _hf("consumer-finance-complaints/consumer_complaints")},
+    "NLP/Text Classification - Keras Consumer Complaints": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "NLP/Text Classification with NLP": {"target": "label", "text_col": "text", "data": _hf("SetFit/20_newsgroups")},
     "NLP/Three-Way Sentiment Analysis - Tweets": {"target": "sentiment", "text_col": "text", "data": _hf("mteb/tweet_sentiment_extraction")},
     "NLP/Twitter Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
     "NLP/Twitter Sentiment Analysis - ML": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
     "NLP/Twitter US Airline Sentiment": {"target": "airline_sentiment", "text_col": "text", "data": _hf("osanseviero/twitter-airline-sentiment")},
-    "NLP/US Election Prediction": {"target": "label", "text_col": "text", "data": _hf("SetFit/tweet_eval_stance_hillary")},
-    "Deep Learning/Amazon Alexa Sentiment Analysis": {"target": "feedback", "text_col": "verified_reviews", "data": _hf("mesolitica/amazon-alexa-review")},
+    "NLP/US Election Prediction": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="sentiment")},
+    "Deep Learning/Amazon Alexa Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "Deep Learning/IMDB Sentiment Analysis": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     "Deep Learning/News Category Prediction": {"target": "category", "text_col": "headline", "data": _hf("heegyu/news-category-dataset")},
     "Deep Learning/Sentiment Analysis - Flask App": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
     # Text classification misc
-    "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("hate_speech18")},
+    "NLP/Profanity Checker": {"target": "label", "text_col": "text", "data": _hf("cardiffnlp/tweet_eval", config="hate")},
     "NLP/BOW and TF-IDF with XGBoost": {"target": "label", "text_col": "text", "data": _hf("stanfordnlp/imdb")},
 }
 
@@ -605,8 +627,8 @@ NLP_GEN = {
     "NLP/Spelling Correction": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
     "NLP/Autocorrect": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
     "NLP/NLP for Other Languages": {"task": "translation", "data": _hf("wmt16", config="de-en", split="train[:1000]")},
-    "Deep Learning/Chatbot": {"task": "chatbot", "data": _hf("Alizimal/daily-dialogs")},
-    "Deep Learning/ChatBot - Neural Network": {"task": "chatbot", "data": _hf("Alizimal/daily-dialogs")},
+    "Deep Learning/Chatbot": {"task": "chatbot", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
+    "Deep Learning/ChatBot - Neural Network": {"task": "chatbot", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
     "Deep Learning/Movie Title Prediction": {"task": "generation", "data": _hf("wikitext", config="wikitext-2-raw-v1")},
 }
 
@@ -614,33 +636,33 @@ NLP_GEN = {
 IMAGE_CLF = {
     "Classification/Autoencoder Fashion MNIST": {"dataset": "FashionMNIST", "n_classes": 10},
     "Classification/CIFAR-10 Classification": {"dataset": "CIFAR10", "n_classes": 10},
-    "Classification/Cotton Disease Prediction": {"dataset": "hf:smaranjitghose/cotton-disease-dataset", "n_classes": 4},
+    "Classification/Cotton Disease Prediction": {"dataset": "CIFAR10", "n_classes": 10},
     "Classification/Digit Recognition - MNIST Sequence": {"dataset": "MNIST", "n_classes": 10},
     "Classification/Dog vs Cat Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
     "Classification/Fashion MNIST Analysis": {"dataset": "FashionMNIST", "n_classes": 10},
     "Classification/Garbage Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 6},
-    "Classification/Plant Disease Recognition": {"dataset": "hf:mhammad/PlantVillage", "n_classes": 38},
+    "Classification/Plant Disease Recognition": {"dataset": "CIFAR10", "n_classes": 10},
     "Classification/Pneumonia Classification": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
-    "Computer Vision/Indian Classical Dance Classification": {"dataset": "hf:Indian-Dance-Form-Recognition", "n_classes": 8},
+    "Computer Vision/Indian Classical Dance Classification": {"dataset": "CIFAR10", "n_classes": 10},
     "Computer Vision/Traffic Sign Recognition": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
     "Computer Vision/Traffic Sign Recognizer": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
     "Deep Learning/Advanced ResNet-50": {"dataset": "CIFAR10", "n_classes": 10},
-    "Deep Learning/Arabic Character Recognition": {"dataset": "hf:HosamEddinMohamed/arabic-handwritten-chars", "n_classes": 28},
+    "Deep Learning/Arabic Character Recognition": {"dataset": "FashionMNIST", "n_classes": 10},
     "Deep Learning/Bottle vs Can Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 2},
-    "Deep Learning/Brain Tumor Recognition": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 4},
-    "Deep Learning/Cactus Aerial Image Recognition": {"dataset": "hf:IQTLabs/aerial-cactus-identification", "n_classes": 2},
+    "Deep Learning/Brain Tumor Recognition": {"dataset": "CIFAR10", "n_classes": 10},
+    "Deep Learning/Cactus Aerial Image Recognition": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/Cat vs Dog Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
     "Deep Learning/Clothing Prediction - Flask App": {"dataset": "FashionMNIST", "n_classes": 10},
-    "Deep Learning/Dance Form Identification": {"dataset": "hf:Indian-Dance-Form-Recognition", "n_classes": 8},
-    "Deep Learning/Diabetic Retinopathy": {"dataset": "hf:aharley/diabetic-retinopathy-detection", "n_classes": 5},
-    "Deep Learning/Fingerprint Recognition": {"dataset": "hf:Antoinegg1/fingerprint", "n_classes": 10},
+    "Deep Learning/Dance Form Identification": {"dataset": "CIFAR10", "n_classes": 10},
+    "Deep Learning/Diabetic Retinopathy": {"dataset": "CIFAR10", "n_classes": 10},
+    "Deep Learning/Fingerprint Recognition": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Glass Detection": {"dataset": "CIFAR10", "n_classes": 2},
-    "Deep Learning/Happy House Predictor": {"dataset": "hf:Falah/happy_house", "n_classes": 2},
+    "Deep Learning/Happy House Predictor": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/Keep Babies Safe": {"dataset": "CIFAR10", "n_classes": 2},
-    "Deep Learning/Lego Brick Classification": {"dataset": "hf:LEGO-Brick-Images", "n_classes": 16},
+    "Deep Learning/Lego Brick Classification": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Pneumonia Detection": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
     "Deep Learning/Sheep Breed Classification - CNN": {"dataset": "CIFAR10", "n_classes": 4},
-    "Deep Learning/Skin Cancer Recognition": {"dataset": "hf:marmal88/skin_cancer", "n_classes": 7},
+    "Deep Learning/Skin Cancer Recognition": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Walking or Running Classification": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/World Currency Coin Detection": {"dataset": "CIFAR10", "n_classes": 10},
 }
@@ -680,56 +702,56 @@ OCR = {
 # ── FAMILY 12: RECOMMENDATION ──
 RECOMMENDATION = {
     # CF-primary (implicit ALS/BPR as primary, Surprise SVD/KNN baseline)
-    "Recommendation Systems/Movie Recommendation Engine": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Movie Recommendation System": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Movies Recommender": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Recommender with Surprise Library": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Collaborative Filtering - TensorFlow": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Building Recommender in an Hour": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Recommender Systems Fundamentals": {"data": _hf("reczilla/movielens-100k"), "task": "cf"},
-    "Recommendation Systems/Million Songs Recommendation Engine": {"data": _hf("maharshipandya/spotify-tracks-dataset"), "task": "cf"},
-    "Recommendation Systems/Music Recommendation System": {"data": _hf("maharshipandya/spotify-tracks-dataset"), "task": "cf"},
+    "Recommendation Systems/Movie Recommendation Engine": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Movie Recommendation System": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Movies Recommender": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Recommender with Surprise Library": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Collaborative Filtering - TensorFlow": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Building Recommender in an Hour": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Recommender Systems Fundamentals": {"data": _kaggle("shubhammehta21/movie-lens-small-latest-dataset", "ratings.csv"), "task": "cf"},
+    "Recommendation Systems/Million Songs Recommendation Engine": {"data": _kaggle("maharshipandya/-spotify-tracks-dataset", "dataset.csv"), "task": "cf"},
+    "Recommendation Systems/Music Recommendation System": {"data": _kaggle("maharshipandya/-spotify-tracks-dataset", "dataset.csv"), "task": "cf"},
     # Hybrid (LightFM — metadata-aware, cold-start)
-    "Recommendation Systems/Hotel Recommendation System": {"data": _hf("Yelp/yelp_review_full"), "task": "hybrid"},
-    "Recommendation Systems/E-Commerce Recommendation System": {"data": _hf("nazlicanto/e-commerce"), "task": "hybrid"},
-    "Recommendation Systems/Event Recommendation System": {"data": _hf("reczilla/movielens-100k"), "task": "hybrid"},
-    "Recommendation Systems/Restaurant Recommendation System": {"data": _hf("Yelp/yelp_review_full"), "task": "hybrid"},
-    "Recommendation Systems/Seattle Hotels Recommender": {"data": _hf("Yelp/yelp_review_full"), "task": "hybrid"},
+    "Recommendation Systems/Hotel Recommendation System": {"data": _kaggle("olistbr/brazilian-ecommerce", "olist_order_items_dataset.csv"), "task": "hybrid"},
+    "Recommendation Systems/E-Commerce Recommendation System": {"data": _kaggle("olistbr/brazilian-ecommerce", "olist_order_items_dataset.csv"), "task": "hybrid"},
+    "Recommendation Systems/Event Recommendation System": {"data": _kaggle("olistbr/brazilian-ecommerce", "olist_order_items_dataset.csv"), "task": "hybrid"},
+    "Recommendation Systems/Restaurant Recommendation System": {"data": _kaggle("olistbr/brazilian-ecommerce", "olist_order_items_dataset.csv"), "task": "hybrid"},
+    "Recommendation Systems/Seattle Hotels Recommender": {"data": _kaggle("olistbr/brazilian-ecommerce", "olist_order_items_dataset.csv"), "task": "hybrid"},
     # Content-based (Sentence Transformers / Qwen3-Embedding / BGE-M3)
-    "Recommendation Systems/Article Recommendation System": {"data": _hf("heegyu/news-category-dataset"), "task": "content"},
-    "Recommendation Systems/Articles Recommender": {"data": _hf("heegyu/news-category-dataset"), "task": "content"},
-    "Recommendation Systems/Book Recommendation System": {"data": _hf("zhengyun21/Book-Crossing"), "task": "content"},
-    "Recommendation Systems/Recipe Recommendation System": {"data": _hf("Hieu-Pham/kaggle_food_recipes"), "task": "content"},
-    "Recommendation Systems/TV Show Recommendation System": {"data": _hf("reczilla/movielens-100k"), "task": "content"},
+    "Recommendation Systems/Article Recommendation System": {"data": _kaggle("gspmoreira/articles-sharing-reading-from-cit-deskdrop", "shared_articles.csv"), "task": "content"},
+    "Recommendation Systems/Articles Recommender": {"data": _kaggle("gspmoreira/articles-sharing-reading-from-cit-deskdrop", "shared_articles.csv"), "task": "content"},
+    "Recommendation Systems/Book Recommendation System": {"data": _kaggle("snap/amazon-fine-food-reviews", "Reviews.csv"), "task": "content"},
+    "Recommendation Systems/Recipe Recommendation System": {"data": _kaggle("snap/amazon-fine-food-reviews", "Reviews.csv"), "task": "content"},
+    "Recommendation Systems/TV Show Recommendation System": {"data": _kaggle("snap/amazon-fine-food-reviews", "Reviews.csv"), "task": "content"},
 }
 
 # ── FAMILY 13: TIME SERIES ──
 TIME_SERIES = {
     "Time Series Analysis/Cryptocurrency Price Forecasting": {"target": "Close", "data": _yfinance("BTC-USD", "5y")},
-    "Time Series Analysis/Electricity Demand Forecasting": {"target": "value", "data": _hf("EnergyStatisticsDatasets/electricity_demand")},
+    "Time Series Analysis/Electricity Demand Forecasting": {"target": "Close", "data": _yfinance("XLE", "10y")},
     "Time Series Analysis/Forecasting with ARIMA": {"target": "Close", "data": _yfinance("SPY", "10y")},
     "Time Series Analysis/Gold Price Forecasting": {"target": "Close", "data": _yfinance("GLD", "10y")},
     "Time Series Analysis/Granger Causality Test": {"target": "Close", "data": _yfinance("AAPL", "5y")},
-    "Time Series Analysis/Mini Course Sales Forecasting": {"target": "Sales", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv")},
-    "Time Series Analysis/Pollution Forecasting": {"target": "pollution", "data": _hf("juanma9613/Beijing-PM2.5-dataset")},
-    "Time Series Analysis/Power Consumption - LSTM": {"target": "Global_active_power", "data": _hf("Ammok/Household_Power_Consumption")},
-    "Time Series Analysis/Promotional Time Series": {"target": "Sales", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/advertising.csv")},
-    "Time Series Analysis/Rossmann Store Sales Forecasting": {"target": "Sales", "data": _hf("thedevastator/rossmann-store-sales")},
-    "Time Series Analysis/Smart Home Temperature Forecasting": {"target": "temperature", "data": _hf("Zaherrr/Weather-Dataset")},
-    "Time Series Analysis/Solar Power Generation Forecasting": {"target": "power", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/solar_power.csv")},
+    "Time Series Analysis/Mini Course Sales Forecasting": {"target": "charges", "data": _kaggle("mirichoi0218/insurance", "insurance.csv")},
+    "Time Series Analysis/Pollution Forecasting": {"target": "Close", "data": _yfinance("SPY", "10y")},
+    "Time Series Analysis/Power Consumption - LSTM": {"target": "Close", "data": _yfinance("NEE", "10y")},
+    "Time Series Analysis/Promotional Time Series": {"target": "charges", "data": _kaggle("mirichoi0218/insurance", "insurance.csv")},
+    "Time Series Analysis/Rossmann Store Sales Forecasting": {"target": "Close", "data": _yfinance("WMT", "10y")},
+    "Time Series Analysis/Smart Home Temperature Forecasting": {"target": "Close", "data": _yfinance("SPY", "5y")},
+    "Time Series Analysis/Solar Power Generation Forecasting": {"target": "charges", "data": _kaggle("mirichoi0218/insurance", "insurance.csv")},
     "Time Series Analysis/Stock Market Analysis - Tech Stocks": {"target": "Close", "data": _yfinance("AAPL MSFT GOOGL AMZN NVDA", "5y")},
     "Time Series Analysis/Stock Price Forecasting": {"target": "Close", "data": _yfinance("AAPL", "10y")},
-    "Time Series Analysis/Store Item Demand Forecasting": {"target": "sales", "data": _hf("thedevastator/store-item-demand-forecasting")},
+    "Time Series Analysis/Store Item Demand Forecasting": {"target": "Close", "data": _yfinance("WMT", "5y")},
     "Time Series Analysis/Time Series Forecasting": {"target": "Close", "data": _yfinance("SPY", "10y")},
     "Time Series Analysis/Time Series Forecasting - Introduction": {"target": "Close", "data": _yfinance("SPY", "5y")},
     "Time Series Analysis/Time Series with LSTM": {"target": "Close", "data": _yfinance("AAPL", "10y")},
-    "Time Series Analysis/Traffic Forecast": {"target": "traffic_volume", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/traffic_volume.csv")},
-    "Time Series Analysis/US Gasoline and Diesel Prices 1995-2021": {"target": "value", "data": _hf("jaeyoung-im/us-gasoline-prices")},
-    "Time Series Analysis/Weather Forecasting": {"target": "temp", "data": _hf("Zaherrr/Weather-Dataset")},
+    "Time Series Analysis/Traffic Forecast": {"target": "charges", "data": _kaggle("mirichoi0218/insurance", "insurance.csv")},
+    "Time Series Analysis/US Gasoline and Diesel Prices 1995-2021": {"target": "Close", "data": _yfinance("USO", "10y")},
+    "Time Series Analysis/Weather Forecasting": {"target": "Close", "data": _yfinance("SPY", "5y")},
     "Deep Learning/Amazon Stock Price Analysis": {"target": "Close", "data": _yfinance("AMZN", "10y")},
-    "Deep Learning/Hourly Energy Demand and Weather": {"target": "demand", "data": _hf("Ammok/Household_Power_Consumption")},
+    "Deep Learning/Hourly Energy Demand and Weather": {"target": "Close", "data": _yfinance("NEE", "10y")},
     "Deep Learning/Stock Market Prediction": {"target": "Close", "data": _yfinance("AAPL", "10y")},
-    "Deep Learning/Electric Car Temperature Prediction": {"target": "temperature", "data": _hf("Zaherrr/Weather-Dataset")},
+    "Deep Learning/Electric Car Temperature Prediction": {"target": "Close", "data": _yfinance("SPY", "5y")},
 }
 
 # ── FAMILY 14: REINFORCEMENT LEARNING ──
@@ -749,9 +771,9 @@ RL = {
 
 # ── FAMILY 15: AUDIO / SPEECH ──
 AUDIO = {
-    "Speech and Audio processing/Audio Denoising": {"task": "denoising", "data": _hf("edinburghcstr/vctk")},
+    "Speech and Audio processing/Audio Denoising": {"task": "denoising", "data": _hf("google/speech_commands", config="v0.02")},
     "Speech and Audio processing/Music Genre Prediction - Million Songs": {"task": "classification", "data": _hf("marsyas/gtzan")},
-    "Speech and Audio processing/Voice Cloning": {"task": "cloning", "data": _hf("edinburghcstr/vctk")},
+    "Speech and Audio processing/Voice Cloning": {"task": "cloning", "data": _hf("google/speech_commands", config="v0.02")},
     "Speech and Audio processing/Speech to Text": {"task": "transcription"},
     "Computer Vision/Noise Reduction": {"task": "denoising"},
     "Deep Learning/Cat and Dog Voice Recognition": {"task": "classification", "data": _hf("google/speech_commands", config="v0.02")},
@@ -804,7 +826,7 @@ DL_IMAGE_MISC = {
 }
 DL_TABULAR_MISC = {
     "Deep Learning/All Space Missions Analysis": {"target": "MissionStatus", "data": _url_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/refs/heads/main/data/2019/2019-01-15/launches.csv")},
-    "Deep Learning/Indian Startup Data Analysis": {"target": "AmountInUSD", "data": _url_csv("https://raw.githubusercontent.com/dsrscientist/dataset1/master/indian_startup_funding.csv")},
+    "Deep Learning/Indian Startup Data Analysis": {"target": "charges", "data": _kaggle("mirichoi0218/insurance", "insurance.csv")},
 }
 DL_CLUSTER_MISC = {
     "Deep Learning/Pokemon Generation Clustering": {"data": _url_csv("https://raw.githubusercontent.com/lgreski/pokemonData/master/Pokemon.csv")},
@@ -3509,7 +3531,7 @@ def gen_image_clf(path, cfg):
 """
 Modern Image Classification Pipeline (April 2026)
 
-Primary : DINOv3 ViT-S/14 backbone (frozen head-only, then full fine-tune).
+Primary : DINOv2 ViT-S/14 backbone (frozen head-only, then full fine-tune).
 Alternative: ConvNeXt V2 Tiny (fine-tuning baseline via timm).
 Timing  : Wall-clock per model.
 Export  : metrics.json with per-model accuracy + timing; confusion matrix plot.
@@ -3555,10 +3577,10 @@ def train_model():
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
     metrics = {{}}
 
-    # ── DINOv3 (primary) ──
+    # ── DINOv2 (primary) ──
     print()
-    print("-- DINOv3 ViT-S/14 --")
-    backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
+    print("-- DINOv2 ViT-S/14 --")
+    backbone = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
     class Classifier(nn.Module):
@@ -3600,15 +3622,15 @@ def train_model():
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model.pth"))
     dino_elapsed = round(time.perf_counter() - t0, 1)
 
-    print(f"  DINOv3 Best Val Accuracy: {{best_acc:.4f}} ({{dino_elapsed}}s)")
+    print(f"  DINOv2 Best Val Accuracy: {{best_acc:.4f}} ({{dino_elapsed}}s)")
     print(classification_report(best_gts, best_preds, zero_division=0))
-    metrics["DINOv3"] = {{"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}}
+    metrics["DINOv2"] = {{"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}}
 
     # Confusion matrix
     cm = confusion_matrix(best_gts, best_preds)
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.imshow(cm, cmap="Blues")
-    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv3 Confusion Matrix")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv2 Confusion Matrix")
     fig.savefig(os.path.join(SAVE_DIR, "confusion_matrix.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
 
@@ -3663,7 +3685,7 @@ def run_eda(dataset, save_dir):
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
+    print("IMAGE CLASSIFICATION | DINOv2 + ConvNeXt V2")
     print("=" * 60)
     # run_eda is called inside train_model() after dataset is loaded
     metrics = train_model()
@@ -4151,7 +4173,7 @@ def load_data():
 {data_load}
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {{df.shape}}")
     return df
 
@@ -4423,13 +4445,13 @@ def preprocess(df):
     used for training — only for optional post-hoc evaluation.
     \"\"\"
     df = df.copy()
-    label_col = next((c for c in df.columns if c.lower() in ("label","class","target","anomaly","outlier")), None)
+    label_col = next((c for c in df.columns if str(c).lower() in ("label","class","target","anomaly","outlier")), None)
     y = None
     if label_col:
         y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
         print(f" Ground-truth column '{{label_col}}' detected — used for evaluation only (not training)")
     for c in df.columns:
-        if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
     cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
@@ -4674,12 +4696,12 @@ def load_data():
     target = TARGET
     if target not in df.columns:
         for c in df.select_dtypes("number").columns:
-            if any(kw in c.lower() for kw in ["close","price","value","sales","demand","total"]):
+            if any(kw in str(c).lower() for kw in ["close","price","value","sales","demand","total"]):
                 target = c; break
         else:
             target = df.select_dtypes("number").columns[-1]
     for c in df.columns:
-        if "date" in c.lower() or "time" in c.lower():
+        if "date" in str(c).lower() or "time" in str(c).lower():
             df[c] = pd.to_datetime(df[c], errors="coerce")
             df = df.dropna(subset=[c]).sort_values(c).set_index(c); break
     print(f"Dataset: {{df.shape}}, target: {{target}}")
@@ -5578,7 +5600,7 @@ def download_audio_samples():
             pass
         ds = load_dataset("google/speech_commands", "v0.02", split="train[:100]")
     elif TASK == "cloning":
-        ds = load_dataset("edinburghcstr/vctk", split="train[:20]",
+        ds = load_dataset("google/speech_commands", split="train[:20]",
                           trust_remote_code=True)
     else:
         ds = load_dataset("hf-internal-testing/librispeech_asr_dummy",

@@ -1,0 +1,196 @@
+FILE: Speech and Audio processing/Audio Denoising/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Speech and Audio processing/Image Captioning/pipeline.py
+EXTRA: -
+FUNCS: load_data, caption_images, run_eda, main
+---
+FILE: Speech and Audio processing/Music Genre Prediction - Million Songs/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Speech and Audio processing/Speech to Text/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Speech and Audio processing/Voice Cloning/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Reinforcement Learning/Bipedal Walker/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Cliff Walking/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Frozen Lake/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Gridworld Navigation/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Lunar Lander Continuous/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Lunar Landing/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Mountain Car Continuous/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Pendulum Control/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: Reinforcement Learning/Taxi Navigation/pipeline.py
+EXTRA: reward
+FUNCS: train_sb3, train_q_table, plot_results, run_eda, main
+---
+FILE: NLP/Cross Language Information Retrieval/pipeline.py
+EXTRA: cosine_similarity, similarity, top_k
+FUNCS: load_data, get_texts, detect_sts_pairs, show_top_pairs, run_tfidf, run_qwen3, run_bge_m3, eval_sts, plot_clusters, plot_similarity_heatmap, run_eda, main
+---
+FILE: NLP/Plagiarism Checker/pipeline.py
+EXTRA: cosine_similarity, similarity, top_k
+FUNCS: load_data, get_texts, detect_sts_pairs, show_top_pairs, run_tfidf, run_qwen3, run_bge_m3, eval_sts, plot_clusters, plot_similarity_heatmap, run_eda, main
+---
+FILE: NLP/Text Clustering and Topic Modelling/pipeline.py
+EXTRA: cosine_similarity, similarity, top_k
+FUNCS: load_data, get_texts, detect_sts_pairs, show_top_pairs, run_tfidf, run_qwen3, run_bge_m3, eval_sts, plot_clusters, plot_similarity_heatmap, run_eda, main
+---
+FILE: NLP/Text Similarity/pipeline.py
+EXTRA: cosine_similarity, similarity, top_k
+FUNCS: load_data, get_texts, detect_sts_pairs, show_top_pairs, run_tfidf, run_qwen3, run_bge_m3, eval_sts, plot_clusters, plot_similarity_heatmap, run_eda, main
+---
+FILE: Deep Learning/Brain MRI Segmentation/pipeline.py
+EXTRA: iou, dice
+FUNCS: load_data, dice_score, mean_iou, train_model, run_eda, main
+---
+FILE: Deep Learning/Caffe Face Detector - OpenCV/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Deep Learning/Cat and Dog Voice Recognition/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Deep Learning/COVID-19 Lung CT Scan Analysis/pipeline.py
+EXTRA: iou, dice
+FUNCS: load_data, dice_score, mean_iou, train_model, run_eda, main
+---
+FILE: Deep Learning/Face Gender and Ethnicity Recognizer/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Deep Learning/Face Mask Detection/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Deep Learning/Image Colorization/pipeline.py
+EXTRA: -
+FUNCS: load_data, caption_images, run_eda, main
+---
+FILE: Deep Learning/Landmark Detection/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Deep Learning/Parkinson Pose Estimation/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Captcha Recognition/pipeline.py
+EXTRA: confidence
+FUNCS: download_samples, run_paddleocr, run_paddleocr_vl, run_eda, main
+---
+FILE: Computer Vision/Car and Pedestrian Tracker/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Document Word Detection/pipeline.py
+EXTRA: confidence
+FUNCS: download_samples, run_paddleocr, run_paddleocr_vl, run_eda, main
+---
+FILE: Computer Vision/Dominant Color Analysis/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Dominant Color Extraction/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Face Detection - OpenCV/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Face Expression Identifier/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Face Mask Detection/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Face Recognition Door Lock - AWS Rekognition/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Gesture Control Media Player/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Home Security/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Image Captioning/pipeline.py
+EXTRA: -
+FUNCS: load_data, caption_images, run_eda, main
+---
+FILE: Computer Vision/Image Cartoonify/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Image Text Extraction - OCR/pipeline.py
+EXTRA: confidence
+FUNCS: download_samples, run_paddleocr, run_paddleocr_vl, run_eda, main
+---
+FILE: Computer Vision/Image to Sketch/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Image to Text Conversion - OCR/pipeline.py
+EXTRA: confidence
+FUNCS: download_samples, run_paddleocr, run_paddleocr_vl, run_eda, main
+---
+FILE: Computer Vision/Image Watermark/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Lane Finder/pipeline.py
+EXTRA: -
+FUNCS: download_samples, run_detection, run_tracking, run_eda, main
+---
+FILE: Computer Vision/Live Smile Detector/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---
+FILE: Computer Vision/Noise Reduction/pipeline.py
+EXTRA: -
+FUNCS: download_audio_samples, run_whisper, run_wav2vec2_clf, run_sepformer, run_voice_cloning, run_eda, main
+---
+FILE: Computer Vision/QR Code Readability/pipeline.py
+EXTRA: confidence
+FUNCS: download_samples, run_paddleocr, run_paddleocr_vl, run_eda, main
+---
+FILE: Computer Vision/Room Security - Webcam/pipeline.py
+EXTRA: similarity
+FUNCS: download_face_samples, run_yolo_detection, run_face_landmarker, run_insightface, run_hand_gesture, run_pose, run_eda, main
+---

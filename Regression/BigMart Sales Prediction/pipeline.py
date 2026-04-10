@@ -27,8 +27,18 @@ TARGET = "Item_Outlet_Sales"
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("saurabh1212/Bigmart-Sales-Data", split="train").to_pandas()
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "Train.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("brijbhushannanda1979/bigmart-sales-data", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "Train.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded brijbhushannanda1979/bigmart-sales-data from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     return df
 

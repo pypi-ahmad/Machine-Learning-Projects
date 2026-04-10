@@ -1,0 +1,34 @@
+{
+  "ECOD": {
+    "anomalies": 24701,
+    "anomaly_pct": 0.05,
+    "time_s": 3.9,
+    "score_p50": 8.1208,
+    "score_p95": 36.0339,
+    "score_p99": 43.219
+  },
+  "COPOD": {
+    "anomalies": 24701,
+    "anomaly_pct": 0.05,
+    "time_s": 3.4,
+    "score_p50": 4.9394,
+    "score_p95": 34.3799,
+    "score_p99": 41.6671
+  },
+  "IForest": {
+    "anomalies": 24701,
+    "anomaly_pct": 0.05,
+    "time_s": 3.0,
+    "score_p50": -0.1893,
+    "score_p95": 0.0,
+    "score_p99": 0.0808
+  },
+  "LOF": {
+    "anomalies": 24701,
+    "anomaly_pct": 0.05,
+    "time_s": 216.2,
+    "score_p50": 1.0,
+    "score_p95": 1.3911,
+    "score_p99": 11118.8721
+  }
+}

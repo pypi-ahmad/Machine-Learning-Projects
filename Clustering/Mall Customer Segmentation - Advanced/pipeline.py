@@ -18,12 +18,21 @@ warnings.filterwarnings("ignore")
 
 
 def load_data():
-    from sklearn.datasets import fetch_openml
-    _d = fetch_openml(data_id=1590, as_frame=True, parser="auto")
-    df = _d.frame
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "Mall_Customers.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("vjchoudhary7/customer-segmentation-tutorial-in-python", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "Mall_Customers.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded vjchoudhary7/customer-segmentation-tutorial-in-python from Kaggle")
+    df = pd.read_csv(_fp)
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {df.shape}")
     return df
 

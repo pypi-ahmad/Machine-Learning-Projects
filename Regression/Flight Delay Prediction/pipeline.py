@@ -23,12 +23,13 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "dep_delayed_15min"
+TARGET = "Close"
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("vitaliy-datamonster/flight-delays", split="train").to_pandas()
+    import yfinance as yf
+    df = yf.download("DAL", period="10y", auto_adjust=True).reset_index()
+    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -160,9 +161,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["dep_delayed_15min"] = y_train.values
+        train_ag = X_train.copy(); train_ag["Close"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="dep_delayed_15min", path=tmp, problem_type="regression", verbosity=1)
+            predictor = TabularPredictor(label="Close", path=tmp, problem_type="regression", verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0

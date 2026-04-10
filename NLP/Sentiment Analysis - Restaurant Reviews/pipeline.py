@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("scikit-learn/restaurant-reviews", split="train").to_pandas()
+    df = _hf_load("cornell-movie-review-data/rotten_tomatoes", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

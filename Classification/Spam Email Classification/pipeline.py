@@ -27,7 +27,7 @@ import seaborn as sns
 warnings.filterwarnings("ignore")
 
 TARGET = "label"
-TEXT_COL = "text"
+TEXT_COL = "sms"
 MAX_LEN, BATCH_SIZE, EPOCHS, LR = 256, 16, 3, 2e-5
 
 MODELS = [

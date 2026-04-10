@@ -47,7 +47,7 @@ def download_audio_samples():
             pass
         ds = load_dataset("google/speech_commands", "v0.02", split="train[:100]")
     elif TASK == "cloning":
-        ds = load_dataset("edinburghcstr/vctk", split="train[:20]",
+        ds = load_dataset("google/speech_commands", split="train[:20]",
                           trust_remote_code=True)
     else:
         ds = load_dataset("hf-internal-testing/librispeech_asr_dummy",

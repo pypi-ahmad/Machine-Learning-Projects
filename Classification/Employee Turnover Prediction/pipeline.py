@@ -29,8 +29,18 @@ TARGET = "left"
 
 def load_data():
     """Download dataset from the internet."""
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("mfaisalqureshi/hr-analytics-and-job-change-of-data-scientists", split="train").to_pandas()
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "HR_comma_sep.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("giripujar/hr-analytics", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "HR_comma_sep.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded giripujar/hr-analytics from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df

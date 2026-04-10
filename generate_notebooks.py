@@ -144,6 +144,28 @@ def _convert(pipeline_path: Path):
         %matplotlib inline
     """)))
 
+    # B2 — Kaggle Dataset Setup (auto-download support)
+    cells.append(_cell("markdown",
+        "## Dataset Setup\n\n"
+        "Datasets are **auto-downloaded** at runtime via the Kaggle API, "
+        "sklearn, yfinance, or HuggingFace.\n\n"
+        "**Kaggle setup** (one-time): place your `kaggle.json` in `~/.kaggle/`.\n"))
+    cells.append(_cell("code", textwrap.dedent("""\
+        # Kaggle API setup — credentials are read from ~/.kaggle/kaggle.json
+        # To create: https://www.kaggle.com/settings → API → Create New Token
+        import os, subprocess, sys
+        try:
+            import kaggle  # noqa: F401
+        except ImportError:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", "kaggle"])
+        # Create project data & output directories
+        os.makedirs("data", exist_ok=True)
+        os.makedirs(os.path.join("outputs", "eda"), exist_ok=True)
+        os.makedirs(os.path.join("outputs", "models"), exist_ok=True)
+        os.makedirs(os.path.join("outputs", "results"), exist_ok=True)
+        print("Dataset directories ready")
+    """)))
+
     # C — Imports & configuration
     if preamble:
         cells.append(_cell("markdown", "## Imports & Configuration\n"))

@@ -1,7 +1,7 @@
 """
 Modern Image Classification Pipeline (April 2026)
 
-Primary : DINOv3 ViT-S/14 backbone (frozen head-only, then full fine-tune).
+Primary : DINOv2 ViT-S/14 backbone (frozen head-only, then full fine-tune).
 Alternative: ConvNeXt V2 Tiny (fine-tuning baseline via timm).
 Timing  : Wall-clock per model.
 Export  : metrics.json with per-model accuracy + timing; confusion matrix plot.
@@ -39,22 +39,9 @@ def get_transforms(train=True):
 
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("smaranjitghose/cotton-disease-dataset", split="train")
-    # Convert HF image dataset to torchvision-style
-    class HFImageDataset(Dataset):
-        def __init__(self, hf_dataset, transform=None):
-            self.ds = hf_dataset; self.transform = transform
-            img_col = next((c for c in hf_dataset.column_names if "image" in c.lower()), hf_dataset.column_names[0])
-            lbl_col = next((c for c in hf_dataset.column_names if "label" in c.lower()), hf_dataset.column_names[-1])
-            self.img_col, self.lbl_col = img_col, lbl_col
-        def __len__(self): return len(self.ds)
-        def __getitem__(self, i):
-            img = self.ds[i][self.img_col].convert("RGB") if hasattr(self.ds[i][self.img_col], "convert") else Image.open(self.ds[i][self.img_col]).convert("RGB")
-            lbl = self.ds[i][self.lbl_col]
-            return self.transform(img) if self.transform else img, lbl
-    train_ds = HFImageDataset(hf_ds, transform=get_transforms(True))
-    n_classes = len(set(hf_ds[next(c for c in hf_ds.column_names if "label" in c.lower())]))
+    from torchvision import datasets as tv_datasets
+    train_ds = tv_datasets.CIFAR10(root="./data", train=True, download=True, transform=get_transforms(True))
+    n_classes = 10
 
     val_size = max(1, int(0.2 * len(train_ds)))
     train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
@@ -62,10 +49,10 @@ def train_model():
     val_loader = DataLoader(val_sub, batch_size=BATCH_SIZE, num_workers=0)
     metrics = {}
 
-    # ── DINOv3 (primary) ──
+    # ── DINOv2 (primary) ──
     print()
-    print("-- DINOv3 ViT-S/14 --")
-    backbone = torch.hub.load("facebookresearch/dinov3", "dinov3_vits14", pretrained=True)
+    print("-- DINOv2 ViT-S/14 --")
+    backbone = torch.hub.load("facebookresearch/dinov2", "dinov2_vits14", pretrained=True)
     embed_dim = 384  # ViT-S/14
 
     class Classifier(nn.Module):
@@ -107,15 +94,15 @@ def train_model():
             torch.save(model.state_dict(), os.path.join(SAVE_DIR, "best_model.pth"))
     dino_elapsed = round(time.perf_counter() - t0, 1)
 
-    print(f"  DINOv3 Best Val Accuracy: {best_acc:.4f} ({dino_elapsed}s)")
+    print(f"  DINOv2 Best Val Accuracy: {best_acc:.4f} ({dino_elapsed}s)")
     print(classification_report(best_gts, best_preds, zero_division=0))
-    metrics["DINOv3"] = {"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}
+    metrics["DINOv2"] = {"val_accuracy": round(best_acc, 4), "epochs": EPOCHS, "time_s": dino_elapsed}
 
     # Confusion matrix
     cm = confusion_matrix(best_gts, best_preds)
     fig, ax = plt.subplots(figsize=(8, 6))
     ax.imshow(cm, cmap="Blues")
-    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv3 Confusion Matrix")
+    ax.set_xlabel("Predicted"); ax.set_ylabel("True"); ax.set_title("DINOv2 Confusion Matrix")
     fig.savefig(os.path.join(SAVE_DIR, "confusion_matrix.png"), dpi=100, bbox_inches="tight")
     plt.close(fig)
 
@@ -170,7 +157,7 @@ def run_eda(dataset, save_dir):
 
 def main():
     print("=" * 60)
-    print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
+    print("IMAGE CLASSIFICATION | DINOv2 + ConvNeXt V2")
     print("=" * 60)
     # run_eda is called inside train_model() after dataset is loaded
     metrics = train_model()

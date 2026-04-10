@@ -1,0 +1,12 @@
+{
+  "FLAML": {
+    "f1": 0.8602,
+    "pr_auc": 0.821,
+    "roc_auc": 0.9645,
+    "recall": 0.8163,
+    "precision": 0.9091,
+    "accuracy": 0.9995,
+    "threshold": 0.7056,
+    "time_s": 274.9
+  }
+}

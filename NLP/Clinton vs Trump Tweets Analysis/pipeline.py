@@ -38,7 +38,7 @@ MODELS = [
 
 def load_data():
     from datasets import load_dataset as _hf_load
-    df = _hf_load("SetFit/tweet_eval_stance_hillary", split="train").to_pandas()
+    df = _hf_load("cardiffnlp/tweet_eval", "sentiment", split="train").to_pandas()
     # Auto-detect text column
     text_col = TEXT_COL
     if text_col not in df.columns:

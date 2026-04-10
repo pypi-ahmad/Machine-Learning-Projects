@@ -29,9 +29,18 @@ TARGET = "quality"
 
 def load_data():
     """Download dataset from the internet."""
-    from sklearn.datasets import fetch_openml
-    _d = fetch_openml(data_id=287, as_frame=True, parser="auto")
-    df = _d.frame
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "winequality-red.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("uciml/red-wine-quality-cortez-et-al-2009", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "winequality-red.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded uciml/red-wine-quality-cortez-et-al-2009 from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df

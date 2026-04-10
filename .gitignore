@@ -71,6 +71,10 @@ lightning_logs/
 *.parquet
 *.feather
 
+# ─── Kaggle ───────────────────────────────────────────────────────────────────
+.kaggle/
+kaggle.json
+
 # ─── System Files ─────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

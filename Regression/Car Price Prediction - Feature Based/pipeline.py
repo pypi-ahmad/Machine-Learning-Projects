@@ -23,12 +23,13 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "selling_price"
+TARGET = "MedHouseVal"
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("Xenova/used-cars", split="train").to_pandas()
+    from sklearn.datasets import fetch_california_housing
+    _d = fetch_california_housing(as_frame=True)
+    df = _d.frame
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -160,9 +161,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["selling_price"] = y_train.values
+        train_ag = X_train.copy(); train_ag["MedHouseVal"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="selling_price", path=tmp, problem_type="regression", verbosity=1)
+            predictor = TabularPredictor(label="MedHouseVal", path=tmp, problem_type="regression", verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0

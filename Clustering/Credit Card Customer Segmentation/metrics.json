@@ -1,0 +1,30 @@
+{
+  "HDBSCAN": {
+    "n_clusters": 499,
+    "noise": 4925,
+    "silhouette": 0.6165,
+    "calinski_harabasz": 88653.2,
+    "davies_bouldin": 0.4506,
+    "time_s": 57.0,
+    "min_cluster_size": 10
+  },
+  "GMM": {
+    "n_clusters": 10,
+    "noise": 0,
+    "silhouette": -0.0017,
+    "calinski_harabasz": 730.2,
+    "davies_bouldin": 2.9707,
+    "time_s": 24.3,
+    "best_k": 10,
+    "avg_confidence": 0.9937
+  },
+  "KMeans": {
+    "n_clusters": 2,
+    "noise": 0,
+    "silhouette": 0.2781,
+    "calinski_harabasz": 3246.8,
+    "davies_bouldin": 1.8604,
+    "time_s": 44.6,
+    "best_k": 2
+  }
+}

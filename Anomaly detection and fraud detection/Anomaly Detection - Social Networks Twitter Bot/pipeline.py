@@ -32,6 +32,7 @@ def load_data():
     from sklearn.datasets import fetch_openml
     _d = fetch_openml(data_id=44307, as_frame=True, parser="auto")
     df = _d.frame
+    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -43,13 +44,13 @@ def preprocess(df):
     used for training — only for optional post-hoc evaluation.
     """
     df = df.copy()
-    label_col = next((c for c in df.columns if c.lower() in ("label","class","target","anomaly","outlier")), None)
+    label_col = next((c for c in df.columns if str(c).lower() in ("label","class","target","anomaly","outlier")), None)
     y = None
     if label_col:
         y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
         print(f" Ground-truth column '{label_col}' detected — used for evaluation only (not training)")
     for c in df.columns:
-        if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
     cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())

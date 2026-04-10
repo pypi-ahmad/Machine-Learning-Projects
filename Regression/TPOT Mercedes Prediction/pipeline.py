@@ -30,6 +30,7 @@ def load_data():
     from sklearn.datasets import fetch_openml
     _d = fetch_openml(data_id=42570, as_frame=True, parser="auto")
     df = _d.frame
+    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes
     print(f"Dataset shape: {df.shape}")
     return df
 

@@ -23,7 +23,7 @@ def load_data():
     df = pd.DataFrame(_d.data, columns=_d.feature_names); df["target"] = _d.target
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {df.shape}")
     return df
 

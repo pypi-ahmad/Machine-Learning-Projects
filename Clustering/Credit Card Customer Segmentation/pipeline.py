@@ -18,11 +18,21 @@ warnings.filterwarnings("ignore")
 
 
 def load_data():
-    from datasets import load_dataset as _hf_load
-    df = _hf_load("imodels/credit-card", split="train").to_pandas()
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "creditcard.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("mlg-ulb/creditcardfraud", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "creditcard.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded mlg-ulb/creditcardfraud from Kaggle")
+    df = pd.read_csv(_fp)
     # Drop ID-like columns
     for c in df.columns:
-        if c.lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+        if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
     print(f"Dataset shape: {df.shape}")
     return df
 

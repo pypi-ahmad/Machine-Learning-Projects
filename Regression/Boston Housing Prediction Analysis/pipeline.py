@@ -23,13 +23,22 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "target"
+TARGET = "MEDV"
 
 
 def load_data():
-    from sklearn.datasets import fetch_california_housing
-    _d = fetch_california_housing(as_frame=True)
-    df = _d.frame
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "HousingData.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("altavish/boston-housing-dataset", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "HousingData.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded altavish/boston-housing-dataset from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -161,9 +170,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["target"] = y_train.values
+        train_ag = X_train.copy(); train_ag["MEDV"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="target", path=tmp, problem_type="regression", verbosity=1)
+            predictor = TabularPredictor(label="MEDV", path=tmp, problem_type="regression", verbosity=1)
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0

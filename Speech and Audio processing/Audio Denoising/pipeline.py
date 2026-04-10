@@ -38,7 +38,7 @@ def download_audio_samples():
     if TASK == "classification":
         try:
             from datasets import load_dataset as _hf_load
-            df = _hf_load("edinburghcstr/vctk", split="train").to_pandas()
+            df = _hf_load("google/speech_commands", "v0.02", split="train").to_pandas()
             if df is not None:
                 # Extract audio files from HF dataset if it has an audio column
                 if hasattr(df, "columns"):
@@ -48,7 +48,7 @@ def download_audio_samples():
             pass
         ds = load_dataset("google/speech_commands", "v0.02", split="train[:100]")
     elif TASK == "cloning":
-        ds = load_dataset("edinburghcstr/vctk", split="train[:20]",
+        ds = load_dataset("google/speech_commands", split="train[:20]",
                           trust_remote_code=True)
     else:
         ds = load_dataset("hf-internal-testing/librispeech_asr_dummy",

@@ -1,0 +1,320 @@
+Anomaly detection and fraud detection\Anomaly Detection - Numenta Benchmark\pipeline.py
+Anomaly detection and fraud detection\Anomaly Detection - Social Networks Twitter Bot\pipeline.py
+Anomaly detection and fraud detection\Anomaly Detection in Images - CIFAR-10\pipeline.py
+Anomaly detection and fraud detection\Banknote Authentication\pipeline.py
+Anomaly detection and fraud detection\Breast Cancer Detection - Wisconsin Dataset\pipeline.py
+Anomaly detection and fraud detection\Fraud Detection - IEEE-CIS\pipeline.py
+Anomaly detection and fraud detection\Fraud Detection in Financial Transactions\pipeline.py
+Anomaly detection and fraud detection\Fraudulent Credit Card Transaction Detection\pipeline.py
+Anomaly detection and fraud detection\Insurance Fraud Detection\pipeline.py
+Anomaly detection and fraud detection\Intrusion Detection\pipeline.py
+Anomaly detection and fraud detection\Traffic Flow Prediction - METR-LA\pipeline.py
+Classification\Adult Salary Prediction\pipeline.py
+Classification\Advanced Credit Card Fraud Detection\pipeline.py
+Classification\Autoencoder Fashion MNIST\pipeline.py
+Classification\Autoencoder for Customer Churn\pipeline.py
+Classification\Bayesian Logistic Regression - Bank Marketing\pipeline.py
+Classification\Boston House Classification\pipeline.py
+Classification\Breast Cancer Detection\pipeline.py
+Classification\Breast Cancer Prediction\pipeline.py
+Classification\CIFAR-10 Classification\pipeline.py
+Classification\Cotton Disease Prediction\pipeline.py
+Classification\Credit Card Fraud - Imbalanced Dataset\pipeline.py
+Classification\Credit Risk Modeling - German Credit\pipeline.py
+Classification\Customer Churn Prediction - Telecom\pipeline.py
+Classification\Customer Lifetime Value Prediction\pipeline.py
+Classification\Customer Segmentation - E-Commerce\pipeline.py
+Classification\Cyberbullying Classification\pipeline.py
+Classification\Diabetes Classification\pipeline.py
+Classification\Diabetes ML Analysis\pipeline.py
+Classification\Diabetes Prediction\pipeline.py
+Classification\Digit Recognition - MNIST Sequence\pipeline.py
+Classification\Dog vs Cat Classification\pipeline.py
+Classification\Drinking Water Potability\pipeline.py
+Classification\Drug Classification\pipeline.py
+Classification\Earthquake Prediction\pipeline.py
+Classification\Employee Turnover Analysis\pipeline.py
+Classification\Employee Turnover Prediction\pipeline.py
+Classification\Fashion MNIST Analysis\pipeline.py
+Classification\Flower Species Classification\pipeline.py
+Classification\Fraud Detection\pipeline.py
+Classification\Garbage Classification\pipeline.py
+Classification\Glass Classification\pipeline.py
+Classification\Groundhog Day Predictions\pipeline.py
+Classification\H2O Higgs Boson\pipeline.py
+Classification\Hand Digit Recognition\pipeline.py
+Classification\Healthcare Heart Disease Prediction\pipeline.py
+Classification\Heart Disease Prediction\pipeline.py
+Classification\Income Classification\pipeline.py
+Classification\Iris Dataset Analysis\pipeline.py
+Classification\Loan Default Prediction\pipeline.py
+Classification\Loan Prediction Analysis\pipeline.py
+Classification\Logistic Regression Balanced\pipeline.py
+Classification\Marketing Campaign Prediction\pipeline.py
+Classification\Mobile Price Classification\pipeline.py
+Classification\Movie Genre Classification\pipeline.py
+Classification\Plant Disease Recognition\pipeline.py
+Classification\Pneumonia Classification\pipeline.py
+Classification\Simple Classification Problem\pipeline.py
+Classification\Social Network Ads Analysis\pipeline.py
+Classification\SONAR Rock vs Mine Prediction\pipeline.py
+Classification\Spam Email Classification\pipeline.py
+Classification\Student Performance Prediction\pipeline.py
+Classification\Titanic - Handling Missing Values\pipeline.py
+Classification\Titanic Survival Prediction\pipeline.py
+Classification\Traffic Congestion Prediction\pipeline.py
+Classification\Weather Classification - Decision Trees\pipeline.py
+Classification\Wine Quality Analysis\pipeline.py
+Classification\Wine Quality Prediction\pipeline.py
+Clustering\Credit Card Customer Segmentation\pipeline.py
+Clustering\Customer Segmentation\pipeline.py
+Clustering\Customer Segmentation - Bank\pipeline.py
+Clustering\Financial Time Series Clustering\pipeline.py
+Clustering\Housing Price Segmentation\pipeline.py
+Clustering\KMeans Clustering - Imagery Analysis\pipeline.py
+Clustering\Mall Customer Segmentation\pipeline.py
+Clustering\Mall Customer Segmentation - Advanced\pipeline.py
+Clustering\Mall Customer Segmentation - Detailed\pipeline.py
+Clustering\Mall Customer Segmentation Data\pipeline.py
+Clustering\Online Retail Customer Segmentation\pipeline.py
+Clustering\Online Retail Segmentation Analysis\pipeline.py
+Clustering\Spotify Song Cluster Analysis\pipeline.py
+Clustering\Turkiye Student Evaluation - Advanced\pipeline.py
+Clustering\Turkiye Student Evaluation Analysis\pipeline.py
+Clustering\Vehicle Crash Data Clustering\pipeline.py
+Clustering\Weather Data Clustering - KMeans\pipeline.py
+Clustering\Wholesale Customer Segmentation\pipeline.py
+Clustering\Wholesale Segmentation Analysis\pipeline.py
+Clustering\Wine Segmentation\pipeline.py
+Computer Vision\Captcha Recognition\pipeline.py
+Computer Vision\Car and Pedestrian Tracker\pipeline.py
+Computer Vision\Document Word Detection\pipeline.py
+Computer Vision\Dominant Color Analysis\pipeline.py
+Computer Vision\Dominant Color Extraction\pipeline.py
+Computer Vision\Face Detection - OpenCV\pipeline.py
+Computer Vision\Face Expression Identifier\pipeline.py
+Computer Vision\Face Mask Detection\pipeline.py
+Computer Vision\Face Recognition Door Lock - AWS Rekognition\pipeline.py
+Computer Vision\Gesture Control Media Player\pipeline.py
+Computer Vision\Home Security\pipeline.py
+Computer Vision\Image Captioning\pipeline.py
+Computer Vision\Image Cartoonify\pipeline.py
+Computer Vision\Image Text Extraction - OCR\pipeline.py
+Computer Vision\Image to Sketch\pipeline.py
+Computer Vision\Image to Text Conversion - OCR\pipeline.py
+Computer Vision\Image Watermark\pipeline.py
+Computer Vision\Indian Classical Dance Classification\pipeline.py
+Computer Vision\Lane Finder\pipeline.py
+Computer Vision\Live Smile Detector\pipeline.py
+Computer Vision\Noise Reduction\pipeline.py
+Computer Vision\QR Code Readability\pipeline.py
+Computer Vision\Room Security - Webcam\pipeline.py
+Computer Vision\Traffic Sign Recognition\pipeline.py
+Computer Vision\Traffic Sign Recognizer\pipeline.py
+Deep Learning\Advanced Churn Modeling\pipeline.py
+Deep Learning\Advanced ResNet-50\pipeline.py
+Deep Learning\All Space Missions Analysis\pipeline.py
+Deep Learning\Amazon Alexa Sentiment Analysis\pipeline.py
+Deep Learning\Amazon Stock Price Analysis\pipeline.py
+Deep Learning\Arabic Character Recognition\pipeline.py
+Deep Learning\Bank Marketing Analysis\pipeline.py
+Deep Learning\Bottle vs Can Classification\pipeline.py
+Deep Learning\Brain MRI Segmentation\pipeline.py
+Deep Learning\Brain Tumor Recognition\pipeline.py
+Deep Learning\Cactus Aerial Image Recognition\pipeline.py
+Deep Learning\Caffe Face Detector - OpenCV\pipeline.py
+Deep Learning\Campus Recruitment Analysis\pipeline.py
+Deep Learning\Cat and Dog Voice Recognition\pipeline.py
+Deep Learning\Cat vs Dog Classification\pipeline.py
+Deep Learning\Chatbot\pipeline.py
+Deep Learning\ChatBot - Neural Network\pipeline.py
+Deep Learning\Clothing Prediction - Flask App\pipeline.py
+Deep Learning\Concrete Strength Prediction\pipeline.py
+Deep Learning\COVID-19 Drug Recovery\pipeline.py
+Deep Learning\COVID-19 Lung CT Scan Analysis\pipeline.py
+Deep Learning\Dance Form Identification\pipeline.py
+Deep Learning\Diabetic Retinopathy\pipeline.py
+Deep Learning\Disease Prediction\pipeline.py
+Deep Learning\Earthquake Prediction\pipeline.py
+Deep Learning\Electric Car Temperature Prediction\pipeline.py
+Deep Learning\Face Gender and Ethnicity Recognizer\pipeline.py
+Deep Learning\Face Mask Detection\pipeline.py
+Deep Learning\Fingerprint Recognition\pipeline.py
+Deep Learning\GANs\pipeline.py
+Deep Learning\Glass Detection\pipeline.py
+Deep Learning\Happy House Predictor\pipeline.py
+Deep Learning\Hourly Energy Demand and Weather\pipeline.py
+Deep Learning\Image Colorization\pipeline.py
+Deep Learning\IMDB Sentiment Analysis\pipeline.py
+Deep Learning\Indian Startup Data Analysis\pipeline.py
+Deep Learning\Keep Babies Safe\pipeline.py
+Deep Learning\Landmark Detection\pipeline.py
+Deep Learning\Lego Brick Classification\pipeline.py
+Deep Learning\Movie Title Prediction\pipeline.py
+Deep Learning\News Category Prediction\pipeline.py
+Deep Learning\Parkinson Pose Estimation\pipeline.py
+Deep Learning\Pneumonia Detection\pipeline.py
+Deep Learning\Pokemon Generation Clustering\pipeline.py
+Deep Learning\Sentiment Analysis - Flask App\pipeline.py
+Deep Learning\Sheep Breed Classification - CNN\pipeline.py
+Deep Learning\Skin Cancer Recognition\pipeline.py
+Deep Learning\Stock Market Prediction\pipeline.py
+Deep Learning\Sudoku Solver - Neural Network\pipeline.py
+Deep Learning\Walking or Running Classification\pipeline.py
+Deep Learning\World Currency Coin Detection\pipeline.py
+NLP\Amazon Alexa Review Sentiment\pipeline.py
+NLP\Amazon Sentiment Analysis\pipeline.py
+NLP\Autocorrect\pipeline.py
+NLP\BOW and TF-IDF with XGBoost\pipeline.py
+NLP\Clinton vs Trump Tweets Analysis\pipeline.py
+NLP\Consumer Complaints Analysis\pipeline.py
+NLP\Cross Language Information Retrieval\pipeline.py
+NLP\Disaster or Not Disaster\pipeline.py
+NLP\DJIA Sentiment Analysis - News Headlines\pipeline.py
+NLP\DJIA Sentiment Analysis - Stock Prediction\pipeline.py
+NLP\Document Summary Creator\pipeline.py
+NLP\Fake News Detection\pipeline.py
+NLP\GitHub Bugs Prediction\pipeline.py
+NLP\Hate Speech Detection\pipeline.py
+NLP\IMDB Sentiment Analysis - Deep Learning\pipeline.py
+NLP\IMDB Sentiment Review Analysis\pipeline.py
+NLP\Keyword Extraction\pipeline.py
+NLP\Keyword Research\pipeline.py
+NLP\Language Translation Model\pipeline.py
+NLP\Language Translator\pipeline.py
+NLP\Message Spam Detection\pipeline.py
+NLP\Movie Review Sentiments\pipeline.py
+NLP\Named Entity Recognition\pipeline.py
+NLP\Next Word Prediction\pipeline.py
+NLP\NLP for Other Languages\pipeline.py
+NLP\Plagiarism Checker\pipeline.py
+NLP\Profanity Checker\pipeline.py
+NLP\Restaurant Review Sentiment Analysis\pipeline.py
+NLP\Resume Screening\pipeline.py
+NLP\Sentiment Analysis\pipeline.py
+NLP\Sentiment Analysis - Flask Web App\pipeline.py
+NLP\Sentiment Analysis - Restaurant Reviews\pipeline.py
+NLP\SMS Spam Detection\pipeline.py
+NLP\SMS Spam Detection - Detailed\pipeline.py
+NLP\SMS Spam Detection Analysis\pipeline.py
+NLP\Spam Classifier\pipeline.py
+NLP\Spam SMS Classification\pipeline.py
+NLP\Spell Checker\pipeline.py
+NLP\Spelling Correction\pipeline.py
+NLP\Stop Words in 28 Languages\pipeline.py
+NLP\Text Classification\pipeline.py
+NLP\Text Classification - Keras Consumer Complaints\pipeline.py
+NLP\Text Classification with NLP\pipeline.py
+NLP\Text Clustering and Topic Modelling\pipeline.py
+NLP\Text File Analysis\pipeline.py
+NLP\Text Generation\pipeline.py
+NLP\Text Processing and Analysis\pipeline.py
+NLP\Text Similarity\pipeline.py
+NLP\Text Summarization\pipeline.py
+NLP\Text Summarization - Medium\pipeline.py
+NLP\Text Summarization - Word Frequency\pipeline.py
+NLP\Text Summarization - Word Frequency Method\pipeline.py
+NLP\Three-Way Sentiment Analysis - Tweets\pipeline.py
+NLP\Twitter Sentiment Analysis\pipeline.py
+NLP\Twitter Sentiment Analysis - ML\pipeline.py
+NLP\Twitter US Airline Sentiment\pipeline.py
+NLP\US Election Prediction\pipeline.py
+NLP\WhatsApp Chat Analysis\pipeline.py
+NLP\WhatsApp Group Chat Analysis\pipeline.py
+NLP\Wikipedia Search Word Cloud\pipeline.py
+Recommendation Systems\Article Recommendation System\pipeline.py
+Recommendation Systems\Articles Recommender\pipeline.py
+Recommendation Systems\Book Recommendation System\pipeline.py
+Recommendation Systems\Building Recommender in an Hour\pipeline.py
+Recommendation Systems\Collaborative Filtering - TensorFlow\pipeline.py
+Recommendation Systems\E-Commerce Recommendation System\pipeline.py
+Recommendation Systems\Event Recommendation System\pipeline.py
+Recommendation Systems\Hotel Recommendation System\pipeline.py
+Recommendation Systems\Million Songs Recommendation Engine\pipeline.py
+Recommendation Systems\Movie Recommendation Engine\pipeline.py
+Recommendation Systems\Movie Recommendation System\pipeline.py
+Recommendation Systems\Movies Recommender\pipeline.py
+Recommendation Systems\Music Recommendation System\pipeline.py
+Recommendation Systems\Recipe Recommendation System\pipeline.py
+Recommendation Systems\Recommender Systems Fundamentals\pipeline.py
+Recommendation Systems\Recommender with Surprise Library\pipeline.py
+Recommendation Systems\Restaurant Recommendation System\pipeline.py
+Recommendation Systems\Seattle Hotels Recommender\pipeline.py
+Recommendation Systems\TV Show Recommendation System\pipeline.py
+Regression\50 Startups Success Prediction\pipeline.py
+Regression\Ad Demand Forecast - Avito\pipeline.py
+Regression\Bank Customer churn prediction\pipeline.py
+Regression\Bengaluru House Price Prediction\pipeline.py
+Regression\BigMart Sales Prediction\pipeline.py
+Regression\Bike Sharing Demand Analysis\pipeline.py
+Regression\Bitcoin Price Prediction\pipeline.py
+Regression\Bitcoin Price Prediction - Advanced\pipeline.py
+Regression\Black Friday Sales Analysis\pipeline.py
+Regression\Black Friday Sales Prediction\pipeline.py
+Regression\Boston Housing Analysis\pipeline.py
+Regression\Boston Housing Prediction Analysis\pipeline.py
+Regression\California Housing Prediction\pipeline.py
+Regression\Car Price Prediction\pipeline.py
+Regression\Car Price Prediction - Feature Based\pipeline.py
+Regression\China GDP Estimation\pipeline.py
+Regression\Crop yield prediction\pipeline.py
+Regression\Data Scientist Salary Prediction\pipeline.py
+Regression\Diabetes Prediction - Pima Indians\pipeline.py
+Regression\Employee Future Prediction\pipeline.py
+Regression\Energy Usage Prediction - Buildings\pipeline.py
+Regression\Flight Delay Prediction\pipeline.py
+Regression\Flight Fare Prediction\pipeline.py
+Regression\Future Sales Prediction\pipeline.py
+Regression\Gold Price Prediction\pipeline.py
+Regression\Heart disease prediction\pipeline.py
+Regression\Hotel Booking Cancellation Prediction\pipeline.py
+Regression\House Price - Regularized Linear and XGBoost\pipeline.py
+Regression\House Price prediction\pipeline.py
+Regression\House Price Prediction - Detailed\pipeline.py
+Regression\Insurance premium prediction\pipeline.py
+Regression\IPL First Innings Prediction - Advanced\pipeline.py
+Regression\IPL First Innings Score Prediction\pipeline.py
+Regression\Job Salary prediction\pipeline.py
+Regression\Medical Cost Personal\pipeline.py
+Regression\Mercari Price Suggestion - LightGBM\pipeline.py
+Regression\Rainfall Amount Prediction\pipeline.py
+Regression\Rainfall Prediction\pipeline.py
+Regression\Stock price prediction\pipeline.py
+Regression\Tesla Car Price Prediction\pipeline.py
+Regression\TPOT Mercedes Prediction\pipeline.py
+Regression\UCLA Admission Prediction\pipeline.py
+Reinforcement Learning\Bipedal Walker\pipeline.py
+Reinforcement Learning\Cliff Walking\pipeline.py
+Reinforcement Learning\Frozen Lake\pipeline.py
+Reinforcement Learning\Gridworld Navigation\pipeline.py
+Reinforcement Learning\Lunar Lander Continuous\pipeline.py
+Reinforcement Learning\Lunar Landing\pipeline.py
+Reinforcement Learning\Mountain Car Continuous\pipeline.py
+Reinforcement Learning\Pendulum Control\pipeline.py
+Reinforcement Learning\Taxi Navigation\pipeline.py
+Speech and Audio processing\Audio Denoising\pipeline.py
+Speech and Audio processing\Image Captioning\pipeline.py
+Speech and Audio processing\Music Genre Prediction - Million Songs\pipeline.py
+Speech and Audio processing\Speech to Text\pipeline.py
+Speech and Audio processing\Voice Cloning\pipeline.py
+Time Series Analysis\Cryptocurrency Price Forecasting\pipeline.py
+Time Series Analysis\Electricity Demand Forecasting\pipeline.py
+Time Series Analysis\Forecasting with ARIMA\pipeline.py
+Time Series Analysis\Gold Price Forecasting\pipeline.py
+Time Series Analysis\Granger Causality Test\pipeline.py
+Time Series Analysis\Mini Course Sales Forecasting\pipeline.py
+Time Series Analysis\Pollution Forecasting\pipeline.py
+Time Series Analysis\Power Consumption - LSTM\pipeline.py
+Time Series Analysis\Promotional Time Series\pipeline.py
+Time Series Analysis\Rossmann Store Sales Forecasting\pipeline.py
+Time Series Analysis\Smart Home Temperature Forecasting\pipeline.py
+Time Series Analysis\Solar Power Generation Forecasting\pipeline.py
+Time Series Analysis\Stock Market Analysis - Tech Stocks\pipeline.py
+Time Series Analysis\Stock Price Forecasting\pipeline.py
+Time Series Analysis\Store Item Demand Forecasting\pipeline.py
+Time Series Analysis\Time Series Forecasting\pipeline.py
+Time Series Analysis\Time Series Forecasting - Introduction\pipeline.py
+Time Series Analysis\Time Series with LSTM\pipeline.py
+Time Series Analysis\Traffic Forecast\pipeline.py
+Time Series Analysis\US Gasoline and Diesel Prices 1995-2021\pipeline.py
+Time Series Analysis\Weather Forecasting\pipeline.py
