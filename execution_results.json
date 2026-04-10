@@ -1,296 +1,307 @@
 [
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection - Numenta Benchmark\\Anomaly Detection - Numenta Benchmark.ipynb",
-    "project": "Anomaly Detection - Numenta Benchmark",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 17.7,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection - Social Networks Twitter Bot\\Anomaly Detection - Social Networks Twitter Bot.ipynb",
-    "project": "Anomaly Detection - Social Networks Twitter Bot",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 10.2,
-    "artifacts": [
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection in Images - CIFAR-10\\Anomaly Detection in Images - CIFAR-10.ipynb",
-    "project": "Anomaly Detection in Images - CIFAR-10",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 16.5,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Banknote Authentication\\Banknote Authentication.ipynb",
-    "project": "Banknote Authentication",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 12.1,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Breast Cancer Detection - Wisconsin Dataset\\Breast Cancer Detection - Wisconsin Dataset.ipynb",
-    "project": "Breast Cancer Detection - Wisconsin Dataset",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 15.9,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraud Detection - IEEE-CIS\\Fraud Detection - IEEE-CIS.ipynb",
-    "project": "Fraud Detection - IEEE-CIS",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 206.1,
-    "artifacts": [
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "fraud_report.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraud Detection in Financial Transactions\\Fraud Detection in Financial Transactions.ipynb",
-    "project": "Fraud Detection in Financial Transactions",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 222.2,
-    "artifacts": [
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "fraud_report.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraudulent Credit Card Transaction Detection\\Fraudulent Credit Card Transaction Detection.ipynb",
-    "project": "Fraudulent Credit Card Transaction Detection",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 207.7,
-    "artifacts": [
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "fraud_report.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Insurance Fraud Detection\\Insurance Fraud Detection.ipynb",
-    "project": "Insurance Fraud Detection",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 200.0,
-    "artifacts": [
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "fraud_report.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Intrusion Detection\\Intrusion Detection.ipynb",
-    "project": "Intrusion Detection",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 246.6,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Traffic Flow Prediction - METR-LA\\Traffic Flow Prediction - METR-LA.ipynb",
-    "project": "Traffic Flow Prediction - METR-LA",
-    "family": "Anomaly detection and fraud detection",
-    "status": "success",
-    "time_s": 24.4,
-    "artifacts": [
-      "anomaly_scores.png",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Adult Salary Prediction\\Adult Salary Prediction.ipynb",
-    "project": "Adult Salary Prediction",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 378.3,
-    "artifacts": [
-      "adult_data.csv",
-      "calibration_plot.png",
-      "cm_catboost.png",
-      "cm_flaml.png",
-      "cm_lightgbm.png",
-      "cm_tabm.png",
-      "cm_xgboost.png",
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Advanced Credit Card Fraud Detection\\Advanced Credit Card Fraud Detection.ipynb",
-    "project": "Advanced Credit Card Fraud Detection",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 215.7,
-    "artifacts": [
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "fraud_report.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder for Customer Churn\\Autoencoder for Customer Churn.ipynb",
-    "project": "Autoencoder for Customer Churn",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 199.6,
-    "artifacts": [
-      "calibration_plot.png",
-      "cm_catboost.png",
-      "cm_flaml.png",
-      "cm_lightgbm.png",
-      "cm_tabm.png",
-      "cm_xgboost.png",
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "metrics.json",
-      "WA_Fn-UseC_-Telco-Customer-Churn.csv"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Bayesian Logistic Regression - Bank Marketing\\Bayesian Logistic Regression - Bank Marketing.ipynb",
-    "project": "Bayesian Logistic Regression - Bank Marketing",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 213.7,
-    "artifacts": [
-      "BankChurners.csv",
-      "calibration_plot.png",
-      "cm_catboost.png",
-      "cm_flaml.png",
-      "cm_lightgbm.png",
-      "cm_tabm.png",
-      "cm_xgboost.png",
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Breast Cancer Detection\\Breast Cancer Detection.ipynb",
-    "project": "Breast Cancer Detection",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 159.6,
-    "artifacts": [
-      "calibration_plot.png",
-      "cm_catboost.png",
-      "cm_flaml.png",
-      "cm_lightgbm.png",
-      "cm_tabm.png",
-      "cm_xgboost.png",
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "metrics.json"
-    ],
-    "error": ""
-  },
-  {
-    "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Breast Cancer Prediction\\Breast Cancer Prediction.ipynb",
-    "project": "Breast Cancer Prediction",
-    "family": "Classification",
-    "status": "success",
-    "time_s": 154.9,
-    "artifacts": [
-      "calibration_plot.png",
-      "cm_catboost.png",
-      "cm_flaml.png",
-      "cm_tabm.png",
-      "cm_xgboost.png",
-      "cv_results.json",
-      "eda_correlation.png",
-      "eda_distributions.png",
-      "eda_summary.csv",
-      "eda_target.png",
-      "metrics.json",
-      "Wisconsin-bc-data.csv"
-    ],
-    "error": ""
-  }
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection - Numenta Benchmark\\Anomaly Detection - Numenta Benchmark.ipynb",
+  "project": "Anomaly Detection - Numenta Benchmark",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 17.7,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection - Social Networks Twitter Bot\\Anomaly Detection - Social Networks Twitter Bot.ipynb",
+  "project": "Anomaly Detection - Social Networks Twitter Bot",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 10.2,
+  "artifacts": [
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Anomaly Detection in Images - CIFAR-10\\Anomaly Detection in Images - CIFAR-10.ipynb",
+  "project": "Anomaly Detection in Images - CIFAR-10",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 16.5,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Banknote Authentication\\Banknote Authentication.ipynb",
+  "project": "Banknote Authentication",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 12.1,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Breast Cancer Detection - Wisconsin Dataset\\Breast Cancer Detection - Wisconsin Dataset.ipynb",
+  "project": "Breast Cancer Detection - Wisconsin Dataset",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 15.9,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraud Detection - IEEE-CIS\\Fraud Detection - IEEE-CIS.ipynb",
+  "project": "Fraud Detection - IEEE-CIS",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 206.1,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraud Detection in Financial Transactions\\Fraud Detection in Financial Transactions.ipynb",
+  "project": "Fraud Detection in Financial Transactions",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 222.2,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Fraudulent Credit Card Transaction Detection\\Fraudulent Credit Card Transaction Detection.ipynb",
+  "project": "Fraudulent Credit Card Transaction Detection",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 207.7,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Insurance Fraud Detection\\Insurance Fraud Detection.ipynb",
+  "project": "Insurance Fraud Detection",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 200.0,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Intrusion Detection\\Intrusion Detection.ipynb",
+  "project": "Intrusion Detection",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 246.6,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Anomaly detection and fraud detection\\Traffic Flow Prediction - METR-LA\\Traffic Flow Prediction - METR-LA.ipynb",
+  "project": "Traffic Flow Prediction - METR-LA",
+  "family": "Anomaly detection and fraud detection",
+  "status": "success",
+  "time_s": 24.4,
+  "artifacts": [
+   "anomaly_scores.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Adult Salary Prediction\\Adult Salary Prediction.ipynb",
+  "project": "Adult Salary Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 378.3,
+  "artifacts": [
+   "adult_data.csv",
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Advanced Credit Card Fraud Detection\\Advanced Credit Card Fraud Detection.ipynb",
+  "project": "Advanced Credit Card Fraud Detection",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 215.7,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder for Customer Churn\\Autoencoder for Customer Churn.ipynb",
+  "project": "Autoencoder for Customer Churn",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 199.6,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "WA_Fn-UseC_-Telco-Customer-Churn.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Bayesian Logistic Regression - Bank Marketing\\Bayesian Logistic Regression - Bank Marketing.ipynb",
+  "project": "Bayesian Logistic Regression - Bank Marketing",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 213.7,
+  "artifacts": [
+   "BankChurners.csv",
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Breast Cancer Detection\\Breast Cancer Detection.ipynb",
+  "project": "Breast Cancer Detection",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 159.6,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Breast Cancer Prediction\\Breast Cancer Prediction.ipynb",
+  "project": "Breast Cancer Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 154.9,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "Wisconsin-bc-data.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder Fashion MNIST\\Autoencoder Fashion MNIST.ipynb",
+  "project": "Autoencoder Fashion MNIST",
+  "family": "Classification",
+  "status": "cell_error",
+  "time_s": 1823.0,
+  "artifacts": [
+   "confusion_matrix.png"
+  ],
+  "error": "-------------------"
+ }
 ]
