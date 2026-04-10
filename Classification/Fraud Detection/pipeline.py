@@ -145,8 +145,13 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)] if name == "XGBoost"
                       else (X_cal, y_cal), verbose=100 if name == "XGBoost" else None)
             # Calibrate probabilities (isotonic regression on held-out cal split)
-            cal_model = CalibratedClassifierCV(m, cv="prefit", method="isotonic")
-            cal_model.fit(X_cal, y_cal)
+            import sklearn; _skv = tuple(int(x) for x in sklearn.__version__.split(".")[:2])
+            if _skv >= (1, 6):
+                cal_model = CalibratedClassifierCV(m, method="isotonic")
+                cal_model.fit(X_cal, y_cal)
+            else:
+                cal_model = CalibratedClassifierCV(m, cv="prefit", method="isotonic")
+                cal_model.fit(X_cal, y_cal)
             proba = cal_model.predict_proba(X_test)[:, 1]
             thresh = find_best_threshold(y_test, proba)
             preds = (proba >= thresh).astype(int)

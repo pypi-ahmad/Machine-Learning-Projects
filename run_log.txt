@@ -1,0 +1,116 @@
+Loaded 3 previously recorded results.
+Notebooks to run: 326  (already done: 3)
+
+[  4/329] Anomaly detection and fraud detection\Banknote Authentication\Banknote Auth OK (31.9s)
+[  5/329] Anomaly detection and fraud detection\Anomaly Detection - Numenta Benchmark OK (38.8s)
+Exception in thread Thread-1 (_readerthread):
+Exception in thread Thread-6 (_readerthread):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\subprocess.py", line 1615, in _readerthread
+    buffer.append(fh.read())
+                  ~~~~~~~^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ahmad\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x90 in position 1499: character maps to <undefined>
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x81 in position 926: character maps to <undefined>
+[  6/329] Anomaly detection and fraud detection\Fraud Detection - IEEE-CIS\Fraud Dete ERROR (89.4s)
+[  7/329] Anomaly detection and fraud detection\Intrusion Detection\Intrusion Detecti ERROR (20.6s)
+[  8/329] Anomaly detection and fraud detection\Traffic Flow Prediction - METR-LA\Tra OK (32.7s)
+[  9/329] Anomaly detection and fraud detection\Insurance Fraud Detection\Insurance F ERROR (395.0s)
+[ 10/329] Anomaly detection and fraud detection\Fraud Detection in Financial Transact ERROR (433.9s)
+[ 11/329] Anomaly detection and fraud detection\Fraudulent Credit Card Transaction De ERROR (402.1s)
+[ 12/329] Classification\Adult Salary Prediction\Adult Salary Prediction.ipynb        ERROR (296.0s)
+[ 13/329] Classification\Autoencoder for Customer Churn\Autoencoder for Customer Chur ERROR (74.2s)
+[ 14/329] Classification\Bayesian Logistic Regression - Bank Marketing\Bayesian Logis TIMEOUT (600s)
+[ 15/329] Classification\Boston House Classification\Boston House Classification.ipyn TIMEOUT (600s)
+[ 16/329] Classification\Advanced Credit Card Fraud Detection\Advanced Credit Card Fr TIMEOUT (600s)
+[ 17/329] Classification\Autoencoder Fashion MNIST\Autoencoder Fashion MNIST.ipynb    TIMEOUT (600s)
+[ 18/329] Classification\Breast Cancer Detection\Untitled.ipynb                       ERROR (71.8s)
+[ 19/329] Classification\Breast Cancer Detection\Breast Cancer Detection.ipynb        TIMEOUT (600s)
+[ 20/329] Classification\CIFAR-10 Classification\CIFAR-10 Classification.ipynb        TIMEOUT (600s)
+[ 21/329] Classification\Breast Cancer Prediction\Breast Cancer Prediction.ipynb      TIMEOUT (600s)
+[ 22/329] Classification\Cotton Disease Prediction\Cotton Disease Prediction.ipynb    TIMEOUT (600s)
+[ 23/329] Classification\Credit Risk Modeling - German Credit\Credit Risk Modeling -  TIMEOUT (600s)
+[ 24/329] Classification\Credit Card Fraud - Imbalanced Dataset\Credit Card Fraud - I TIMEOUT (600s)
+[ 25/329] Classification\Customer Lifetime Value Prediction\Customer Lifetime Value P TIMEOUT (600s)
+[ 26/329] Classification\Customer Churn Prediction - Telecom\Customer Churn Predictio TIMEOUT (600s)
+[ 27/329] Classification\Customer Segmentation - E-Commerce\Customer Segmentation - E ERROR (493.6s)
+[ 28/329] Classification\Diabetes ML Analysis\Diabetes ML Analysis.ipynb              ERROR (493.6s)
+[ 29/329] Classification\Diabetes Classification\Diabetes Classification.ipynb        ERROR (493.6s)
+[ 30/329] Classification\Cyberbullying Classification\Cyberbullying Classification.ip ERROR (493.6s)
+[ 31/329] Classification\Diabetes Prediction\Diabetes Prediction.ipynb                ERROR (0.2s)
+[ 32/329] Classification\Digit Recognition - MNIST Sequence\Digit Recognition - MNIST ERROR (0.2s)
+[ 33/329] Classification\Diabetes Prediction\Diabetes Prediction using PySpark.ipynb  ERROR (0.2s)
+[ 34/329] Classification\Dog vs Cat Classification\Dog vs Cat Classification.ipynb    ERROR (0.3s)
+[ 35/329] Classification\Drug Classification\Drug Classification.ipynb                ERROR (0.2s)
+[ 36/329] Classification\Drinking Water Potability\Drinking Water Potability.ipynb    ERROR (0.2s)
+[ 37/329] Classification\Earthquake Prediction\Earthquake Prediction.ipynb            ERROR (0.2s)
+[ 38/329] Classification\Employee Turnover Analysis\Employee Turnover Analysis.ipynb  ERROR (0.2s)
+[ 39/329] Classification\Fashion MNIST Analysis\Fashion MNIST Analysis.ipynb          ERROR (0.2s)
+[ 40/329] Classification\Fraud Detection\Fraud Detection.ipynb                        ERROR (0.2s)
+[ 41/329] Classification\Flower Species Classification\Flower Species Classification. ERROR (0.2s)
+[ 42/329] Classification\Employee Turnover Prediction\Employee Turnover Prediction.ip ERROR (0.2s)
+[ 43/329] Classification\Garbage Classification\Garbage Classification.ipynb          ERROR (0.2s)
+[ 44/329] Classification\Glass Classification\Glass Classification.ipynb              ERROR (0.1s)
+[ 45/329] Classification\H2O Higgs Boson\H2O Higgs Boson.ipynb                        ERROR (0.1s)
+[ 46/329] Classification\Groundhog Day Predictions\Groundhog Day Predictions.ipynb    ERROR (0.2s)
+[ 47/329] Classification\Hand Digit Recognition\Hand Digit Recognition.ipynb          ERROR (0.2s)
+[ 48/329] Classification\Hand Digit Recognition\Untitled.ipynb                        ERROR (0.1s)
+[ 49/329] Classification\Healthcare Heart Disease Prediction\Healthcare Heart Disease ERROR (0.2s)
+[ 50/329] Classification\Heart Disease Prediction\Heart Disease Prediction.ipynb      ERROR (0.2s)
+[ 51/329] Classification\Income Classification\Income Classification.ipynb            ERROR (0.1s)
+[ 52/329] Classification\Iris Dataset Analysis\Iris Dataset Analysis.ipynb            ERROR (0.2s)
+[ 53/329] Classification\Loan Default Prediction\Loan Default Prediction.ipynb        ERROR (0.1s)
+[ 54/329] Classification\Loan Prediction Analysis\Loan Prediction Analysis.ipynb      ERROR (0.1s)
+[ 55/329] Classification\Logistic Regression Balanced\Logistic Regression balanced.ip ERROR (0.2s)
+[ 56/329] Classification\Marketing Campaign Prediction\Marketing Campaign Prediction. ERROR (0.2s)
+[ 57/329] Classification\Mobile Price Classification\Mobile Price Classification.ipyn ERROR (0.2s)
+[ 58/329] Classification\Movie Genre Classification\Movie Genre Classification.ipynb  ERROR (0.2s)
+[ 59/329] Classification\Plant Disease Recognition\Plant Disease Recognition.ipynb    ERROR (0.1s)
+[ 60/329] Classification\Pneumonia Classification\Pneumonia Classification.ipynb      ERROR (0.1s)
+[ 61/329] Classification\Simple Classification Problem\Simple Classification Problem. ERROR (0.1s)
+[ 62/329] Classification\Social Network Ads Analysis\Social Network Ads Analysis.ipyn ERROR (0.1s)
+[ 63/329] Classification\SONAR Rock vs Mine Prediction\SONAR Rock vs Mine Prediction. ERROR (0.1s)
+[ 64/329] Classification\Spam Email Classification\Spam Email Classification.ipynb    ERROR (0.1s)
+[ 65/329] Classification\Student Performance Prediction\Student Performance Predictio ERROR (0.1s)
+[ 66/329] Classification\Titanic - Handling Missing Values\Titanic - Handling Missing ERROR (0.1s)
+[ 67/329] Classification\Titanic Survival Prediction\Titanic Survival Prediction.ipyn ERROR (0.1s)
+[ 68/329] Classification\Traffic Congestion Prediction\Traffic Congestion Prediction. ERROR (0.1s)
+[ 69/329] Classification\Weather Classification - Decision Trees\Weather Classificati ERROR (0.2s)
+[ 70/329] Classification\Weather Classification - Decision Trees\Weather Data Classif ERROR (0.2s)
+[ 71/329] Classification\Wine Quality Analysis\Wine Quality Analysis.ipynb            ERROR (0.2s)
+[ 72/329] Classification\Wine Quality Prediction\prediction-of-quality-of-wine.ipynb  ERROR (0.2s)
+[ 73/329] Classification\Wine Quality Prediction\Wine Quality Prediction.ipynb        ERROR (0.2s)
+[ 74/329] Clustering\Credit Card Customer Segmentation\Credit Card Customer Segmentat ERROR (0.2s)
+[ 75/329] Clustering\Customer Segmentation\Customer Segmentation.ipynb                ERROR (0.2s)
+[ 76/329] Clustering\Customer Segmentation - Bank\Customer Segmentation - Bank.ipynb  ERROR (0.2s)
+[ 77/329] Clustering\Financial Time Series Clustering\Financial Time Series Clusterin ERROR (0.2s)
+[ 78/329] Clustering\Housing Price Segmentation\Housing Price Segmentation.ipynb      ERROR (0.1s)
+[ 79/329] Clustering\KMeans Clustering - Imagery Analysis\KMeans Clustering - Imagery ERROR (0.1s)
+[ 80/329] Clustering\Mall Customer Segmentation\Mall Customer Segmentation.ipynb      ERROR (0.1s)
+[ 81/329] Clustering\Mall Customer Segmentation - Advanced\Mall Customer Segmentation ERROR (0.1s)
+[ 82/329] Clustering\Mall Customer Segmentation - Detailed\Mall Customer Segmentation ERROR (0.1s)
+[ 83/329] Clustering\Mall Customer Segmentation Data\Mall Customer Segmentation Data. ERROR (0.1s)
+[ 84/329] Clustering\Online Retail Customer Segmentation\Online Retail Customer Segme ERROR (0.1s)
+[ 85/329] Clustering\Online Retail Segmentation Analysis\Online Retail Segmentation A ERROR (0.1s)
+[ 86/329] Clustering\Spotify Song Cluster Analysis\Spotify Song Cluster Analysis.ipyn ERROR (0.1s)

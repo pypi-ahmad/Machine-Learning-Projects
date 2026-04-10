@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 5, 1e-4
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 

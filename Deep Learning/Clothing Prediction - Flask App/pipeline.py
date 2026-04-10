@@ -20,19 +20,19 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 5, 1e-4
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_transforms(train=True):
     if train:
         return transforms.Compose([
-            transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
+            transforms.Grayscale(num_output_channels=3), transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(0.2, 0.2, 0.2), transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
     return transforms.Compose([
-        transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
+        transforms.Grayscale(num_output_channels=3), transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
 

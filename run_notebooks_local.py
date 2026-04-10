@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parent
 VENV_PYTHON = ROOT / "venv" / "Scripts" / "python.exe"
 RESULTS_FILE = ROOT / "execution_results.json"
 EXCLUDE_DIRS = {"venv", ".venv", "core", "data", "__pycache__", ".git", ".github"}
-NOTEBOOK_TIMEOUT = 600   # total seconds per notebook
+NOTEBOOK_TIMEOUT = 1800   # total seconds per notebook
 # ─────────────────────────────────────────────────────────────────────────
 
 

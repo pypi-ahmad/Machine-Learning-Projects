@@ -191,24 +191,107 @@
   "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Advanced Credit Card Fraud Detection\\Advanced Credit Card Fraud Detection.ipynb",
   "project": "Advanced Credit Card Fraud Detection",
   "family": "Classification",
-  "status": "cell_error",
-  "time_s": 617.5,
+  "status": "success",
+  "time_s": 215.7,
   "artifacts": [
+   "cv_results.json",
    "eda_correlation.png",
    "eda_summary.csv",
    "eda_target.png",
    "fraud_report.png",
    "metrics.json"
   ],
-  "error": "-------------------"
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder for Customer Churn\\Autoencoder for Customer Churn.ipynb",
+  "project": "Autoencoder for Customer Churn",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 199.6,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "WA_Fn-UseC_-Telco-Customer-Churn.csv"
+  ],
+  "error": ""
  },
  {
   "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Autoencoder Fashion MNIST\\Autoencoder Fashion MNIST.ipynb",
   "project": "Autoencoder Fashion MNIST",
   "family": "Classification",
   "status": "cell_error",
-  "time_s": 71.9,
+  "time_s": 740.1,
   "artifacts": [],
-  "error": "\u001b[31mRuntimeError\u001b[39m: output with shape [1, 224, 224] doesn't match the broadcast shape [3, 224, 224]"
+  "error": "Assertion failed: error not defined [8] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\ip.cpp:464)"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Bayesian Logistic Regression - Bank Marketing\\Bayesian Logistic Regression - Bank Marketing.ipynb",
+  "project": "Bayesian Logistic Regression - Bank Marketing",
+  "family": "Classification",
+  "status": "timeout",
+  "time_s": 1800,
+  "artifacts": [
+   "BankChurners.csv",
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": "Notebook timed out after 1800s"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Boston House Classification\\Boston House Classification.ipynb",
+  "project": "Boston House Classification",
+  "family": "Classification",
+  "status": "cell_error",
+  "time_s": 1603.5,
+  "artifacts": [
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png"
+  ],
+  "error": "RuntimeError: Kernel didn't respond in 60 seconds"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Breast Cancer Detection\\Breast Cancer Detection.ipynb",
+  "project": "Breast Cancer Detection",
+  "family": "Classification",
+  "status": "timeout",
+  "time_s": 1800,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": "Notebook timed out after 1800s"
  }
 ]

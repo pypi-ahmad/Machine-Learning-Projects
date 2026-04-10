@@ -1,0 +1,435 @@
+{
+  "Anomaly detection and fraud detection\\Anomaly Detection - Social Networks Twitter Bot\\Anomaly Detection - Social Networks Twitter Bot.ipynb": {
+    "status": "success",
+    "time": 13.1
+  },
+  "Anomaly detection and fraud detection\\Breast Cancer Detection - Wisconsin Dataset\\Breast Cancer Detection - Wisconsin Dataset.ipynb": {
+    "status": "success",
+    "time": 22.1
+  },
+  "Anomaly detection and fraud detection\\Anomaly Detection in Images - CIFAR-10\\Anomaly Detection in Images - CIFAR-10.ipynb": {
+    "status": "success",
+    "time": 22.1
+  },
+  "Anomaly detection and fraud detection\\Insurance Fraud Detection\\Insurance Fraud Detection.ipynb": {
+    "status": "error",
+    "time": 494.6,
+    "msg": "39;00m\n\u001b[32m    178\u001b[39m \u001b[38;5;28;01melif\u001b[39;00m is_1d_only_ea_dtype(blk.dtype):\n\u001b[32m    179\u001b[39m     \u001b[38;5;66;03m# TODO(EA2D): special-casing not needed with 2D EAs\u001b[39;00m\n\u001b[32m    180\u001b[39m     values = concat_compat(vals, axis=\u001b[32m0\u001b[39m, ea_compat_axis=\u001b[38;5;28;01mTrue\u001b[39;00m)\n\n\u001b[31mMemoryError\u001b[39m: Unable to allocate 2.17 MiB for an array with shape (1, 284807) and data type float64\n\n"
+  },
+  "Anomaly detection and fraud detection\\Fraud Detection - IEEE-CIS\\Fraud Detection - IEEE-CIS.ipynb": {
+    "status": "error",
+    "time": 537.9,
+    "msg": ""
+  },
+  "Anomaly detection and fraud detection\\Fraudulent Credit Card Transaction Detection\\Fraudulent Credit Card Transaction Detection.ipynb": {
+    "status": "error",
+    "time": 538.3,
+    "msg": "ers\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\nbclient\\client.py\", line 1009, in async_execute_cell\n    raise DeadKernelError(\"Kernel died\") from None\nnbclient.exceptions.DeadKernelError: Kernel died\n"
+  },
+  "Anomaly detection and fraud detection\\Traffic Flow Prediction - METR-LA\\Traffic Flow Prediction - METR-LA.ipynb": {
+    "status": "success",
+    "time": 36.8
+  },
+  "Classification\\Adult Salary Prediction\\Adult Salary Prediction.ipynb": {
+    "status": "error",
+    "time": 38.1,
+    "msg": "ers\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\asyncio\\base_events.py\", line 725, in run_until_complete\n    return future.result()\n           ~~~~~~~~~~~~~^^\n  File \"C:\\Users\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\nbclient\\client.py\", line 1009, in async_execute_cell\n    raise DeadKernelError(\"Kernel died\") from None\nnbclient.exceptions.DeadKernelError: Kernel died\n"
+  },
+  "Anomaly detection and fraud detection\\Fraud Detection in Financial Transactions\\Fraud Detection in Financial Transactions.ipynb": {
+    "status": "error",
+    "time": 624.0,
+    "msg": "lient\\client.py\", line 856, in _async_handle_timeout\n    raise CellTimeoutError.error_from_timeout_and_cell(\n        \"Cell execution timed out\", timeout, cell\n    )\nnbclient.exceptions.CellTimeoutError: A cell timed out while it was being executed, after 600 seconds.\nThe message was: Cell execution timed out.\nHere is a preview of the cell contents:\n-------------------\nmain()\n\n-------------------\n\n"
+  },
+  "Classification\\Bayesian Logistic Regression - Bank Marketing\\Bayesian Logistic Regression - Bank Marketing.ipynb": {
+    "status": "error",
+    "time": 224.0,
+    "msg": "oop does not implement add_reader family of methods required for zmq. Registering an additional selector thread for add_reader support via tornado. Use `asyncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.\n  self._get_loop()\nAssertion failed: error not defined [8] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\ip.cpp:464)\n"
+  },
+  "Classification\\Autoencoder Fashion MNIST\\Autoencoder Fashion MNIST.ipynb": {
+    "status": "error",
+    "time": 288.6,
+    "msg": "ncio.set_event_loop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.\n  self._get_loop()\nAssertion failed: No buffer space available [10055] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\select.cpp:410)\nAssertion failed: error not defined [8] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\ip.cpp:464)\n"
+  },
+  "Classification\\Autoencoder for Customer Churn\\Autoencoder for Customer Churn.ipynb": {
+    "status": "error",
+    "time": 267.2,
+    "msg": "oop_policy(WindowsSelectorEventLoopPolicy())` to avoid this warning.\n  self._get_loop()\nAssertion failed: No buffer space available [10055] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\select.cpp:410)\nAssertion failed: No buffer space available [10055] (C:\\Users\\runneradmin\\AppData\\Local\\Temp\\tmpm74nglni\\build\\_deps\\bundled_libzmq-src\\src\\select.cpp:410)\n"
+  },
+  "Anomaly detection and fraud detection\\Intrusion Detection\\Intrusion Detection.ipynb": {
+    "status": "success",
+    "time": 418.4
+  },
+  "Classification\\Boston House Classification\\Boston House Classification.ipynb": {
+    "status": "error",
+    "time": 77.4,
+    "msg": "n\\Python313\\Lib\\site-packages\\jupyter_core\\utils\\__init__.py\", line 214, in ensure_async\n    result = await obj\n             ^^^^^^^^^\n  File \"C:\\Users\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\jupyter_client\\client.py\", line 208, in _async_wait_for_ready\n    raise RuntimeError(\"Kernel didn't respond in %d seconds\" % timeout)\nRuntimeError: Kernel didn't respond in 60 seconds\n"
+  },
+  "Classification\\Breast Cancer Detection\\Untitled.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Cotton Disease Prediction\\Cotton Disease Prediction.ipynb": {
+    "status": "error",
+    "time": 76.8,
+    "msg": "n\\Python313\\Lib\\site-packages\\jupyter_core\\utils\\__init__.py\", line 214, in ensure_async\n    result = await obj\n             ^^^^^^^^^\n  File \"C:\\Users\\ahmad\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\jupyter_client\\client.py\", line 208, in _async_wait_for_ready\n    raise RuntimeError(\"Kernel didn't respond in %d seconds\" % timeout)\nRuntimeError: Kernel didn't respond in 60 seconds\n"
+  },
+  "Classification\\Breast Cancer Detection\\Breast Cancer Detection.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Breast Cancer Prediction\\Breast Cancer Prediction.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\CIFAR-10 Classification\\CIFAR-10 Classification.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Credit Card Fraud - Imbalanced Dataset\\Credit Card Fraud - Imbalanced Dataset.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Customer Lifetime Value Prediction\\Customer Lifetime Value Prediction.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Customer Churn Prediction - Telecom\\Customer Churn Prediction - Telecom.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Credit Risk Modeling - German Credit\\Credit Risk Modeling - German Credit.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Diabetes Classification\\Diabetes Classification.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Diabetes ML Analysis\\Diabetes ML Analysis.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Cyberbullying Classification\\Cyberbullying Classification.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Customer Segmentation - E-Commerce\\Customer Segmentation - E-Commerce.ipynb": {
+    "status": "timeout",
+    "time": 600
+  },
+  "Classification\\Digit Recognition - MNIST Sequence\\Digit Recognition - MNIST Sequence.ipynb": {
+    "status": "error",
+    "time": 493.6,
+    "msg": "ams\\Python\\Python313\\Lib\\site-packages\\nbformat\\__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.\n  validate(nb)\n"
+  },
+  "Classification\\Dog vs Cat Classification\\Dog vs Cat Classification.ipynb": {
+    "status": "error",
+    "time": 493.6,
+    "msg": "ams\\Python\\Python313\\Lib\\site-packages\\nbformat\\__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.\n  validate(nb)\n"
+  },
+  "Classification\\Diabetes Prediction\\Diabetes Prediction.ipynb": {
+    "status": "error",
+    "time": 493.6,
+    "msg": "ams\\Python\\Python313\\Lib\\site-packages\\nbformat\\__init__.py:96: MissingIDFieldWarning: Cell is missing an id field, this will become a hard error in future nbformat versions. You may want to use `normalize()` on your notebooks before validations (available since nbformat 5.1.4). Previous versions of nbformat are fixing this issue transparently, and will stop doing so in the future.\n  validate(nb)\n"
+  },
+  "Classification\\Diabetes Prediction\\Diabetes Prediction using PySpark.ipynb": {
+    "status": "error",
+    "time": 493.6,
+    "msg": "[NbConvertApp] Converting notebook e:\\Github\\Machine-Learning-Projects\\Classification\\Diabetes Prediction\\Diabetes Prediction using PySpark.ipynb to notebook\n"
+  },
+  "Classification\\Drug Classification\\Drug Classification.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Earthquake Prediction\\Earthquake Prediction.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Employee Turnover Analysis\\Employee Turnover Analysis.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Drinking Water Potability\\Drinking Water Potability.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Employee Turnover Prediction\\Employee Turnover Prediction.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Flower Species Classification\\Flower Species Classification.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Fraud Detection\\Fraud Detection.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Fashion MNIST Analysis\\Fashion MNIST Analysis.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Garbage Classification\\Garbage Classification.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Glass Classification\\Glass Classification.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Groundhog Day Predictions\\Groundhog Day Predictions.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\H2O Higgs Boson\\H2O Higgs Boson.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Hand Digit Recognition\\Hand Digit Recognition.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Hand Digit Recognition\\Untitled.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Healthcare Heart Disease Prediction\\Healthcare Heart Disease Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Heart Disease Prediction\\Heart Disease Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Income Classification\\Income Classification.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Iris Dataset Analysis\\Iris Dataset Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Loan Default Prediction\\Loan Default Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Loan Prediction Analysis\\Loan Prediction Analysis.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Logistic Regression Balanced\\Logistic Regression balanced.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Marketing Campaign Prediction\\Marketing Campaign Prediction.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Mobile Price Classification\\Mobile Price Classification.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\Movie Genre Classification\\Movie Genre Classification.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Plant Disease Recognition\\Plant Disease Recognition.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Pneumonia Classification\\Pneumonia Classification.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Simple Classification Problem\\Simple Classification Problem.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Social Network Ads Analysis\\Social Network Ads Analysis.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Classification\\SONAR Rock vs Mine Prediction\\SONAR Rock vs Mine Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Spam Email Classification\\Spam Email Classification.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Student Performance Prediction\\Student Performance Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Titanic - Handling Missing Values\\Titanic - Handling Missing Values.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Titanic Survival Prediction\\Titanic Survival Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Traffic Congestion Prediction\\Traffic Congestion Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Weather Classification - Decision Trees\\Weather Classification - Decision Trees.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Weather Classification - Decision Trees\\Weather Data Classification using Decision Trees.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Wine Quality Analysis\\Wine Quality Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Wine Quality Prediction\\prediction-of-quality-of-wine.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Classification\\Wine Quality Prediction\\Wine Quality Prediction.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Credit Card Customer Segmentation\\Credit Card Customer Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Customer Segmentation\\Customer Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Customer Segmentation - Bank\\Customer Segmentation - Bank.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Financial Time Series Clustering\\Financial Time Series Clustering.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Housing Price Segmentation\\Housing Price Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\KMeans Clustering - Imagery Analysis\\KMeans Clustering - Imagery Analysis.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Mall Customer Segmentation\\Mall Customer Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Mall Customer Segmentation - Advanced\\Mall Customer Segmentation - Advanced.ipynb": {
+    "status": "error",
+    "time": 0.2,
+    "msg": ""
+  },
+  "Clustering\\Mall Customer Segmentation - Detailed\\Mall Customer Segmentation - Detailed.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Mall Customer Segmentation Data\\Mall Customer Segmentation Data.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Online Retail Customer Segmentation\\Online Retail Customer Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Online Retail Segmentation Analysis\\Online Retail Segmentation Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Spotify Song Cluster Analysis\\Spotify Song Cluster Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Turkiye Student Evaluation - Advanced\\Turkiye Student Evaluation - Advanced.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Turkiye Student Evaluation Analysis\\Turkiye Student Evaluation Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Vehicle Crash Data Clustering\\Vehicle Crash Data Clustering.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Weather Data Clustering - KMeans\\Weather Data Clustering - KMeans.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Weather Data Clustering - KMeans\\Weather Data Clustering using k-Means.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Wholesale Customer Segmentation\\Wholesale Customer Segmentation.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  },
+  "Clustering\\Wholesale Segmentation Analysis\\Wholesale Segmentation Analysis.ipynb": {
+    "status": "error",
+    "time": 0.1,
+    "msg": ""
+  }
+}

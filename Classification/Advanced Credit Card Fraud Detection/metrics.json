@@ -1,4 +1,14 @@
 {
+  "LightGBM": {
+    "f1": 0.7912,
+    "pr_auc": 0.7507,
+    "roc_auc": 0.9643,
+    "recall": 0.7347,
+    "precision": 0.8571,
+    "accuracy": 0.9993,
+    "threshold": 0.2314,
+    "time_s": 21.2
+  },
   "FLAML": {
     "f1": 0.8602,
     "pr_auc": 0.821,
@@ -7,6 +17,6 @@
     "precision": 0.9091,
     "accuracy": 0.9995,
     "threshold": 0.7056,
-    "time_s": 274.9
+    "time_s": 126.7
   }
 }

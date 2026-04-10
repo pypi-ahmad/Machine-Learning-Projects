@@ -1789,8 +1789,13 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)] if name == "XGBoost"
                       else (X_cal, y_cal), verbose=100 if name == "XGBoost" else None)
             # Calibrate probabilities (isotonic regression on held-out cal split)
-            cal_model = CalibratedClassifierCV(m, cv="prefit", method="isotonic")
-            cal_model.fit(X_cal, y_cal)
+            import sklearn; _skv = tuple(int(x) for x in sklearn.__version__.split(".")[:2])
+            if _skv >= (1, 6):
+                cal_model = CalibratedClassifierCV(m, method="isotonic")
+                cal_model.fit(X_cal, y_cal)
+            else:
+                cal_model = CalibratedClassifierCV(m, cv="prefit", method="isotonic")
+                cal_model.fit(X_cal, y_cal)
             proba = cal_model.predict_proba(X_test)[:, 1]
             thresh = find_best_threshold(y_test, proba)
             preds = (proba >= thresh).astype(int)
@@ -3503,6 +3508,8 @@ if __name__ == "__main__":
 def gen_image_clf(path, cfg):
     ds = cfg.get("dataset", "CIFAR10")
     n_classes = cfg.get("n_classes", 10)
+    grayscale = ds in ("MNIST", "FashionMNIST", "EMNIST", "KMNIST", "QMNIST")
+    gray_tfm = "transforms.Grayscale(num_output_channels=3), " if grayscale else ""
     # Determine data loading code
     if ds.startswith("hf:"):
         hf_name = ds[3:]
@@ -3550,19 +3557,19 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 32, 10, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 5, 1e-4
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_transforms(train=True):
     if train:
         return transforms.Compose([
-            transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
+            {gray_tfm}transforms.RandomResizedCrop(IMG_SIZE), transforms.RandomHorizontalFlip(),
             transforms.ColorJitter(0.2, 0.2, 0.2), transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
     return transforms.Compose([
-        transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
+        {gray_tfm}transforms.Resize(256), transforms.CenterCrop(IMG_SIZE), transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
     ])
 
