@@ -1,0 +1,32 @@
+{
+  "CatBoost": {
+    "accuracy": 0.9667,
+    "f1_weighted": 0.9666,
+    "roc_auc_ovr": 0.985,
+    "time_s": 8.3
+  },
+  "LightGBM": {
+    "accuracy": 0.9667,
+    "f1_weighted": 0.9666,
+    "roc_auc_ovr": 0.99,
+    "time_s": 0.9
+  },
+  "XGBoost": {
+    "accuracy": 0.9667,
+    "f1_weighted": 0.9666,
+    "roc_auc_ovr": 0.9617,
+    "time_s": 0.4
+  },
+  "TabM": {
+    "accuracy": 0.9667,
+    "f1_weighted": 0.9666,
+    "roc_auc_ovr": 0.9633,
+    "time_s": 1.1
+  },
+  "FLAML": {
+    "accuracy": 0.9,
+    "f1_weighted": 0.8997,
+    "roc_auc_ovr": 0.9617,
+    "time_s": 222.5
+  }
+}

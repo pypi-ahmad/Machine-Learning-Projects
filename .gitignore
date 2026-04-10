@@ -40,17 +40,27 @@ site-packages/
 *.onnx
 *.caffemodel
 *.model
+*.safetensors
+*.bin
+*.joblib
+*.pkl
 
 # ─── Data & Datasets ─────────────────────────────────────────────────────────
 datasets/
 data/
 outputs/
 logs/
+artifacts/
+temp/
+tmp/
+catboost_info/
 
 # ─── Experiment Tracking ─────────────────────────────────────────────────────
 wandb/
 mlruns/
 lightning_logs/
+mlflow.db
+reports/
 
 # ─── Large Files (use Git LFS for files > 95 MB) ─────────────────────────────
 # Recommendation: install Git LFS and track large binaries with:

@@ -1,0 +1,12 @@
+{
+  "Naive Bayes": {
+    "accuracy": 0.7794,
+    "f1_weighted": 0.7793,
+    "time_s": 0.3
+  },
+  "LogReg": {
+    "accuracy": 0.7444,
+    "f1_weighted": 0.7442,
+    "time_s": 0.3
+  }
+}

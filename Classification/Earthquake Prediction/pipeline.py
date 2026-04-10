@@ -24,7 +24,7 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "Survived"
+TARGET = "Status"
 
 
 def load_data():
@@ -32,14 +32,14 @@ def load_data():
     import os, glob as _glob
     _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
     os.makedirs(_data_dir, exist_ok=True)
-    _fp = os.path.join(_data_dir, "train_and_test2.csv")
+    _fp = os.path.join(_data_dir, "database.csv")
     if not os.path.exists(_fp):
         from kaggle.api.kaggle_api_extended import KaggleApi
         _api = KaggleApi(); _api.authenticate()
-        _api.dataset_download_files("heptapod/titanic", path=_data_dir, unzip=True)
-        _matches = _glob.glob(os.path.join(_data_dir, "**", "train_and_test2.csv"), recursive=True)
+        _api.dataset_download_files("usgs/earthquake-database", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "database.csv"), recursive=True)
         if _matches: _fp = _matches[0]
-        print(f"Downloaded heptapod/titanic from Kaggle")
+        print(f"Downloaded usgs/earthquake-database from Kaggle")
     df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
@@ -204,14 +204,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["Survived"] = y_train.values
-        test_ag = X_test.copy(); test_ag["Survived"] = y_test.values
+        train_ag = X_train.copy(); train_ag["Status"] = y_train.values
+        test_ag = X_test.copy(); test_ag["Status"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="Survived", path=tmp, verbosity=0)
+            predictor = TabularPredictor(label="Status", path=tmp, verbosity=0)
             predictor.fit(train_ag, time_limit=120, presets="medium_quality")
-            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Survived"])).values
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Status"])).values
             try:
-                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Survived"])).values
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Status"])).values
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0

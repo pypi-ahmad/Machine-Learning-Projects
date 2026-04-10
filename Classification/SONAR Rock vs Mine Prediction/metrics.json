@@ -1,0 +1,42 @@
+{
+  "CatBoost": {
+    "accuracy": 0.9286,
+    "f1_weighted": 0.928,
+    "roc_auc": 0.9909,
+    "pr_auc": 0.991,
+    "brier": 0.0886,
+    "time_s": 6.3
+  },
+  "LightGBM": {
+    "accuracy": 0.9048,
+    "f1_weighted": 0.9034,
+    "roc_auc": 0.9841,
+    "pr_auc": 0.9848,
+    "brier": 0.0774,
+    "time_s": 0.6
+  },
+  "XGBoost": {
+    "accuracy": 0.8571,
+    "f1_weighted": 0.8531,
+    "roc_auc": 0.9591,
+    "pr_auc": 0.9645,
+    "brier": 0.1042,
+    "time_s": 0.4
+  },
+  "TabM": {
+    "accuracy": 0.881,
+    "f1_weighted": 0.8799,
+    "roc_auc": 0.9318,
+    "pr_auc": 0.931,
+    "brier": 0.1191,
+    "time_s": 1.1
+  },
+  "FLAML": {
+    "accuracy": 0.8333,
+    "f1_weighted": 0.8334,
+    "roc_auc": 0.8977,
+    "pr_auc": 0.8907,
+    "brier": 0.1451,
+    "time_s": 120.0
+  }
+}

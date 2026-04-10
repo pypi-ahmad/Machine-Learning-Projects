@@ -1,0 +1,37 @@
+{
+  "Anomaly detection and fraud detection/Anomaly Detection - Numenta Benchmark/Anomaly Detection - Numenta Benchmark.ipynb": {
+    "status": "ok",
+    "time_s": 18.6,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Anomaly Detection - Social Networks Twitter Bot/Anomaly Detection - Social Networks Twitter Bot.ipynb": {
+    "status": "ok",
+    "time_s": 8.2,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Anomaly Detection in Images - CIFAR-10/Anomaly Detection in Images - CIFAR-10.ipynb": {
+    "status": "ok",
+    "time_s": 18.4,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Banknote Authentication/Banknote Authentication.ipynb": {
+    "status": "ok",
+    "time_s": 11.9,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Breast Cancer Detection - Wisconsin Dataset/Breast Cancer Detection - Wisconsin Dataset.ipynb": {
+    "status": "ok",
+    "time_s": 16.8,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Fraud Detection - IEEE-CIS/Fraud Detection - IEEE-CIS.ipynb": {
+    "status": "ok",
+    "time_s": 260.9,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Fraud Detection in Financial Transactions/Fraud Detection in Financial Transactions.ipynb": {
+    "status": "ok",
+    "time_s": 263.2,
+    "error": null
+  }
+}

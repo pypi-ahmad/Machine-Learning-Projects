@@ -24,15 +24,23 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "G3"
+TARGET = "Class"
 
 
 def load_data():
     """Download dataset from the internet."""
-    from sklearn.datasets import fetch_openml
-    _d = fetch_openml(data_id=42352, as_frame=True, parser="auto")
-    df = _d.frame
-    for _c in df.select_dtypes(["category"]).columns: df[_c] = df[_c].cat.codes
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "xAPI-Edu-Data.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("aljarah/xAPI-Edu-Data", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "xAPI-Edu-Data.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded aljarah/xAPI-Edu-Data from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df
@@ -196,14 +204,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["G3"] = y_train.values
-        test_ag = X_test.copy(); test_ag["G3"] = y_test.values
+        train_ag = X_train.copy(); train_ag["Class"] = y_train.values
+        test_ag = X_test.copy(); test_ag["Class"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="G3", path=tmp, verbosity=0)
+            predictor = TabularPredictor(label="Class", path=tmp, verbosity=0)
             predictor.fit(train_ag, time_limit=120, presets="medium_quality")
-            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["G3"])).values
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Class"])).values
             try:
-                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["G3"])).values
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Class"])).values
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0

@@ -24,7 +24,7 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "target"
+TARGET = "HeartDisease"
 
 
 def load_data():
@@ -204,14 +204,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["target"] = y_train.values
-        test_ag = X_test.copy(); test_ag["target"] = y_test.values
+        train_ag = X_train.copy(); train_ag["HeartDisease"] = y_train.values
+        test_ag = X_test.copy(); test_ag["HeartDisease"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="target", path=tmp, verbosity=0)
+            predictor = TabularPredictor(label="HeartDisease", path=tmp, verbosity=0)
             predictor.fit(train_ag, time_limit=120, presets="medium_quality")
-            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["target"])).values
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["HeartDisease"])).values
             try:
-                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["target"])).values
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["HeartDisease"])).values
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0

@@ -29,7 +29,18 @@ TARGET = "Purchased"
 
 def load_data():
     """Download dataset from the internet."""
-    df = pd.read_csv("https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/Social%20Network%20Ads.csv", sep=",")
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "Social_Network_Ads.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("rakeshrau/social-network-ads", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "Social_Network_Ads.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded rakeshrau/social-network-ads from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df

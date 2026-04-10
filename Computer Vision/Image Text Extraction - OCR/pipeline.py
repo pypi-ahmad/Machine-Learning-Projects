@@ -16,9 +16,35 @@ warnings.filterwarnings("ignore")
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_URLS = [
-    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img_12.jpg",
-    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/refs/heads/main/doc/imgs_en/img623.jpg",
+    # PaddleOCR repo sample images (main branch)
+    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/doc/imgs_en/img_12.jpg",
+    "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/main/doc/imgs_en/img623.jpg",
+    # WikiMedia Commons public domain fallbacks
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Atomist_quote_from_Democritus.png/320px-Atomist_quote_from_Democritus.png",
 ]
+
+
+def _generate_synthetic_image(save_dir, idx=0):
+    """Create a synthetic OCR test image using PIL when network downloads fail."""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        img = Image.new("RGB", (400, 200), color=(255, 255, 255))
+        draw = ImageDraw.Draw(img)
+        lines = [
+            "Hello World OCR Test",
+            f"Sample Image {idx + 1}",
+            "Python Machine Learning",
+            "Image Text Extraction",
+        ]
+        y = 20
+        for line in lines:
+            draw.text((20, y), line, fill=(0, 0, 0))
+            y += 40
+        out = save_dir / f"synthetic_{idx}.png"
+        img.save(str(out))
+        return out
+    except Exception:
+        return None
 
 
 def download_samples():
@@ -28,8 +54,21 @@ def download_samples():
     for url in SAMPLE_URLS:
         fname = save_dir / url.split("/")[-1]
         if not fname.exists():
-            urllib.request.urlretrieve(url, str(fname))
-        paths.append(fname)
+            try:
+                urllib.request.urlretrieve(url, str(fname))
+            except Exception as e:
+                print(f"  Warning: could not download {url}: {e}")
+                continue
+        if fname.exists():
+            paths.append(fname)
+    # If no downloads succeeded, generate synthetic images
+    if not paths:
+        print("  No sample images downloaded; generating synthetic test images...")
+        for i in range(3):
+            p = _generate_synthetic_image(save_dir, i)
+            if p:
+                paths.append(p)
+    # Also pick up any local images in the project folder
     for ext in (".jpg", ".jpeg", ".png", ".bmp", ".tiff"):
         paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{ext}") if p not in paths])
     print(f"{len(paths)} images available for OCR")

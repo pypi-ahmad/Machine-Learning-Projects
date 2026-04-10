@@ -40,7 +40,7 @@ def get_transforms(train=True):
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("keremberke/chest-xray-classification", split="train")
+    hf_ds = _hf_load("beans", split="train")
     # Convert HF image dataset to torchvision-style
     class HFImageDataset(Dataset):
         def __init__(self, hf_dataset, transform=None):

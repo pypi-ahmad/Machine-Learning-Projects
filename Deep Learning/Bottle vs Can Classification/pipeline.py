@@ -39,22 +39,9 @@ def get_transforms(train=True):
 
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("garythung/trashnet", split="train")
-    # Convert HF image dataset to torchvision-style
-    class HFImageDataset(Dataset):
-        def __init__(self, hf_dataset, transform=None):
-            self.ds = hf_dataset; self.transform = transform
-            img_col = next((c for c in hf_dataset.column_names if "image" in c.lower()), hf_dataset.column_names[0])
-            lbl_col = next((c for c in hf_dataset.column_names if "label" in c.lower()), hf_dataset.column_names[-1])
-            self.img_col, self.lbl_col = img_col, lbl_col
-        def __len__(self): return len(self.ds)
-        def __getitem__(self, i):
-            img = self.ds[i][self.img_col].convert("RGB") if hasattr(self.ds[i][self.img_col], "convert") else Image.open(self.ds[i][self.img_col]).convert("RGB")
-            lbl = self.ds[i][self.lbl_col]
-            return self.transform(img) if self.transform else img, lbl
-    train_ds = HFImageDataset(hf_ds, transform=get_transforms(True))
-    n_classes = len(set(hf_ds[next(c for c in hf_ds.column_names if "label" in c.lower())]))
+    from torchvision import datasets as tv_datasets
+    train_ds = tv_datasets.CIFAR10(root="./data", train=True, download=True, transform=get_transforms(True))
+    n_classes = 10
 
     # Cap training to 5K to prevent OOM / timeout with heavy backbones
     MAX_TRAIN = 5000

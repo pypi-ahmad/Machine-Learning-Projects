@@ -1,12 +1,22 @@
 {
+  "LightGBM": {
+    "f1": 0.7914,
+    "pr_auc": 0.7753,
+    "roc_auc": 0.9547,
+    "recall": 0.7551,
+    "precision": 0.8315,
+    "accuracy": 0.9993,
+    "threshold": 0.2696,
+    "time_s": 34.6
+  },
   "FLAML": {
-    "f1": 0.8602,
-    "pr_auc": 0.821,
-    "roc_auc": 0.9645,
-    "recall": 0.8163,
-    "precision": 0.9091,
-    "accuracy": 0.9995,
-    "threshold": 0.7056,
-    "time_s": 121.4
+    "f1": 0.8677,
+    "pr_auc": 0.8673,
+    "roc_auc": 0.9782,
+    "recall": 0.8367,
+    "precision": 0.9011,
+    "accuracy": 0.9996,
+    "threshold": 0.3422,
+    "time_s": 126.6
   }
 }

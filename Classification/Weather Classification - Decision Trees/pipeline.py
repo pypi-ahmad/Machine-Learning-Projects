@@ -24,14 +24,23 @@ import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
-TARGET = "Close"
+TARGET = "Weather Type"
 
 
 def load_data():
     """Download dataset from the internet."""
-    import yfinance as yf
-    df = yf.download("SPY", period="5y", auto_adjust=True).reset_index()
-    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    import os, glob as _glob
+    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+    os.makedirs(_data_dir, exist_ok=True)
+    _fp = os.path.join(_data_dir, "weather_classification_data.csv")
+    if not os.path.exists(_fp):
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        _api = KaggleApi(); _api.authenticate()
+        _api.dataset_download_files("nikhil7280/weather-type-classification", path=_data_dir, unzip=True)
+        _matches = _glob.glob(os.path.join(_data_dir, "**", "weather_classification_data.csv"), recursive=True)
+        if _matches: _fp = _matches[0]
+        print(f"Downloaded nikhil7280/weather-type-classification from Kaggle")
+    df = pd.read_csv(_fp)
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df
@@ -195,14 +204,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from autogluon.tabular import TabularPredictor
         import tempfile
         t0 = time.perf_counter()
-        train_ag = X_train.copy(); train_ag["Close"] = y_train.values
-        test_ag = X_test.copy(); test_ag["Close"] = y_test.values
+        train_ag = X_train.copy(); train_ag["Weather Type"] = y_train.values
+        test_ag = X_test.copy(); test_ag["Weather Type"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="Close", path=tmp, verbosity=0)
+            predictor = TabularPredictor(label="Weather Type", path=tmp, verbosity=0)
             predictor.fit(train_ag, time_limit=120, presets="medium_quality")
-            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Close"])).values
+            results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Weather Type"])).values
             try:
-                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Close"])).values
+                probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Weather Type"])).values
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0

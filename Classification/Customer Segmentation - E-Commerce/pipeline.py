@@ -29,7 +29,7 @@ def load_data():
         _matches = _glob.glob(os.path.join(_data_dir, "**", "data.csv"), recursive=True)
         if _matches: _fp = _matches[0]
         print(f"Downloaded carrie1/ecommerce-data from Kaggle")
-    df = pd.read_csv(_fp)
+    df = pd.read_csv(_fp, encoding="latin-1")
     # Drop ID-like columns
     for c in df.columns:
         if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")

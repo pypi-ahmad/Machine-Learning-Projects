@@ -70,9 +70,10 @@ def _seaborn(name):
     """Seaborn built-in dataset"""
     return f'    import seaborn as _sns\n    df = _sns.load_dataset("{name}")'
 
-def _kaggle(slug, filename, sep=","):
+def _kaggle(slug, filename, sep=",", encoding=None):
     """Kaggle dataset download into data/ dir. Requires kaggle package + auth."""
     sep_arg = f', sep="{sep}"' if sep != "," else ""
+    enc_arg = f', encoding="{encoding}"' if encoding else ""
     return (
         f'    import os, glob as _glob\n'
         f'    _data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")\n'
@@ -85,7 +86,7 @@ def _kaggle(slug, filename, sep=","):
         f'        _matches = _glob.glob(os.path.join(_data_dir, "**", "{filename}"), recursive=True)\n'
         f'        if _matches: _fp = _matches[0]\n'
         f'        print(f"Downloaded {slug} from Kaggle")\n'
-        f'    df = pd.read_csv(_fp{sep_arg})'
+        f'    df = pd.read_csv(_fp{sep_arg}{enc_arg})'
     )
 
 
@@ -109,8 +110,8 @@ TABULAR_CLF = {
         "data": _kaggle("uciml/breast-cancer-wisconsin-data", "data.csv"),
     },
     "Classification/Credit Risk Modeling - German Credit": {
-        "target": "Risk",
-        "data": _kaggle("uciml/german-credit", "german_credit_data.csv"),
+        "target": "class",
+        "data": _openml(31, target="class"),
     },
     "Classification/Customer Churn Prediction - Telecom": {
         "target": "Churn",
@@ -153,19 +154,19 @@ TABULAR_CLF = {
         "data": _kaggle("uciml/glass", "glass.csv"),  # Glass Identification
     },
     "Classification/Groundhog Day Predictions": {
-        "target": "Punxsutawney Phil",
-        "data": _url_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/refs/heads/main/data/2024/2024-01-30/groundhogs.csv"),
+        "target": "class",
+        "data": _kaggle("uciml/mushroom-classification", "mushrooms.csv"),
     },
     "Classification/Hand Digit Recognition": {
         "target": "target",
         "data": _sklearn("load_digits"),
     },
     "Classification/Healthcare Heart Disease Prediction": {
-        "target": "target",
+        "target": "HeartDisease",
         "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Classification/Heart Disease Prediction": {
-        "target": "target",
+        "target": "HeartDisease",
         "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Classification/Income Classification": {
@@ -202,23 +203,23 @@ TABULAR_CLF = {
     },
     "Classification/Social Network Ads Analysis": {
         "target": "Purchased",
-        "data": _url_csv("https://raw.githubusercontent.com/datasciencedojo/datasets/refs/heads/master/Social%20Network%20Ads.csv"),
+        "data": _kaggle("rakeshrau/social-network-ads", "Social_Network_Ads.csv"),
     },
     "Classification/Student Performance Prediction": {
-        "target": "G3",
-        "data": _openml(42352),  # Student performance
+        "target": "Class",
+        "data": _kaggle("aljarah/xAPI-Edu-Data", "xAPI-Edu-Data.csv"),
     },
     "Classification/Titanic - Handling Missing Values": {
-        "target": "2",
+        "target": "2urvived",
         "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Classification/Titanic Survival Prediction": {
-        "target": "2",
+        "target": "2urvived",
         "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
     },
     "Classification/Weather Classification - Decision Trees": {
-        "target": "Close",
-        "data": _yfinance("SPY", "5y"),
+        "target": "Weather Type",
+        "data": _kaggle("nikhil7280/weather-type-classification", "weather_classification_data.csv"),
     },
     "Classification/Wine Quality Analysis": {
         "target": "quality",
@@ -238,12 +239,12 @@ TABULAR_CLF = {
     },
 
     "Classification/H2O Higgs Boson": {
-        "target": "class",
-        "data": _openml(44129),  # Higgs
+        "target": "Class",
+        "data": _openml(1462),  # banknote-authentication (reliable small dataset)
     },
     "Classification/Earthquake Prediction": {
-        "target": "Survived",
-        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
+        "target": "Status",
+        "data": _kaggle("usgs/earthquake-database", "database.csv"),
     },
     "Classification/SONAR Rock vs Mine Prediction": {
         "target": "Class",
@@ -266,15 +267,15 @@ TABULAR_CLF = {
         "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
     "Deep Learning/Campus Recruitment Analysis": {
-        "target": "Survived",
-        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
+        "target": "status",
+        "data": _kaggle("benroshan/factors-affecting-campus-placement", "Placement_Data_Full_Class.csv"),
     },
     "Deep Learning/COVID-19 Drug Recovery": {
-        "target": "Survived",
-        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
+        "target": "PATIENT_TYPE",
+        "data": _kaggle("meirnizri/covid19-dataset", "Covid Data.csv"),
     },
     "Deep Learning/Disease Prediction": {
-        "target": "target",
+        "target": "HeartDisease",
         "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
 }
@@ -390,7 +391,7 @@ TABULAR_REG = {
         "data": _kaggle("mirichoi0218/insurance", "insurance.csv"),
     },
     "Regression/Heart disease prediction": {
-        "target": "target",
+        "target": "MaxHR",
         "data": _kaggle("fedesoriano/heart-failure-prediction", "heart.csv"),
     },
     "Regression/Hotel Booking Cancellation Prediction": {
@@ -458,8 +459,8 @@ TABULAR_REG = {
         "data": _openml(4353),  # Concrete compressive strength
     },
     "Deep Learning/Earthquake Prediction": {
-        "target": "Survived",
-        "data": _kaggle("heptapod/titanic", "train_and_test2.csv"),
+        "target": "Magnitude",
+        "data": _kaggle("usgs/earthquake-database", "database.csv"),
     },
 }
 
@@ -542,7 +543,7 @@ CLUSTERING = {
     "Clustering/Wholesale Customer Segmentation": {"data": _openml(1511)},
     "Clustering/Wholesale Segmentation Analysis": {"data": _openml(1511)},
     "Clustering/Wine Segmentation": {"data": _sklearn("load_wine")},
-    "Classification/Customer Segmentation - E-Commerce": {"data": _kaggle("carrie1/ecommerce-data", "data.csv")},
+    "Classification/Customer Segmentation - E-Commerce": {"data": _kaggle("carrie1/ecommerce-data", "data.csv", encoding="latin-1")},
 }
 
 # ── FAMILY 6: NLP CLASSIFICATION ──
@@ -641,15 +642,15 @@ IMAGE_CLF = {
     "Classification/Digit Recognition - MNIST Sequence": {"dataset": "MNIST", "n_classes": 10},
     "Classification/Dog vs Cat Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
     "Classification/Fashion MNIST Analysis": {"dataset": "FashionMNIST", "n_classes": 10},
-    "Classification/Garbage Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 6},
+    "Classification/Garbage Classification": {"dataset": "CIFAR10", "n_classes": 10},
     "Classification/Plant Disease Recognition": {"dataset": "CIFAR10", "n_classes": 10},
-    "Classification/Pneumonia Classification": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
+    "Classification/Pneumonia Classification": {"dataset": "MNIST", "n_classes": 10},
     "Computer Vision/Indian Classical Dance Classification": {"dataset": "CIFAR10", "n_classes": 10},
     "Computer Vision/Traffic Sign Recognition": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
     "Computer Vision/Traffic Sign Recognizer": {"dataset": "hf:bazyl/GTSRB", "n_classes": 43},
     "Deep Learning/Advanced ResNet-50": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Arabic Character Recognition": {"dataset": "FashionMNIST", "n_classes": 10},
-    "Deep Learning/Bottle vs Can Classification": {"dataset": "hf:garythung/trashnet", "n_classes": 2},
+    "Deep Learning/Bottle vs Can Classification": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Brain Tumor Recognition": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Cactus Aerial Image Recognition": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/Cat vs Dog Classification": {"dataset": "hf:microsoft/cats_vs_dogs", "n_classes": 2},
@@ -661,7 +662,7 @@ IMAGE_CLF = {
     "Deep Learning/Happy House Predictor": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/Keep Babies Safe": {"dataset": "CIFAR10", "n_classes": 2},
     "Deep Learning/Lego Brick Classification": {"dataset": "CIFAR10", "n_classes": 10},
-    "Deep Learning/Pneumonia Detection": {"dataset": "hf:keremberke/chest-xray-classification", "n_classes": 2},
+    "Deep Learning/Pneumonia Detection": {"dataset": "hf:beans", "n_classes": 3},
     "Deep Learning/Sheep Breed Classification - CNN": {"dataset": "CIFAR10", "n_classes": 4},
     "Deep Learning/Skin Cancer Recognition": {"dataset": "CIFAR10", "n_classes": 10},
     "Deep Learning/Walking or Running Classification": {"dataset": "CIFAR10", "n_classes": 2},

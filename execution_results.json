@@ -346,28 +346,6 @@
   "error": ""
  },
  {
-  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Credit Risk Modeling - German Credit\\Credit Risk Modeling - German Credit.ipynb",
-  "project": "Credit Risk Modeling - German Credit",
-  "family": "Classification",
-  "status": "cell_error",
-  "time_s": 14.4,
-  "artifacts": [
-   "calibration_plot.png",
-   "cm_catboost.png",
-   "cm_flaml.png",
-   "cm_lightgbm.png",
-   "cm_tabm.png",
-   "cm_xgboost.png",
-   "cv_results.json",
-   "eda_correlation.png",
-   "eda_distributions.png",
-   "eda_summary.csv",
-   "eda_target.png",
-   "metrics.json"
-  ],
-  "error": "\u001b[31mKeyError\u001b[39m: 'Risk'"
- },
- {
   "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Churn Prediction - Telecom\\Customer Churn Prediction - Telecom.ipynb",
   "project": "Customer Churn Prediction - Telecom",
   "family": "Classification",
@@ -412,14 +390,556 @@
   "error": ""
  },
  {
-  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Segmentation - E-Commerce\\Customer Segmentation - E-Commerce.ipynb",
-  "project": "Customer Segmentation - E-Commerce",
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Cyberbullying Classification\\Cyberbullying Classification.ipynb",
+  "project": "Cyberbullying Classification",
   "family": "Classification",
-  "status": "cell_error",
-  "time_s": 20.6,
+  "status": "success",
+  "time_s": 1113.0,
   "artifacts": [
-   "shokunin_United_Kingdom_map.png"
+   "cm_modernbert.png",
+   "cm_xlm_r.png",
+   "eda_class_distribution.png",
+   "eda_summary.csv",
+   "eda_text_stats.png",
+   "metrics.json"
   ],
-  "error": "\u001b[31mUnicodeDecodeError\u001b[39m: 'utf-8' codec can't decode byte 0xa3 in position 79780: invalid start byte"
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Diabetes Classification\\Diabetes Classification.ipynb",
+  "project": "Diabetes Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 188.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Diabetes ML Analysis\\Diabetes ML Analysis.ipynb",
+  "project": "Diabetes ML Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 177.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "diabetes2.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Diabetes Prediction\\Diabetes Prediction.ipynb",
+  "project": "Diabetes Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 167.4,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "diabetes.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Digit Recognition - MNIST Sequence\\Digit Recognition - MNIST Sequence.ipynb",
+  "project": "Digit Recognition - MNIST Sequence",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 260.9,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Dog vs Cat Classification\\Dog vs Cat Classification.ipynb",
+  "project": "Dog vs Cat Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 253.1,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Drinking Water Potability\\Drinking Water Potability.ipynb",
+  "project": "Drinking Water Potability",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 208.8,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "water_potability.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Drug Classification\\Drug Classification.ipynb",
+  "project": "Drug Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 329.8,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Employee Turnover Analysis\\Employee Turnover Analysis.ipynb",
+  "project": "Employee Turnover Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 187.7,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "HR_comma_sep.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Employee Turnover Prediction\\Employee Turnover Prediction.ipynb",
+  "project": "Employee Turnover Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 181.4,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "dataset.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Fashion MNIST Analysis\\Fashion MNIST Analysis.ipynb",
+  "project": "Fashion MNIST Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 159.3,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Flower Species Classification\\Flower Species Classification.ipynb",
+  "project": "Flower Species Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 231.2,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Fraud Detection\\Fraud Detection.ipynb",
+  "project": "Fraud Detection",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 214.8,
+  "artifacts": [
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "fraud_report.png",
+   "metrics.json",
+   "payment_fraud.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Hand Digit Recognition\\Hand Digit Recognition.ipynb",
+  "project": "Hand Digit Recognition",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 208.7,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Income Classification\\Income Classification.ipynb",
+  "project": "Income Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 198.5,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "income_evaluation.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Iris Dataset Analysis\\Iris Dataset Analysis.ipynb",
+  "project": "Iris Dataset Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 339.8,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "Iris.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Loan Default Prediction\\Loan Default Prediction.ipynb",
+  "project": "Loan Default Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 172.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Loan Prediction Analysis\\Loan Prediction Analysis.ipynb",
+  "project": "Loan Prediction Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 161.0,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "Loan Prediction Dataset.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Logistic Regression Balanced\\Logistic Regression Balanced.ipynb",
+  "project": "Logistic Regression Balanced",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 194.1,
+  "artifacts": [
+   "BankChurners.csv",
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Marketing Campaign Prediction\\Marketing Campaign Prediction.ipynb",
+  "project": "Marketing Campaign Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 190.7,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "marketing_campaign.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Mobile Price Classification\\Mobile Price Classification.ipynb",
+  "project": "Mobile Price Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 183.3,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Movie Genre Classification\\Movie Genre Classification.ipynb",
+  "project": "Movie Genre Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 26.2,
+  "artifacts": [
+   "eda_class_distribution.png",
+   "eda_summary.csv",
+   "eda_text_stats.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Plant Disease Recognition\\Plant Disease Recognition.ipynb",
+  "project": "Plant Disease Recognition",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 176.1,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Simple Classification Problem\\Simple Classification Problem.ipynb",
+  "project": "Simple Classification Problem",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 256.9,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\SONAR Rock vs Mine Prediction\\SONAR Rock vs Mine Prediction.ipynb",
+  "project": "SONAR Rock vs Mine Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 153.0,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "sonar data.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Spam Email Classification\\Spam Email Classification.ipynb",
+  "project": "Spam Email Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 28.9,
+  "artifacts": [
+   "eda_class_distribution.png",
+   "eda_summary.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Traffic Congestion Prediction\\Traffic Congestion Prediction.ipynb",
+  "project": "Traffic Congestion Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 157.9,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Credit Risk Modeling - German Credit\\Credit Risk Modeling - German Credit.ipynb",
+  "project": "Credit Risk Modeling - German Credit",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 206.4,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
  }
 ]

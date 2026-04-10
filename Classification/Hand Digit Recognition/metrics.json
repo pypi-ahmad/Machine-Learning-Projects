@@ -3,30 +3,30 @@
     "accuracy": 0.9639,
     "f1_weighted": 0.9639,
     "roc_auc_ovr": 0.9996,
-    "time_s": 12.5
+    "time_s": 12.4
   },
   "LightGBM": {
     "accuracy": 0.9583,
     "f1_weighted": 0.9581,
     "roc_auc_ovr": 0.9984,
-    "time_s": 10.9
+    "time_s": 9.7
   },
   "XGBoost": {
     "accuracy": 0.9667,
     "f1_weighted": 0.9664,
     "roc_auc_ovr": 0.9983,
-    "time_s": 9.8
+    "time_s": 13.6
   },
   "TabM": {
     "accuracy": 0.9722,
-    "f1_weighted": 0.972,
-    "roc_auc_ovr": 0.9995,
-    "time_s": 2.6
+    "f1_weighted": 0.9722,
+    "roc_auc_ovr": 0.9994,
+    "time_s": 1.5
   },
   "FLAML": {
     "accuracy": 0.9611,
     "f1_weighted": 0.9609,
     "roc_auc_ovr": 0.9993,
-    "time_s": 120.6
+    "time_s": 121.9
   }
 }
