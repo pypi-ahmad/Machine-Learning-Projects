@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Traffic Sign Recognition"
+id: "P29"
+status: "needs_fix"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+entry_point: "run.py"
+phase1b: "model path fixed, run.py entry point created"
+notes: "TF 1.14 + Keras 2.3.1 (extremely outdated); Streamlit GUI"

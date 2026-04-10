@@ -1,0 +1,13 @@
+{
+  "project": "Traffic Sign Recognition",
+  "key": "traffic_sign_recognition",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "YOLO26m-cls (for road scenes: switch to YOLO26m detect)",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

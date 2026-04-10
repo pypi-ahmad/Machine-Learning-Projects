@@ -1,0 +1,38 @@
+# Scene Text Reader Translator — Sample Configuration
+# Copy and edit this file, then pass via: python infer.py --config scene_text_config.yaml
+
+# ── PaddleOCR ──────────────────────────────────────────
+ocr_lang: "en"
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+use_angle_cls: true
+
+# ── Translation hook ───────────────────────────────────
+translate_enabled: false
+translate_target_lang: "en"
+translate_provider: ""            # "googletrans" or custom
+
+# ── Validation ─────────────────────────────────────────
+confidence_threshold: 0.40
+min_text_length: 1
+warn_low_confidence: true
+
+# ── Export ─────────────────────────────────────────────
+export_json: ""
+export_csv: ""
+
+# ── Display ────────────────────────────────────────────
+show_display: true
+show_ocr_boxes: true
+show_text_labels: true
+show_confidence: true
+line_width: 2
+
+# ── Save ───────────────────────────────────────────────
+save_annotated: false
+output_dir: "output"
+
+# ── Video / webcam ─────────────────────────────────────
+webcam_index: 0
+video_fps: 0              # 0 = use source fps

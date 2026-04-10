@@ -1,0 +1,13 @@
+{
+  "project": "Fire and Smoke Detection",
+  "key": "fire_smoke_detection",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "Ultralytics YOLO (custom weights) + temporal hysteresis",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

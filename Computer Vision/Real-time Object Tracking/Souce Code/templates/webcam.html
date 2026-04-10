@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Webcam Feed</title>
+</head>
+<body>
+    <h1>Webcam Feed</h1>
+    <img id="my-video-image" src="{{ url_for('video_feed') }}" style="height:640; width:640px" />
+
+    <br>
+    <button onclick="startDetection()">Start Object Detection</button>
+    <button class="btn btn-lg btn-danger" onclick="stopDetection()">Stop Detection</button>
+
+            <script>
+            function stopDetection() {
+            $.get("/stop_detection");
+            }
+            </script>
+
+    <script>
+        function startDetection() {
+            fetch('/start_detection')
+                .then(response => response.text())
+                .then(data => console.log(data))
+                .catch(error => console.log(error));
+        }
+    </script>
+</body>
+</html>

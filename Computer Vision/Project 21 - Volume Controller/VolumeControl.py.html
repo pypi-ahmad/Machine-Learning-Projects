@@ -1,0 +1,97 @@
+<html>
+<head>
+<title>VolumeControl.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6897bb;}
+.s4 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+VolumeControl.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">cv2</span>
+<span class="s0">import </span><span class="s1">time</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">import </span><span class="s1">HandTrackingModule </span><span class="s0">as </span><span class="s1">htm</span>
+<span class="s0">import </span><span class="s1">math</span>
+<span class="s0">from </span><span class="s1">ctypes </span><span class="s0">import </span><span class="s1">cast</span><span class="s0">, </span><span class="s1">POINTER</span>
+<span class="s0">from </span><span class="s1">comtypes </span><span class="s0">import </span><span class="s1">CLSCTX_ALL</span>
+<span class="s0">from </span><span class="s1">pycaw.pycaw </span><span class="s0">import </span><span class="s1">AudioUtilities</span><span class="s0">, </span><span class="s1">IAudioEndpointVolume</span>
+
+<span class="s2">################################</span>
+<span class="s1">wCam</span><span class="s0">, </span><span class="s1">hCam = </span><span class="s3">640</span><span class="s0">, </span><span class="s3">480</span>
+<span class="s2">################################</span>
+
+<span class="s1">cap = cv2.VideoCapture(</span><span class="s3">0</span><span class="s1">)</span>
+<span class="s1">cap.set(</span><span class="s3">3</span><span class="s0">, </span><span class="s1">wCam)</span>
+<span class="s1">cap.set(</span><span class="s3">4</span><span class="s0">, </span><span class="s1">hCam)</span>
+<span class="s1">pTime = </span><span class="s3">0</span>
+
+<span class="s1">detector = htm.handDetector(detectionCon=</span><span class="s3">0.7</span><span class="s1">)</span>
+
+<span class="s1">devices = AudioUtilities.GetSpeakers()</span>
+<span class="s1">interface = devices.Activate(IAudioEndpointVolume._iid_</span><span class="s0">, </span><span class="s1">CLSCTX_ALL</span><span class="s0">, None</span><span class="s1">)</span>
+<span class="s1">volume = cast(interface</span><span class="s0">, </span><span class="s1">POINTER(IAudioEndpointVolume))</span>
+<span class="s2"># volume.GetMute()</span>
+<span class="s2"># volume.GetMasterVolumeLevel()</span>
+<span class="s1">volRange = volume.GetVolumeRange()</span>
+<span class="s1">minVol = volRange[</span><span class="s3">0</span><span class="s1">]</span>
+<span class="s1">maxVol = volRange[</span><span class="s3">1</span><span class="s1">]</span>
+<span class="s1">vol = </span><span class="s3">0</span>
+<span class="s1">volBar = </span><span class="s3">400</span>
+<span class="s1">volPer = </span><span class="s3">0</span>
+<span class="s0">while True</span><span class="s1">:</span>
+    <span class="s1">success</span><span class="s0">, </span><span class="s1">img = cap.read()</span>
+    <span class="s1">img = detector.findHands(img)</span>
+    <span class="s1">lmList = detector.findPosition(img</span><span class="s0">, </span><span class="s1">draw=</span><span class="s0">False</span><span class="s1">)</span>
+    <span class="s0">if </span><span class="s1">len(lmList) != </span><span class="s3">0</span><span class="s1">:</span>
+        <span class="s2"># print(lmList[4], lmList[8])</span>
+
+        <span class="s1">x1</span><span class="s0">, </span><span class="s1">y1 = lmList[</span><span class="s3">4</span><span class="s1">][</span><span class="s3">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">lmList[</span><span class="s3">4</span><span class="s1">][</span><span class="s3">2</span><span class="s1">]</span>
+        <span class="s1">x2</span><span class="s0">, </span><span class="s1">y2 = lmList[</span><span class="s3">8</span><span class="s1">][</span><span class="s3">1</span><span class="s1">]</span><span class="s0">, </span><span class="s1">lmList[</span><span class="s3">8</span><span class="s1">][</span><span class="s3">2</span><span class="s1">]</span>
+        <span class="s1">cx</span><span class="s0">, </span><span class="s1">cy = (x1 + x2) // </span><span class="s3">2</span><span class="s0">, </span><span class="s1">(y1 + y2) // </span><span class="s3">2</span>
+
+        <span class="s1">cv2.circle(img</span><span class="s0">, </span><span class="s1">(x1</span><span class="s0">, </span><span class="s1">y1)</span><span class="s0">, </span><span class="s3">15</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">255</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FILLED)</span>
+        <span class="s1">cv2.circle(img</span><span class="s0">, </span><span class="s1">(x2</span><span class="s0">, </span><span class="s1">y2)</span><span class="s0">, </span><span class="s3">15</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">255</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FILLED)</span>
+        <span class="s1">cv2.line(img</span><span class="s0">, </span><span class="s1">(x1</span><span class="s0">, </span><span class="s1">y1)</span><span class="s0">, </span><span class="s1">(x2</span><span class="s0">, </span><span class="s1">y2)</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">255</span><span class="s1">)</span><span class="s0">, </span><span class="s3">3</span><span class="s1">)</span>
+        <span class="s1">cv2.circle(img</span><span class="s0">, </span><span class="s1">(cx</span><span class="s0">, </span><span class="s1">cy)</span><span class="s0">, </span><span class="s3">15</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">255</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FILLED)</span>
+
+        <span class="s1">length = math.hypot(x2 - x1</span><span class="s0">, </span><span class="s1">y2 - y1)</span>
+        <span class="s2"># print(length)</span>
+
+        <span class="s2"># Hand range 50 - 300</span>
+        <span class="s2"># Volume Range -65 - 0</span>
+
+        <span class="s1">vol = np.interp(length</span><span class="s0">, </span><span class="s1">[</span><span class="s3">50</span><span class="s0">, </span><span class="s3">300</span><span class="s1">]</span><span class="s0">, </span><span class="s1">[minVol</span><span class="s0">, </span><span class="s1">maxVol])</span>
+        <span class="s1">volBar = np.interp(length</span><span class="s0">, </span><span class="s1">[</span><span class="s3">50</span><span class="s0">, </span><span class="s3">300</span><span class="s1">]</span><span class="s0">, </span><span class="s1">[</span><span class="s3">400</span><span class="s0">, </span><span class="s3">150</span><span class="s1">])</span>
+        <span class="s1">volPer = np.interp(length</span><span class="s0">, </span><span class="s1">[</span><span class="s3">50</span><span class="s0">, </span><span class="s3">300</span><span class="s1">]</span><span class="s0">, </span><span class="s1">[</span><span class="s3">0</span><span class="s0">, </span><span class="s3">100</span><span class="s1">])</span>
+        <span class="s1">print(int(length)</span><span class="s0">, </span><span class="s1">vol)</span>
+        <span class="s1">volume.SetMasterVolumeLevel(vol</span><span class="s0">, None</span><span class="s1">)</span>
+
+        <span class="s0">if </span><span class="s1">length &lt; </span><span class="s3">50</span><span class="s1">:</span>
+            <span class="s1">cv2.circle(img</span><span class="s0">, </span><span class="s1">(cx</span><span class="s0">, </span><span class="s1">cy)</span><span class="s0">, </span><span class="s3">15</span><span class="s0">, </span><span class="s1">(</span><span class="s3">0</span><span class="s0">, </span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FILLED)</span>
+
+    <span class="s1">cv2.rectangle(img</span><span class="s0">, </span><span class="s1">(</span><span class="s3">50</span><span class="s0">, </span><span class="s3">150</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s3">85</span><span class="s0">, </span><span class="s3">400</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">0</span><span class="s1">)</span><span class="s0">, </span><span class="s3">3</span><span class="s1">)</span>
+    <span class="s1">cv2.rectangle(img</span><span class="s0">, </span><span class="s1">(</span><span class="s3">50</span><span class="s0">, </span><span class="s1">int(volBar))</span><span class="s0">, </span><span class="s1">(</span><span class="s3">85</span><span class="s0">, </span><span class="s3">400</span><span class="s1">)</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">0</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FILLED)</span>
+    <span class="s1">cv2.putText(img</span><span class="s0">, </span><span class="s4">f'</span><span class="s0">{</span><span class="s1">int(volPer)</span><span class="s0">} </span><span class="s4">%'</span><span class="s0">, </span><span class="s1">(</span><span class="s3">40</span><span class="s0">, </span><span class="s3">450</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_COMPLEX</span><span class="s0">,</span>
+                <span class="s3">1</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">0</span><span class="s1">)</span><span class="s0">, </span><span class="s3">3</span><span class="s1">)</span>
+
+
+    <span class="s1">cTime = time.time()</span>
+    <span class="s1">fps = </span><span class="s3">1 </span><span class="s1">/ (cTime - pTime)</span>
+    <span class="s1">pTime = cTime</span>
+    <span class="s1">cv2.putText(img</span><span class="s0">, </span><span class="s4">f'FPS: </span><span class="s0">{</span><span class="s1">int(fps)</span><span class="s0">}</span><span class="s4">'</span><span class="s0">, </span><span class="s1">(</span><span class="s3">40</span><span class="s0">, </span><span class="s3">50</span><span class="s1">)</span><span class="s0">, </span><span class="s1">cv2.FONT_HERSHEY_COMPLEX</span><span class="s0">,</span>
+                <span class="s3">1</span><span class="s0">, </span><span class="s1">(</span><span class="s3">255</span><span class="s0">, </span><span class="s3">0</span><span class="s0">, </span><span class="s3">0</span><span class="s1">)</span><span class="s0">, </span><span class="s3">3</span><span class="s1">)</span>
+
+    <span class="s1">cv2.imshow(</span><span class="s4">&quot;Img&quot;</span><span class="s0">, </span><span class="s1">img)</span>
+    <span class="s1">cv2.waitKey(</span><span class="s3">1</span><span class="s1">)</span>
+</pre>
+</body>
+</html>

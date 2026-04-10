@@ -1,0 +1,13 @@
+{
+  "project": "Interactive Video Object Cutout Studio",
+  "key": "interactive_video_object_cutout_studio",
+  "category": "Segmentation",
+  "type": "segmentation",
+  "tech": "SAM 2.1 promptable segmentation + video mask propagation",
+  "model_family": [
+    "SAM"
+  ],
+  "has_training": false,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

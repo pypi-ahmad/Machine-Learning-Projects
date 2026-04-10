@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 26 - Real Time Color Detection
+
+project_id: 26
+name: "Real Time Color Detection"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "LiveHSVAdjustor.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  cv2.COLOR_BGR2Result fixed to cv2.COLOR_BGR2HSV (Phase 1B).

@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Plant Disease Predicton"
+id: "P23"
+status: "broken"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+phase1b: "no changes (undefined variable bug needs full rewrite)"
+notes: "Known: undefined variables; tf.keras InceptionV3; folder has 'Predicton' and 'Souce Code' typos"

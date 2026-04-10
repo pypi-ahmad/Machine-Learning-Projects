@@ -1,0 +1,13 @@
+{
+  "project": "Crop Row Weed Segmentation",
+  "key": "crop_row_weed_segmentation",
+  "category": "Segmentation",
+  "type": "segmentation",
+  "tech": "YOLO26m-seg multi-class",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

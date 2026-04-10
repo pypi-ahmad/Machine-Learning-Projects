@@ -1,0 +1,13 @@
+{
+  "project": "Plant Disease Prediction",
+  "key": "plant_disease_prediction",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "YOLO26m-cls",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

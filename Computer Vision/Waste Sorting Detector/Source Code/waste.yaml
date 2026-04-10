@@ -1,0 +1,41 @@
+# Waste Sorting Detector — Sample Configuration
+# Copy this file and adjust for your deployment.
+
+model: "yolo11n.pt"          # YOLO model weights (or path to custom-trained .pt)
+conf_threshold: 0.35
+iou_threshold: 0.45
+imgsz: 640
+device: ""                    # "" = auto, "cpu", "0", "cuda:0"
+
+# Classes the model should report (empty list = all model classes)
+waste_classes:
+  - plastic
+  - paper
+  - cardboard
+  - metal
+  - glass
+  - trash
+
+# --- Bin-zone validation (optional) ---
+# Define polygons for physical bin zones.  Detections inside a zone are
+# checked against its accepted_classes; mismatches are flagged.
+bin_zones:
+  - name: "Recyclables"
+    polygon: [[50, 50], [350, 50], [350, 400], [50, 400]]
+    accepted_classes: ["plastic", "paper", "cardboard", "metal", "glass"]
+
+  - name: "General-Waste"
+    polygon: [[400, 50], [700, 50], [700, 400], [400, 400]]
+    accepted_classes: ["trash"]
+
+  - name: "Glass-Only"
+    polygon: [[750, 50], [1000, 50], [1000, 400], [750, 400]]
+    accepted_classes: ["glass"]
+
+# --- Export ---
+export_csv: "output/waste_results.csv"
+export_json: "output/waste_results.json"
+
+# --- Display ---
+show_counts: true
+show_zones: true

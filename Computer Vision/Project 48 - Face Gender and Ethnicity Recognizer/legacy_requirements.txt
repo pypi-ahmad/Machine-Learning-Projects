@@ -1,0 +1,21 @@
+# ============================================================================
+# LEGACY DEPENDENCIES — Project 48: Face, Gender & Ethnicity Recognizer
+# ============================================================================
+# This project uses TensorFlow + Keras + Keras Tuner for multi-output CNN
+# hyperparameter optimization. It was originally developed in a Kaggle
+# notebook environment.
+#
+# These dependencies are NOT in the global requirements.txt.
+# They are preserved here for reference until the project is migrated
+# to a PyTorch pipeline.
+# ============================================================================
+
+# WARNING: This is the heaviest legacy dependency footprint in the repo.
+tensorflow>=2.15,<3.0
+keras>=2.15,<3.0
+keras-tuner>=1.4,<2.0
+h5py>=3.10,<4.0
+
+# Additional deps used in this notebook
+seaborn>=0.13,<1.0
+scikit-learn>=1.5,<2.0

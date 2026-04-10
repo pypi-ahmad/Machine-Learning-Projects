@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 8 - OMR Evaluator
+
+project_id: 8
+name: "OMR Evaluator"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "OMRevaluator.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Argparse CLI. Hardcoded 5-question answer key."
+phase2_fixes: "destroyAllWindows"

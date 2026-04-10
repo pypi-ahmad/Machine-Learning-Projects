@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Food Image Recognition & Calories Estimation"
+id: "P15"
+status: "needs_fix"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+phase1b: "label.sort() corruption bug fixed"
+notes: "Known bugs: label.sort corruption, model filename mismatch; tf.keras InceptionV3 + Flask"

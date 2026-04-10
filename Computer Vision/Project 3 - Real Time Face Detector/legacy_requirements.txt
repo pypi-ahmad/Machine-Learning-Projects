@@ -1,0 +1,17 @@
+# ============================================================================
+# LEGACY DEPENDENCIES — Project 3: Real Time Face Detector Image
+# ============================================================================
+# This project uses Caffe model loading via cv2.dnn.readNetFromCaffe.
+# The .caffemodel weight file is a Caffe artifact.
+#
+# These dependencies are NOT in the global requirements.txt.
+# They are preserved here for reference until the project is migrated
+# to a PyTorch / Ultralytics pipeline.
+# ============================================================================
+
+# Caffe model support (handled by OpenCV DNN module — no extra pip package needed)
+# The cv2.dnn module can load .caffemodel + .prototxt natively.
+# No standalone caffe pip package required.
+
+# NOTE: This project's .caffemodel file (res10_300x300_ssd_iter_140000.caffemodel)
+# has been relocated to: /models/project_03/

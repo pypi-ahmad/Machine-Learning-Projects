@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Brain Tumour Detection"
+id: "P4"
+status: "needs_fix"
+type: "keras"
+gpu_required: true
+has_dataset: true
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "Brain Tumor Detection.ipynb"
+phase1b: "notebook-only, no script changes"
+notes: "Has dataset + augmented data; uses tf.keras"

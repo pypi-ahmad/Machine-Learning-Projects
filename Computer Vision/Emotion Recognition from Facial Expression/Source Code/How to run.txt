@@ -1,0 +1,13 @@
+Link to Dataset:
+The dataset can be found at the following link: https://www.kaggle.com/datasets/msambare/fer2013.
+
+Instructions to Run the App:
+To run the app, run the TestEmotionDetector.py code.
+
+In this file, we have mentioned all the requirements in the requirements.txt file and provided the syntax to install them using pip. Please make sure you have installed all the required dependencies before running the code.
+
+To install the required dependencies, run the following command in the terminal or command prompt while in the directory where the requirements.txt file is located:
+
+pip install -r requirements.txt
+
+This command will install all the required dependencies listed in the file.

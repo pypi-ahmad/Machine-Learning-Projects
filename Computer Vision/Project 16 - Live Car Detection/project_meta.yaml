@@ -1,0 +1,17 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 16 - Live Car Detection
+
+project_id: 16
+name: "Live Car Detection"
+status: needs_fix
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "Vehicles_detection.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  --video default updated to /data/project_16/carv.mp4 (Phase 1B).
+  Still requires --cascades XML file to be provided manually.
+  Uses Haarcascade for vehicle detection.
+phase2_fixes: "model file existence check, ret guard, cap.release"

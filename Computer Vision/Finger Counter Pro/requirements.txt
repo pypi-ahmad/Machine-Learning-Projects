@@ -1,0 +1,4 @@
+# Finger Counter Pro — project-level deps
+mediapipe>=0.10.14
+opencv-python>=4.10.0,<5
+numpy>=1.26.0

@@ -1,0 +1,4 @@
+# FILE RELOCATED
+# Original: res10_300x300_ssd_iter_140000.caffemodel (10 MB)
+# Moved to: /models/project_03/res10_300x300_ssd_iter_140000.caffemodel
+# Reason: Large file sanitization (Phase 1A) — files >10MB centralized

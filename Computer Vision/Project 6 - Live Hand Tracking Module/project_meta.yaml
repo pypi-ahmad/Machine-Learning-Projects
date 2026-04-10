@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 6 - Live HTM (Hand Tracking Module)
+
+project_id: 6
+name: "Live HTM (Hand Tracking + Volume Control)"
+status: runnable
+type: mixed
+gpu_ready: false
+has_dataset: false
+entry_point: "VolumeControl.py"
+legacy_deps: false
+duplicate_of: "CV Projects 21 - VolumeController"
+notes: |
+  DUPLICATE: Identical source to Project 21.
+  Windows-only (pycaw + comtypes). OpenCV + MediaPipe.
+phase2_fixes: "mediapipe Hands kwargs, q-key exit, cleanup"

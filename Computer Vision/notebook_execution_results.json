@@ -1,0 +1,134 @@
+[
+  {
+    "notebook": "Aerial Cactus Identification\\Source Code\\aerial_cactus_identification_pipeline.ipynb",
+    "status": "success",
+    "time": 20.2,
+    "error": ""
+  },
+  {
+    "notebook": "Aerial Imagery Segmentation\\Source Code\\aerial_imagery_segmentation_pipeline.ipynb",
+    "status": "success",
+    "time": 19.3,
+    "error": ""
+  },
+  {
+    "notebook": "Age Gender Recognition\\Source Code\\age_gender_recognition_pipeline.ipynb",
+    "status": "success",
+    "time": 29.4,
+    "error": ""
+  },
+  {
+    "notebook": "Blink Headpose Analyzer\\Source Code\\blink_headpose_analyzer_pipeline.ipynb",
+    "status": "success",
+    "time": 26.3,
+    "error": ""
+  },
+  {
+    "notebook": "Brain Tumour Detection\\Source Code\\brain_tumour_detection_pipeline.ipynb",
+    "status": "partial",
+    "time": 12.8,
+    "error": "\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax"
+  },
+  {
+    "notebook": "Building Footprint Change Detector\\Source Code\\building_footprint_change_detector_pipeline.ipynb",
+    "status": "partial",
+    "time": 9.0,
+    "error": "\u001b[31mSyntaxError\u001b[39m\u001b[31m:\u001b[39m invalid syntax"
+  },
+  {
+    "notebook": "Building Footprint Segmentation\\Source Code\\building_footprint_segmentation_pipeline.ipynb",
+    "status": "success",
+    "time": 23.4,
+    "error": ""
+  },
+  {
+    "notebook": "Business Card Reader\\Source Code\\business_card_reader_pipeline.ipynb",
+    "status": "success",
+    "time": 32.4,
+    "error": ""
+  },
+  {
+    "notebook": "Cartoonize The Image\\Source Code\\cartoonize_image_pipeline.ipynb",
+    "status": "success",
+    "time": 16.2,
+    "error": ""
+  },
+  {
+    "notebook": "Celebrity Face Recognition\\Source Code\\celebrity_face_recognition_pipeline.ipynb",
+    "status": "success",
+    "time": 33.3,
+    "error": ""
+  },
+  {
+    "notebook": "Cell Counting Instance Segmentation\\Source Code\\cell_counting_instance_segmentation_pipeline.ipynb",
+    "status": "success",
+    "time": 38.5,
+    "error": ""
+  },
+  {
+    "notebook": "Cell Nuclei Segmentation\\Source Code\\cell_nuclei_segmentation_pipeline.ipynb",
+    "status": "success",
+    "time": 15.1,
+    "error": ""
+  },
+  {
+    "notebook": "Conveyor Part Defect Detector\\Source Code\\conveyor_part_defect_detector_pipeline.ipynb",
+    "status": "success",
+    "time": 15.2,
+    "error": ""
+  },
+  {
+    "notebook": "Crop Row Weed Segmentation\\Source Code\\crop_row_weed_segmentation_pipeline.ipynb",
+    "status": "success",
+    "time": 22.3,
+    "error": ""
+  },
+  {
+    "notebook": "Crowd Zone Counter\\Source Code\\crowd_zone_counter_pipeline.ipynb",
+    "status": "success",
+    "time": 12.9,
+    "error": ""
+  },
+  {
+    "notebook": "Document Layout Block Detector\\Source Code\\document_layout_block_detector_pipeline.ipynb",
+    "status": "success",
+    "time": 14.2,
+    "error": ""
+  },
+  {
+    "notebook": "Document Type Classifier Router\\Source Code\\document_type_classifier_router_pipeline.ipynb",
+    "status": "success",
+    "time": 20.3,
+    "error": ""
+  },
+  {
+    "notebook": "Driver Drowsiness Monitor\\Source Code\\driver_drowsiness_monitor_pipeline.ipynb",
+    "status": "success",
+    "time": 20.2,
+    "error": ""
+  },
+  {
+    "notebook": "Drone Ship OBB Detector\\Source Code\\drone_ship_obb_detector_pipeline.ipynb",
+    "status": "success",
+    "time": 12.8,
+    "error": ""
+  },
+  {
+    "notebook": "Ecommerce Item Attribute Tagger\\Source Code\\ecommerce_item_attribute_tagger_pipeline.ipynb",
+    "status": "success",
+    "time": 21.0,
+    "error": ""
+  },
+  {
+    "notebook": "Emotion Recognition from Facial Expression\\Source Code\\emotion_recognition_pipeline.ipynb",
+    "status": "success",
+    "time": 20.2,
+    "error": ""
+  },
+  {
+    "notebook": "Exam Sheet Parser\\Source Code\\exam_sheet_parser_pipeline.ipynb",
+    "status": "success",
+    "time": 32.4,
+    "error": ""
+  }
+]

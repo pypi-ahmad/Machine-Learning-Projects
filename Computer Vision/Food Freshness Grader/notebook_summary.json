@@ -1,0 +1,13 @@
+{
+  "project": "Food Freshness Grader",
+  "key": "food_freshness_grader",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "ResNet-18 transfer learning (ImageNet \u2192 freshness)",
+  "model_family": [
+    "ResNet"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

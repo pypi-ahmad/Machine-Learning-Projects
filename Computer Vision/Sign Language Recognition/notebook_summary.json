@@ -1,0 +1,13 @@
+{
+  "project": "Sign Language Recognition",
+  "key": "sign_language_recognition",
+  "category": "Pose & Landmarks",
+  "type": "pose",
+  "tech": "MediaPipe Holistic (hands + face + pose) + temporal classifier",
+  "model_family": [
+    "MediaPipe"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

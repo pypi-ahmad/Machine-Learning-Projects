@@ -1,0 +1,5 @@
+# Legacy dependencies for Sign Language Recognition
+# trainmodel.py uses standalone keras; app.py uses tensorflow.keras
+# These deps are isolated here pending PyTorch migration
+tensorflow>=2.10.0
+keras>=2.10.0

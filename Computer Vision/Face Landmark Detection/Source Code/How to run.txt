@@ -1,0 +1,2 @@
+Instructions to Run the App:
+To run the app, run the facelandmark.py code. The code will provide a link to localhost, which you can open in your browser to access the app.

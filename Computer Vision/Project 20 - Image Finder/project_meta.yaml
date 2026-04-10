@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 20 - image_finder
+
+project_id: 20
+name: "Image Finder (Waldo)"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "finder.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Template matching (cv2.matchTemplate) to find Waldo."
+phase2_fixes: "width/height swap fix"

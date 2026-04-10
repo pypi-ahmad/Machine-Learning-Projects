@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Sign Language Recognition"
+id: "P27"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+entry_point: "app.py"
+phase1b: "model paths fixed, __main__ guard, code restructured"
+notes: "trainmodel.py uses standalone keras; app.py uses tf.keras + mediapipe"

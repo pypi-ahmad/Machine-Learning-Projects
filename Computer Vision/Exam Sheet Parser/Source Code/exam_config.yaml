@@ -1,0 +1,38 @@
+# Exam Sheet Parser — Sample Configuration
+# Copy and edit this file, then pass via: python infer.py --config exam_config.yaml
+
+# ── PaddleOCR ──────────────────────────────────────────
+ocr_lang: "en"
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+use_angle_cls: true
+
+# ── Layout parsing ─────────────────────────────────────
+heading_min_height: 18
+heading_font_ratio: 1.4
+question_number_pattern: "^\\s*(?:Q\\.?\\s*)?([0-9]{1,3})\\s*[\\.\\)\\:]"
+mcq_option_pattern: "^\\s*\\(?([A-Ea-e])\\s*[\\.\\)\\:]"
+marks_pattern: "\\[?\\(?\\s*(\\d{1,3})\\s*(?:marks?|pts?|points?)\\s*\\)?\\]?"
+merge_y_tolerance: 12
+min_block_confidence: 0.25
+
+# ── Validation ─────────────────────────────────────────
+confidence_threshold: 0.40
+warn_low_confidence: true
+warn_no_questions: true
+
+# ── Export ─────────────────────────────────────────────
+export_json: ""
+export_csv: ""
+
+# ── Display ────────────────────────────────────────────
+show_display: true
+show_ocr_boxes: true
+show_labels: true
+show_confidence: true
+line_width: 2
+
+# ── Save ───────────────────────────────────────────────
+save_annotated: false
+output_dir: "output"

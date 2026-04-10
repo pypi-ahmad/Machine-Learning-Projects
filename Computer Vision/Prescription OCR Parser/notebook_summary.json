@@ -1,0 +1,13 @@
+{
+  "project": "Prescription OCR Parser",
+  "key": "prescription_ocr_parser",
+  "category": "OCR & Document AI",
+  "type": "ocr",
+  "tech": "PaddleOCR + pattern-based medicine field extraction",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

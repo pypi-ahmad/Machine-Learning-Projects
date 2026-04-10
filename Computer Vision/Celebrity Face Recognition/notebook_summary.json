@@ -1,0 +1,14 @@
+{
+  "project": "Celebrity Face Recognition",
+  "key": "celebrity_face_recognition",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face detector + InsightFace ArcFace embeddings",
+  "model_family": [
+    "YOLO",
+    "InsightFace"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,15 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 50 - Reversing video using openCV
+
+project_id: 50
+name: "Reversing Video"
+status: needs_fix
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "reversing video (openCV).ipynb"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  301 extracted frame*.jpg files committed to repo — should be gitignored.
+  Jupyter notebook.

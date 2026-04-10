@@ -1,0 +1,14 @@
+{
+  "project": "Form OCR Checkbox Extractor",
+  "key": "form_ocr_checkbox_extractor",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "OpenCV morphology + PaddleOCR + label association",
+  "model_family": [
+    "PaddleOCR",
+    "OpenCV"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,14 @@
+{
+  "project": "Licence Plate Detector",
+  "key": "licence_plate_detector",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26 (custom weights) + plate rectification + PaddleOCR",
+  "model_family": [
+    "YOLO",
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

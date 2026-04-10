@@ -1,0 +1,14 @@
+{
+  "project": "Face Verification Attendance System",
+  "key": "face_verification_attendance",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face detection + InsightFace ArcFace embeddings",
+  "model_family": [
+    "YOLO",
+    "InsightFace"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

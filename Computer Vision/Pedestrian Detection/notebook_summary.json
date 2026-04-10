@@ -1,0 +1,13 @@
+{
+  "project": "Pedestrian Detection",
+  "key": "pedestrian_detection",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26 detect + ByteTrack",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

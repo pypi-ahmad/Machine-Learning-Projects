@@ -1,0 +1,47 @@
+# Crowd Zone Counter — Sample Configuration
+
+# --- Detection ---
+model: "yolo26m.pt"
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+device: ""
+
+# Person class ID (COCO: 0 = person)
+person_class_id: 0
+
+# --- Zones ---
+# Define polygons for counting areas.  Each zone has a name,
+# a list of [x,y] vertices, and an optional max_capacity.
+# When count > max_capacity, an overcrowding alert fires.
+zones:
+  - name: "Entrance"
+    polygon: [[50, 50], [400, 50], [400, 400], [50, 400]]
+    max_capacity: 15
+
+  - name: "Main-Area"
+    polygon: [[450, 50], [900, 50], [900, 650], [450, 650]]
+    max_capacity: 40
+
+  - name: "Exit"
+    polygon: [[950, 50], [1230, 50], [1230, 400], [950, 400]]
+    max_capacity: 10
+
+# --- Overcrowding ---
+alert_cooldown_frames: 30     # Suppress repeated alerts for N frames
+
+# --- Export ---
+export_json: "output/crowd_results.json"
+export_csv: "output/crowd_timeline.csv"
+
+# --- Display ---
+show_display: true
+show_zone_fill: true
+zone_alpha: 0.25
+line_width: 2
+show_counts: true
+show_alerts: true
+
+# --- Save ---
+save_video: false
+output_path: "output/crowd_output.mp4"

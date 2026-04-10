@@ -1,0 +1,55 @@
+# Number Plate Reader Pro — Sample Configuration
+# Copy and edit this file, then pass via: python infer.py --config plate_config.yaml
+
+# ── YOLO detection ──────────────────────────────────────
+det_model: "yolo26m.pt"
+det_confidence: 0.35
+det_iou: 0.45
+det_imgsz: 640
+
+# ── Plate rectification ────────────────────────────────
+rectify: true
+target_width: 240
+target_height: 80
+min_crop_width: 30
+upscale_threshold: 100
+
+# ── PaddleOCR ──────────────────────────────────────────
+ocr_lang: "en"
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+
+# ── Regex cleanup ──────────────────────────────────────
+valid_plate_pattern: "^[A-Z0-9\\- ]{2,15}$"
+strip_chars: "[^A-Z0-9\\-\\s]"
+
+# ── Duplicate suppression ──────────────────────────────
+dedup_enabled: true
+dedup_cooldown: 5.0       # seconds between same plate reads
+dedup_max_entries: 200
+
+# ── Validation ──────────────────────────────────────────
+confidence_threshold: 0.50
+min_plate_length: 2
+max_plate_length: 15
+
+# ── Export ──────────────────────────────────────────────
+export_json: ""
+export_csv: ""
+
+# ── Display ─────────────────────────────────────────────
+show_display: true
+show_det_boxes: true
+show_plate_text: true
+show_confidence: true
+line_width: 2
+
+# ── Save ────────────────────────────────────────────────
+save_annotated: false
+save_crops: false
+output_dir: "output"
+
+# ── Video / webcam ──────────────────────────────────────
+webcam_index: 0
+video_fps: 0              # 0 = use source fps

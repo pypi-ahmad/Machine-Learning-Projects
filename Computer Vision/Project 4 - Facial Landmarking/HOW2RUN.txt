@@ -1,0 +1,3 @@
+Install all imported libraries
+Open cmd at same folder as the project is
+run command: python facial_landmarking.py -p shape_predictor_68_face_landmarks.dat -i example_04.jpg

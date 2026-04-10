@@ -1,0 +1,13 @@
+{
+  "project": "Sign Language Alphabet Recognizer",
+  "key": "sign_language_alphabet_recognizer",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

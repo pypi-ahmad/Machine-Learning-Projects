@@ -1,0 +1,28 @@
+# Document Layout Block Detector — Sample Configuration
+
+model: "yolo26m.pt"
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 1024                     # Higher resolution for fine document details
+device: ""
+
+# Filter to specific classes (empty = all model classes)
+target_classes: []
+
+# --- Export ---
+export_json: "output/layout_results.json"
+save_crops: false                # Set true to save cropped block regions
+crops_dir: "output/crops"
+
+# --- Display ---
+show_display: true
+line_width: 2
+label_font_scale: 0.5
+show_conf: true
+
+# --- PDF ---
+pdf_dpi: 300                     # DPI for PDF-to-image conversion
+
+# --- Save ---
+save_annotated: false
+output_dir: "output"

@@ -1,0 +1,4 @@
+# Legacy dependencies for Celebrity Face Recognition
+# This project currently uses TensorFlow/Keras (tf.keras with MobileNetV2)
+# These deps are isolated here pending PyTorch migration
+tensorflow>=2.10.0

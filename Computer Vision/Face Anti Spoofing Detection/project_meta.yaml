@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Face Anti Spoofing Detection"
+id: "P10"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "livelines_net.py"
+phase1b: "absolute paths, __main__ guard added"
+notes: "tf.keras MobileNetV2 for anti-spoofing"

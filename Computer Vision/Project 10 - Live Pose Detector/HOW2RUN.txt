@@ -1,0 +1,3 @@
+INSTALL ALL LIBRARIES
+Open cmd at same folder as the project is
+run command: python poseDetector.PY

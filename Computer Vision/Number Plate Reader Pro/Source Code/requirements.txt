@@ -1,0 +1,6 @@
+# Number Plate Reader Pro — project-level deps
+ultralytics>=8.4.0
+paddleocr>=2.9.0
+paddlepaddle>=3.0.0
+opencv-python>=4.10.0,<5
+numpy>=1.26.0

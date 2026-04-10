@@ -1,0 +1,13 @@
+{
+  "project": "Cartoonize The Image",
+  "key": "cartoonize_image",
+  "category": "Other",
+  "type": "",
+  "tech": "",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": false,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

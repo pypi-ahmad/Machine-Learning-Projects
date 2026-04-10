@@ -1,0 +1,13 @@
+{
+  "project": "Video Event Search",
+  "key": "video_event_search",
+  "category": "Tracking",
+  "type": "tracking",
+  "tech": "YOLO26m detection + ByteTrack + event generator + JSON/CSV event store + query engine",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": false,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

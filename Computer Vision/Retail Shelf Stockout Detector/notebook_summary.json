@@ -1,0 +1,13 @@
+{
+  "project": "Retail Shelf Stockout Detector",
+  "key": "retail_shelf_stockout",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m detection + zone polygons + CSV/JSON event export",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

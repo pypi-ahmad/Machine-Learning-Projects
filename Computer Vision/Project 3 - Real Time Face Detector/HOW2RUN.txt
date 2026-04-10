@@ -1,0 +1,4 @@
+install all necessary libraries
+Open cmd at same folder as the project is
+for stills : run command: python detect_faces.py -i iron_chic.jpg -p deploy.prototxt.txt -m res10_300x300_ssd_iter_140000.caffemodel
+for live : run command: python detect_faces_video.py -i iron_chic.jpg -p deploy.prototxt.txt -m res10_300x300_ssd_iter_140000.caffemodel

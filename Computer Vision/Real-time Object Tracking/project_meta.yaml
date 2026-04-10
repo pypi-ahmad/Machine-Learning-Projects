@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Real-time Object Tracking"
+id: "P24"
+status: "runnable"
+type: "mixed"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+entry_point: "webapp.py"
+phase1b: "full ultralytics migration, removed tf import, device handling"
+notes: "YOLOv5 clone (moved to /legacy/yolov5_clones/realtime_object_tracking/) + Flask webapp; imports tensorflow; best.pt moved to /models/realtime_object_tracking/"

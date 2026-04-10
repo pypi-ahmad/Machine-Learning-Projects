@@ -1,0 +1,13 @@
+{
+  "project": "Finger Counter Pro",
+  "key": "finger_counter_pro",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

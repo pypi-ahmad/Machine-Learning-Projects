@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 44 - Joining Multiple Images to Display
+
+project_id: 44
+name: "Joining Multiple Images to Display"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "Joining_Multiple_Images_To_Display.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Contains stackImages utility (also in Projects 22, 27)."
+phase2_fixes: "frame_width variable bug fix, success check, cleanup"

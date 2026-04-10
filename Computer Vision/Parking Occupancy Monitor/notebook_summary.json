@@ -1,0 +1,13 @@
+{
+  "project": "Parking Occupancy Monitor",
+  "key": "parking_occupancy_monitor",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m detection + slot polygon evaluation + CSV/JSON export",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

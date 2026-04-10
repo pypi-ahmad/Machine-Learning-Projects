@@ -1,0 +1,3 @@
+IDE required- Pycharm Community Edition
+copy the folder to C:/user/username/pycharmprojects/
+then open pycharm and Run the file

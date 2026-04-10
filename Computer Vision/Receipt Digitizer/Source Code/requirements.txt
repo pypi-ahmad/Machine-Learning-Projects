@@ -1,0 +1,6 @@
+# Receipt Digitizer — project-level deps
+paddleocr>=2.9.0
+paddlepaddle>=3.0.0
+opencv-python>=4.10.0,<5
+numpy>=1.26.0
+pyyaml>=6.0

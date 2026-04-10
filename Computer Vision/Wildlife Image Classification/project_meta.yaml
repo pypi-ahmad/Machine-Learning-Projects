@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Wildlife Image Classification"
+id: "P30"
+status: "runnable"
+type: "pytorch"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: false
+duplicate_of: null
+source_dir: "wildlife image classification"
+phase1b: "notebook-only (modern stack, no fixes needed)"
+notes: "PyTorch + timm; modern stack; no legacy deps needed"

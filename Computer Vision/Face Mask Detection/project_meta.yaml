@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Face Mask Detection"
+id: "P13"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+phase1b: "no script changes (notebook-only)"
+notes: "tf.keras InceptionV3; model moved to /models/face_mask_detection/"

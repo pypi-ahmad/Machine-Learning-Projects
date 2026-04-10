@@ -1,0 +1,13 @@
+{
+  "project": "Face Clustering Photo Organizer",
+  "key": "face_clustering_photo_organizer",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "InsightFace ArcFace embeddings + agglomerative/DBSCAN clustering",
+  "model_family": [
+    "InsightFace"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

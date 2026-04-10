@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 31 - Contrast enhancing of gray scale image
+
+project_id: 31
+name: "Contrast Enhancing of Gray Scale Image"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "Enhancing contrast of gray scale image (OpenCV).ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: "Jupyter notebook."

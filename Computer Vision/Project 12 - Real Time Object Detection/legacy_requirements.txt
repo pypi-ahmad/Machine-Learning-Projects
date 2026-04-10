@@ -1,0 +1,17 @@
+# ============================================================================
+# LEGACY DEPENDENCIES — Project 12: Real Time Object Detection
+# ============================================================================
+# This project uses Caffe model loading via cv2.dnn.readNetFromCaffe
+# with MobileNetSSD_deploy.caffemodel.
+#
+# These dependencies are NOT in the global requirements.txt.
+# They are preserved here for reference until the project is migrated
+# to a PyTorch / Ultralytics pipeline.
+# ============================================================================
+
+# Caffe model support (handled by OpenCV DNN module — no extra pip package needed)
+# The cv2.dnn module can load .caffemodel + .prototxt natively.
+# No standalone caffe pip package required.
+
+# NOTE: This project's .caffemodel file (MobileNetSSD_deploy.caffemodel)
+# has been relocated to: /models/project_12/

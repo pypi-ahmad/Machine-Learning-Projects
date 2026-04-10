@@ -1,0 +1,7 @@
+Link to Dataset:
+https://www.kaggle.com/competitions/aerial-cactus-identification/data
+
+
+To execute the code in the .ipynb file, simply open it in Jupyter Notebook or Google Colab. The file is designed to display all outputs in a clear and organized format, including various plots and visualizations.
+
+To ensure the code runs smoothly, double-check that you have correctly specified the address of your data within the code. This information should be uploaded to your Google Drive.

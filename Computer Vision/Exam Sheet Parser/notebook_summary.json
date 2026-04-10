@@ -1,0 +1,13 @@
+{
+  "project": "Exam Sheet Parser",
+  "key": "exam_sheet_parser",
+  "category": "OCR & Document AI",
+  "type": "ocr",
+  "tech": "PaddleOCR + rule-based layout classification",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

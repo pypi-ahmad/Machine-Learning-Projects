@@ -1,0 +1,52 @@
+# Traffic Violation Analyzer — Line & Zone Configuration
+#
+# Define virtual counting lines and restriction zones.
+# Adjust coordinates to match your camera perspective.
+#
+# Run:  python infer.py --source traffic.mp4 --config traffic.yaml
+
+model: yolo26m.pt
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+tracker: bytetrack.yaml
+
+vehicle_classes:
+  - car
+  - truck
+  - bus
+  - motorcycle
+  - bicycle
+
+# ── Virtual lines ─────────────────────────────────────────
+# direction: the *allowed* crossing direction.
+# Crossings opposite to this trigger a wrong-way violation.
+# Use "any" if both directions are permitted (count only).
+lines:
+  - name: Line-North
+    pt1: [100, 300]
+    pt2: [700, 300]
+    direction: up          # vehicles should cross upward
+
+  - name: Line-South
+    pt1: [100, 450]
+    pt2: [700, 450]
+    direction: down        # vehicles should cross downward
+
+  - name: Line-Count-Only
+    pt1: [50, 200]
+    pt2: [750, 200]
+    direction: any         # both directions OK — just count
+
+# ── Zones (optional) ──────────────────────────────────────
+zones:
+  - name: Intersection
+    polygon:
+      - [200, 200]
+      - [600, 200]
+      - [600, 500]
+      - [200, 500]
+
+export_dir: outputs
+save_events_csv: true
+save_events_json: true

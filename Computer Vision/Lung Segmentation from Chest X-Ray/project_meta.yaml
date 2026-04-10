@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Lung Segmentation From Chest X-Ray"
+id: "P20"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+phase1b: "notebook-only, no script changes"
+notes: "Standalone keras U-Net"

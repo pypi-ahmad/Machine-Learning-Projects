@@ -1,0 +1,13 @@
+{
+  "project": "Similar Image Finder",
+  "key": "similar_image_finder",
+  "category": "Retrieval & Search",
+  "type": "retrieval",
+  "tech": "EfficientNet-B0 embeddings + cosine similarity index",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": false,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,14 @@
+{
+  "project": "Age Gender Recognition",
+  "key": "age_gender_recognition",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face detector + DeepFace age/gender analysis",
+  "model_family": [
+    "YOLO",
+    "DeepFace"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

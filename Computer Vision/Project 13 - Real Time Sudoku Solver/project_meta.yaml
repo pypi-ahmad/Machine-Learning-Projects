@@ -1,0 +1,19 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 13 - Real Time Sudoku Solver
+
+project_id: 13
+name: "Real Time Sudoku Solver"
+status: needs_fix
+type: keras
+gpu_ready: false
+has_dataset: true
+entry_point: "Sudoku.py"
+legacy_deps: true
+duplicate_of: null
+notes: |
+  predict_classes() replaced with np.argmax(predict()) (Phase 1B).
+  main.py replaced with proper wrapper (Phase 1B).
+  Still requires standalone keras (legacy dep). See legacy_requirements.txt.
+  Operator.py is dead code (copy of Python's operator module).
+  Test.gif relocated to /data/project_13/.
+phase2_fixes: "model file existence check"

@@ -1,0 +1,13 @@
+{
+  "project": "PPE Compliance Monitor",
+  "key": "ppe_compliance_monitor",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO detection + person-PPE association + zone compliance + CSV/JSON export",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

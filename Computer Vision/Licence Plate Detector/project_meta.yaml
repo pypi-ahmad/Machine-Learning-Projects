@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Licence Plate Detector"
+id: "P18"
+status: "runnable"
+type: "pytorch"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: false
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "main.py"
+phase1b: "ultralytics migration, detectx() rewrite, entry point"
+notes: "YOLOv5 clone (moved to /legacy/yolov5_clones/licence_plate_detector/); best.pt moved to /models/licence_plate_detector/; needs ultralytics migration"

@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 27 - Real Time Shape Detection
+
+project_id: 27
+name: "Real Time Shape Detection"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "RealTime_Shape_Detection_Contours.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Contour-based shape detection with trackbar parameters."
+phase2_fixes: "cap.release, destroyAllWindows"

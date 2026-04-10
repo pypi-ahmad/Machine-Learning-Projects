@@ -1,0 +1,45 @@
+# ID Card KYC Parser — sample inference config
+# Copy and edit for your use case.
+
+# Card detection
+detect_card: true
+min_card_area_ratio: 0.05
+canny_low: 30
+canny_high: 200
+approx_eps: 0.02
+
+# Perspective correction
+rectify: true
+target_width: 856
+target_height: 540
+
+# OCR settings
+ocr_lang: en
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+
+# Template: generic | us_dl | eu_id | passport
+template: generic
+
+# Validation
+warn_missing_fields: true
+required_fields:
+  - full_name
+  - id_number
+
+# Export
+export_json: ""
+export_csv: ""
+
+# Display
+show_display: true
+highlight_fields: true
+show_ocr_boxes: false
+show_card_boundary: true
+line_width: 2
+
+# Output
+save_annotated: false
+save_rectified: false
+output_dir: output

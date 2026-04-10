@@ -1,0 +1,14 @@
+{
+  "project": "Number Plate Reader Pro",
+  "key": "number_plate_reader_pro",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m plate detection + PaddleOCR recognition + regex cleanup",
+  "model_family": [
+    "YOLO",
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

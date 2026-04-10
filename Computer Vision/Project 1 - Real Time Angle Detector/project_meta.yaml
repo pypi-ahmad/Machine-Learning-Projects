@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 1 - Real Time Angle Detector
+
+project_id: 1
+name: "Real Time Angle Detector"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "AngleDetector.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Mouse-click angle measurement on static image."
+phase2_fixes: "gradient ZeroDivisionError guard, atan2 fallback, r-key reset, destroyAllWindows"

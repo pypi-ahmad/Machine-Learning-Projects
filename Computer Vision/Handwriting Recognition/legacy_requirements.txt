@@ -1,0 +1,5 @@
+# Legacy dependencies for Handwriting Recognition
+# This project uses TensorFlow 2.x with tf.compat.v1 session-based API
+# Original pinned: tensorflow==2.4.0
+# These deps are isolated here pending PyTorch migration
+tensorflow>=2.10.0

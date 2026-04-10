@@ -1,0 +1,9 @@
+Link to Dataset:
+The dataset can be found at the following link: https://www.kaggle.com/datasets/trolukovich/food11-image-dataset.
+
+Instructions to Run the App:
+To run the app, open the terminal in the project directory and run the following command:
+
+streamlit run food_app.py
+
+This will start the app, which can be accessed by opening the provided link in your web browser.

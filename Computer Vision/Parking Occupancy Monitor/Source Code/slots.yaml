@@ -1,0 +1,84 @@
+# Parking Occupancy Monitor — Slot Configuration
+#
+# Each slot defines a polygon (list of [x, y] vertices).
+# Adjust polygons to match your camera view.
+#
+# Run:  python infer.py --source video.mp4 --config slots.yaml
+
+model: yolo26m.pt
+model_live: yolo26s.pt
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+
+vehicle_classes:
+  - car
+  - truck
+  - bus
+  - motorcycle
+  - bicycle
+
+occupancy_iou_threshold: 0.15
+
+slots:
+  # ── Row 1 (top) ────────────────────────────
+  - name: A1
+    polygon:
+      - [50, 60]
+      - [140, 60]
+      - [140, 190]
+      - [50, 190]
+
+  - name: A2
+    polygon:
+      - [160, 60]
+      - [250, 60]
+      - [250, 190]
+      - [160, 190]
+
+  - name: A3
+    polygon:
+      - [270, 60]
+      - [360, 60]
+      - [360, 190]
+      - [270, 190]
+
+  - name: A4
+    polygon:
+      - [380, 60]
+      - [470, 60]
+      - [470, 190]
+      - [380, 190]
+
+  # ── Row 2 (bottom) ─────────────────────────
+  - name: B1
+    polygon:
+      - [50, 220]
+      - [140, 220]
+      - [140, 350]
+      - [50, 350]
+
+  - name: B2
+    polygon:
+      - [160, 220]
+      - [250, 220]
+      - [250, 350]
+      - [160, 350]
+
+  - name: B3
+    polygon:
+      - [270, 220]
+      - [360, 220]
+      - [360, 350]
+      - [270, 350]
+
+  - name: B4
+    polygon:
+      - [380, 220]
+      - [470, 220]
+      - [470, 350]
+      - [380, 350]
+
+export_dir: outputs
+save_events_csv: true
+save_events_json: true

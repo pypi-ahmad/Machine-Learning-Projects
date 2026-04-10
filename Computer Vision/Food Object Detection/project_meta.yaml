@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Food Object Detection"
+id: "P16"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "run.py"
+phase1b: "model path fixed, run.py entry point created"
+notes: "tf.keras InceptionV3 + Streamlit; model moved to /models/food_object_detection/"

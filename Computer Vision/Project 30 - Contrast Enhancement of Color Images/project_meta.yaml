@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV projects 30 - Contrast enhancing of color images
+
+project_id: 30
+name: "Contrast Enhancing of Color Images"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "OpenCV (Contrast enhancing of color images).ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: "Jupyter notebook. CLAHE / histogram equalization."

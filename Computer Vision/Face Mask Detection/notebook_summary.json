@@ -1,0 +1,13 @@
+{
+  "project": "Face Mask Detection",
+  "key": "face_mask_detection",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face-mask detector (mask / no_mask / improper)",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Age Gender Recognition"
+id: "P3"
+status: "runnable"
+type: "caffe"
+gpu_required: false
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "main.py"
+phase1b: "paths fixed, __main__ guard added"
+notes: "Uses OpenCV DNN with Caffe models; weights moved to /models/age_gender_recognition/"

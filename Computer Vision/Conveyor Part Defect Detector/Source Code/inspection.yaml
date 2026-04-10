@@ -1,0 +1,39 @@
+# Conveyor Part Defect Detector — Inspection Configuration
+#
+# Adjust defect_classes and fail_threshold for your use case.
+#
+# Run:  python infer.py --source part.jpg --config inspection.yaml
+
+model: yolo26m.pt
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+
+# Defect class names the model is expected to detect.
+# Set all_classes_are_defects to true if every model class is a defect.
+defect_classes:
+  - scratch
+  - dent
+  - crack
+  - missing_part
+  - missing_hole
+  - mouse_bite
+  - open_circuit
+  - short
+  - spur
+  - spurious_copper
+  - discoloration
+
+all_classes_are_defects: true
+
+# Pass / fail: frame is FAIL if defect_count >= fail_threshold
+fail_threshold: 1
+
+# Crop settings
+save_crops: true
+crop_padding: 10
+
+# Export
+export_dir: outputs
+save_events_csv: true
+save_events_json: true

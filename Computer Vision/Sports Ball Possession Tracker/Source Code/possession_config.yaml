@@ -1,0 +1,39 @@
+# Sports Ball Possession Tracker — Sample Configuration
+
+# --- Detection ---
+model: "yolo26m.pt"
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 1280
+device: ""
+
+# Class IDs — set to -1 for auto-detection from model names.
+# For COCO: person=0, sports ball=32
+player_class_id: -1
+ball_class_id: -1
+
+# --- Tracking ---
+tracker_type: "bytetrack"       # "bytetrack" or "botsort"
+track_high_thresh: 0.3
+track_low_thresh: 0.1
+track_buffer: 30
+
+# --- Possession ---
+possession_radius_px: 120      # Max ball→player distance for possession
+possession_hold_frames: 5      # Sticky hold after losing proximity
+min_ball_conf: 0.20
+
+# --- Export ---
+export_json: "output/possession_results.json"
+export_csv: "output/possession_timeline.csv"
+
+# --- Display ---
+show_display: true
+show_trails: true
+trail_length: 30
+show_possession_bar: true
+line_width: 2
+
+# --- Save ---
+save_video: false
+output_path: "output/possession_output.mp4"

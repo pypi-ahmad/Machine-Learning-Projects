@@ -1,0 +1,13 @@
+{
+  "project": "Business Card Reader",
+  "key": "business_card_reader",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "PaddleOCR detection + recognition + regex/heuristic field parsing",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

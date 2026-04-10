@@ -1,0 +1,13 @@
+{
+  "project": "Plant Disease Severity Estimator",
+  "key": "plant_disease_severity_estimator",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "ResNet-18 transfer learning (ImageNet \u00e2\u2020\u2019 PlantVillage)",
+  "model_family": [
+    "ResNet"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

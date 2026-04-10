@@ -1,0 +1,13 @@
+{
+  "project": "Real-time Object Tracking",
+  "key": "realtime_object_tracking",
+  "category": "Tracking",
+  "type": "tracking",
+  "tech": "YOLO26s/m detect + Ultralytics tracker",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

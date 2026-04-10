@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=70.0"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "computer-vision-projects"
+version = "2.0.0"
+description = "73 computer-vision projects unified under a single framework"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+
+# Core dependencies — enough for OpenCV utility projects and YOLO inference
+dependencies = [
+    # Scientific stack
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "scipy>=1.13.0",
+    "matplotlib>=3.9.0",
+    "seaborn>=0.13.0",
+    # Image / Video
+    "opencv-python>=4.10.0,<5",
+    "Pillow>=10.4.0",
+    "albumentations>=1.4.0",
+    # PyTorch ecosystem (torch/torchvision installed separately for CUDA)
+    "timm>=1.0.0",
+    # Detection (Ultralytics YOLO)
+    "ultralytics>=8.4.0",
+    # ML utilities
+    "scikit-learn>=1.5.0",
+    "scikit-image>=0.24.0",
+    # Progress / Logging
+    "tqdm>=4.66.0",
+    "loguru>=0.7.0",
+    # Config / Validation
+    "pydantic>=2.9.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0.0",
+]
+
+[project.optional-dependencies]
+# Face attribute analysis: age, gender, emotion, ethnicity (DeepFace)
+face = [
+    "deepface>=0.0.93",
+    "insightface>=0.7.3",
+    "onnxruntime-gpu>=1.18.0",
+    "dlib>=19.24.0",
+]
+
+# Hand / body landmark & gesture projects (MediaPipe)
+hand = [
+    "mediapipe>=0.10.14",
+]
+
+# OCR: text detection, recognition, licence plates, handwriting, sudoku
+ocr = [
+    "easyocr>=1.7.0",
+    "paddleocr>=2.9.0",
+    "paddlepaddle-gpu>=3.0.0",
+    "transformers>=4.44.0",
+    "editdistance>=0.6.0",
+    "lmdb>=1.5.0",
+]
+
+# Medical image segmentation (MedSAM / segment-anything)
+medical = [
+    "segment-anything>=1.0",
+]
+
+# Web frameworks (used by project web apps / dashboards)
+web = [
+    "flask>=3.0.0",
+    "streamlit>=1.38.0",
+    "gunicorn>=22.0.0",
+    "requests>=2.32.0",
+    "Werkzeug>=3.0.0",
+]
+
+# Dataset downloaders
+data = [
+    "gdown>=5.2.0",
+    "kaggle>=1.6.0",
+]
+
+# Visualization extras
+viz = [
+    "plotly>=5.24.0",
+]
+
+# Install everything (equivalent to the flat requirements.txt)
+all = [
+    "computer-vision-projects[face,hand,ocr,medical,web,data,viz]",
+]
+
+[tool.setuptools]
+packages = ["core", "models", "train", "utils", "configs", "benchmarks"]

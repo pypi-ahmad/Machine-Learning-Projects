@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Fire and Smoke Detection"
+id: "P14"
+status: "runnable"
+type: "pytorch"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: false
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "main.py"
+phase1b: "ultralytics migration, device handling, __main__ guard"
+notes: "YOLOv5 clone (moved to /legacy/yolov5_clones/fire_and_smoke_detection/); best.pt moved to /models/fire_and_smoke_detection/; needs ultralytics migration"

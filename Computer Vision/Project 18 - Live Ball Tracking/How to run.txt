@@ -1,0 +1,6 @@
+*Keep in mind you have all paths set for python and you're having 
+*a web camera for opencv module
+*install opencv-python, collections ,numpy ,argparse,imutils,time
+*open cmd at this folder and apply command:-
+			python ballTracking.py
+*and make sure to use green ball and don't use green background

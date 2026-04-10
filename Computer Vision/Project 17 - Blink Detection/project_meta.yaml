@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 17 - Blink Detection
+
+project_id: 17
+name: "Blink Detection"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "blink_detector.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  --shape-predictor default updated to /models/project_17/ (Phase 1B).
+  Uses dlib + Eye Aspect Ratio (EAR) algorithm.
+phase2_fixes: "FileVideoStream leak fix, model file existence check"

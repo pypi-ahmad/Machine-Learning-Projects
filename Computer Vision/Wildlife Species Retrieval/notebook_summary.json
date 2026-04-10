@@ -1,0 +1,13 @@
+{
+  "project": "Wildlife Species Retrieval",
+  "key": "wildlife_species_retrieval",
+  "category": "Retrieval & Search",
+  "type": "retrieval",
+  "tech": "EfficientNet-B0 embeddings + cosine index + optional reranking",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

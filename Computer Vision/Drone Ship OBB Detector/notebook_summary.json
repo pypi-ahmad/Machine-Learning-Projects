@@ -1,0 +1,13 @@
+{
+  "project": "Drone Ship OBB Detector",
+  "key": "drone_ship_obb_detector",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "Ultralytics YOLO26m-OBB",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

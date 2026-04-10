@@ -1,0 +1,44 @@
+# Form OCR Checkbox Extractor — sample configuration
+# Copy this file and adjust values as needed.
+
+# ── Checkbox / radio detection ─────────────────────────────
+checkbox_min_size: 12
+checkbox_max_size: 60
+checkbox_aspect_lo: 0.7
+checkbox_aspect_hi: 1.4
+fill_threshold: 0.35
+radio_circularity: 0.75
+adaptive_block_size: 25
+adaptive_c: 10
+morph_kernel_size: 3
+
+# ── OCR ────────────────────────────────────────────────────
+ocr_lang: "en"
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+
+# ── Label association ──────────────────────────────────────
+label_max_distance: 300
+label_prefer_direction: "right"
+
+# ── Validation ─────────────────────────────────────────────
+warn_missing_fields: true
+required_fields:
+  - "name"
+confidence_threshold: 0.55
+
+# ── Export ─────────────────────────────────────────────────
+export_json: ""
+export_csv: ""
+
+# ── Display ────────────────────────────────────────────────
+show_display: true
+show_checkboxes: true
+show_ocr_boxes: false
+highlight_fields: true
+line_width: 2
+
+# ── Save ───────────────────────────────────────────────────
+save_annotated: false
+output_dir: "output"

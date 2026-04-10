@@ -1,0 +1,7 @@
+install these libraies  	numpy
+							argparse
+							imutils
+							skimage
+							opencv-python
+Open cmd at same folder as the project is
+run command: python docScanner.py -i IMG_7700.jpg(change the name for other images)

@@ -1,0 +1,131 @@
+"""Sign Language Alphabet Recognizer — CLI entry point."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(
+        description="Sign Language Alphabet Recognizer — webcam / image / video inference",
+    )
+    p.add_argument(
+        "--source", default="0",
+        help="'0' for webcam, or path to video/image (default: 0)",
+    )
+    p.add_argument("--model", default="model/sign_lang_clf.pkl", help="Model path")
+    p.add_argument("--config", default=None, help="YAML/JSON config path")
+    p.add_argument("--no-smoothing", action="store_true", help="Disable vote smoothing")
+    p.add_argument("--no-display", action="store_true", help="Headless mode")
+    p.add_argument("--export-csv", default=None, help="CSV export path")
+    p.add_argument("--export-json", default=None, help="JSON export path")
+    p.add_argument("--save-annotated", action="store_true", help="Save annotated frames")
+    p.add_argument("--output-dir", default="output", help="Output directory")
+    p.add_argument("--force-download", action="store_true", help="Re-download dataset")
+    return p
+
+
+def _is_image(path: str) -> bool:
+    return Path(path).suffix.lower() in {
+        ".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".webp",
+    }
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = _build_parser().parse_args(argv)
+
+    import cv2
+
+    from config import SignLangConfig, load_config
+    from controller import RecognitionController
+    from export import FrameExporter
+    from visualize import draw_overlay
+
+    if args.force_download:
+        from data_bootstrap import ensure_sign_lang_dataset
+        ensure_sign_lang_dataset(force=True)
+
+    cfg = load_config(args.config) if args.config else SignLangConfig()
+    if args.no_smoothing:
+        cfg.enable_smoothing = False
+
+    ctrl = RecognitionController(cfg)
+    ctrl.load(model_path=args.model)
+
+    if not ctrl.classifier.ready:
+        print(
+            "No trained model found. Run trainer.py first:\n"
+            "  python trainer.py\n"
+            "Then re-run infer.py.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    source = args.source
+    if source.isdigit():
+        source = int(source)
+
+    is_img = isinstance(source, str) and _is_image(source)
+
+    out_dir = Path(args.output_dir)
+    if args.save_annotated:
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+    with FrameExporter(args.export_csv, args.export_json) as exporter:
+        if is_img:
+            frame = cv2.imread(source)
+            if frame is None:
+                print(f"Cannot read image: {source}", file=sys.stderr)
+                sys.exit(1)
+            _process_frame(frame, ctrl, cfg, exporter, draw_overlay, cv2, args, out_dir, 0)
+            if not args.no_display:
+                cv2.waitKey(0)
+        else:
+            cap = cv2.VideoCapture(source)
+            if not cap.isOpened():
+                print(f"Cannot open source: {source}", file=sys.stderr)
+                sys.exit(1)
+            idx = 0
+            while True:
+                ok, frame = cap.read()
+                if not ok:
+                    break
+                if isinstance(source, int):
+                    frame = cv2.flip(frame, 1)
+                _process_frame(frame, ctrl, cfg, exporter, draw_overlay, cv2, args, out_dir, idx)
+                idx += 1
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord("q"):
+                    break
+                elif key == ord("r"):
+                    ctrl.reset()
+            cap.release()
+
+    ctrl.close()
+    if not args.no_display:
+        cv2.destroyAllWindows()
+
+
+def _process_frame(frame, ctrl, cfg, exporter, draw_overlay, cv2, args, out_dir, idx):
+    result = ctrl.process(frame)
+    exporter.record(result)
+
+    if not args.no_display or args.save_annotated:
+        vis = draw_overlay(
+            frame,
+            result,
+            ctrl.detector,
+            show_landmarks=cfg.show_landmarks,
+            show_prediction=cfg.show_prediction,
+            show_confidence=cfg.show_confidence,
+        )
+        if not args.no_display:
+            cv2.imshow("Sign Language Alphabet Recognizer", vis)
+        if args.save_annotated:
+            cv2.imwrite(str(out_dir / f"frame_{idx:06d}.jpg"), vis)
+
+
+if __name__ == "__main__":
+    main()

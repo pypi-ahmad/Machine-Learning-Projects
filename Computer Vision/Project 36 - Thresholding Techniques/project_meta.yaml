@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 36 - Thresholding Techiques
+
+project_id: 36
+name: "Thresholding Techniques"
+status: needs_fix
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "Thresholding techniques (OpenCV).ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: |
+  No sample image included — notebook will fail unless user provides one.
+  Folder name typo (Techiques).

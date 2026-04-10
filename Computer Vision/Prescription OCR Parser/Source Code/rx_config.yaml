@@ -1,0 +1,28 @@
+# Prescription OCR Parser — sample configuration
+# Copy this file and adjust values as needed.
+
+# ── OCR ────────────────────────────────────────────────────
+ocr_lang: "en"
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+
+# ── Validation ─────────────────────────────────────────────
+confidence_threshold: 0.50
+warn_low_confidence: true
+required_fields:
+  - "medicine_name"
+
+# ── Export ─────────────────────────────────────────────────
+export_json: ""
+export_csv: ""
+
+# ── Display ────────────────────────────────────────────────
+show_display: true
+show_ocr_boxes: true
+highlight_fields: true
+line_width: 2
+
+# ── Save ───────────────────────────────────────────────────
+save_annotated: false
+output_dir: "output"

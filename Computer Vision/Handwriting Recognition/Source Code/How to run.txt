@@ -1,0 +1,3 @@
+To run the main.py script located in the src folder, specify the path of the word image you wish to recognize using the --img_file argument. By default, the script will recognize words in a line.
+
+Ensure that all necessary libraries and dependencies have been installed before running the script to avoid any potential errors. Additionally, make sure that the specified path is accurate and that the word image is accessible by the script.

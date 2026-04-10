@@ -1,0 +1,13 @@
+{
+  "project": "Gesture Controlled Slideshow",
+  "key": "gesture_controlled_slideshow",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "MediaPipe Hands + finger-state gesture classifier",
+  "model_family": [
+    "MediaPipe"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

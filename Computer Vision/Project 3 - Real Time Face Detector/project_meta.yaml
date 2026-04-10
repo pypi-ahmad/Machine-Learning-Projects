@@ -1,0 +1,17 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 3 - Real Time Face Detector Image
+
+project_id: 3
+name: "Real Time Face Detector Image"
+status: broken
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "detect_faces.py"
+legacy_deps: true
+duplicate_of: null
+notes: |
+  BROKEN: deploy.prototxt.txt is missing — cv2.dnn.readNetFromCaffe will fail.
+  Caffe model relocated to /models/project_03/; --model default updated (Phase 1B).
+  See legacy_requirements.txt.
+phase2_fixes: "model file existence checks"

@@ -1,0 +1,43 @@
+# Retail Shelf Stockout Detector — Zone Configuration
+#
+# Define shelf zones, thresholds, and model/export settings.
+# Load via: python infer.py --source image.jpg --config zones.yaml
+
+# --- Model ---
+model: "yolo26m.pt"
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+# device: "0"    # GPU index, or "cpu"
+
+# --- Zones ---
+# Each zone is a named polygon with a low-stock threshold.
+# Polygon coordinates are (x, y) pixel positions.
+# 'classes' is optional — omit to count all detected classes.
+default_low_stock_threshold: 3
+
+zones:
+  - name: "Shelf-A"
+    polygon: [[50, 100], [400, 100], [400, 350], [50, 350]]
+    low_stock_threshold: 3
+    # classes: ["bottle", "can"]  # optional filter
+
+  - name: "Shelf-B"
+    polygon: [[420, 100], [780, 100], [780, 350], [420, 350]]
+    low_stock_threshold: 5
+
+  - name: "Shelf-C"
+    polygon: [[50, 370], [780, 370], [780, 550], [50, 550]]
+    low_stock_threshold: 4
+
+# --- Export ---
+export_dir: "outputs"
+save_events_csv: true
+save_events_json: true
+save_alert_snapshots: true
+snapshot_cooldown_sec: 10.0
+
+# --- Display ---
+show_display: true
+save_video: false
+output_fps: 25

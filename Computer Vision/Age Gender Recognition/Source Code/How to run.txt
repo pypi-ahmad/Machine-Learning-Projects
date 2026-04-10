@@ -1,0 +1,7 @@
+Instructions for Testing:
+To test the program using images and videos, run the main.py file.
+
+To test the program using live camera feed, run the test.py file.
+
+
+

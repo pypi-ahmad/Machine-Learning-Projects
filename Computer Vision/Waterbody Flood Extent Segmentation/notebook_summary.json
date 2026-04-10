@@ -1,0 +1,13 @@
+{
+  "project": "Waterbody Flood Extent Segmentation",
+  "key": "waterbody_flood_extent_segmentation",
+  "category": "Segmentation",
+  "type": "segmentation",
+  "tech": "YOLO26m-seg instance segmentation",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

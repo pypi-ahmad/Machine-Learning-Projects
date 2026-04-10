@@ -1,0 +1,15 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 49 - Real Time TextDetection
+
+project_id: 49
+name: "Real Time TextDetection"
+status: needs_fix
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "TextSimple.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  Hardcoded tesseract path replaced with env var / shutil.which() (Phase 1B).
+  Requires external Tesseract-OCR installation; set TESSERACT_CMD env var or add to PATH.

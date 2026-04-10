@@ -1,0 +1,45 @@
+# Handwritten Note to Markdown — sample configuration
+# Copy this file and adjust values as needed.
+
+# ── Line segmentation ─────────────────────────────────────
+enable_segmentation: true
+min_line_height: 20
+merge_gap: 12
+projection_threshold: 0.02
+padding: 8
+
+# ── TrOCR OCR engine ──────────────────────────────────────
+model_name: "microsoft/trocr-base-handwritten"
+use_gpu: false
+max_new_tokens: 200
+num_beams: 4
+
+# ── Markdown formatting ───────────────────────────────────
+detect_headers: true
+header_height_ratio: 1.8
+detect_lists: true
+list_indent_px: 40
+paragraph_gap_ratio: 2.0
+
+# ── Language ───────────────────────────────────────────────
+language: "en"
+
+# ── Validation ─────────────────────────────────────────────
+confidence_threshold: 0.40
+warn_low_confidence: true
+min_text_length: 1
+
+# ── Export ─────────────────────────────────────────────────
+export_md: ""
+export_txt: ""
+export_json: ""
+
+# ── Display ────────────────────────────────────────────────
+show_display: true
+show_line_boxes: true
+show_confidence: true
+line_width: 2
+
+# ── Save ───────────────────────────────────────────────────
+save_annotated: false
+output_dir: "output"

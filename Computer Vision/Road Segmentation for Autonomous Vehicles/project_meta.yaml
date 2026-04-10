@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Road segmentation for autonomous vechicles"
+id: "P26"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+phase1b: "notebook-only, no script changes"
+notes: "tf.keras U-Net; folder has 'vechicles' and 'Souce Code' typos"

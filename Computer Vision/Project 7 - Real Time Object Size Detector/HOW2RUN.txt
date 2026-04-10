@@ -1,0 +1,3 @@
+install all libraries
+Open cmd at same folder as the project is
+run command: python object_size.py  -i example_02.png -w 0.75

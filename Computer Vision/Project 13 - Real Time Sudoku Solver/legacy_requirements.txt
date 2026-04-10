@@ -1,0 +1,15 @@
+# ============================================================================
+# LEGACY DEPENDENCIES — Project 13: Real Time Sudoku Solver
+# ============================================================================
+# This project uses standalone Keras (not tf.keras) for digit recognition.
+# The digit_model.h5 file is a Keras HDF5 weight file.
+#
+# These dependencies are NOT in the global requirements.txt.
+# They are preserved here for reference until the project is migrated
+# to a PyTorch pipeline.
+# ============================================================================
+
+# WARNING: standalone keras is deprecated. Use tensorflow.keras or migrate to PyTorch.
+keras>=2.15,<3.0
+tensorflow>=2.15,<3.0
+h5py>=3.10,<4.0

@@ -1,0 +1,13 @@
+{
+  "project": "Industrial Scratch Crack Segmentation",
+  "key": "industrial_scratch_crack_segmentation",
+  "category": "Segmentation",
+  "type": "segmentation",
+  "tech": "YOLO26m-seg instance segmentation + coverage-based severity heuristics",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

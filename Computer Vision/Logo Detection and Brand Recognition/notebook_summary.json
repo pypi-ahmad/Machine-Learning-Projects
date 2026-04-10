@@ -1,0 +1,13 @@
+{
+  "project": "Logo Detection and Brand Recognition",
+  "key": "logo_detection",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m detect (needs logo-trained weights) or SIFT matching",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

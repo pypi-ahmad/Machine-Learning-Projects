@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 39 - Pencil drawing effect (MISLABELED — actually Noise Removing)
+
+project_id: 39
+name: "Noise Removing (MISLABELED as Pencil drawing)"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "Noise Removing (OpenCV).ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: |
+  MISLABELED: Folder says "Pencil drawing effect" but content is noise removal.
+  Conflicts with Project 38 which is the actual pencil drawing project.

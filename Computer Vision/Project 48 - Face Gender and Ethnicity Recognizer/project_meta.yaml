@@ -1,0 +1,19 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 48 - Face, Gender & Ethnicity Recognizer Model
+
+project_id: 48
+name: "Face, Gender & Ethnicity Recognizer"
+status: broken
+type: keras
+gpu_ready: false
+has_dataset: true
+entry_point: "keras-tuner-multi-output-cnn.ipynb"
+legacy_deps: true
+duplicate_of: null
+notes: |
+  BROKEN: Kaggle-style paths, Keras Tuner hardcoded paths.
+  Most complex notebook (53 cells). Multi-output CNN.
+  Dataset zip relocated to /data/project_48/.
+  Link to the Dataset.txt is empty.
+  See legacy_requirements.txt for TF/Keras/Keras-Tuner deps.
+  Folder name typo (Ethincity).

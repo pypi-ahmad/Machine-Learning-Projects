@@ -1,0 +1,6 @@
+To run the main.py code, provide the path of the image or video you wish to use and execute the script. This can be done via a terminal or command prompt interface.
+
+Before running the code, ensure that all necessary libraries and dependencies have been installed to avoid any potential errors. Additionally, make sure that the specified path is accurate and that the image or video file is accessible by the script.
+
+
+

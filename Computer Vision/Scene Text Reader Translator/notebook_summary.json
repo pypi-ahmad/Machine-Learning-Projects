@@ -1,0 +1,13 @@
+{
+  "project": "Scene Text Reader Translator",
+  "key": "scene_text_reader_translator",
+  "category": "OCR & Document AI",
+  "type": "ocr",
+  "tech": "PaddleOCR scene text detection + recognition + translation hook",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

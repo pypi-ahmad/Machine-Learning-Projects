@@ -1,0 +1,12 @@
+# Project metadata — Phase 1B
+name: "Skin Cancer Detection"
+id: "P28"
+status: "needs_fix"
+type: "fastai"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Souce Code"
+phase1b: "no changes (needs fastai v2 migration)"
+notes: "fast.ai v1 (deprecated); needs migration to fast.ai v2 or PyTorch"

@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 14 - Click-detect on Image
+
+project_id: 14
+name: "Click-detect on Image (Warp)"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "Warp.py"
+legacy_deps: false
+duplicate_of: "CV Projects 45 -  Detecting clicks on images"
+notes: |
+  cv.destroyAllWindows() fixed to cv2.destroyAllWindows() (Phase 1B).
+  DUPLICATE: Near-duplicate of Project 45.
+phase2_fixes: "q-key exit added"

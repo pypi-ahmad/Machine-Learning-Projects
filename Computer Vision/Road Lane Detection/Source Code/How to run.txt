@@ -1,0 +1,3 @@
+To run the detection_on_image.py file, specify the path of the image you wish to detect in the img argument and execute the script. This can be done via a terminal or command prompt interface.
+
+Similarly, to run the detection_on_vid.py file, provide the path of the video you wish to detect in the script's --input argument and execute the script. Ensure that all necessary libraries and dependencies have been installed before running either script to avoid any potential errors. Additionally, make sure that the specified path is accurate and that the image or video file is accessible by the script.

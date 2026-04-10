@@ -1,0 +1,59 @@
+# PPE Compliance Monitor — Zone Configuration
+#
+# Each zone defines a polygon (list of [x, y] vertices) and optionally
+# a list of required PPE items.  If required_ppe is omitted, the global
+# required_ppe list from PPEConfig is used.
+#
+# Copy this file and adjust polygons to match your camera view.
+
+model: yolo11m.pt
+conf_threshold: 0.30
+iou_threshold: 0.45
+imgsz: 640
+
+required_ppe:
+  - helmet
+  - safety_vest
+
+ppe_iou_threshold: 0.20
+alert_cooldown_sec: 10.0
+
+zones:
+  - name: Entry-Gate
+    polygon:
+      - [50, 50]
+      - [400, 50]
+      - [400, 450]
+      - [50, 450]
+    required_ppe:
+      - helmet
+      - safety_vest
+
+  - name: Loading-Dock
+    polygon:
+      - [420, 50]
+      - [800, 50]
+      - [800, 450]
+      - [420, 450]
+    required_ppe:
+      - helmet
+      - safety_vest
+      - gloves
+
+  - name: Hazmat-Area
+    polygon:
+      - [50, 470]
+      - [800, 470]
+      - [800, 700]
+      - [50, 700]
+    required_ppe:
+      - helmet
+      - safety_vest
+      - gloves
+      - goggles
+
+export_dir: outputs
+save_events_csv: true
+save_events_json: true
+save_violation_snapshots: true
+snapshot_cooldown_sec: 10.0

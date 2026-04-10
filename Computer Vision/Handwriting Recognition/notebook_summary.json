@@ -1,0 +1,14 @@
+{
+  "project": "Handwriting Recognition",
+  "key": "handwriting_recognition",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "TrOCR (HuggingFace) / PaddleOCR",
+  "model_family": [
+    "PaddleOCR",
+    "TrOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,34 @@
+# Invoice Field Extractor — sample inference config
+# Copy and edit for your use case.
+
+# OCR settings
+ocr_lang: en
+use_gpu: false
+det_db_thresh: 0.3
+rec_batch_num: 6
+
+# Field extraction
+extract_line_items: true
+
+# Validation
+warn_missing_fields: true
+required_fields:
+  - invoice_number
+  - total
+
+# Export
+export_json: ""
+export_csv: ""
+
+# Display
+show_display: true
+highlight_fields: true
+show_ocr_boxes: false
+line_width: 2
+
+# PDF
+pdf_dpi: 300
+
+# Output
+save_annotated: false
+output_dir: output

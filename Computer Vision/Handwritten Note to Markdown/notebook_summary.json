@@ -1,0 +1,13 @@
+{
+  "project": "Handwritten Note to Markdown",
+  "key": "handwritten_note_to_markdown",
+  "category": "OCR & Document AI",
+  "type": "ocr",
+  "tech": "TrOCR (VisionEncoderDecoder) + projection-profile line segmentation",
+  "model_family": [
+    "TrOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

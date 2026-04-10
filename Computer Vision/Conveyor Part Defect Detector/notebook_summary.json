@@ -1,0 +1,13 @@
+{
+  "project": "Conveyor Part Defect Detector",
+  "key": "conveyor_part_defect_detector",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m detection + pass/fail inspector + defect crop export",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 5 - Finger Counter
+
+project_id: 5
+name: "Finger Counter"
+status: runnable
+type: mixed
+gpu_ready: false
+has_dataset: true
+entry_point: "fingerCount.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  Hardcoded path replaced with Path(__file__)-relative resolution (Phase 1B).
+  Uses OpenCV + MediaPipe.
+phase2_fixes: "mediapipe Hands kwargs, sorted listdir, q-key exit, cleanup"

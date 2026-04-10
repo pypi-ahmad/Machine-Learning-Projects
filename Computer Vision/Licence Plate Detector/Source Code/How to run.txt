@@ -1,0 +1,6 @@
+Instructions to Run the deploy.py Code:
+To run the deploy.py code, please ensure that you have set the path of the input image at the end of the code.
+
+Once the path of the input image has been set, run the deploy.py code. The output will be generated based on the input image.
+
+Please make sure that all required dependencies and libraries have been installed before running the code.

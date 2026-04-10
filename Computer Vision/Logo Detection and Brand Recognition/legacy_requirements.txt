@@ -1,0 +1,4 @@
+# Legacy dependencies for Logo Detection and Brand Recognition
+# This project currently uses TensorFlow/Keras (MobileNetV2)
+# These deps are isolated here pending PyTorch migration
+tensorflow>=2.10.0

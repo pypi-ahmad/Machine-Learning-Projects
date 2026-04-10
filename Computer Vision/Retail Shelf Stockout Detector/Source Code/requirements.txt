@@ -1,0 +1,6 @@
+# Retail Shelf Stockout Detector — project-level deps
+# (All core deps are in repo-level requirements.txt / pyproject.toml)
+ultralytics>=8.4.0
+opencv-python>=4.10.0,<5
+numpy>=1.26.0
+PyYAML>=6.0.0

@@ -1,0 +1,13 @@
+{
+  "project": "Visual Anomaly Detector",
+  "key": "visual_anomaly_detector",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "ResNet feature extraction + Mahalanobis / k-NN anomaly scoring + patch heatmaps",
+  "model_family": [
+    "ResNet"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

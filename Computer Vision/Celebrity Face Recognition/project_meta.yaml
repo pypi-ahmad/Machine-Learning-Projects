@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Celebrity Face Recognition"
+id: "P7"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "test.py"
+phase1b: "model path fixed, __main__ guard added"
+notes: "tf.keras MobileNetV2; weights moved to /models/celebrity_face_recognition/"

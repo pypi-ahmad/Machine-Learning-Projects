@@ -1,0 +1,13 @@
+{
+  "project": "Face Anti Spoofing Detection",
+  "key": "face_anti_spoofing",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face detector + LBP texture variance (baseline)",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

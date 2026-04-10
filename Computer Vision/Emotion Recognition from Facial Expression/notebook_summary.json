@@ -1,0 +1,14 @@
+{
+  "project": "Emotion Recognition from Facial Expression",
+  "key": "emotion_recognition",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO face detector + DeepFace emotion analysis",
+  "model_family": [
+    "YOLO",
+    "DeepFace"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,13 @@
+{
+  "project": "ID Card KYC Parser",
+  "key": "id_card_kyc_parser",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "Contour detection + PaddleOCR + template-based field parsing",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

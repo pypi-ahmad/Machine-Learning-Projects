@@ -1,0 +1,26 @@
+# Drone Ship OBB Detector — Sample Configuration
+# Copy and adjust for your deployment.
+
+model: "yolo26m-obb.pt"       # YOLO-OBB model weights
+conf_threshold: 0.35
+iou_threshold: 0.45
+imgsz: 1024                   # Larger images for aerial detail
+device: ""                     # "" = auto, "cpu", "0"
+
+# Filter to specific classes (empty = all model classes)
+target_classes: []
+
+# --- Export ---
+export_json: "output/obb_results.json"
+export_txt: "output/obb_labels"        # Directory for YOLO-OBB TXT files
+
+# --- Display ---
+show_display: true
+line_width: 2
+label_font_scale: 0.45
+show_conf: true
+show_angle: true
+
+# --- Save ---
+save_video: false
+output_fps: 25

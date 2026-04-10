@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 24 - Custom Object Detection
+
+project_id: 24
+name: "Custom Object Detection"
+status: needs_fix
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "objectDetectoin.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  Filename typo: objectDetectoin.py (should be objectDetection.py).
+  createData.py hardcodes 'data/images' directory which doesn't exist.
+  Uses 18 Haarcascade XML classifiers.

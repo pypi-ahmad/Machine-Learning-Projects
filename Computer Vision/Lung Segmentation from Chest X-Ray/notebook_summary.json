@@ -1,0 +1,14 @@
+{
+  "project": "Lung Segmentation from Chest X-Ray",
+  "key": "lung_segmentation",
+  "category": "Segmentation",
+  "type": "segmentation",
+  "tech": "YOLO26m-seg (trainable; optional MedSAM comparison)",
+  "model_family": [
+    "YOLO",
+    "SAM"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,13 @@
+{
+  "project": "Document Layout Block Detector",
+  "key": "document_layout_block_detector",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "Ultralytics YOLO26m",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

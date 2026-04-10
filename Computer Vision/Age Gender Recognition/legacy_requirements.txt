@@ -1,0 +1,7 @@
+# Legacy dependencies for Age Gender Recognition
+# This project uses Caffe models loaded via OpenCV DNN
+# The .caffemodel and .prototxt files are Caffe-format pretrained weights
+# No pip install needed — OpenCV DNN reads them directly
+# Listed here for documentation only
+#
+# caffe (not pip-installable; loaded via cv2.dnn.readNet)

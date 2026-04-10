@@ -1,0 +1,13 @@
+{
+  "project": "Food Object Detection",
+  "key": "food_object_detection",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "YOLO26m detect (COCO food classes; train on Food-101 for 200+ categories)",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

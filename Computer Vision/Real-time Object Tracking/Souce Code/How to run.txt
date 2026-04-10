@@ -1,0 +1,2 @@
+Instructions to Run the Web App:
+To run the web app, run the webapp.py code. The code will provide a link to localhost, which you can open in your browser to access the app.

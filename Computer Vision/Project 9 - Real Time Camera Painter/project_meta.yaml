@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 9 - Real Time Painter of Camera Screen
+
+project_id: 9
+name: "Real Time Painter"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "Paint.py"
+legacy_deps: false
+duplicate_of: null
+notes: "Blue-object HSV tracking. No docs provided."
+phase2_fixes: "frame-before-check ordering fix"

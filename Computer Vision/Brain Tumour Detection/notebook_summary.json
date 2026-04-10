@@ -1,0 +1,13 @@
+{
+  "project": "Brain Tumour Detection",
+  "key": "brain_tumour_detection",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "YOLO26m-cls (whole-image binary classifier)",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

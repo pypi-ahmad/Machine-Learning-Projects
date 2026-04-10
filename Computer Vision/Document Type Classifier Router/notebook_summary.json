@@ -1,0 +1,13 @@
+{
+  "project": "Document Type Classifier Router",
+  "key": "document_type_classifier_router",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "ResNet-18 transfer learning + configurable routing table",
+  "model_family": [
+    "ResNet"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

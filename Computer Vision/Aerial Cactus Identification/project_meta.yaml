@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Aerial Cactus Identification"
+id: "P1"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "aerial-cactus-cnn.ipynb"
+phase1b: "notebook-only, no script changes"
+notes: "Notebook-only; uses tf.keras CNN"

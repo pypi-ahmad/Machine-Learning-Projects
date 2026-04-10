@@ -1,0 +1,5 @@
+paddleocr
+paddlepaddle
+opencv-python
+numpy
+pyyaml

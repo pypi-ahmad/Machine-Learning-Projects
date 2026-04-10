@@ -1,0 +1,13 @@
+{
+  "project": "Exercise Rep Counter",
+  "key": "exercise_rep_counter",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "",
+  "model_family": [
+    "Custom"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,5 @@
+# Parking Occupancy Monitor
+ultralytics>=8.0
+opencv-python>=4.8
+numpy>=1.24
+pyyaml>=6.0

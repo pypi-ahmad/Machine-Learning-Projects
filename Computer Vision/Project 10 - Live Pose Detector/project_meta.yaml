@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 10 - Live PoseDetector
+
+project_id: 10
+name: "Live PoseDetector"
+status: runnable
+type: mixed
+gpu_ready: false
+has_dataset: false
+entry_point: "poseDetector-I.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  main.py replaced with proper wrapper (Phase 1B).
+  Uses MediaPipe Holistic.
+phase2_fixes: "FACEMESH_CONTOURS, color 255, ret guard"

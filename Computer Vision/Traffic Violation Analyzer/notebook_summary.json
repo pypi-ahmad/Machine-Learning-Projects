@@ -1,0 +1,13 @@
+{
+  "project": "Traffic Violation Analyzer",
+  "key": "traffic_violation_analyzer",
+  "category": "Tracking",
+  "type": "tracking",
+  "tech": "YOLO26m detection + ByteTrack + rule engine + CSV/JSON export",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

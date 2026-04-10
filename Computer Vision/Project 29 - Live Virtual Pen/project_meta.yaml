@@ -1,0 +1,17 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 29 - Live Virtual Pen
+
+project_id: 29
+name: "Live Virtual Pen"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "VPen.ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: |
+  cv2.findcnt() fixed to cv2.findContours() in VPen.ipynb (Phase 1B).
+  cv2.create_Trackbar/get_TrackbarPos fixed in finding HSV values.ipynb (Phase 1B).
+  Loads HSV values from hsv_value.npy.

@@ -1,0 +1,13 @@
+{
+  "project": "Invoice Field Extractor",
+  "key": "invoice_field_extractor",
+  "category": "Detection",
+  "type": "detection",
+  "tech": "PaddleOCR detection + recognition + regex field parsing",
+  "model_family": [
+    "PaddleOCR"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

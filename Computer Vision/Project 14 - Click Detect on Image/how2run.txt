@@ -1,0 +1,5 @@
+install these libraies  	numpy
+							opencv-python
+Open cmd at same folder as the project is
+run command: python warp.python
+click four times at diffrent places at image and output will be drawn

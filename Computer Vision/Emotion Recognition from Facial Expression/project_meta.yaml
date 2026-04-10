@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Emotion Recognition from facial expression"
+id: "P9"
+status: "runnable"
+type: "keras"
+gpu_required: true
+has_dataset: false
+has_legacy_deps: true
+duplicate_of: "P11"  # Near-duplicate: Face Emotion Recognition (same FER-2013 task, same Keras CNN pipeline)
+source_dir: "Source Code"
+entry_point: "main.py"
+phase1b: "entry point created, deprecated Keras fixes"
+notes: "Standalone Keras 2.4.3 + TF 2.4.1; Flask web app; near-duplicate of P11"

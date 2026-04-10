@@ -1,0 +1,5 @@
+# Face Verification Attendance System — project-level deps
+insightface>=0.7.3
+onnxruntime-gpu>=1.18.0
+opencv-python>=4.10.0,<5
+numpy>=1.26.0

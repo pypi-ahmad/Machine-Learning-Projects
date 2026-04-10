@@ -1,0 +1,5 @@
+# Legacy dependencies for Traffic Sign Recognition
+# Original pinned: tensorflow==1.14.0, keras==2.3.1 (extremely outdated)
+# These deps are isolated here pending PyTorch migration
+tensorflow>=2.10.0
+keras>=2.10.0

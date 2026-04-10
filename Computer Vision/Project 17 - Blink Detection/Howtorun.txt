@@ -1,0 +1,10 @@
+install these libraies  	scipy
+							numpy
+							argparse
+							imutils
+							time
+							dlib
+							opencv-python
+Open cmd at same folder as the project is
+run command: python blink_ditector.py -p shape_predictor_68_face_landmarks.dat (-v (if you want to read from a video file then make a video and store here in same folder the give it's name else no need for -v video_name))
+

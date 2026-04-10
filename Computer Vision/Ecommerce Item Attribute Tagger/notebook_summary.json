@@ -1,0 +1,14 @@
+{
+  "project": "Ecommerce Item Attribute Tagger",
+  "key": "ecommerce_item_attribute_tagger",
+  "category": "Classification",
+  "type": "classification",
+  "tech": "ResNet multi-head classifier with optional YOLO item isolation",
+  "model_family": [
+    "YOLO",
+    "ResNet"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

@@ -1,0 +1,16 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 21 - VolumeController
+
+project_id: 21
+name: "VolumeController"
+status: runnable
+type: mixed
+gpu_ready: false
+has_dataset: false
+entry_point: "VolumeControl.py"
+legacy_deps: false
+duplicate_of: "CV Project 6 - Live HTM"
+notes: |
+  DUPLICATE: Identical source to Project 6.
+  Windows-only (pycaw + comtypes). OpenCV + MediaPipe.
+phase2_fixes: "mediapipe Hands kwargs, q-key exit, cleanup"

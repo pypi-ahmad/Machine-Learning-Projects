@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 34 - Live Motion Blurring
+
+project_id: 34
+name: "Live Motion Blurring"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "motion blurring effect.ipynb"
+notebook_only: true
+legacy_deps: false
+duplicate_of: null
+notes: "Jupyter notebook."

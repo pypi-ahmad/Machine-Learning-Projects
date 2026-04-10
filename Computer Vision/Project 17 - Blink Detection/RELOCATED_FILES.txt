@@ -1,0 +1,4 @@
+# FILE RELOCATED
+# Original: shape_predictor_68_face_landmarks.dat (95 MB)
+# Moved to: /models/project_17/shape_predictor_68_face_landmarks.dat
+# Reason: Large file sanitization (Phase 1A) — files >10MB centralized

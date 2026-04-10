@@ -1,0 +1,5 @@
+# Legacy dependencies for Skin Cancer Detection
+# This project uses fast.ai v1 (deprecated, now v2)
+# These deps are isolated here pending PyTorch migration
+# Note: fastai v1 is incompatible with modern PyTorch; migration required
+fastai==1.0.61

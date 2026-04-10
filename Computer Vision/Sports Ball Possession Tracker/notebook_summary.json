@@ -1,0 +1,13 @@
+{
+  "project": "Sports Ball Possession Tracker",
+  "key": "sports_ball_possession_tracker",
+  "category": "Tracking",
+  "type": "tracking",
+  "tech": "Ultralytics YOLO26m + ByteTrack",
+  "model_family": [
+    "YOLO"
+  ],
+  "has_training": true,
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 4060 Laptop GPU"
+}

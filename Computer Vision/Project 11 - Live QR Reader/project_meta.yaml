@@ -1,0 +1,15 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Project 11 - Live QR-Reader
+
+project_id: 11
+name: "Live QR-Reader"
+status: broken
+type: opencv
+gpu_ready: false
+has_dataset: false
+entry_point: "QR_Reader.py"
+legacy_deps: false
+duplicate_of: null
+notes: |
+  BROKEN: References myDataFile.txt which does not exist.
+  Uses pyzbar for QR/barcode decoding.

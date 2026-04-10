@@ -1,0 +1,14 @@
+# Project Metadata — Auto-generated Phase 1A
+# CV Projects 22 - Live Color Picker
+
+project_id: 22
+name: "Live Color Picker"
+status: runnable
+type: opencv
+gpu_ready: false
+has_dataset: true
+entry_point: "ColorPicker.py"
+legacy_deps: false
+duplicate_of: null
+notes: "HSV color picker with trackbars. Contains stackImages utility."
+phase2_fixes: "q-key exit, cleanup"

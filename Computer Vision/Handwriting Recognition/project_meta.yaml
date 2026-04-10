@@ -1,0 +1,13 @@
+# Project metadata — Phase 1B
+name: "Handwriting Recognition"
+id: "P17"
+status: "runnable"
+type: "keras"
+gpu_required: false
+has_dataset: true
+has_legacy_deps: true
+duplicate_of: null
+source_dir: "Source Code"
+entry_point: "main.py"
+phase1b: "backslash path bug fixed, entry point created"
+notes: "TF 2.x with tf.compat.v1 session API; snapshot moved to /models/handwriting_recognition/"
