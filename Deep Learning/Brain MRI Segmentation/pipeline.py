@@ -5,14 +5,14 @@ Primary : nnU-Net-style supervised U-Net (encoder-decoder with skip connections)
 Optional: MedSAM2 zero-shot promptable segmentation (center-point prompts).
 Metrics : Dice coefficient + mean IoU per model, wall-clock timing.
 Export  : metrics.json, segmentation_results.png, best_unet.pth.
-Data    : Auto-downloaded from HuggingFace at runtime.
+Data    : Auto-downloaded from Kaggle at runtime.
 
 DISCLAIMER: This is an educational/research demonstration pipeline.
 It is NOT validated for clinical use. Medical image analysis models
 require rigorous validation on curated datasets, regulatory approval,
 and expert clinical oversight before any diagnostic application.
 """
-import os, json, time, warnings
+import os, json, time, warnings, glob
 import numpy as np
 import torch
 import torch.nn as nn
@@ -29,33 +29,44 @@ N_CLASSES = 2
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_data():
-    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("mateuszbuda/brain-segmentation", split="train")
-    print(f"Loaded {len(hf_ds)} samples from mateuszbuda/brain-segmentation")
-    return hf_ds
+def download_data():
+    """Download LGG MRI Segmentation dataset from Kaggle."""
+    data_dir = os.path.join(SAVE_DIR, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    mask_files = glob.glob(os.path.join(data_dir, "**", "*_mask.tif"), recursive=True)
+    if not mask_files:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        api = KaggleApi(); api.authenticate()
+        api.dataset_download_files("mateuszbuda/lgg-mri-segmentation", path=data_dir, unzip=True)
+        print(f"Downloaded mateuszbuda/lgg-mri-segmentation from Kaggle")
+        mask_files = glob.glob(os.path.join(data_dir, "**", "*_mask.tif"), recursive=True)
+    # Pair each mask with its source image
+    pairs = []
+    for mask_path in mask_files:
+        img_path = mask_path.replace("_mask.tif", ".tif")
+        if os.path.exists(img_path):
+            pairs.append((img_path, mask_path))
+    print(f"Found {len(pairs)} image-mask pairs")
+    return pairs
 
 
 class MedSegDataset(Dataset):
-    def __init__(self, hf_ds, img_size=IMG_SIZE):
-        self.ds = hf_ds
+    def __init__(self, pairs, img_size=IMG_SIZE):
+        self.pairs = pairs
         self.img_size = img_size
-        cols = hf_ds.column_names
-        self.img_col = next((c for c in cols if "image" in c.lower()), cols[0])
-        self.mask_col = next((c for c in cols if "mask" in c.lower() or "seg" in c.lower() or "label" in c.lower()), cols[-1])
         self.to_tensor = transforms.ToTensor()
-    def __len__(self): return len(self.ds)
+    def __len__(self): return len(self.pairs)
     def __getitem__(self, i):
-        item = self.ds[i]
-        img = item[self.img_col]
-        mask = item[self.mask_col]
-        if hasattr(img, "convert"):
-            img = img.convert("RGB").resize((self.img_size, self.img_size))
-        if hasattr(mask, "convert"):
-            mask = mask.convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
+        img_path, mask_path = self.pairs[i]
+        img = Image.open(img_path).convert("RGB").resize((self.img_size, self.img_size))
+        mask = Image.open(mask_path).convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
         img_t = self.to_tensor(img)
         mask_t = torch.from_numpy(np.array(mask)).long()
         if mask_t.ndim == 3: mask_t = mask_t[0]
+        # Binarize mask (0=background, 1=lesion)
+        mask_t = (mask_t > 0).long()
+        mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
+        return img_t, mask_t
         mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
         return img_t, mask_t
 
@@ -121,8 +132,12 @@ def mean_iou(pred, target, n_classes=N_CLASSES):
 
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hf_ds = load_data()
-    dataset = MedSegDataset(hf_ds)
+    pairs = download_data()
+    dataset = MedSegDataset(pairs)
+    # Cap training to 5K to prevent OOM / timeout
+    MAX_TRAIN = 5000
+    if len(dataset) > MAX_TRAIN:
+        dataset, _ = random_split(dataset, [MAX_TRAIN, len(dataset) - MAX_TRAIN])
     val_size = max(1, int(0.2 * len(dataset)))
     train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)

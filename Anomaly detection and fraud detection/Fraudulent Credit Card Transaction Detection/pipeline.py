@@ -276,11 +276,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:

@@ -163,8 +163,8 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         t0 = time.perf_counter()
         train_ag = X_train.copy(); train_ag["Close"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="Close", path=tmp, problem_type="regression", verbosity=1)
-            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            predictor = TabularPredictor(label="Close", path=tmp, problem_type="regression", verbosity=0)
+            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0
             print(f"AutoGluon RMSE: {mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}  ({timings['AutoGluon']:.1f}s)")
@@ -322,11 +322,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostRegressor(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMRegressor(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBRegressor(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:

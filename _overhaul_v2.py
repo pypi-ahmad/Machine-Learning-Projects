@@ -236,10 +236,7 @@ TABULAR_CLF = {
         "target": "y",
         "data": _kaggle("henriqueyamahata/bank-marketing", "bank-additional-full.csv", sep=";"),
     },
-    "Classification/Boston House Classification": {
-        "target": "MedHouseVal",
-        "data": _sklearn_fetch("fetch_california_housing"),
-    },
+
     "Classification/H2O Higgs Boson": {
         "target": "class",
         "data": _openml(44129),  # Higgs
@@ -284,6 +281,10 @@ TABULAR_CLF = {
 
 # ── FAMILY 2: TABULAR REGRESSION ──
 TABULAR_REG = {
+    "Regression/Boston House Classification": {
+        "target": "MedHouseVal",
+        "data": _sklearn_fetch("fetch_california_housing"),
+    },
     "Regression/Boston Housing Analysis": {
         "target": "MEDV",
         "data": _kaggle("altavish/boston-housing-dataset", "HousingData.csv"),
@@ -815,8 +816,8 @@ CAPTIONING = {
 
 # ── MEDICAL SEGMENTATION ──
 MEDICAL_SEG = {
-    "Deep Learning/Brain MRI Segmentation": {"dataset": "hf:mateuszbuda/brain-segmentation", "n_classes": 2},
-    "Deep Learning/COVID-19 Lung CT Scan Analysis": {"dataset": "hf:sartajbhuvaji/Brain-Tumor-Classification", "n_classes": 2},
+    "Deep Learning/Brain MRI Segmentation": {"kaggle": "mateuszbuda/lgg-mri-segmentation", "n_classes": 2},
+    "Deep Learning/COVID-19 Lung CT Scan Analysis": {"kaggle": "mateuszbuda/lgg-mri-segmentation", "n_classes": 2},
 }
 
 # ── MISC Deep Learning ──
@@ -1039,8 +1040,8 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
         test_ag = X_test.copy(); test_ag["{target}"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="{target}", path=tmp, verbosity=1)
-            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            predictor = TabularPredictor(label="{target}", path=tmp, verbosity=0)
+            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["{target}"])).values
             try:
                 probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["{target}"])).values
@@ -1233,11 +1234,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {{}}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:
@@ -1445,8 +1446,8 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         t0 = time.perf_counter()
         train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="{target}", path=tmp, problem_type="regression", verbosity=1)
-            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            predictor = TabularPredictor(label="{target}", path=tmp, problem_type="regression", verbosity=0)
+            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0
             print(f"AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
@@ -1604,11 +1605,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {{}}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostRegressor(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMRegressor(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBRegressor(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:
@@ -1920,11 +1921,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {{}}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:
@@ -2020,6 +2021,10 @@ def load_data():
     target = TARGET if TARGET in df.columns else df.columns[-1]
     df = df[[text_col, target]].dropna()
     df.columns = ["text", "label"]
+    # Cap to prevent timeout with heavy transformer fine-tuning
+    MAX_SAMPLES = 8000
+    if len(df) > MAX_SAMPLES:
+        df = df.sample(n=MAX_SAMPLES, random_state=42).reset_index(drop=True)
     print(f"Dataset: {{len(df)}} samples")
     return df
 
@@ -3557,7 +3562,7 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 5, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 3, 1e-4
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -3578,6 +3583,10 @@ def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 {ds_load}
 
+    # Cap training to 5K to prevent OOM / timeout with heavy backbones
+    MAX_TRAIN = 5000
+    if len(train_ds) > MAX_TRAIN:
+        train_ds, _ = random_split(train_ds, [MAX_TRAIN, len(train_ds) - MAX_TRAIN])
     val_size = max(1, int(0.2 * len(train_ds)))
     train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
@@ -3613,9 +3622,6 @@ def train_model():
             imgs, labels = imgs.to(device), labels.to(device)
             loss = criterion(model(imgs), labels); loss.backward()
             opt.step(); opt.zero_grad(); total_loss += loss.item()
-        if epoch == 2:
-            for p in model.backbone.parameters(): p.requires_grad = True
-            opt = torch.optim.AdamW(model.parameters(), lr=LR * 0.1, weight_decay=0.01)
         model.eval(); preds, gts = [], []
         with torch.no_grad():
             for imgs, labels in val_loader:
@@ -3649,7 +3655,7 @@ def train_model():
         t1 = time.perf_counter()
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
         convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
-        for epoch in range(3):
+        for epoch in range(2):
             convnext.train(); total_loss = 0
             for imgs, labels in train_loader:
                 imgs, labels = imgs.to(device), labels.to(device)
@@ -3663,7 +3669,7 @@ def train_model():
         cv_acc = accuracy_score(cv_gts, cv_preds)
         cv_elapsed = round(time.perf_counter() - t1, 1)
         print(f"  ConvNeXt V2 Val Accuracy: {{cv_acc:.4f}} ({{cv_elapsed}}s)")
-        metrics["ConvNeXtV2"] = {{"val_accuracy": round(cv_acc, 4), "epochs": 3, "time_s": cv_elapsed}}
+        metrics["ConvNeXtV2"] = {{"val_accuracy": round(cv_acc, 4), "epochs": 2, "time_s": cv_elapsed}}
     except Exception as e:
         print(f"  ConvNeXt V2: {{e}}")
 
@@ -3874,17 +3880,8 @@ if __name__ == "__main__":
 
 def gen_medical_seg(path, cfg):
     """Medical image segmentation — nnU-Net + MedSAM2."""
-    ds = cfg.get("dataset", "hf:mateuszbuda/brain-segmentation")
+    kaggle_slug = cfg.get("kaggle", "mateuszbuda/lgg-mri-segmentation")
     n_classes = cfg.get("n_classes", 2)
-    if ds.startswith("hf:"):
-        hf_name = ds[3:]
-        ds_load = f'''    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("{hf_name}", split="train")
-    print(f"Loaded {{len(hf_ds)}} samples from {hf_name}")'''
-    else:
-        ds_load = f'''    from datasets import load_dataset as _hf_load
-    hf_ds = _hf_load("{ds}", split="train")
-    print(f"Loaded {{len(hf_ds)}} samples")'''
 
     return textwrap.dedent(f'''\
 """
@@ -3894,14 +3891,14 @@ Primary : nnU-Net-style supervised U-Net (encoder-decoder with skip connections)
 Optional: MedSAM2 zero-shot promptable segmentation (center-point prompts).
 Metrics : Dice coefficient + mean IoU per model, wall-clock timing.
 Export  : metrics.json, segmentation_results.png, best_unet.pth.
-Data    : Auto-downloaded from HuggingFace at runtime.
+Data    : Auto-downloaded from Kaggle at runtime.
 
 DISCLAIMER: This is an educational/research demonstration pipeline.
 It is NOT validated for clinical use. Medical image analysis models
 require rigorous validation on curated datasets, regulatory approval,
 and expert clinical oversight before any diagnostic application.
 """
-import os, json, time, warnings
+import os, json, time, warnings, glob
 import numpy as np
 import torch
 import torch.nn as nn
@@ -3918,31 +3915,44 @@ N_CLASSES = {n_classes}
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
-def load_data():
-{ds_load}
-    return hf_ds
+def download_data():
+    """Download LGG MRI Segmentation dataset from Kaggle."""
+    data_dir = os.path.join(SAVE_DIR, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    mask_files = glob.glob(os.path.join(data_dir, "**", "*_mask.tif"), recursive=True)
+    if not mask_files:
+        from kaggle.api.kaggle_api_extended import KaggleApi
+        api = KaggleApi(); api.authenticate()
+        api.dataset_download_files("{kaggle_slug}", path=data_dir, unzip=True)
+        print(f"Downloaded {kaggle_slug} from Kaggle")
+        mask_files = glob.glob(os.path.join(data_dir, "**", "*_mask.tif"), recursive=True)
+    # Pair each mask with its source image
+    pairs = []
+    for mask_path in mask_files:
+        img_path = mask_path.replace("_mask.tif", ".tif")
+        if os.path.exists(img_path):
+            pairs.append((img_path, mask_path))
+    print(f"Found {{len(pairs)}} image-mask pairs")
+    return pairs
 
 
 class MedSegDataset(Dataset):
-    def __init__(self, hf_ds, img_size=IMG_SIZE):
-        self.ds = hf_ds
+    def __init__(self, pairs, img_size=IMG_SIZE):
+        self.pairs = pairs
         self.img_size = img_size
-        cols = hf_ds.column_names
-        self.img_col = next((c for c in cols if "image" in c.lower()), cols[0])
-        self.mask_col = next((c for c in cols if "mask" in c.lower() or "seg" in c.lower() or "label" in c.lower()), cols[-1])
         self.to_tensor = transforms.ToTensor()
-    def __len__(self): return len(self.ds)
+    def __len__(self): return len(self.pairs)
     def __getitem__(self, i):
-        item = self.ds[i]
-        img = item[self.img_col]
-        mask = item[self.mask_col]
-        if hasattr(img, "convert"):
-            img = img.convert("RGB").resize((self.img_size, self.img_size))
-        if hasattr(mask, "convert"):
-            mask = mask.convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
+        img_path, mask_path = self.pairs[i]
+        img = Image.open(img_path).convert("RGB").resize((self.img_size, self.img_size))
+        mask = Image.open(mask_path).convert("L").resize((self.img_size, self.img_size), Image.NEAREST)
         img_t = self.to_tensor(img)
         mask_t = torch.from_numpy(np.array(mask)).long()
         if mask_t.ndim == 3: mask_t = mask_t[0]
+        # Binarize mask (0=background, 1=lesion)
+        mask_t = (mask_t > 0).long()
+        mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
+        return img_t, mask_t
         mask_t = torch.clamp(mask_t, 0, N_CLASSES - 1)
         return img_t, mask_t
 
@@ -4008,8 +4018,12 @@ def mean_iou(pred, target, n_classes=N_CLASSES):
 
 def train_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    hf_ds = load_data()
-    dataset = MedSegDataset(hf_ds)
+    pairs = download_data()
+    dataset = MedSegDataset(pairs)
+    # Cap training to 5K to prevent OOM / timeout
+    MAX_TRAIN = 5000
+    if len(dataset) > MAX_TRAIN:
+        dataset, _ = random_split(dataset, [MAX_TRAIN, len(dataset) - MAX_TRAIN])
     val_size = max(1, int(0.2 * len(dataset)))
     train_ds, val_ds = random_split(dataset, [len(dataset) - val_size, val_size])
     train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
@@ -4730,7 +4744,7 @@ def forecast(df, target):
         ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
         predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
                                          path=os.path.join(SAVE_DIR, "ag_ts"))
-        predictor.fit(ts_data, time_limit=180, presets="best_quality")
+        predictor.fit(ts_data, time_limit=120, presets="medium_quality")
         ag_preds = predictor.predict(ts_data)
         y_pred = ag_preds["mean"].values[:len(test)]
         results["AutoGluon-TS"] = y_pred

@@ -47,6 +47,10 @@ def load_data():
     target = TARGET if TARGET in df.columns else df.columns[-1]
     df = df[[text_col, target]].dropna()
     df.columns = ["text", "label"]
+    # Cap to prevent timeout with heavy transformer fine-tuning
+    MAX_SAMPLES = 8000
+    if len(df) > MAX_SAMPLES:
+        df = df.sample(n=MAX_SAMPLES, random_state=42).reset_index(drop=True)
     print(f"Dataset: {len(df)} samples")
     return df
 

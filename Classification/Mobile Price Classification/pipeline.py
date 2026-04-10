@@ -207,8 +207,8 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         train_ag = X_train.copy(); train_ag["price_range"] = y_train.values
         test_ag = X_test.copy(); test_ag["price_range"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
-            predictor = TabularPredictor(label="price_range", path=tmp, verbosity=1)
-            predictor.fit(train_ag, time_limit=180, presets="best_quality")
+            predictor = TabularPredictor(label="price_range", path=tmp, verbosity=0)
+            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["price_range"])).values
             try:
                 probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["price_range"])).values
@@ -401,11 +401,11 @@ def cross_validate_best(X, y, save_dir):
     cv_results = {}
     for name, build_fn in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=300, verbose=0, task_type="GPU", devices="0")),
+            iterations=100, verbose=0, task_type="GPU", devices="0")),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+            n_estimators=100, device="gpu", verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=300, device="cuda", tree_method="hist",
+            n_estimators=100, device="cuda", tree_method="hist",
             verbosity=0, n_jobs=-1)),
     ]:
         try:

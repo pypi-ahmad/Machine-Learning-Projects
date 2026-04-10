@@ -101,7 +101,7 @@ def forecast(df, target):
         ts_data = TimeSeriesDataFrame.from_data_frame(ts_df)
         predictor = TimeSeriesPredictor(prediction_length=HORIZON, eval_metric="RMSE",
                                          path=os.path.join(SAVE_DIR, "ag_ts"))
-        predictor.fit(ts_data, time_limit=180, presets="best_quality")
+        predictor.fit(ts_data, time_limit=120, presets="medium_quality")
         ag_preds = predictor.predict(ts_data)
         y_pred = ag_preds["mean"].values[:len(test)]
         results["AutoGluon-TS"] = y_pred

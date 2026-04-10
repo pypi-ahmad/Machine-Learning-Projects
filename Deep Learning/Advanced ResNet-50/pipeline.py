@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 warnings.filterwarnings("ignore")
 
-IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 5, 1e-4
+IMG_SIZE, BATCH_SIZE, EPOCHS, LR = 224, 64, 3, 1e-4
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -43,6 +43,10 @@ def train_model():
     train_ds = tv_datasets.CIFAR10(root="./data", train=True, download=True, transform=get_transforms(True))
     n_classes = 10
 
+    # Cap training to 5K to prevent OOM / timeout with heavy backbones
+    MAX_TRAIN = 5000
+    if len(train_ds) > MAX_TRAIN:
+        train_ds, _ = random_split(train_ds, [MAX_TRAIN, len(train_ds) - MAX_TRAIN])
     val_size = max(1, int(0.2 * len(train_ds)))
     train_sub, val_sub = random_split(train_ds, [len(train_ds) - val_size, val_size])
     train_loader = DataLoader(train_sub, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
@@ -78,9 +82,6 @@ def train_model():
             imgs, labels = imgs.to(device), labels.to(device)
             loss = criterion(model(imgs), labels); loss.backward()
             opt.step(); opt.zero_grad(); total_loss += loss.item()
-        if epoch == 2:
-            for p in model.backbone.parameters(): p.requires_grad = True
-            opt = torch.optim.AdamW(model.parameters(), lr=LR * 0.1, weight_decay=0.01)
         model.eval(); preds, gts = [], []
         with torch.no_grad():
             for imgs, labels in val_loader:
@@ -114,7 +115,7 @@ def train_model():
         t1 = time.perf_counter()
         convnext = timm.create_model("convnextv2_tiny.fcmae_ft_in22k_in1k", pretrained=True, num_classes=n_classes).to(device)
         convnext_opt = torch.optim.AdamW(convnext.parameters(), lr=LR * 0.5, weight_decay=0.01)
-        for epoch in range(3):
+        for epoch in range(2):
             convnext.train(); total_loss = 0
             for imgs, labels in train_loader:
                 imgs, labels = imgs.to(device), labels.to(device)
@@ -128,7 +129,7 @@ def train_model():
         cv_acc = accuracy_score(cv_gts, cv_preds)
         cv_elapsed = round(time.perf_counter() - t1, 1)
         print(f"  ConvNeXt V2 Val Accuracy: {cv_acc:.4f} ({cv_elapsed}s)")
-        metrics["ConvNeXtV2"] = {"val_accuracy": round(cv_acc, 4), "epochs": 3, "time_s": cv_elapsed}
+        metrics["ConvNeXtV2"] = {"val_accuracy": round(cv_acc, 4), "epochs": 2, "time_s": cv_elapsed}
     except Exception as e:
         print(f"  ConvNeXt V2: {e}")
 
