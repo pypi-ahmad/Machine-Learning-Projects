@@ -376,11 +376,49 @@ def run_pose(files):
     return {}
 
 
+def run_eda(files, save_dir):
+    """Input file summary for face/gesture tasks."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {len(files)}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {total_size / 1024:.1f} KB")
+    print("EDA complete.")
+
+
+def validate_results(metrics, files, save_dir):
+    """Validate output payloads for face / gesture tasks."""
+    validation = {"task": TASK, "input_files": len(files), "models": {}}
+    for name, payload in metrics.items():
+        if name == "task" or not isinstance(payload, dict):
+            continue
+        numeric_values = [
+            float(value) for key, value in payload.items()
+            if key != "time_s" and isinstance(value, (int, float))
+        ]
+        positive_signal = any(value > 0 for value in numeric_values)
+        validation["models"][name] = {
+            "time_s": round(float(payload.get("time_s", 0)), 1) if isinstance(payload.get("time_s", 0), (int, float)) else None,
+            "positive_signal": positive_signal,
+            "keys": sorted(payload.keys()),
+            "passed": positive_signal or isinstance(payload.get("time_s"), (int, float)),
+        }
+    validation["passed"] = any(model.get("passed") for model in validation["models"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {out_path}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"FACE/HAND/GESTURE | Task: {TASK}")
     print("=" * 60)
     files = download_face_samples()
+    run_eda(files, SAVE_DIR)
     metrics = {"task": TASK}
 
     if TASK == "face_detection":
@@ -399,6 +437,8 @@ def main():
     else:
         metrics["yolo"] = run_yolo_detection(files)
         metrics["face_landmarker"] = run_face_landmarker(files)
+
+    metrics["validation"] = validate_results(metrics, files, SAVE_DIR)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w") as f:

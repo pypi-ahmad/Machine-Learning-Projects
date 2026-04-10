@@ -356,6 +356,25 @@ def run_chatbot(df=None):
     return metrics
 
 
+def run_eda(df, save_dir):
+    """Input data statistics for generation tasks."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    if df is not None:
+        print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+        desc = df.describe(include="all").T
+        desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+        text_cols = df.select_dtypes(include=["object"]).columns.tolist()
+        for col in text_cols[:3]:
+            lengths = df[col].astype(str).str.len()
+            print(f"  {col}: mean_len={lengths.mean():.0f}, median={lengths.median():.0f}")
+        print("Summary statistics saved to eda_summary.csv")
+    else:
+        print("  No structured dataset (chatbot/generation mode)")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"NLP GENERATION | Task: {TASK} | Model: {OLLAMA_MODEL}")
@@ -370,6 +389,7 @@ def main():
                 return
 
     df = load_data()
+    run_eda(df, SAVE_DIR)
     metrics = {}
 
     if TASK == "summarization" and df is not None:

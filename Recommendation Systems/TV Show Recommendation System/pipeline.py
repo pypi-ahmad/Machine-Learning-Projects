@@ -277,11 +277,46 @@ def train(df):
     return metrics
 
 
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for recommendation data."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Column types:\n{df.dtypes.value_counts().to_string()}")
+    # Detect user/item columns
+    for col in df.columns:
+        nuniq = df[col].nunique()
+        if nuniq < len(df) * 0.5 and nuniq > 1:
+            print(f"  {col}: {nuniq} unique values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(10).to_string())
+    else:
+        print("\nNo missing values")
+    # Rating distribution if numeric column exists
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if num_cols:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        df[num_cols[0]].hist(bins=30, ax=ax, color="steelblue", edgecolor="black")
+        ax.set_title(f"Distribution: {num_cols[0]}")
+        fig.savefig(os.path.join(save_dir, "eda_rating_dist.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"RECOMMENDATION ({TASK}) | implicit + LightFM + SentenceTransformers")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     metrics = train(df)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")

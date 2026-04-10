@@ -28,7 +28,7 @@ def write_pipeline(project_rel_path, content):
 # ════════════════════════════════════════════════════════════════════════════════
 
 def _hf(dataset_name, split="train", config=None, columns=None):
-    """HuggingFace datasets.load_dataset → df"""
+    """HuggingFace datasets.load_dataset to df"""
     cfg = f', "{config}"' if config else ""
     col_filter = ""
     if columns:
@@ -36,7 +36,7 @@ def _hf(dataset_name, split="train", config=None, columns=None):
     return f'    from datasets import load_dataset as _hf_load\n    df = _hf_load("{dataset_name}"{cfg}, split="{split}").to_pandas(){col_filter}'
 
 def _sklearn(func_name):
-    """sklearn.datasets → df"""
+    """sklearn.datasets to df"""
     return f'    from sklearn.datasets import {func_name}\n    _d = {func_name}()\n    df = pd.DataFrame(_d.data, columns=_d.feature_names); df["target"] = _d.target'
 
 def _sklearn_fetch(func_name, target_rename=None):
@@ -55,7 +55,7 @@ def _yfinance(ticker, period="10y"):
     return f'    import yfinance as yf\n    df = yf.download("{ticker}", period="{period}", auto_adjust=True).reset_index()\n    df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]'
 
 def _torchvision(dataset_cls, n_classes=10):
-    """torchvision dataset → returns special flag for image pipeline"""
+    """torchvision dataset to returns special flag for image pipeline"""
     return f"__torchvision__{dataset_cls}__{n_classes}"
 
 def _openml(data_id, target=None):
@@ -69,7 +69,7 @@ def _seaborn(name):
 
 
 # ════════════════════════════════════════════════════════════════════════════════
-# PROJECT → DATA SOURCE MAPPING  (every project has an online source)
+# PROJECT to DATA SOURCE MAPPING  (every project has an online source)
 # ════════════════════════════════════════════════════════════════════════════════
 
 # ── FAMILY 1: TABULAR CLASSIFICATION ──
@@ -831,7 +831,7 @@ import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.metrics import (
     accuracy_score, classification_report, f1_score,
@@ -873,6 +873,7 @@ def preprocess(df):
 
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
     for c in cat_cols:
+        if hasattr(X[c], "cat"): X[c] = X[c].astype(str)
         X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
 
     if cat_cols:
@@ -885,6 +886,66 @@ def preprocess(df):
     )
     print(f"Train: {{X_train.shape}}, Test: {{X_test.shape}}")
     return X_train, X_test, y_train, y_test, le_target
+
+
+def run_eda(df, target, save_dir):
+    """Exploratory Data Analysis — summary stats, distributions, correlations."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                    cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        if target in num_cols:
+            tc = corr[target].drop(target).abs().sort_values(ascending=False)
+            print(f"\\nTop correlations with '{{target}}':")
+            print(tc.head(10).to_string())
+    fig, ax = plt.subplots(figsize=(8, 5))
+    if df[target].nunique() <= 30:
+        df[target].value_counts().plot(kind="bar", ax=ax, color="steelblue", edgecolor="black")
+    else:
+        df[target].hist(bins=50, ax=ax, color="steelblue", edgecolor="black")
+    ax.set_title(f"Target Distribution: {{target}}")
+    ax.set_xlabel(target)
+    fig.savefig(os.path.join(save_dir, "eda_target.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    plot_cols = [c for c in num_cols if c != target][:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
@@ -909,9 +970,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = cb.predict(X_test).flatten()
         probas["CatBoost"] = cb.predict_proba(X_test)
-        print(f"\\n✓ CatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}  ({{timings['CatBoost']:.1f}}s)")
+        print(f"\\nCatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
-        print(f"✗ CatBoost: {{e}}")
+        print(f"CatBoost: {{e}}")
 
     # ── LightGBM (GPU) ──
     try:
@@ -926,9 +987,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         probas["LightGBM"] = m.predict_proba(X_test)
-        print(f"\\n✓ LightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}  ({{timings['LightGBM']:.1f}}s)")
+        print(f"\\nLightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
-        print(f"✗ LightGBM: {{e}}")
+        print(f"LightGBM: {{e}}")
 
     # ── XGBoost (CUDA) ──
     try:
@@ -944,9 +1005,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
         probas["XGBoost"] = m.predict_proba(X_test)
-        print(f"\\n✓ XGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}  ({{timings['XGBoost']:.1f}}s)")
+        print(f"\\nXGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
-        print(f"✗ XGBoost: {{e}}")
+        print(f"XGBoost: {{e}}")
 
     # ── AutoGluon Tabular ──
     try:
@@ -964,9 +1025,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0
-            print(f"\\n✓ AutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
+            print(f"\\nAutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
-        print(f"✗ AutoGluon: {{e}}")
+        print(f"AutoGluon: {{e}}")
 
     # ── RealTabPFN-v2 (prior-fitted network) ──
     try:
@@ -981,11 +1042,11 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 probas["TabPFN-v2"] = m.predict_proba(X_test.values)
             except Exception:
                 pass
-            print(f"\\n✓ TabPFN-v2 Accuracy: {{accuracy_score(y_test, results['TabPFN-v2']):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
+            print(f"\\nTabPFN-v2 Accuracy: {{accuracy_score(y_test, results['TabPFN-v2']):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
         else:
-            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+            print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
-        print(f"✗ TabPFN-v2: {{e}}")
+        print(f"TabPFN-v2: {{e}}")
 
     # ── TabM (parameter-efficient tabular ensembling) ──
     try:
@@ -1029,9 +1090,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
             probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
         timings["TabM"] = time.perf_counter() - t0
-        print(f"\\n✓ TabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}  ({{timings['TabM']:.1f}}s)")
+        print(f"\\nTabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
-        print(f"✗ TabM: {{e}}")
+        print(f"TabM: {{e}}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
@@ -1045,9 +1106,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             probas["FLAML"] = automl.predict_proba(X_test)
         except Exception:
             pass
-        print(f"\\n✓ FLAML ({{automl.best_estimator}}) Accuracy: {{accuracy_score(y_test, results['FLAML']):.4f}}  ({{timings['FLAML']:.1f}}s)")
+        print(f"\\nFLAML ({{automl.best_estimator}}) Accuracy: {{accuracy_score(y_test, results['FLAML']):.4f}}  ({{timings['FLAML']:.1f}}s)")
     except Exception as e:
-        print(f"✗ FLAML: {{e}}")
+        print(f"FLAML: {{e}}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
@@ -1056,10 +1117,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
         timings["LazyPredict"] = time.perf_counter() - t0
-        print(f"\\n✓ LazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
+        print(f"\\nLazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
-        print(f"✗ LazyPredict: {{e}}")
+        print(f"LazyPredict: {{e}}")
 
     return results, probas, timings
 
@@ -1128,17 +1189,50 @@ def report(results, probas, timings, y_test, save_dir="."):
             ax.legend(loc="lower right", fontsize=8)
             fig.savefig(os.path.join(save_dir, "calibration_plot.png"), dpi=100, bbox_inches="tight")
             plt.close(fig)
-            print("\\n✓ Calibration plot saved")
+            print("\\nCalibration plot saved")
         except Exception:
             pass
 
-    print(f"\\n🏆 Best: {{best_name}} ({{best_acc:.4f}})")
+    print(f"\\nBest: {{best_name}} ({{best_acc:.4f}})")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\\nMetrics saved to {{out_path}}")
+
+
+def cross_validate_best(X, y, save_dir):
+    """5-fold stratified cross-validation on gradient boosting models."""
+    print("\\n" + "=" * 60)
+    print("CROSS-VALIDATION (5-Fold Stratified)")
+    print("=" * 60)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_results = {{}}
+    for name, build_fn in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
+            iterations=300, verbose=0, task_type="GPU", devices="0")),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
+            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
+            n_estimators=300, device="cuda", tree_method="hist",
+            verbosity=0, n_jobs=-1)),
+    ]:
+        try:
+            model = build_fn()
+            scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy", n_jobs=1)
+            cv_results[name] = {{"mean": round(float(scores.mean()), 4),
+                                "std": round(float(scores.std()), 4),
+                                "folds": [round(float(s), 4) for s in scores]}}
+            print(f"  {{name}}: {{scores.mean():.4f}} +/- {{scores.std():.4f}}")
+        except Exception as e:
+            print(f"  {{name}} CV skipped: {{e}}")
+    if cv_results:
+        out_path = os.path.join(save_dir, "cv_results.json")
+        with open(out_path, "w") as f:
+            json.dump(cv_results, f, indent=2)
+        print(f"CV results saved to {{out_path}}")
+    return cv_results
 
 
 def main():
@@ -1146,11 +1240,15 @@ def main():
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
     print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
+    run_eda(df, TARGET, save_dir)
     X_train, X_test, y_train, y_test, le = preprocess(df)
     results, probas, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, probas, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, probas, timings, y_test, save_dir)
+    cross_validate_best(
+        pd.concat([X_train, X_test]), pd.concat([y_train, y_test]), save_dir)
 
 
 if __name__ == "__main__":
@@ -1174,7 +1272,7 @@ import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import (
     mean_squared_error, mean_absolute_error, r2_score,
@@ -1183,6 +1281,7 @@ from sklearn.metrics import (
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 warnings.filterwarnings("ignore")
 
@@ -1204,11 +1303,72 @@ def preprocess(df):
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
     for c in cat_cols:
+        if hasattr(X[c], "cat"): X[c] = X[c].astype(str)
         X[c] = X[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         X[cat_cols] = oe.fit_transform(X[cat_cols])
     return train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+def run_eda(df, target, save_dir):
+    """Exploratory Data Analysis."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                    cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        if target in num_cols:
+            tc = corr[target].drop(target).abs().sort_values(ascending=False)
+            print(f"\\nTop correlations with '{{target}}':")
+            print(tc.head(10).to_string())
+    fig, ax = plt.subplots(figsize=(8, 5))
+    if df[target].nunique() <= 30:
+        df[target].value_counts().plot(kind="bar", ax=ax, color="steelblue", edgecolor="black")
+    else:
+        df[target].hist(bins=50, ax=ax, color="steelblue", edgecolor="black")
+    ax.set_title(f"Target Distribution: {{target}}")
+    ax.set_xlabel(target)
+    fig.savefig(os.path.join(save_dir, "eda_target.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    plot_cols = [c for c in num_cols if c != target][:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
@@ -1224,9 +1384,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         m.fit(X_train, y_train, eval_set=(X_test, y_test))
         timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = m.predict(X_test)
-        print(f"✓ CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}  ({{timings['CatBoost']:.1f}}s)")
+        print(f"CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
-        print(f"✗ CatBoost: {{e}}")
+        print(f"CatBoost: {{e}}")
 
     # ── LightGBM (GPU) ──
     try:
@@ -1238,9 +1398,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
               callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
-        print(f"✓ LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}  ({{timings['LightGBM']:.1f}}s)")
+        print(f"LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
-        print(f"✗ LightGBM: {{e}}")
+        print(f"LightGBM: {{e}}")
 
     # ── XGBoost (CUDA) ──
     try:
@@ -1252,9 +1412,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
         timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
-        print(f"✓ XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}  ({{timings['XGBoost']:.1f}}s)")
+        print(f"XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
-        print(f"✗ XGBoost: {{e}}")
+        print(f"XGBoost: {{e}}")
 
     # ── AutoGluon Tabular ──
     try:
@@ -1267,9 +1427,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             predictor.fit(train_ag, time_limit=180, presets="best_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0
-            print(f"✓ AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
+            print(f"AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
-        print(f"✗ AutoGluon: {{e}}")
+        print(f"AutoGluon: {{e}}")
 
     # ── RealTabPFN-v2 (prior-fitted network — regression) ──
     try:
@@ -1280,11 +1440,11 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             m.fit(X_train.values, y_train.values)
             timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
-            print(f"✓ TabPFN-v2 RMSE: {{mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
+            print(f"TabPFN-v2 RMSE: {{mean_squared_error(y_test, results['TabPFN-v2'], squared=False):.4f}}  ({{timings['TabPFN-v2']:.1f}}s)")
         else:
-            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+            print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
-        print(f"✗ TabPFN-v2: {{e}}")
+        print(f"TabPFN-v2: {{e}}")
 
     # ── TabM (deep tabular) ──
     try:
@@ -1315,9 +1475,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         model.eval()
         with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
         timings["TabM"] = time.perf_counter() - t0
-        print(f"✓ TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}  ({{timings['TabM']:.1f}}s)")
+        print(f"TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
-        print(f"✗ TabM: {{e}}")
+        print(f"TabM: {{e}}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
@@ -1327,9 +1487,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         automl.fit(X_train, y_train, task="regression", time_budget=120, verbose=0)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
-        print(f"✓ FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}  ({{timings['FLAML']:.1f}}s)")
+        print(f"FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}  ({{timings['FLAML']:.1f}}s)")
     except Exception as e:
-        print(f"✗ FLAML: {{e}}")
+        print(f"FLAML: {{e}}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
@@ -1338,10 +1498,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         lazy = LazyRegressor(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
         timings["LazyPredict"] = time.perf_counter() - t0
-        print(f"\\n✓ LazyPredict — Top 5 regressors:  ({{timings['LazyPredict']:.1f}}s)")
+        print(f"\\nLazyPredict — Top 5 regressors:  ({{timings['LazyPredict']:.1f}}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
-        print(f"✗ LazyPredict: {{e}}")
+        print(f"LazyPredict: {{e}}")
 
     return results, timings
 
@@ -1400,15 +1560,50 @@ def report(results, timings, y_test, save_dir="."):
         fig.tight_layout()
         fig.savefig(os.path.join(save_dir, "residuals_best.png"), dpi=100, bbox_inches="tight")
         plt.close(fig)
-        print("\\n✓ Residual plots saved")
+        print("\\nResidual plots saved")
 
-    print(f"\\n🏆 Best: {{best_name}} (RMSE: {{best_rmse:.4f}})")
+    print(f"\\nBest: {{best_name}} (RMSE: {{best_rmse:.4f}})")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\\nMetrics saved to {{out_path}}")
+
+
+def cross_validate_best(X, y, save_dir):
+    """5-fold cross-validation on gradient boosting models."""
+    from sklearn.metrics import make_scorer
+    print("\\n" + "=" * 60)
+    print("CROSS-VALIDATION (5-Fold)")
+    print("=" * 60)
+    cv = KFold(n_splits=5, shuffle=True, random_state=42)
+    rmse_scorer = make_scorer(mean_squared_error, squared=False, greater_is_better=False)
+    cv_results = {{}}
+    for name, build_fn in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostRegressor(
+            iterations=300, verbose=0, task_type="GPU", devices="0")),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMRegressor(
+            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBRegressor(
+            n_estimators=300, device="cuda", tree_method="hist",
+            verbosity=0, n_jobs=-1)),
+    ]:
+        try:
+            model = build_fn()
+            scores = -cross_val_score(model, X, y, cv=cv, scoring=rmse_scorer, n_jobs=1)
+            cv_results[name] = {{"rmse_mean": round(float(scores.mean()), 4),
+                                "rmse_std": round(float(scores.std()), 4),
+                                "folds": [round(float(s), 4) for s in scores]}}
+            print(f"  {{name}}: RMSE {{scores.mean():.4f}} +/- {{scores.std():.4f}}")
+        except Exception as e:
+            print(f"  {{name}} CV skipped: {{e}}")
+    if cv_results:
+        out_path = os.path.join(save_dir, "cv_results.json")
+        with open(out_path, "w") as f:
+            json.dump(cv_results, f, indent=2)
+        print(f"CV results saved to {{out_path}}")
+    return cv_results
 
 
 def main():
@@ -1416,11 +1611,15 @@ def main():
     print("MODERN TABULAR REGRESSION PIPELINE")
     print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
+    run_eda(df, TARGET, save_dir)
     X_train, X_test, y_train, y_test = preprocess(df)
     results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, save_dir)
+    cross_validate_best(
+        pd.concat([X_train, X_test]), pd.concat([y_train, y_test]), save_dir)
 
 
 if __name__ == "__main__":
@@ -1445,7 +1644,7 @@ import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import (
     classification_report, f1_score, accuracy_score,
@@ -1477,11 +1676,56 @@ def preprocess(df):
     cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
-    for c in cat_cols: X[c] = X[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(X[c], "cat"): X[c] = X[c].astype(str)
+        X[c] = X[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         X[cat_cols] = oe.fit_transform(X[cat_cols])
     return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+
+def run_eda(df, target, save_dir):
+    """Exploratory Data Analysis for fraud/imbalanced datasets."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    fraud_rate = df[target].mean()
+    print(f"\\nClass balance: {{1 - fraud_rate:.2%}} legit / {{fraud_rate:.2%}} fraud (ratio {{int(1/max(fraud_rate,1e-9))}}:1)")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                    cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        if target in num_cols:
+            tc = corr[target].drop(target).abs().sort_values(ascending=False)
+            print(f"\\nTop correlations with '{{target}}':")
+            print(tc.head(10).to_string())
+    fig, ax = plt.subplots(figsize=(8, 5))
+    df[target].value_counts().plot(kind="bar", ax=ax, color=["steelblue", "salmon"], edgecolor="black")
+    ax.set_title(f"Target Distribution: {{target}} (Fraud rate: {{fraud_rate:.2%}})")
+    ax.set_xlabel(target)
+    fig.savefig(os.path.join(save_dir, "eda_target.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    print("EDA plots saved.")
 
 
 def find_best_threshold(y_true, y_proba):
@@ -1530,9 +1774,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             preds = (proba >= thresh).astype(int)
             timings[name] = time.perf_counter() - t0
             results[name] = {{"preds": preds, "proba": proba, "thresh": thresh, "model": name}}
-            print(f"✓ {{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]  ({{timings[name]:.1f}}s)")
+            print(f"{{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]  ({{timings[name]:.1f}}s)")
         except Exception as e:
-            print(f"✗ {{name}}: {{e}}")
+            print(f"{{name}}: {{e}}")
 
     # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     for pyod_name, pyod_builder in [
@@ -1551,9 +1795,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             auc = roc_auc_score(y_test, scores) if len(set(y_test)) > 1 else 0
             elapsed = time.perf_counter() - t0
             timings[f"PyOD-{{pyod_name}}"] = elapsed
-            print(f"✓ PyOD {{pyod_name}}: {{n_anom}} anomalies ({{n_anom/len(X_test):.2%}}), F1={{f1:.4f}}, AUC={{auc:.4f}}  ({{elapsed:.1f}}s)")
+            print(f"PyOD {{pyod_name}}: {{n_anom}} anomalies ({{n_anom/len(X_test):.2%}}), F1={{f1:.4f}}, AUC={{auc:.4f}}  ({{elapsed:.1f}}s)")
         except Exception as e:
-            print(f"✗ PyOD {{pyod_name}}: {{e}}")
+            print(f"PyOD {{pyod_name}}: {{e}}")
 
     # ── FLAML AutoML (imbalance-aware benchmark) ──
     try:
@@ -1567,9 +1811,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         flaml_preds = (flaml_proba >= flaml_thresh).astype(int)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = {{"preds": flaml_preds, "proba": flaml_proba, "thresh": flaml_thresh, "model": "FLAML"}}
-        print(f"✓ FLAML ({{automl.best_estimator}}) F1: {{f1_score(y_test, flaml_preds):.4f}} (t={{flaml_thresh:.3f}})  ({{timings['FLAML']:.1f}}s)")
+        print(f"FLAML ({{automl.best_estimator}}) F1: {{f1_score(y_test, flaml_preds):.4f}} (t={{flaml_thresh:.3f}})  ({{timings['FLAML']:.1f}}s)")
     except Exception as e:
-        print(f"✗ FLAML: {{e}}")
+        print(f"FLAML: {{e}}")
 
     # ── LazyPredict (quick sweep benchmark) ──
     try:
@@ -1578,10 +1822,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
         timings["LazyPredict"] = time.perf_counter() - t0
-        print(f"\\n✓ LazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
+        print(f"\\nLazyPredict — Top 5 classifiers:  ({{timings['LazyPredict']:.1f}}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
-        print(f"✗ LazyPredict: {{e}}")
+        print(f"LazyPredict: {{e}}")
 
     return results, timings
 
@@ -1629,15 +1873,48 @@ def report(results, timings, y_test, save_dir="."):
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, "fraud_report.png"), dpi=150)
         plt.close()
-        print(f"\\n✓ Report saved to {{save_dir}}/fraud_report.png")
+        print(f"\\nReport saved to {{save_dir}}/fraud_report.png")
     except Exception as e:
-        print(f"✗ Plot: {{e}}")
+        print(f"Plot: {{e}}")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\\nMetrics saved to {{out_path}}")
+
+
+def cross_validate_best(X, y, save_dir):
+    """5-fold stratified cross-validation on gradient boosting models."""
+    print("\\n" + "=" * 60)
+    print("CROSS-VALIDATION (5-Fold Stratified)")
+    print("=" * 60)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_results = {{}}
+    for name, build_fn in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
+            iterations=300, verbose=0, task_type="GPU", devices="0")),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
+            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
+            n_estimators=300, device="cuda", tree_method="hist",
+            verbosity=0, n_jobs=-1)),
+    ]:
+        try:
+            model = build_fn()
+            scores = cross_val_score(model, X, y, cv=cv, scoring="f1", n_jobs=1)
+            cv_results[name] = {{"f1_mean": round(float(scores.mean()), 4),
+                                "f1_std": round(float(scores.std()), 4),
+                                "folds": [round(float(s), 4) for s in scores]}}
+            print(f"  {{name}}: F1 {{scores.mean():.4f}} +/- {{scores.std():.4f}}")
+        except Exception as e:
+            print(f"  {{name}} CV skipped: {{e}}")
+    if cv_results:
+        out_path = os.path.join(save_dir, "cv_results.json")
+        with open(out_path, "w") as f:
+            json.dump(cv_results, f, indent=2)
+        print(f"CV results saved to {{out_path}}")
+    return cv_results
 
 
 def main():
@@ -1646,11 +1923,15 @@ def main():
     print("CatBoost | LightGBM | XGBoost | PyOD (ECOD/COPOD/IForest)")
     print("Calibrated probabilities + threshold tuning")
     print("=" * 60)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
+    run_eda(df, TARGET, save_dir)
     X_train, X_test, y_train, y_test = preprocess(df)
     results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, save_dir)
+    cross_validate_best(
+        pd.concat([X_train, X_test]), pd.concat([y_train, y_test]), save_dir)
 
 
 if __name__ == "__main__":
@@ -1817,7 +2098,7 @@ def train_transformer(df, model_name, display_name):
     except Exception:
         pass
 
-    print(f"\\n✓ {{display_name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}  ({{elapsed:.1f}}s)")
+    print(f"\\n{{display_name}} — Accuracy: {{acc:.4f}}, F1: {{f1:.4f}}  ({{elapsed:.1f}}s)")
     if "roc_auc" in row:
         print(f"  ROC-AUC: {{row['roc_auc']:.4f}}")
     elif "roc_auc_ovr" in row:
@@ -1853,9 +2134,9 @@ def run_gliner(df):
             if entities:
                 ent_str = ", ".join(f"{{e['text']}}({{e['label']}})" for e in entities[:5])
                 print(f"  [{{i+1}}] {{ent_str}}")
-        print("✓ GLiNER zero-shot NER complete")
+        print("GLiNER zero-shot NER complete")
     except Exception as e:
-        print(f"✗ GLiNER: {{e}}")
+        print(f"GLiNER: {{e}}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1876,17 +2157,60 @@ def run_embedding_similarity(df):
         for i in range(min(3, len(texts))):
             top_idx = np.argsort(sim[i])[-4:-1][::-1]
             print(f"  Text {{i+1}} most similar to: {{[idx for idx in top_idx]}}")
-        print(f"✓ BGE-M3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
+        print(f"BGE-M3: {{len(texts)}} texts embedded (dim={{embs.shape[1]}})")
 
         # Qwen3-Embedding
         try:
             qwen = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
             qwen_embs = qwen.encode(texts[:100], batch_size=16, show_progress_bar=True)
-            print(f"✓ Qwen3-Embedding: {{len(qwen_embs)}} texts embedded (dim={{qwen_embs.shape[1]}})")
+            print(f"Qwen3-Embedding: {{len(qwen_embs)}} texts embedded (dim={{qwen_embs.shape[1]}})")
         except Exception as e:
-            print(f"✗ Qwen3-Embedding: {{e}}")
+            print(f"Qwen3-Embedding: {{e}}")
     except Exception as e:
-        print(f"✗ Embedding similarity: {{e}}")
+        print(f"Embedding similarity: {{e}}")
+
+
+def run_eda(df, text_col, target, save_dir):
+    """Exploratory Data Analysis for text classification."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Samples: {{df.shape[0]}}, Columns: {{df.shape[1]}}")
+    if target in df.columns:
+        print(f"\\nClass distribution:")
+        vc = df[target].value_counts()
+        for cls, cnt in vc.items():
+            print(f"  {{cls}}: {{cnt}} ({{cnt/len(df):.1%}})")
+        fig, ax = plt.subplots(figsize=(8, 5))
+        vc.plot(kind="bar", ax=ax, color="steelblue", edgecolor="black")
+        ax.set_title(f"Class Distribution: {{target}}")
+        ax.set_xlabel(target)
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_class_distribution.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    if text_col in df.columns:
+        lengths = df[text_col].astype(str).str.len()
+        word_counts = df[text_col].astype(str).str.split().str.len()
+        print(f"\\nText length (chars): mean={{lengths.mean():.0f}}, median={{lengths.median():.0f}}, "
+              f"min={{lengths.min()}}, max={{lengths.max()}}")
+        print(f"Word count: mean={{word_counts.mean():.1f}}, median={{word_counts.median():.0f}}, "
+              f"min={{word_counts.min()}}, max={{word_counts.max()}}")
+        vocab = set()
+        for text in df[text_col].astype(str).head(10000):
+            vocab.update(text.lower().split())
+        print(f"Approx vocabulary size (first 10k): {{len(vocab):,}}")
+        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+        axes[0].hist(lengths, bins=50, color="steelblue", edgecolor="black")
+        axes[0].set_title("Text Length Distribution (chars)")
+        axes[1].hist(word_counts.clip(upper=word_counts.quantile(0.99)), bins=50,
+                     color="steelblue", edgecolor="black")
+        axes[1].set_title("Word Count Distribution")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_text_stats.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("EDA plots saved.")
 
 
 def main():
@@ -1896,6 +2220,7 @@ def main():
     print("=" * 60)
     df = load_data()
     save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, TEXT_COL, TARGET, save_dir)
     metrics_out = {{}}
 
     # Baseline first
@@ -1912,8 +2237,8 @@ def main():
             if acc > best_acc:
                 best_acc, best_name = acc, display_name
         except Exception as e:
-            print(f"✗ {{display_name}}: {{e}}")
-    print(f"\\n🏆 Best: {{best_name}} (Accuracy: {{best_acc:.4f}})")
+            print(f"{{display_name}}: {{e}}")
+    print(f"\\nBest: {{best_name}} (Accuracy: {{best_acc:.4f}})")
 
     # Zero-shot NER
     print("\\n— GLiNER Zero-Shot NER —")
@@ -1926,8 +2251,8 @@ def main():
     # Save JSON metrics
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\\nMetrics saved to {{out_path}}")
 
 
 if __name__ == "__main__":
@@ -2252,6 +2577,65 @@ def plot_entity_counts(pred_tags, title, save_path):
     plt.close(fig)
 
 
+def run_eda(df, save_dir):
+    """Dataset summary for NER / entity extraction tasks."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Dataset size: {{len(df)}} rows")
+
+    summary_rows = []
+    for col in df.columns:
+        series = df[col]
+        summary_rows.append({{
+            "column": col,
+            "dtype": str(series.dtype),
+            "non_null": int(series.notna().sum()),
+            "missing": int(series.isna().sum()),
+            "n_unique": int(series.nunique(dropna=True)) if series.dtype != "object" else None,
+        }})
+    pd.DataFrame(summary_rows).to_csv(os.path.join(save_dir, "eda_summary.csv"), index=False)
+
+    if TEXT_COL in df.columns:
+        token_lengths = []
+        for value in df[TEXT_COL].head(5000):
+            if isinstance(value, str):
+                token_lengths.append(len(value.split()))
+            elif isinstance(value, (list, np.ndarray)):
+                token_lengths.append(len(value))
+        if token_lengths:
+            print(
+                f"Token length: mean={{np.mean(token_lengths):.1f}}, "
+                f"median={{np.median(token_lengths):.1f}}, max={{max(token_lengths)}}"
+            )
+
+    if TAG_COL in df.columns:
+        entity_counts = {{}}
+        for value in df[TAG_COL].head(5000):
+            tags = value if isinstance(value, (list, np.ndarray)) else str(value).split()
+            for tag in tags:
+                tag_str = str(tag)
+                if tag_str == "O":
+                    continue
+                if isinstance(tag, (int, np.integer)) and int(tag) < len(CONLL_TAG_NAMES):
+                    tag_str = CONLL_TAG_NAMES[int(tag)]
+                entity_counts[tag_str] = entity_counts.get(tag_str, 0) + 1
+        if entity_counts:
+            top_items = sorted(entity_counts.items(), key=lambda item: item[1], reverse=True)[:12]
+            labels = [item[0] for item in top_items]
+            values = [item[1] for item in top_items]
+            fig, ax = plt.subplots(figsize=(max(6, len(labels) * 0.8), 5))
+            ax.bar(labels, values, color="steelblue")
+            ax.set_title("Top Entity Tags in Dataset")
+            ax.set_ylabel("Count")
+            fig.tight_layout()
+            fig.savefig(os.path.join(save_dir, "eda_entity_tags.png"), dpi=100, bbox_inches="tight")
+            plt.close(fig)
+
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("NER / ENTITY EXTRACTION  GLiNER + ModernBERT + spaCy")
@@ -2259,6 +2643,7 @@ def main():
     print("=" * 60)
     df = load_data()
     save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     sentences, gold_tags = prepare_sentences(df)
     if len(sentences) > 5000:
         sentences, gold_tags = sentences[:5000], gold_tags[:5000]
@@ -2321,7 +2706,7 @@ def main():
     # Save metrics
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
+        json.dump(metrics_out, f, indent=2, default=str)
     print()
     print(f"Metrics saved to {{out_path}}")
 
@@ -2541,12 +2926,29 @@ def plot_similarity_heatmap(sim, title, save_name):
     print(f"  Saved {{save_name}}")
 
 
+def run_eda(df, save_dir):
+    """Text similarity dataset statistics."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    text_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    for col in text_cols[:3]:
+        lengths = df[col].astype(str).str.len()
+        print(f"  {{col}}: mean_len={{lengths.mean():.0f}}, median={{lengths.median():.0f}}")
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("NLP SIMILARITY / RETRIEVAL")
     print("Qwen3-Embedding | BGE-M3 | TF-IDF baseline")
     print("=" * 60)
     df = load_data()
+    run_eda(df, SAVE_DIR)
     metrics = {{}}
 
     # Check for sentence-pair benchmark structure (STS-B style)
@@ -3013,6 +3415,25 @@ def run_chatbot(df=None):
     return metrics
 
 
+def run_eda(df, save_dir):
+    """Input data statistics for generation tasks."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    if df is not None:
+        print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+        desc = df.describe(include="all").T
+        desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+        text_cols = df.select_dtypes(include=["object"]).columns.tolist()
+        for col in text_cols[:3]:
+            lengths = df[col].astype(str).str.len()
+            print(f"  {{col}}: mean_len={{lengths.mean():.0f}}, median={{lengths.median():.0f}}")
+        print("Summary statistics saved to eda_summary.csv")
+    else:
+        print("  No structured dataset (chatbot/generation mode)")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"NLP GENERATION | Task: {{TASK}} | Model: {{OLLAMA_MODEL}}")
@@ -3027,6 +3448,7 @@ def main():
                 return
 
     df = load_data()
+    run_eda(df, SAVE_DIR)
     metrics = {{}}
 
     if TASK == "summarization" and df is not None:
@@ -3219,10 +3641,31 @@ def train_model():
     return metrics
 
 
+def run_eda(dataset, save_dir):
+    """Dataset statistics for image classification."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Total samples: {{len(dataset)}}")
+    if hasattr(dataset, "classes"):
+        print(f"Number of classes: {{len(dataset.classes)}}")
+        from collections import Counter
+        if hasattr(dataset, "targets"):
+            class_counts = Counter(dataset.targets)
+            print("\\nSamples per class:")
+            for cls_idx in sorted(class_counts.keys()):
+                name = dataset.classes[cls_idx] if cls_idx < len(dataset.classes) else str(cls_idx)
+                print(f"  {{name}}: {{class_counts[cls_idx]}}")
+    elif hasattr(dataset, "class_to_idx"):
+        print(f"Number of classes: {{len(dataset.class_to_idx)}}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
     print("=" * 60)
+    # run_eda is called inside train_model() after dataset is loaded
     metrics = train_model()
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
@@ -3269,6 +3712,7 @@ def load_data():
 
 def caption_images():
     df = load_data()
+    run_eda(df, SAVE_DIR)
     img_col = next((c for c in df.column_names if "image" in c.lower()), df.column_names[0])
     images = [df[i][img_col] for i in range(min(MAX_SAMPLES, len(df)))]
     metrics = {{}}
@@ -3339,7 +3783,47 @@ def caption_images():
         json.dump(all_captions, f, indent=2, ensure_ascii=False)
     print(f"Captions saved to {{cap_path}}")
 
+    validation = validate_results(all_captions, len(images), SAVE_DIR)
+    metrics["validation"] = validation
+
     return metrics
+
+
+def run_eda(df, save_dir):
+    """Input data summary for captioning."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    n_rows = len(df)
+    columns = list(getattr(df, "column_names", []))
+    print(f"  Samples: {{n_rows}}")
+    if columns:
+        print(f"  Columns: {{columns}}")
+    summary = {{"samples": n_rows, "columns": columns}}
+    with open(os.path.join(save_dir, "eda_summary.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print("EDA complete.")
+
+
+def validate_results(all_captions, expected_images, save_dir):
+    """Validate caption outputs for completeness and diversity."""
+    validation = {{"expected_images": expected_images, "models": {{}}}}
+    for model_name, captions in all_captions.items():
+        clean = [c.strip() for c in captions if isinstance(c, str) and c.strip()]
+        validation["models"][model_name] = {{
+            "captions": len(captions),
+            "non_empty": len(clean),
+            "coverage_ratio": round(len(clean) / max(expected_images, 1), 4),
+            "unique_ratio": round(len(set(clean)) / max(len(clean), 1), 4),
+            "avg_chars": round(sum(len(c) for c in clean) / max(len(clean), 1), 1),
+            "passed": bool(clean),
+        }}
+    validation["passed"] = any(model.get("passed") for model in validation["models"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {{out_path}}")
+    return validation
 
 
 def main():
@@ -3605,10 +4089,23 @@ def train_model():
     return metrics
 
 
+def run_eda(save_dir):
+    """Dataset summary for medical segmentation."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    data_dir = os.path.join(save_dir, "data")
+    if os.path.isdir(data_dir):
+        imgs = [f for f in os.listdir(data_dir) if not f.startswith(".")]
+        print(f"  Files in data directory: {{len(imgs)}}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("MEDICAL SEGMENTATION | nnU-Net + MedSAM2")
     print("=" * 60)
+    run_eda(SAVE_DIR)
     print("NOTE: Educational/research demo only -- not for clinical use.")
     metrics = train_model()
 
@@ -3664,27 +4161,28 @@ def preprocess(df):
     cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
-    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(df[c], "cat"): df[c] = df[c].astype(str)
+        df[c] = df[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         df[cat_cols] = oe.fit_transform(df[cat_cols])
     return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
 
-
 def eval_clustering(X, labels, name):
     mask = labels >= 0
     n = len(set(labels[mask]))
-    noise = (labels == -1).sum()
+    noise = int((labels == -1).sum())
     if n > 1 and mask.sum() > n:
         sil = silhouette_score(X[mask], labels[mask])
         ch = calinski_harabasz_score(X[mask], labels[mask])
         db = davies_bouldin_score(X[mask], labels[mask])
         print(f"  {{name}}: {{n}} clusters, noise={{noise}}, silhouette={{sil:.4f}}, CH={{ch:.1f}}, DB={{db:.4f}}")
-        return {{"n_clusters": n, "noise": noise, "silhouette": round(sil, 4),
-                "calinski_harabasz": round(ch, 1), "davies_bouldin": round(db, 4)}}
+        return {{"n_clusters": int(n), "noise": noise, "silhouette": round(float(sil), 4),
+                "calinski_harabasz": round(float(ch), 1), "davies_bouldin": round(float(db), 4)}}
     else:
         print(f"  {{name}}: {{n}} clusters, noise={{noise}} — insufficient for metrics")
-        return {{"n_clusters": n, "noise": noise}}
+        return {{"n_clusters": int(n), "noise": noise}}
 
 
 def cluster(X):
@@ -3730,7 +4228,7 @@ def cluster(X):
         from sklearn.mixture import GaussianMixture
         t0 = time.perf_counter()
         bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
-        best_k = range(2, 11)[np.argmin(bics)]
+        best_k = int(range(2, 11)[np.argmin(bics)])
         gmm = GaussianMixture(n_components=best_k, random_state=42).fit(X)
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
@@ -3758,7 +4256,7 @@ def cluster(X):
             lbls = km.fit_predict(X)
             inertias.append(km.inertia_)
             sils.append(silhouette_score(X, lbls))
-        best_k = K_range[np.argmax(sils)]
+        best_k = int(K_range[np.argmax(sils)])
         labels = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit_predict(X)
         timings["KMeans"] = time.perf_counter() - t0
         print(f"  K-Means baseline (best k={{best_k}}, silhouette={{max(sils):.4f}})  ({{timings['KMeans']:.1f}}s):")
@@ -3811,8 +4309,56 @@ def cluster(X):
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
+        json.dump(metrics_out, f, indent=2, default=str)
     print(f"  Metrics saved to {{out_path}}")
+
+
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for clustering."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        import seaborn as _sns
+        _sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                     cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    plot_cols = num_cols[:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def main():
@@ -3820,6 +4366,8 @@ def main():
     print("CLUSTERING: UMAP + HDBSCAN (primary) | GMM | K-Means baseline")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     X = preprocess(df)
     cluster(X)
 
@@ -3879,13 +4427,15 @@ def preprocess(df):
     y = None
     if label_col:
         y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
-        print(f"ℹ  Ground-truth column '{{label_col}}' detected — used for evaluation only (not training)")
+        print(f" Ground-truth column '{{label_col}}' detected — used for evaluation only (not training)")
     for c in df.columns:
         if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
     cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
-    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(df[c], "cat"): df[c] = df[c].astype(str)
+        df[c] = df[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         df[cat_cols] = oe.fit_transform(df[cat_cols])
@@ -3931,9 +4481,9 @@ def detect(X, y=None):
                 extra = f"  F1: {{f1:.4f}}  ROC-AUC: {{auc:.4f}}"
 
             metrics_out[name] = row
-            print(f"✓ {{name}}: {{n_anom}} anomalies ({{n_anom/len(X):.2%}})  ({{elapsed:.1f}}s){{extra}}")
+            print(f"{{name}}: {{n_anom}} anomalies ({{n_anom/len(X):.2%}})  ({{elapsed:.1f}}s){{extra}}")
         except Exception as e:
-            print(f"✗ {{name}}: {{e}}")
+            print(f"{{name}}: {{e}}")
 
     # ── Score distribution plot ──
     save_dir = os.path.dirname(os.path.abspath(__file__))
@@ -3949,9 +4499,9 @@ def detect(X, y=None):
             plt.tight_layout()
             plt.savefig(os.path.join(save_dir, "anomaly_scores.png"), dpi=100, bbox_inches="tight")
             plt.close()
-            print("✓ Saved anomaly_scores.png")
+            print("Saved anomaly_scores.png")
         except Exception as e:
-            print(f"⚠ Score plot: {{e}}")
+            print(f"Score plot: {{e}}")
 
     # ── Agreement matrix (how many detectors flag each point) ──
     if len(results) > 1:
@@ -3978,15 +4528,63 @@ def detect(X, y=None):
         test_results = engine.test(model=model, datamodule=datamodule)
         elapsed = time.perf_counter() - t0
         timings["PatchCore"] = elapsed
-        print(f"✓ PatchCore (anomalib): {{test_results}}  ({{elapsed:.1f}}s)")
+        print(f"PatchCore (anomalib): {{test_results}}  ({{elapsed:.1f}}s)")
     except Exception as e:
-        print(f"✗ PatchCore: {{e}}")
+        print(f"PatchCore: {{e}}")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\\n✓ Metrics saved → {{out_path}}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\\nMetrics saved to {{out_path}}")
+
+
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for anomaly detection."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        import seaborn as _sns
+        _sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                     cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    plot_cols = num_cols[:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def main():
@@ -3996,6 +4594,8 @@ def main():
     print("Labels used for evaluation only — never for training")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     X, y = preprocess(df)
     detect(X, y)
 
@@ -4268,6 +4868,65 @@ def forecast(df, target):
     return metrics
 
 
+def run_eda(df, target, save_dir):
+    """Time Series Exploratory Data Analysis."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Date range: {{df.index.min()}} to {{df.index.max()}}" if hasattr(df.index, 'min') else "")
+    print(f"Target column: {{target}}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(10).to_string())
+    else:
+        print("\\nNo missing values")
+    desc = df.describe().T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    # Target time series plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    if target in df.columns:
+        df[target].plot(ax=ax, color="steelblue")
+    ax.set_title(f"Time Series: {{target}}")
+    ax.set_xlabel("Time")
+    fig.savefig(os.path.join(save_dir, "eda_timeseries.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    # Stationarity test (ADF)
+    if target in df.columns:
+        try:
+            from statsmodels.tsa.stattools import adfuller
+            series = df[target].dropna()
+            if len(series) > 20:
+                result = adfuller(series, maxlag=min(30, len(series)//3))
+                print(f"\\nADF Stationarity Test:")
+                print(f"  Test Statistic: {{result[0]:.4f}}")
+                print(f"  p-value: {{result[1]:.4f}}")
+                print(f"  Stationary: {{'Yes' if result[1] < 0.05 else 'No (p >= 0.05)'}}")
+        except Exception:
+            pass
+        # Seasonal decomposition
+        try:
+            from statsmodels.tsa.seasonal import seasonal_decompose
+            series = df[target].dropna()
+            freq = min(max(7, len(series) // 10), 365)
+            if len(series) > 2 * freq:
+                decomp = seasonal_decompose(series, period=freq, extrapolate_trend="freq")
+                fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
+                decomp.observed.plot(ax=axes[0]); axes[0].set_title("Observed")
+                decomp.trend.plot(ax=axes[1]); axes[1].set_title("Trend")
+                decomp.seasonal.plot(ax=axes[2]); axes[2].set_title("Seasonal")
+                decomp.resid.plot(ax=axes[3]); axes[3].set_title("Residual")
+                fig.tight_layout()
+                fig.savefig(os.path.join(save_dir, "eda_decomposition.png"), dpi=100, bbox_inches="tight")
+                plt.close(fig)
+        except Exception:
+            pass
+    print("EDA plots saved.")
+
+
 def main():
     print("=" * 60)
     print("TIME SERIES FORECASTING | April 2026")
@@ -4275,6 +4934,7 @@ def main():
     print("Baselines: ARIMA, Prophet, LightGBM/CatBoost/XGBoost Lag, FLAML")
     print("=" * 60)
     df, target = load_data()
+    run_eda(df, target, SAVE_DIR)
     metrics = forecast(df, target)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
@@ -4570,11 +5230,46 @@ def train(df):
     return metrics
 
 
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for recommendation data."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {{df.shape[0]}} rows x {{df.shape[1]}} columns")
+    print(f"Column types:\\n{{df.dtypes.value_counts().to_string()}}")
+    # Detect user/item columns
+    for col in df.columns:
+        nuniq = df[col].nunique()
+        if nuniq < len(df) * 0.5 and nuniq > 1:
+            print(f"  {{col}}: {{nuniq}} unique values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\\nMissing values ({{len(n_miss)}} columns):")
+        print(n_miss.sort_values(ascending=False).head(10).to_string())
+    else:
+        print("\\nNo missing values")
+    # Rating distribution if numeric column exists
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if num_cols:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        df[num_cols[0]].hist(bins=30, ax=ax, color="steelblue", edgecolor="black")
+        ax.set_title(f"Distribution: {{num_cols[0]}}")
+        fig.savefig(os.path.join(save_dir, "eda_rating_dist.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"RECOMMENDATION ({{TASK}}) | implicit + LightFM + SentenceTransformers")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     metrics = train(df)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
@@ -4736,11 +5431,32 @@ def plot_results(results, save_dir):
     plt.close(fig)
 
 
+def run_eda(env_name, make_kwargs, save_dir):
+    """Environment information summary."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    try:
+        env = gym.make(env_name, **make_kwargs)
+        print(f"  Environment: {{env_name}}")
+        print(f"  Observation space: {{env.observation_space}}")
+        print(f"  Action space: {{env.action_space}}")
+        is_continuous = hasattr(env.action_space, "shape") and len(env.action_space.shape) > 0
+        print(f"  Action type: {{'continuous' if is_continuous else 'discrete'}}")
+        if hasattr(env, 'reward_range'):
+            print(f"  Reward range: {{env.reward_range}}")
+        env.close()
+    except Exception as e:
+        print(f"  Could not inspect environment: {{e}}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"REINFORCEMENT LEARNING | {{ENV_NAME}}")
     print(f"Primary: {{ALGO}}  |  Baselines: auto-selected for action space")
     print("=" * 60)
+    run_eda(ENV_NAME, MAKE_KWARGS, SAVE_DIR)
     results = []
 
     # === PRIMARY: SAC or PPO ===
@@ -4796,7 +5512,7 @@ def main():
     # Save metrics
     metrics = [{{"algorithm": r[0], "mean_reward": r[1], "std_reward": r[2], "time_s": r[3]}} for r in results]
     with open(os.path.join(SAVE_DIR, "metrics.json"), "w") as f:
-        json.dump(metrics, f, indent=2)
+        json.dump(metrics, f, indent=2, default=str)
 
     plot_results(results, SAVE_DIR)
     print(f"  Saved: comparison.png, metrics.json")
@@ -5151,13 +5867,86 @@ def run_voice_cloning(audio_dir):
     return results
 
 
+def run_eda(save_dir):
+    """Audio file summary."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    audio_exts = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
+    audio_files = []
+    for root, dirs, files in os.walk(save_dir):
+        for f in files:
+            if f.lower().endswith(audio_exts):
+                audio_files.append(os.path.join(root, f))
+    print(f"  Audio files found: {{len(audio_files)}}")
+    if audio_files:
+        total_size = sum(os.path.getsize(f) for f in audio_files)
+        print(f"  Total size: {{total_size / 1024 / 1024:.1f}} MB")
+    print("EDA complete.")
+
+
+def validate_results(task, results, save_dir):
+    """Validate audio outputs for the active task."""
+    validation = {{"task": task, "checks": {{}}}}
+
+    if task == "transcription":
+        records = results.get("whisper", [])
+        non_empty = sum(1 for item in records if str(item.get("text", "")).strip())
+        validation["checks"]["whisper"] = {{
+            "records": len(records),
+            "non_empty_transcripts": non_empty,
+            "passed": len(records) > 0 and non_empty == len(records),
+        }}
+    elif task == "classification":
+        records = results.get("classification", [])
+        passed = all(item.get("n_files", 0) > 0 for item in records) if records else False
+        validation["checks"]["classification"] = {{
+            "models": len(records),
+            "files_scored": sum(int(item.get("n_files", 0)) for item in records),
+            "passed": passed,
+        }}
+    elif task in ("denoising", "separation"):
+        bundle = results.get("sepformer", {{}})
+        sep_records = bundle.get("sepformer", []) if isinstance(bundle, dict) else []
+        existing = sum(
+            1 for item in sep_records
+            if os.path.exists(os.path.join(save_dir, "enhanced", item.get("output", "")))
+        )
+        validation["checks"]["sepformer"] = {{
+            "outputs": len(sep_records),
+            "existing_outputs": existing,
+            "baseline_files": len(bundle.get("baseline_spectral", [])) if isinstance(bundle, dict) else 0,
+            "passed": len(sep_records) > 0 and existing == len(sep_records),
+        }}
+    elif task == "cloning":
+        bundle = results.get("xtts", {{}})
+        xtts_records = bundle.get("xtts", []) if isinstance(bundle, dict) else []
+        existing = sum(
+            1 for item in xtts_records
+            if os.path.exists(os.path.join(save_dir, "tts_output", item.get("output", "")))
+        )
+        validation["checks"]["xtts"] = {{
+            "outputs": len(xtts_records),
+            "existing_outputs": existing,
+            "baseline_outputs": len(bundle.get("baseline_pyttsx3", [])) if isinstance(bundle, dict) else 0,
+            "passed": len(xtts_records) > 0 and existing == len(xtts_records),
+        }}
+
+    validation["passed"] = any(item.get("passed") for item in validation["checks"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"  Validation saved to {{out_path}}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"AUDIO/SPEECH | Task: {{TASK}}")
     print("Models: Whisper | Wav2Vec2/HuBERT | SepFormer | XTTS-v2")
     print("=" * 60)
-
     audio_dir, data = download_audio_samples()
+    run_eda(SAVE_DIR)
     results = {{}}
 
     if TASK == "transcription":
@@ -5196,6 +5985,8 @@ def main():
         results["whisper"] = asr_results
 
     # Save metrics
+    validation = validate_results(TASK, results, SAVE_DIR)
+    results["validation"] = validation
     metrics_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)
@@ -5209,14 +6000,14 @@ if __name__ == "__main__":
 
 def gen_cv_detection(path, cfg):
     task = cfg.get("task", "detect")
+    data_load = cfg.get("data")
     return textwrap.dedent(f'''\
 """
-Modern CV Object Detection Pipeline (April 2026)
+Modern CV Detection / Tracking Pipeline (April 2026)
 
-Primary : YOLO26m (Ultralytics) — real-time object detection / tracking.
-Data    : Auto-downloads sample images at runtime; also scans local dir.
-Timing  : Wall-clock per inference batch.
-Export  : metrics.json with detection counts, classes, and timing.
+Primary : YOLO26m (Ultralytics) for detection and tracking.
+Export  : metrics.json with file-level detections + validation.json with output checks.
+Data    : Auto-downloads demo files at runtime.
 """
 import os, json, time, warnings
 from pathlib import Path
@@ -5227,43 +6018,25 @@ warnings.filterwarnings("ignore")
 TASK = "{task}"
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SAMPLE_URLS = [
-    "https://ultralytics.com/images/bus.jpg",
-    "https://ultralytics.com/images/zidane.jpg",
-]
-
 
 def download_samples():
-    save_dir = Path(SAVE_DIR) / "sample_images"
-    save_dir.mkdir(exist_ok=True)
-    paths = []
-    for url in SAMPLE_URLS:
-        fname = save_dir / url.split("/")[-1]
-        if not fname.exists():
-            urllib.request.urlretrieve(url, str(fname))
-        paths.append(fname)
-    exts = (".jpg", ".jpeg", ".png", ".bmp")
-    for ext in exts:
-        paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{{ext}}") if p not in paths])
-    print(f"{{len(paths)}} images available")
-    return paths
+{data_load if data_load else '    from pathlib import Path\n    return [p for p in Path(SAVE_DIR).glob("*") if p.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp", ".mp4", ".avi", ".mov")]'}
 
 
 def run_detection(files):
     from ultralytics import YOLO
     model = YOLO("yolo26m.pt")
+    image_files = [f for f in files if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp")]
     out_dir = os.path.join(SAVE_DIR, "detections")
     os.makedirs(out_dir, exist_ok=True)
     metrics = {{"model": "yolo26m", "task": "detect", "images": []}}
     t0 = time.perf_counter()
-    for f in files[:20]:
+    for f in image_files[:20]:
         results = model(str(f))
         for r in results:
             r.save(filename=os.path.join(out_dir, f.name))
             n_boxes = len(r.boxes) if r.boxes is not None else 0
-            classes = []
-            if r.boxes is not None:
-                classes = [r.names[int(c)] for c in r.boxes.cls.tolist()]
+            classes = [int(b.cls) for b in r.boxes] if r.boxes is not None else []
             metrics["images"].append({{"file": f.name, "detections": n_boxes,
                                        "classes": dict(sorted({{c: classes.count(c) for c in set(classes)}}.items()))}})
             if n_boxes:
@@ -5296,15 +6069,50 @@ def run_tracking(files):
     return metrics
 
 
+def run_eda(files, save_dir):
+    """Input file summary for detection."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {{len(files)}}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {{total_size / 1024:.1f}} KB")
+    print("EDA complete.")
+
+
+def validate_results(metrics, files, save_dir):
+    """Validate output coverage for detection / tracking demos."""
+    validation = {{
+        "task": metrics.get("task", TASK),
+        "input_files": len(files),
+        "processed": int(metrics.get("total_images", len(metrics.get("videos", [])))),
+        "time_s": round(float(metrics.get("time_s", 0)), 1),
+    }}
+    if metrics.get("task") == "track":
+        validation["processed"] = len(metrics.get("videos", []))
+        validation["passed"] = validation["processed"] > 0 and validation["time_s"] >= 0
+    else:
+        validation["total_detections"] = int(metrics.get("total_detections", 0))
+        validation["passed"] = validation["processed"] > 0 and validation["time_s"] >= 0
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {{out_path}}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"CV DETECTION | Task: {{TASK}} | Model: YOLO26m")
     print("=" * 60)
     files = download_samples()
+    run_eda(files, SAVE_DIR)
     if TASK == "track":
         metrics = run_tracking(files)
     else:
         metrics = run_detection(files)
+    metrics["validation"] = validate_results(metrics, files, SAVE_DIR)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w") as f:
@@ -5698,11 +6506,49 @@ def run_pose(files):
     return {{}}
 
 
+def run_eda(files, save_dir):
+    """Input file summary for face/gesture tasks."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {{len(files)}}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {{total_size / 1024:.1f}} KB")
+    print("EDA complete.")
+
+
+def validate_results(metrics, files, save_dir):
+    """Validate output payloads for face / gesture tasks."""
+    validation = {{"task": TASK, "input_files": len(files), "models": {{}}}}
+    for name, payload in metrics.items():
+        if name == "task" or not isinstance(payload, dict):
+            continue
+        numeric_values = [
+            float(value) for key, value in payload.items()
+            if key != "time_s" and isinstance(value, (int, float))
+        ]
+        positive_signal = any(value > 0 for value in numeric_values)
+        validation["models"][name] = {{
+            "time_s": round(float(payload.get("time_s", 0)), 1) if isinstance(payload.get("time_s", 0), (int, float)) else None,
+            "positive_signal": positive_signal,
+            "keys": sorted(payload.keys()),
+            "passed": positive_signal or isinstance(payload.get("time_s"), (int, float)),
+        }}
+    validation["passed"] = any(model.get("passed") for model in validation["models"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {{out_path}}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"FACE/HAND/GESTURE | Task: {{TASK}}")
     print("=" * 60)
     files = download_face_samples()
+    run_eda(files, SAVE_DIR)
     metrics = {{"task": TASK}}
 
     if TASK == "face_detection":
@@ -5721,6 +6567,8 @@ def main():
     else:
         metrics["yolo"] = run_yolo_detection(files)
         metrics["face_landmarker"] = run_face_landmarker(files)
+
+    metrics["validation"] = validate_results(metrics, files, SAVE_DIR)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w") as f:
@@ -5811,12 +6659,53 @@ def run_paddleocr_vl(files):
     return results, round(elapsed, 1)
 
 
+def run_eda(files, save_dir):
+    """Input file summary for OCR."""
+    print("\\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {{len(files)}}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {{total_size / 1024:.1f}} KB")
+    print("EDA complete.")
+
+
+def validate_results(primary_results, vl_results, save_dir):
+    """Validate OCR outputs for completeness and confidence."""
+    validation = {
+        "paddleocr": {
+            "files": len(primary_results),
+            "files_with_text": sum(1 for item in primary_results if item.get("n_lines", 0) > 0),
+            "avg_confidence": round(
+                sum(float(item.get("avg_confidence", 0)) for item in primary_results) / max(len(primary_results), 1),
+                4,
+            ),
+        },
+        "paddleocr_vl": {
+            "files": len(vl_results),
+            "files_with_text": sum(1 for item in vl_results if item.get("n_lines", 0) > 0),
+        },
+    }
+    validation["paddleocr"]["passed"] = validation["paddleocr"]["files_with_text"] > 0
+    validation["paddleocr_vl"]["passed"] = validation["paddleocr_vl"]["files_with_text"] > 0 if vl_results else True
+    validation["passed"] = validation["paddleocr"]["passed"] or validation["paddleocr_vl"]["passed"]
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {{out_path}}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print("OCR | PaddleOCR + PaddleOCR-VL-1.5")
     print("=" * 60)
     files = download_samples()
+    run_eda(files, SAVE_DIR)
     metrics = {}
+    results = []
+    vl_results = []
 
     # PRIMARY: PaddleOCR
     print()
@@ -5832,7 +6721,6 @@ def main():
         print(f"  PaddleOCR: {len(results)} files, {total_lines} lines in {elapsed}s")
     except Exception as e:
         print(f"  PaddleOCR failed: {e}")
-        results = []
 
     # EXTENDED: PaddleOCR-VL-1.5
     print()
@@ -5846,6 +6734,8 @@ def main():
         print(f"  VL-1.5: {len(vl_results)} files, {vl_total} lines in {vl_elapsed}s")
     except Exception as e:
         print(f"  PaddleOCR-VL-1.5 failed: {e}")
+
+    metrics["validation"] = validate_results(results, vl_results, SAVE_DIR)
 
     # Save metrics
     out_path = os.path.join(SAVE_DIR, "metrics.json")
@@ -5905,9 +6795,9 @@ def main():
                 content = generator(path, cfg)
                 if write_pipeline(path, content):
                     total += 1
-                    print(f"  ✓ {path}")
+                    print(f"  {path}")
             except Exception as e:
-                print(f"  ✗ {path}: {e}")
+                print(f"  {path}: {e}")
 
     print(f"\n{'='*60}")
     print(f"TOTAL PIPELINES GENERATED: {total}")

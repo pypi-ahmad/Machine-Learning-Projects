@@ -32,27 +32,28 @@ def preprocess(df):
     cat_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
-    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(df[c], "cat"): df[c] = df[c].astype(str)
+        df[c] = df[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         df[cat_cols] = oe.fit_transform(df[cat_cols])
     return StandardScaler().fit_transform(df.select_dtypes(include=["number"]))
 
-
 def eval_clustering(X, labels, name):
     mask = labels >= 0
     n = len(set(labels[mask]))
-    noise = (labels == -1).sum()
+    noise = int((labels == -1).sum())
     if n > 1 and mask.sum() > n:
         sil = silhouette_score(X[mask], labels[mask])
         ch = calinski_harabasz_score(X[mask], labels[mask])
         db = davies_bouldin_score(X[mask], labels[mask])
         print(f"  {name}: {n} clusters, noise={noise}, silhouette={sil:.4f}, CH={ch:.1f}, DB={db:.4f}")
-        return {"n_clusters": n, "noise": noise, "silhouette": round(sil, 4),
-                "calinski_harabasz": round(ch, 1), "davies_bouldin": round(db, 4)}
+        return {"n_clusters": int(n), "noise": noise, "silhouette": round(float(sil), 4),
+                "calinski_harabasz": round(float(ch), 1), "davies_bouldin": round(float(db), 4)}
     else:
         print(f"  {name}: {n} clusters, noise={noise} — insufficient for metrics")
-        return {"n_clusters": n, "noise": noise}
+        return {"n_clusters": int(n), "noise": noise}
 
 
 def cluster(X):
@@ -98,7 +99,7 @@ def cluster(X):
         from sklearn.mixture import GaussianMixture
         t0 = time.perf_counter()
         bics = [GaussianMixture(n_components=k, random_state=42).fit(X).bic(X) for k in range(2, 11)]
-        best_k = range(2, 11)[np.argmin(bics)]
+        best_k = int(range(2, 11)[np.argmin(bics)])
         gmm = GaussianMixture(n_components=best_k, random_state=42).fit(X)
         labels = gmm.predict(X)
         probs = gmm.predict_proba(X)
@@ -126,7 +127,7 @@ def cluster(X):
             lbls = km.fit_predict(X)
             inertias.append(km.inertia_)
             sils.append(silhouette_score(X, lbls))
-        best_k = K_range[np.argmax(sils)]
+        best_k = int(K_range[np.argmax(sils)])
         labels = KMeans(n_clusters=best_k, random_state=42, n_init=10).fit_predict(X)
         timings["KMeans"] = time.perf_counter() - t0
         print(f"  K-Means baseline (best k={best_k}, silhouette={max(sils):.4f})  ({timings['KMeans']:.1f}s):")
@@ -179,8 +180,56 @@ def cluster(X):
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
+        json.dump(metrics_out, f, indent=2, default=str)
     print(f"  Metrics saved to {out_path}")
+
+
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for clustering."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Column types:\n{df.dtypes.value_counts().to_string()}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        import seaborn as _sns
+        _sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                     cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    plot_cols = num_cols[:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def main():
@@ -188,6 +237,8 @@ def main():
     print("CLUSTERING: UMAP + HDBSCAN (primary) | GMM | K-Means baseline")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     X = preprocess(df)
     cluster(X)
 

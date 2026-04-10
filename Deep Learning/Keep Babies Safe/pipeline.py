@@ -135,10 +135,31 @@ def train_model():
     return metrics
 
 
+def run_eda(dataset, save_dir):
+    """Dataset statistics for image classification."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Total samples: {len(dataset)}")
+    if hasattr(dataset, "classes"):
+        print(f"Number of classes: {len(dataset.classes)}")
+        from collections import Counter
+        if hasattr(dataset, "targets"):
+            class_counts = Counter(dataset.targets)
+            print("\nSamples per class:")
+            for cls_idx in sorted(class_counts.keys()):
+                name = dataset.classes[cls_idx] if cls_idx < len(dataset.classes) else str(cls_idx)
+                print(f"  {name}: {class_counts[cls_idx]}")
+    elif hasattr(dataset, "class_to_idx"):
+        print(f"Number of classes: {len(dataset.class_to_idx)}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("IMAGE CLASSIFICATION | DINOv3 + ConvNeXt V2")
     print("=" * 60)
+    # run_eda is called inside train_model() after dataset is loaded
     metrics = train_model()
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")

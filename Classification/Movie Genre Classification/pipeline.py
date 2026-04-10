@@ -152,7 +152,7 @@ def train_transformer(df, model_name, display_name):
     except Exception:
         pass
 
-    print(f"\n✓ {display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}  ({elapsed:.1f}s)")
+    print(f"\n{display_name} — Accuracy: {acc:.4f}, F1: {f1:.4f}  ({elapsed:.1f}s)")
     if "roc_auc" in row:
         print(f"  ROC-AUC: {row['roc_auc']:.4f}")
     elif "roc_auc_ovr" in row:
@@ -188,9 +188,9 @@ def run_gliner(df):
             if entities:
                 ent_str = ", ".join(f"{e['text']}({e['label']})" for e in entities[:5])
                 print(f"  [{i+1}] {ent_str}")
-        print("✓ GLiNER zero-shot NER complete")
+        print("GLiNER zero-shot NER complete")
     except Exception as e:
-        print(f"✗ GLiNER: {e}")
+        print(f"GLiNER: {e}")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -211,17 +211,60 @@ def run_embedding_similarity(df):
         for i in range(min(3, len(texts))):
             top_idx = np.argsort(sim[i])[-4:-1][::-1]
             print(f"  Text {i+1} most similar to: {[idx for idx in top_idx]}")
-        print(f"✓ BGE-M3: {len(texts)} texts embedded (dim={embs.shape[1]})")
+        print(f"BGE-M3: {len(texts)} texts embedded (dim={embs.shape[1]})")
 
         # Qwen3-Embedding
         try:
             qwen = SentenceTransformer("Qwen/Qwen3-Embedding-0.6B")
             qwen_embs = qwen.encode(texts[:100], batch_size=16, show_progress_bar=True)
-            print(f"✓ Qwen3-Embedding: {len(qwen_embs)} texts embedded (dim={qwen_embs.shape[1]})")
+            print(f"Qwen3-Embedding: {len(qwen_embs)} texts embedded (dim={qwen_embs.shape[1]})")
         except Exception as e:
-            print(f"✗ Qwen3-Embedding: {e}")
+            print(f"Qwen3-Embedding: {e}")
     except Exception as e:
-        print(f"✗ Embedding similarity: {e}")
+        print(f"Embedding similarity: {e}")
+
+
+def run_eda(df, text_col, target, save_dir):
+    """Exploratory Data Analysis for text classification."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Samples: {df.shape[0]}, Columns: {df.shape[1]}")
+    if target in df.columns:
+        print(f"\nClass distribution:")
+        vc = df[target].value_counts()
+        for cls, cnt in vc.items():
+            print(f"  {cls}: {cnt} ({cnt/len(df):.1%})")
+        fig, ax = plt.subplots(figsize=(8, 5))
+        vc.plot(kind="bar", ax=ax, color="steelblue", edgecolor="black")
+        ax.set_title(f"Class Distribution: {target}")
+        ax.set_xlabel(target)
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_class_distribution.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    if text_col in df.columns:
+        lengths = df[text_col].astype(str).str.len()
+        word_counts = df[text_col].astype(str).str.split().str.len()
+        print(f"\nText length (chars): mean={lengths.mean():.0f}, median={lengths.median():.0f}, "
+              f"min={lengths.min()}, max={lengths.max()}")
+        print(f"Word count: mean={word_counts.mean():.1f}, median={word_counts.median():.0f}, "
+              f"min={word_counts.min()}, max={word_counts.max()}")
+        vocab = set()
+        for text in df[text_col].astype(str).head(10000):
+            vocab.update(text.lower().split())
+        print(f"Approx vocabulary size (first 10k): {len(vocab):,}")
+        fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+        axes[0].hist(lengths, bins=50, color="steelblue", edgecolor="black")
+        axes[0].set_title("Text Length Distribution (chars)")
+        axes[1].hist(word_counts.clip(upper=word_counts.quantile(0.99)), bins=50,
+                     color="steelblue", edgecolor="black")
+        axes[1].set_title("Word Count Distribution")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_text_stats.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("EDA plots saved.")
 
 
 def main():
@@ -231,6 +274,7 @@ def main():
     print("=" * 60)
     df = load_data()
     save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, TEXT_COL, TARGET, save_dir)
     metrics_out = {}
 
     # Baseline first
@@ -247,8 +291,8 @@ def main():
             if acc > best_acc:
                 best_acc, best_name = acc, display_name
         except Exception as e:
-            print(f"✗ {display_name}: {e}")
-    print(f"\n🏆 Best: {best_name} (Accuracy: {best_acc:.4f})")
+            print(f"{display_name}: {e}")
+    print(f"\nBest: {best_name} (Accuracy: {best_acc:.4f})")
 
     # Zero-shot NER
     print("\n— GLiNER Zero-Shot NER —")
@@ -261,8 +305,8 @@ def main():
     # Save JSON metrics
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\n✓ Metrics saved → {out_path}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\nMetrics saved to {out_path}")
 
 
 if __name__ == "__main__":

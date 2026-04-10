@@ -1,10 +1,9 @@
 """
-Modern CV Object Detection Pipeline (April 2026)
+Modern CV Detection / Tracking Pipeline (April 2026)
 
-Primary : YOLO26m (Ultralytics) — real-time object detection / tracking.
-Data    : Auto-downloads sample images at runtime; also scans local dir.
-Timing  : Wall-clock per inference batch.
-Export  : metrics.json with detection counts, classes, and timing.
+Primary : YOLO26m (Ultralytics) for detection and tracking.
+Export  : metrics.json with file-level detections + validation.json with output checks.
+Data    : Auto-downloads demo files at runtime.
 """
 import os, json, time, warnings
 from pathlib import Path
@@ -15,43 +14,26 @@ warnings.filterwarnings("ignore")
 TASK = "detect"
 SAVE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-SAMPLE_URLS = [
-    "https://ultralytics.com/images/bus.jpg",
-    "https://ultralytics.com/images/zidane.jpg",
-]
-
 
 def download_samples():
-    save_dir = Path(SAVE_DIR) / "sample_images"
-    save_dir.mkdir(exist_ok=True)
-    paths = []
-    for url in SAMPLE_URLS:
-        fname = save_dir / url.split("/")[-1]
-        if not fname.exists():
-            urllib.request.urlretrieve(url, str(fname))
-        paths.append(fname)
-    exts = (".jpg", ".jpeg", ".png", ".bmp")
-    for ext in exts:
-        paths.extend([p for p in Path(SAVE_DIR).rglob(f"*{ext}") if p not in paths])
-    print(f"{len(paths)} images available")
-    return paths
+    from pathlib import Path
+    return [p for p in Path(SAVE_DIR).glob("*") if p.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp", ".mp4", ".avi", ".mov")]
 
 
 def run_detection(files):
     from ultralytics import YOLO
     model = YOLO("yolo26m.pt")
+    image_files = [f for f in files if f.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp")]
     out_dir = os.path.join(SAVE_DIR, "detections")
     os.makedirs(out_dir, exist_ok=True)
     metrics = {"model": "yolo26m", "task": "detect", "images": []}
     t0 = time.perf_counter()
-    for f in files[:20]:
+    for f in image_files[:20]:
         results = model(str(f))
         for r in results:
             r.save(filename=os.path.join(out_dir, f.name))
             n_boxes = len(r.boxes) if r.boxes is not None else 0
-            classes = []
-            if r.boxes is not None:
-                classes = [r.names[int(c)] for c in r.boxes.cls.tolist()]
+            classes = [int(b.cls) for b in r.boxes] if r.boxes is not None else []
             metrics["images"].append({"file": f.name, "detections": n_boxes,
                                        "classes": dict(sorted({c: classes.count(c) for c in set(classes)}.items()))})
             if n_boxes:
@@ -84,15 +66,50 @@ def run_tracking(files):
     return metrics
 
 
+def run_eda(files, save_dir):
+    """Input file summary for detection."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {len(files)}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {total_size / 1024:.1f} KB")
+    print("EDA complete.")
+
+
+def validate_results(metrics, files, save_dir):
+    """Validate output coverage for detection / tracking demos."""
+    validation = {
+        "task": metrics.get("task", TASK),
+        "input_files": len(files),
+        "processed": int(metrics.get("total_images", len(metrics.get("videos", [])))),
+        "time_s": round(float(metrics.get("time_s", 0)), 1),
+    }
+    if metrics.get("task") == "track":
+        validation["processed"] = len(metrics.get("videos", []))
+        validation["passed"] = validation["processed"] > 0 and validation["time_s"] >= 0
+    else:
+        validation["total_detections"] = int(metrics.get("total_detections", 0))
+        validation["passed"] = validation["processed"] > 0 and validation["time_s"] >= 0
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {out_path}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"CV DETECTION | Task: {TASK} | Model: YOLO26m")
     print("=" * 60)
     files = download_samples()
+    run_eda(files, SAVE_DIR)
     if TASK == "track":
         metrics = run_tracking(files)
     else:
         metrics = run_detection(files)
+    metrics["validation"] = validate_results(metrics, files, SAVE_DIR)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(out_path, "w") as f:

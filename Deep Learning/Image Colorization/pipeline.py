@@ -28,6 +28,7 @@ def load_data():
 
 def caption_images():
     df = load_data()
+    run_eda(df, SAVE_DIR)
     img_col = next((c for c in df.column_names if "image" in c.lower()), df.column_names[0])
     images = [df[i][img_col] for i in range(min(MAX_SAMPLES, len(df)))]
     metrics = {}
@@ -98,7 +99,47 @@ def caption_images():
         json.dump(all_captions, f, indent=2, ensure_ascii=False)
     print(f"Captions saved to {cap_path}")
 
+    validation = validate_results(all_captions, len(images), SAVE_DIR)
+    metrics["validation"] = validation
+
     return metrics
+
+
+def run_eda(df, save_dir):
+    """Input data summary for captioning."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    n_rows = len(df)
+    columns = list(getattr(df, "column_names", []))
+    print(f"  Samples: {n_rows}")
+    if columns:
+        print(f"  Columns: {columns}")
+    summary = {"samples": n_rows, "columns": columns}
+    with open(os.path.join(save_dir, "eda_summary.json"), "w", encoding="utf-8") as f:
+        json.dump(summary, f, indent=2)
+    print("EDA complete.")
+
+
+def validate_results(all_captions, expected_images, save_dir):
+    """Validate caption outputs for completeness and diversity."""
+    validation = {"expected_images": expected_images, "models": {}}
+    for model_name, captions in all_captions.items():
+        clean = [c.strip() for c in captions if isinstance(c, str) and c.strip()]
+        validation["models"][model_name] = {
+            "captions": len(captions),
+            "non_empty": len(clean),
+            "coverage_ratio": round(len(clean) / max(expected_images, 1), 4),
+            "unique_ratio": round(len(set(clean)) / max(len(clean), 1), 4),
+            "avg_chars": round(sum(len(c) for c in clean) / max(len(clean), 1), 1),
+            "passed": bool(clean),
+        }
+    validation["passed"] = any(model.get("passed") for model in validation["models"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {out_path}")
+    return validation
 
 
 def main():

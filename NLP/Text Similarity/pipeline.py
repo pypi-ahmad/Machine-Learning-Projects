@@ -206,12 +206,29 @@ def plot_similarity_heatmap(sim, title, save_name):
     print(f"  Saved {save_name}")
 
 
+def run_eda(df, save_dir):
+    """Text similarity dataset statistics."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    text_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    for col in text_cols[:3]:
+        lengths = df[col].astype(str).str.len()
+        print(f"  {col}: mean_len={lengths.mean():.0f}, median={lengths.median():.0f}")
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("NLP SIMILARITY / RETRIEVAL")
     print("Qwen3-Embedding | BGE-M3 | TF-IDF baseline")
     print("=" * 60)
     df = load_data()
+    run_eda(df, SAVE_DIR)
     metrics = {}
 
     # Check for sentence-pair benchmark structure (STS-B style)

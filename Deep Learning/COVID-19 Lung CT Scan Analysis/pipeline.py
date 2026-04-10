@@ -231,10 +231,23 @@ def train_model():
     return metrics
 
 
+def run_eda(save_dir):
+    """Dataset summary for medical segmentation."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    data_dir = os.path.join(save_dir, "data")
+    if os.path.isdir(data_dir):
+        imgs = [f for f in os.listdir(data_dir) if not f.startswith(".")]
+        print(f"  Files in data directory: {len(imgs)}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("MEDICAL SEGMENTATION | nnU-Net + MedSAM2")
     print("=" * 60)
+    run_eda(SAVE_DIR)
     print("NOTE: Educational/research demo only -- not for clinical use.")
     metrics = train_model()
 

@@ -74,12 +74,53 @@ def run_paddleocr_vl(files):
     return results, round(elapsed, 1)
 
 
+def run_eda(files, save_dir):
+    """Input file summary for OCR."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"  Input files: {{len(files)}}")
+    if files:
+        total_size = sum(os.path.getsize(f) for f in files if os.path.isfile(f))
+        print(f"  Total size: {{total_size / 1024:.1f}} KB")
+    print("EDA complete.")
+
+
+def validate_results(primary_results, vl_results, save_dir):
+    """Validate OCR outputs for completeness and confidence."""
+    validation = {
+        "paddleocr": {
+            "files": len(primary_results),
+            "files_with_text": sum(1 for item in primary_results if item.get("n_lines", 0) > 0),
+            "avg_confidence": round(
+                sum(float(item.get("avg_confidence", 0)) for item in primary_results) / max(len(primary_results), 1),
+                4,
+            ),
+        },
+        "paddleocr_vl": {
+            "files": len(vl_results),
+            "files_with_text": sum(1 for item in vl_results if item.get("n_lines", 0) > 0),
+        },
+    }
+    validation["paddleocr"]["passed"] = validation["paddleocr"]["files_with_text"] > 0
+    validation["paddleocr_vl"]["passed"] = validation["paddleocr_vl"]["files_with_text"] > 0 if vl_results else True
+    validation["passed"] = validation["paddleocr"]["passed"] or validation["paddleocr_vl"]["passed"]
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"Validation saved to {{out_path}}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print("OCR | PaddleOCR + PaddleOCR-VL-1.5")
     print("=" * 60)
     files = download_samples()
+    run_eda(files, SAVE_DIR)
     metrics = {}
+    results = []
+    vl_results = []
 
     # PRIMARY: PaddleOCR
     print()
@@ -95,7 +136,6 @@ def main():
         print(f"  PaddleOCR: {len(results)} files, {total_lines} lines in {elapsed}s")
     except Exception as e:
         print(f"  PaddleOCR failed: {e}")
-        results = []
 
     # EXTENDED: PaddleOCR-VL-1.5
     print()
@@ -109,6 +149,8 @@ def main():
         print(f"  VL-1.5: {len(vl_results)} files, {vl_total} lines in {vl_elapsed}s")
     except Exception as e:
         print(f"  PaddleOCR-VL-1.5 failed: {e}")
+
+    metrics["validation"] = validate_results(results, vl_results, SAVE_DIR)
 
     # Save metrics
     out_path = os.path.join(SAVE_DIR, "metrics.json")

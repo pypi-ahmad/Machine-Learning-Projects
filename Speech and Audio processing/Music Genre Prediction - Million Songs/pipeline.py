@@ -337,13 +337,86 @@ def run_voice_cloning(audio_dir):
     return results
 
 
+def run_eda(save_dir):
+    """Audio file summary."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    audio_exts = (".wav", ".mp3", ".flac", ".ogg", ".m4a")
+    audio_files = []
+    for root, dirs, files in os.walk(save_dir):
+        for f in files:
+            if f.lower().endswith(audio_exts):
+                audio_files.append(os.path.join(root, f))
+    print(f"  Audio files found: {len(audio_files)}")
+    if audio_files:
+        total_size = sum(os.path.getsize(f) for f in audio_files)
+        print(f"  Total size: {total_size / 1024 / 1024:.1f} MB")
+    print("EDA complete.")
+
+
+def validate_results(task, results, save_dir):
+    """Validate audio outputs for the active task."""
+    validation = {"task": task, "checks": {}}
+
+    if task == "transcription":
+        records = results.get("whisper", [])
+        non_empty = sum(1 for item in records if str(item.get("text", "")).strip())
+        validation["checks"]["whisper"] = {
+            "records": len(records),
+            "non_empty_transcripts": non_empty,
+            "passed": len(records) > 0 and non_empty == len(records),
+        }
+    elif task == "classification":
+        records = results.get("classification", [])
+        passed = all(item.get("n_files", 0) > 0 for item in records) if records else False
+        validation["checks"]["classification"] = {
+            "models": len(records),
+            "files_scored": sum(int(item.get("n_files", 0)) for item in records),
+            "passed": passed,
+        }
+    elif task in ("denoising", "separation"):
+        bundle = results.get("sepformer", {})
+        sep_records = bundle.get("sepformer", []) if isinstance(bundle, dict) else []
+        existing = sum(
+            1 for item in sep_records
+            if os.path.exists(os.path.join(save_dir, "enhanced", item.get("output", "")))
+        )
+        validation["checks"]["sepformer"] = {
+            "outputs": len(sep_records),
+            "existing_outputs": existing,
+            "baseline_files": len(bundle.get("baseline_spectral", [])) if isinstance(bundle, dict) else 0,
+            "passed": len(sep_records) > 0 and existing == len(sep_records),
+        }
+    elif task == "cloning":
+        bundle = results.get("xtts", {})
+        xtts_records = bundle.get("xtts", []) if isinstance(bundle, dict) else []
+        existing = sum(
+            1 for item in xtts_records
+            if os.path.exists(os.path.join(save_dir, "tts_output", item.get("output", "")))
+        )
+        validation["checks"]["xtts"] = {
+            "outputs": len(xtts_records),
+            "existing_outputs": existing,
+            "baseline_outputs": len(bundle.get("baseline_pyttsx3", [])) if isinstance(bundle, dict) else 0,
+            "passed": len(xtts_records) > 0 and existing == len(xtts_records),
+        }
+
+    validation["passed"] = any(item.get("passed") for item in validation["checks"].values())
+    out_path = os.path.join(save_dir, "validation.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(validation, f, indent=2)
+    print(f"  Validation saved to {out_path}")
+    return validation
+
+
 def main():
     print("=" * 60)
     print(f"AUDIO/SPEECH | Task: {TASK}")
     print("Models: Whisper | Wav2Vec2/HuBERT | SepFormer | XTTS-v2")
     print("=" * 60)
-
     audio_dir, data = download_audio_samples()
+    run_eda(SAVE_DIR)
     results = {}
 
     if TASK == "transcription":
@@ -382,6 +455,8 @@ def main():
         results["whisper"] = asr_results
 
     # Save metrics
+    validation = validate_results(TASK, results, SAVE_DIR)
+    results["validation"] = validation
     metrics_path = os.path.join(SAVE_DIR, "metrics.json")
     with open(metrics_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=2, default=str)

@@ -11,7 +11,7 @@ import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.metrics import (
     classification_report, f1_score, accuracy_score,
@@ -43,11 +43,56 @@ def preprocess(df):
     cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
-    for c in cat_cols: X[c] = X[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(X[c], "cat"): X[c] = X[c].astype(str)
+        X[c] = X[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         X[cat_cols] = oe.fit_transform(X[cat_cols])
     return train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+
+def run_eda(df, target, save_dir):
+    """Exploratory Data Analysis for fraud/imbalanced datasets."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Column types:\n{df.dtypes.value_counts().to_string()}")
+    fraud_rate = df[target].mean()
+    print(f"\nClass balance: {1 - fraud_rate:.2%} legit / {fraud_rate:.2%} fraud (ratio {int(1/max(fraud_rate,1e-9))}:1)")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                    cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        if target in num_cols:
+            tc = corr[target].drop(target).abs().sort_values(ascending=False)
+            print(f"\nTop correlations with '{target}':")
+            print(tc.head(10).to_string())
+    fig, ax = plt.subplots(figsize=(8, 5))
+    df[target].value_counts().plot(kind="bar", ax=ax, color=["steelblue", "salmon"], edgecolor="black")
+    ax.set_title(f"Target Distribution: {target} (Fraud rate: {fraud_rate:.2%})")
+    ax.set_xlabel(target)
+    fig.savefig(os.path.join(save_dir, "eda_target.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    print("EDA plots saved.")
 
 
 def find_best_threshold(y_true, y_proba):
@@ -96,9 +141,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             preds = (proba >= thresh).astype(int)
             timings[name] = time.perf_counter() - t0
             results[name] = {"preds": preds, "proba": proba, "thresh": thresh, "model": name}
-            print(f"✓ {name} F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f}) [calibrated]  ({timings[name]:.1f}s)")
+            print(f"{name} F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f}) [calibrated]  ({timings[name]:.1f}s)")
         except Exception as e:
-            print(f"✗ {name}: {e}")
+            print(f"{name}: {e}")
 
     # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     for pyod_name, pyod_builder in [
@@ -117,9 +162,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             auc = roc_auc_score(y_test, scores) if len(set(y_test)) > 1 else 0
             elapsed = time.perf_counter() - t0
             timings[f"PyOD-{pyod_name}"] = elapsed
-            print(f"✓ PyOD {pyod_name}: {n_anom} anomalies ({n_anom/len(X_test):.2%}), F1={f1:.4f}, AUC={auc:.4f}  ({elapsed:.1f}s)")
+            print(f"PyOD {pyod_name}: {n_anom} anomalies ({n_anom/len(X_test):.2%}), F1={f1:.4f}, AUC={auc:.4f}  ({elapsed:.1f}s)")
         except Exception as e:
-            print(f"✗ PyOD {pyod_name}: {e}")
+            print(f"PyOD {pyod_name}: {e}")
 
     # ── FLAML AutoML (imbalance-aware benchmark) ──
     try:
@@ -133,9 +178,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         flaml_preds = (flaml_proba >= flaml_thresh).astype(int)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = {"preds": flaml_preds, "proba": flaml_proba, "thresh": flaml_thresh, "model": "FLAML"}
-        print(f"✓ FLAML ({automl.best_estimator}) F1: {f1_score(y_test, flaml_preds):.4f} (t={flaml_thresh:.3f})  ({timings['FLAML']:.1f}s)")
+        print(f"FLAML ({automl.best_estimator}) F1: {f1_score(y_test, flaml_preds):.4f} (t={flaml_thresh:.3f})  ({timings['FLAML']:.1f}s)")
     except Exception as e:
-        print(f"✗ FLAML: {e}")
+        print(f"FLAML: {e}")
 
     # ── LazyPredict (quick sweep benchmark) ──
     try:
@@ -144,10 +189,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
         timings["LazyPredict"] = time.perf_counter() - t0
-        print(f"\n✓ LazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
+        print(f"\nLazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
-        print(f"✗ LazyPredict: {e}")
+        print(f"LazyPredict: {e}")
 
     return results, timings
 
@@ -195,15 +240,48 @@ def report(results, timings, y_test, save_dir="."):
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, "fraud_report.png"), dpi=150)
         plt.close()
-        print(f"\n✓ Report saved to {save_dir}/fraud_report.png")
+        print(f"\nReport saved to {save_dir}/fraud_report.png")
     except Exception as e:
-        print(f"✗ Plot: {e}")
+        print(f"Plot: {e}")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\n✓ Metrics saved → {out_path}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\nMetrics saved to {out_path}")
+
+
+def cross_validate_best(X, y, save_dir):
+    """5-fold stratified cross-validation on gradient boosting models."""
+    print("\n" + "=" * 60)
+    print("CROSS-VALIDATION (5-Fold Stratified)")
+    print("=" * 60)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_results = {}
+    for name, build_fn in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
+            iterations=300, verbose=0, task_type="GPU", devices="0")),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
+            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
+            n_estimators=300, device="cuda", tree_method="hist",
+            verbosity=0, n_jobs=-1)),
+    ]:
+        try:
+            model = build_fn()
+            scores = cross_val_score(model, X, y, cv=cv, scoring="f1", n_jobs=1)
+            cv_results[name] = {"f1_mean": round(float(scores.mean()), 4),
+                                "f1_std": round(float(scores.std()), 4),
+                                "folds": [round(float(s), 4) for s in scores]}
+            print(f"  {name}: F1 {scores.mean():.4f} +/- {scores.std():.4f}")
+        except Exception as e:
+            print(f"  {name} CV skipped: {e}")
+    if cv_results:
+        out_path = os.path.join(save_dir, "cv_results.json")
+        with open(out_path, "w") as f:
+            json.dump(cv_results, f, indent=2)
+        print(f"CV results saved to {out_path}")
+    return cv_results
 
 
 def main():
@@ -212,11 +290,15 @@ def main():
     print("CatBoost | LightGBM | XGBoost | PyOD (ECOD/COPOD/IForest)")
     print("Calibrated probabilities + threshold tuning")
     print("=" * 60)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
+    run_eda(df, TARGET, save_dir)
     X_train, X_test, y_train, y_test = preprocess(df)
     results, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, timings, y_test, save_dir)
+    cross_validate_best(
+        pd.concat([X_train, X_test]), pd.concat([y_train, y_test]), save_dir)
 
 
 if __name__ == "__main__":

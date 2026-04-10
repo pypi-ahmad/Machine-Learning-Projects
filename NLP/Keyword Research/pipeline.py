@@ -306,6 +306,65 @@ def plot_entity_counts(pred_tags, title, save_path):
     plt.close(fig)
 
 
+def run_eda(df, save_dir):
+    """Dataset summary for NER / entity extraction tasks."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Dataset size: {len(df)} rows")
+
+    summary_rows = []
+    for col in df.columns:
+        series = df[col]
+        summary_rows.append({
+            "column": col,
+            "dtype": str(series.dtype),
+            "non_null": int(series.notna().sum()),
+            "missing": int(series.isna().sum()),
+            "n_unique": int(series.nunique(dropna=True)) if series.dtype != "object" else None,
+        })
+    pd.DataFrame(summary_rows).to_csv(os.path.join(save_dir, "eda_summary.csv"), index=False)
+
+    if TEXT_COL in df.columns:
+        token_lengths = []
+        for value in df[TEXT_COL].head(5000):
+            if isinstance(value, str):
+                token_lengths.append(len(value.split()))
+            elif isinstance(value, (list, np.ndarray)):
+                token_lengths.append(len(value))
+        if token_lengths:
+            print(
+                f"Token length: mean={np.mean(token_lengths):.1f}, "
+                f"median={np.median(token_lengths):.1f}, max={max(token_lengths)}"
+            )
+
+    if TAG_COL in df.columns:
+        entity_counts = {}
+        for value in df[TAG_COL].head(5000):
+            tags = value if isinstance(value, (list, np.ndarray)) else str(value).split()
+            for tag in tags:
+                tag_str = str(tag)
+                if tag_str == "O":
+                    continue
+                if isinstance(tag, (int, np.integer)) and int(tag) < len(CONLL_TAG_NAMES):
+                    tag_str = CONLL_TAG_NAMES[int(tag)]
+                entity_counts[tag_str] = entity_counts.get(tag_str, 0) + 1
+        if entity_counts:
+            top_items = sorted(entity_counts.items(), key=lambda item: item[1], reverse=True)[:12]
+            labels = [item[0] for item in top_items]
+            values = [item[1] for item in top_items]
+            fig, ax = plt.subplots(figsize=(max(6, len(labels) * 0.8), 5))
+            ax.bar(labels, values, color="steelblue")
+            ax.set_title("Top Entity Tags in Dataset")
+            ax.set_ylabel("Count")
+            fig.tight_layout()
+            fig.savefig(os.path.join(save_dir, "eda_entity_tags.png"), dpi=100, bbox_inches="tight")
+            plt.close(fig)
+
+    print("Summary statistics saved to eda_summary.csv")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print("NER / ENTITY EXTRACTION  GLiNER + ModernBERT + spaCy")
@@ -313,6 +372,7 @@ def main():
     print("=" * 60)
     df = load_data()
     save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     sentences, gold_tags = prepare_sentences(df)
     if len(sentences) > 5000:
         sentences, gold_tags = sentences[:5000], gold_tags[:5000]
@@ -375,7 +435,7 @@ def main():
     # Save metrics
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
+        json.dump(metrics_out, f, indent=2, default=str)
     print()
     print(f"Metrics saved to {out_path}")
 

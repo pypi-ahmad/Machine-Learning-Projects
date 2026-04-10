@@ -46,13 +46,15 @@ def preprocess(df):
     y = None
     if label_col:
         y = df[label_col].values; df.drop(columns=[label_col], inplace=True)
-        print(f"ℹ  Ground-truth column '{label_col}' detected — used for evaluation only (not training)")
+        print(f" Ground-truth column '{label_col}' detected — used for evaluation only (not training)")
     for c in df.columns:
         if c.lower() in ("id","timestamp","date","time"): df.drop(columns=[c], inplace=True, errors="ignore")
     cat_cols = df.select_dtypes(include=["object","category"]).columns.tolist()
     num_cols = df.select_dtypes(include=["number"]).columns.tolist()
     df[num_cols] = df[num_cols].fillna(df[num_cols].median())
-    for c in cat_cols: df[c] = df[c].fillna("unknown")
+    for c in cat_cols:
+        if hasattr(df[c], "cat"): df[c] = df[c].astype(str)
+        df[c] = df[c].fillna("unknown")
     if cat_cols:
         oe = OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)
         df[cat_cols] = oe.fit_transform(df[cat_cols])
@@ -98,9 +100,9 @@ def detect(X, y=None):
                 extra = f"  F1: {f1:.4f}  ROC-AUC: {auc:.4f}"
 
             metrics_out[name] = row
-            print(f"✓ {name}: {n_anom} anomalies ({n_anom/len(X):.2%})  ({elapsed:.1f}s){extra}")
+            print(f"{name}: {n_anom} anomalies ({n_anom/len(X):.2%})  ({elapsed:.1f}s){extra}")
         except Exception as e:
-            print(f"✗ {name}: {e}")
+            print(f"{name}: {e}")
 
     # ── Score distribution plot ──
     save_dir = os.path.dirname(os.path.abspath(__file__))
@@ -116,9 +118,9 @@ def detect(X, y=None):
             plt.tight_layout()
             plt.savefig(os.path.join(save_dir, "anomaly_scores.png"), dpi=100, bbox_inches="tight")
             plt.close()
-            print("✓ Saved anomaly_scores.png")
+            print("Saved anomaly_scores.png")
         except Exception as e:
-            print(f"⚠ Score plot: {e}")
+            print(f"Score plot: {e}")
 
     # ── Agreement matrix (how many detectors flag each point) ──
     if len(results) > 1:
@@ -145,15 +147,63 @@ def detect(X, y=None):
         test_results = engine.test(model=model, datamodule=datamodule)
         elapsed = time.perf_counter() - t0
         timings["PatchCore"] = elapsed
-        print(f"✓ PatchCore (anomalib): {test_results}  ({elapsed:.1f}s)")
+        print(f"PatchCore (anomalib): {test_results}  ({elapsed:.1f}s)")
     except Exception as e:
-        print(f"✗ PatchCore: {e}")
+        print(f"PatchCore: {e}")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\n✓ Metrics saved → {out_path}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\nMetrics saved to {out_path}")
+
+
+def run_eda(df, save_dir):
+    """Exploratory Data Analysis for anomaly detection."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Column types:\n{df.dtypes.value_counts().to_string()}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        import seaborn as _sns
+        _sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                     cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    plot_cols = num_cols[:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def main():
@@ -163,6 +213,8 @@ def main():
     print("Labels used for evaluation only — never for training")
     print("=" * 60)
     df = load_data()
+    save_dir = os.path.dirname(os.path.abspath(__file__))
+    run_eda(df, save_dir)
     X, y = preprocess(df)
     detect(X, y)
 

@@ -10,7 +10,7 @@ import os, sys, json, time, warnings
 import numpy as np
 import pandas as pd
 from pathlib import Path
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from sklearn.metrics import (
     accuracy_score, classification_report, f1_score,
@@ -53,6 +53,7 @@ def preprocess(df):
 
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
     for c in cat_cols:
+        if hasattr(X[c], "cat"): X[c] = X[c].astype(str)
         X[c] = X[c].fillna(X[c].mode().iloc[0] if not X[c].mode().empty else "unknown")
 
     if cat_cols:
@@ -65,6 +66,66 @@ def preprocess(df):
     )
     print(f"Train: {X_train.shape}, Test: {X_test.shape}")
     return X_train, X_test, y_train, y_test, le_target
+
+
+def run_eda(df, target, save_dir):
+    """Exploratory Data Analysis — summary stats, distributions, correlations."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Column types:\n{df.dtypes.value_counts().to_string()}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(15).to_string())
+    else:
+        print("\nNo missing values")
+    desc = df.describe(include="all").T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    num_cols = df.select_dtypes(include=["number"]).columns.tolist()
+    if len(num_cols) >= 2:
+        corr = df[num_cols].corr()
+        n = len(num_cols)
+        fig, ax = plt.subplots(figsize=(min(n + 2, 20), min(n, 16)))
+        mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
+        sns.heatmap(corr, mask=mask, annot=n <= 15, fmt=".2f",
+                    cmap="coolwarm", center=0, ax=ax, square=True)
+        ax.set_title("Feature Correlation Heatmap")
+        fig.savefig(os.path.join(save_dir, "eda_correlation.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+        if target in num_cols:
+            tc = corr[target].drop(target).abs().sort_values(ascending=False)
+            print(f"\nTop correlations with '{target}':")
+            print(tc.head(10).to_string())
+    fig, ax = plt.subplots(figsize=(8, 5))
+    if df[target].nunique() <= 30:
+        df[target].value_counts().plot(kind="bar", ax=ax, color="steelblue", edgecolor="black")
+    else:
+        df[target].hist(bins=50, ax=ax, color="steelblue", edgecolor="black")
+    ax.set_title(f"Target Distribution: {target}")
+    ax.set_xlabel(target)
+    fig.savefig(os.path.join(save_dir, "eda_target.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    plot_cols = [c for c in num_cols if c != target][:20]
+    if plot_cols:
+        nr = max(1, (len(plot_cols) + 4) // 5)
+        nc = min(5, len(plot_cols))
+        fig, axes = plt.subplots(nr, nc, figsize=(4 * nc, 3 * nr), squeeze=False)
+        for i, col in enumerate(plot_cols):
+            ri, ci = divmod(i, nc)
+            df[col].hist(bins=30, ax=axes[ri][ci], color="steelblue", edgecolor="black")
+            axes[ri][ci].set_title(col, fontsize=9)
+        for i in range(len(plot_cols), nr * nc):
+            ri, ci = divmod(i, nc)
+            axes[ri][ci].set_visible(False)
+        fig.suptitle("Feature Distributions")
+        fig.tight_layout()
+        fig.savefig(os.path.join(save_dir, "eda_distributions.png"), dpi=100, bbox_inches="tight")
+        plt.close(fig)
+    print("EDA plots saved.")
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
@@ -89,9 +150,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = cb.predict(X_test).flatten()
         probas["CatBoost"] = cb.predict_proba(X_test)
-        print(f"\n✓ CatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}  ({timings['CatBoost']:.1f}s)")
+        print(f"\nCatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}  ({timings['CatBoost']:.1f}s)")
     except Exception as e:
-        print(f"✗ CatBoost: {e}")
+        print(f"CatBoost: {e}")
 
     # ── LightGBM (GPU) ──
     try:
@@ -106,9 +167,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         probas["LightGBM"] = m.predict_proba(X_test)
-        print(f"\n✓ LightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}  ({timings['LightGBM']:.1f}s)")
+        print(f"\nLightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}  ({timings['LightGBM']:.1f}s)")
     except Exception as e:
-        print(f"✗ LightGBM: {e}")
+        print(f"LightGBM: {e}")
 
     # ── XGBoost (CUDA) ──
     try:
@@ -124,9 +185,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         timings["XGBoost"] = time.perf_counter() - t0
         results["XGBoost"] = m.predict(X_test)
         probas["XGBoost"] = m.predict_proba(X_test)
-        print(f"\n✓ XGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}  ({timings['XGBoost']:.1f}s)")
+        print(f"\nXGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}  ({timings['XGBoost']:.1f}s)")
     except Exception as e:
-        print(f"✗ XGBoost: {e}")
+        print(f"XGBoost: {e}")
 
     # ── AutoGluon Tabular ──
     try:
@@ -144,9 +205,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             except Exception:
                 pass
             timings["AutoGluon"] = time.perf_counter() - t0
-            print(f"\n✓ AutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}  ({timings['AutoGluon']:.1f}s)")
+            print(f"\nAutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}  ({timings['AutoGluon']:.1f}s)")
     except Exception as e:
-        print(f"✗ AutoGluon: {e}")
+        print(f"AutoGluon: {e}")
 
     # ── RealTabPFN-v2 (prior-fitted network) ──
     try:
@@ -161,11 +222,11 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
                 probas["TabPFN-v2"] = m.predict_proba(X_test.values)
             except Exception:
                 pass
-            print(f"\n✓ TabPFN-v2 Accuracy: {accuracy_score(y_test, results['TabPFN-v2']):.4f}  ({timings['TabPFN-v2']:.1f}s)")
+            print(f"\nTabPFN-v2 Accuracy: {accuracy_score(y_test, results['TabPFN-v2']):.4f}  ({timings['TabPFN-v2']:.1f}s)")
         else:
-            print("⚠ TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
+            print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
-        print(f"✗ TabPFN-v2: {e}")
+        print(f"TabPFN-v2: {e}")
 
     # ── TabM (parameter-efficient tabular ensembling) ──
     try:
@@ -209,9 +270,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
             probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
         timings["TabM"] = time.perf_counter() - t0
-        print(f"\n✓ TabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}  ({timings['TabM']:.1f}s)")
+        print(f"\nTabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}  ({timings['TabM']:.1f}s)")
     except Exception as e:
-        print(f"✗ TabM: {e}")
+        print(f"TabM: {e}")
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
@@ -225,9 +286,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             probas["FLAML"] = automl.predict_proba(X_test)
         except Exception:
             pass
-        print(f"\n✓ FLAML ({automl.best_estimator}) Accuracy: {accuracy_score(y_test, results['FLAML']):.4f}  ({timings['FLAML']:.1f}s)")
+        print(f"\nFLAML ({automl.best_estimator}) Accuracy: {accuracy_score(y_test, results['FLAML']):.4f}  ({timings['FLAML']:.1f}s)")
     except Exception as e:
-        print(f"✗ FLAML: {e}")
+        print(f"FLAML: {e}")
 
     # ── Baseline Comparison: LazyPredict ──
     try:
@@ -236,10 +297,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
         lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
         timings["LazyPredict"] = time.perf_counter() - t0
-        print(f"\n✓ LazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
+        print(f"\nLazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
     except Exception as e:
-        print(f"✗ LazyPredict: {e}")
+        print(f"LazyPredict: {e}")
 
     return results, probas, timings
 
@@ -308,17 +369,50 @@ def report(results, probas, timings, y_test, save_dir="."):
             ax.legend(loc="lower right", fontsize=8)
             fig.savefig(os.path.join(save_dir, "calibration_plot.png"), dpi=100, bbox_inches="tight")
             plt.close(fig)
-            print("\n✓ Calibration plot saved")
+            print("\nCalibration plot saved")
         except Exception:
             pass
 
-    print(f"\n🏆 Best: {best_name} ({best_acc:.4f})")
+    print(f"\nBest: {best_name} ({best_acc:.4f})")
 
     # ── Save JSON metrics ──
     out_path = os.path.join(save_dir, "metrics.json")
     with open(out_path, "w") as f:
-        json.dump(metrics_out, f, indent=2)
-    print(f"\n✓ Metrics saved → {out_path}")
+        json.dump(metrics_out, f, indent=2, default=str)
+    print(f"\nMetrics saved to {out_path}")
+
+
+def cross_validate_best(X, y, save_dir):
+    """5-fold stratified cross-validation on gradient boosting models."""
+    print("\n" + "=" * 60)
+    print("CROSS-VALIDATION (5-Fold Stratified)")
+    print("=" * 60)
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    cv_results = {}
+    for name, build_fn in [
+        ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
+            iterations=300, verbose=0, task_type="GPU", devices="0")),
+        ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
+            n_estimators=300, device="gpu", verbose=-1, n_jobs=-1)),
+        ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
+            n_estimators=300, device="cuda", tree_method="hist",
+            verbosity=0, n_jobs=-1)),
+    ]:
+        try:
+            model = build_fn()
+            scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy", n_jobs=1)
+            cv_results[name] = {"mean": round(float(scores.mean()), 4),
+                                "std": round(float(scores.std()), 4),
+                                "folds": [round(float(s), 4) for s in scores]}
+            print(f"  {name}: {scores.mean():.4f} +/- {scores.std():.4f}")
+        except Exception as e:
+            print(f"  {name} CV skipped: {e}")
+    if cv_results:
+        out_path = os.path.join(save_dir, "cv_results.json")
+        with open(out_path, "w") as f:
+            json.dump(cv_results, f, indent=2)
+        print(f"CV results saved to {out_path}")
+    return cv_results
 
 
 def main():
@@ -326,11 +420,15 @@ def main():
     print("MODERN TABULAR CLASSIFICATION PIPELINE")
     print("CatBoost | LightGBM | XGBoost | AutoGluon | TabPFN-v2 | TabM | FLAML | LazyPredict")
     print("=" * 60)
+    save_dir = os.path.dirname(os.path.abspath(__file__))
     df = load_data()
+    run_eda(df, TARGET, save_dir)
     X_train, X_test, y_train, y_test, le = preprocess(df)
     results, probas, timings = train_and_evaluate(X_train, X_test, y_train, y_test)
     if results:
-        report(results, probas, timings, y_test, os.path.dirname(os.path.abspath(__file__)))
+        report(results, probas, timings, y_test, save_dir)
+    cross_validate_best(
+        pd.concat([X_train, X_test]), pd.concat([y_train, y_test]), save_dir)
 
 
 if __name__ == "__main__":

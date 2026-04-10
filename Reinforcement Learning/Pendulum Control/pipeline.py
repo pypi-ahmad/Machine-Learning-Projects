@@ -139,11 +139,32 @@ def plot_results(results, save_dir):
     plt.close(fig)
 
 
+def run_eda(env_name, make_kwargs, save_dir):
+    """Environment information summary."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    try:
+        env = gym.make(env_name, **make_kwargs)
+        print(f"  Environment: {env_name}")
+        print(f"  Observation space: {env.observation_space}")
+        print(f"  Action space: {env.action_space}")
+        is_continuous = hasattr(env.action_space, "shape") and len(env.action_space.shape) > 0
+        print(f"  Action type: {'continuous' if is_continuous else 'discrete'}")
+        if hasattr(env, 'reward_range'):
+            print(f"  Reward range: {env.reward_range}")
+        env.close()
+    except Exception as e:
+        print(f"  Could not inspect environment: {e}")
+    print("EDA complete.")
+
+
 def main():
     print("=" * 60)
     print(f"REINFORCEMENT LEARNING | {ENV_NAME}")
     print(f"Primary: {ALGO}  |  Baselines: auto-selected for action space")
     print("=" * 60)
+    run_eda(ENV_NAME, MAKE_KWARGS, SAVE_DIR)
     results = []
 
     # === PRIMARY: SAC or PPO ===
@@ -199,7 +220,7 @@ def main():
     # Save metrics
     metrics = [{"algorithm": r[0], "mean_reward": r[1], "std_reward": r[2], "time_s": r[3]} for r in results]
     with open(os.path.join(SAVE_DIR, "metrics.json"), "w") as f:
-        json.dump(metrics, f, indent=2)
+        json.dump(metrics, f, indent=2, default=str)
 
     plot_results(results, SAVE_DIR)
     print(f"  Saved: comparison.png, metrics.json")

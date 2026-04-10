@@ -257,6 +257,65 @@ def forecast(df, target):
     return metrics
 
 
+def run_eda(df, target, save_dir):
+    """Time Series Exploratory Data Analysis."""
+    print("\n" + "=" * 60)
+    print("EXPLORATORY DATA ANALYSIS")
+    print("=" * 60)
+    print(f"Shape: {df.shape[0]} rows x {df.shape[1]} columns")
+    print(f"Date range: {df.index.min()} to {df.index.max()}" if hasattr(df.index, 'min') else "")
+    print(f"Target column: {target}")
+    missing = df.isnull().sum()
+    n_miss = missing[missing > 0]
+    if len(n_miss):
+        print(f"\nMissing values ({len(n_miss)} columns):")
+        print(n_miss.sort_values(ascending=False).head(10).to_string())
+    else:
+        print("\nNo missing values")
+    desc = df.describe().T
+    desc.to_csv(os.path.join(save_dir, "eda_summary.csv"))
+    print("Summary statistics saved to eda_summary.csv")
+    # Target time series plot
+    fig, ax = plt.subplots(figsize=(14, 5))
+    if target in df.columns:
+        df[target].plot(ax=ax, color="steelblue")
+    ax.set_title(f"Time Series: {target}")
+    ax.set_xlabel("Time")
+    fig.savefig(os.path.join(save_dir, "eda_timeseries.png"), dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    # Stationarity test (ADF)
+    if target in df.columns:
+        try:
+            from statsmodels.tsa.stattools import adfuller
+            series = df[target].dropna()
+            if len(series) > 20:
+                result = adfuller(series, maxlag=min(30, len(series)//3))
+                print(f"\nADF Stationarity Test:")
+                print(f"  Test Statistic: {result[0]:.4f}")
+                print(f"  p-value: {result[1]:.4f}")
+                print(f"  Stationary: {'Yes' if result[1] < 0.05 else 'No (p >= 0.05)'}")
+        except Exception:
+            pass
+        # Seasonal decomposition
+        try:
+            from statsmodels.tsa.seasonal import seasonal_decompose
+            series = df[target].dropna()
+            freq = min(max(7, len(series) // 10), 365)
+            if len(series) > 2 * freq:
+                decomp = seasonal_decompose(series, period=freq, extrapolate_trend="freq")
+                fig, axes = plt.subplots(4, 1, figsize=(14, 10), sharex=True)
+                decomp.observed.plot(ax=axes[0]); axes[0].set_title("Observed")
+                decomp.trend.plot(ax=axes[1]); axes[1].set_title("Trend")
+                decomp.seasonal.plot(ax=axes[2]); axes[2].set_title("Seasonal")
+                decomp.resid.plot(ax=axes[3]); axes[3].set_title("Residual")
+                fig.tight_layout()
+                fig.savefig(os.path.join(save_dir, "eda_decomposition.png"), dpi=100, bbox_inches="tight")
+                plt.close(fig)
+        except Exception:
+            pass
+    print("EDA plots saved.")
+
+
 def main():
     print("=" * 60)
     print("TIME SERIES FORECASTING | April 2026")
@@ -264,6 +323,7 @@ def main():
     print("Baselines: ARIMA, Prophet, LightGBM/CatBoost/XGBoost Lag, FLAML")
     print("=" * 60)
     df, target = load_data()
+    run_eda(df, target, SAVE_DIR)
     metrics = forecast(df, target)
 
     out_path = os.path.join(SAVE_DIR, "metrics.json")
