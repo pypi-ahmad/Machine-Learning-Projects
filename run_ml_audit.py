@@ -163,8 +163,11 @@ def estimate_difficulty(nb_path: Path) -> str:
 def _is_canonical(nb_path: Path) -> bool:
     """True for the human-readable 'project' notebook, False for Kaggle-style copies."""
     name = nb_path.stem
-    # reject plain test artefacts
+    # reject plain test artefacts and version copies
     if name.lower() in {"untitled", "test_run", "executed_check"}:
+        return False
+    # reject versioned copies: name(1).ipynb, name(2).ipynb, name_v2.ipynb etc.
+    if re.search(r"\(\d+\)$|_v\d+$", name):
         return False
     # reject purely snake_case Kaggle copies when a Title Case sibling exists
     folder = nb_path.parent
@@ -246,6 +249,10 @@ def _notebook_type(nb_path: Path) -> str:
         return "LLM"
     if any(k in p for k in ("data analysis", "exploratory")):
         return "EDA"
+    if "recommendation" in p:
+        return "RECOMMENDER"
+    if any(k in p for k in ("conceptual", "lecture", "tutorial", "intro")):
+        return "CONCEPTUAL"
     return "ML"
 
 
@@ -297,7 +304,19 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
             "chain":       bool(re.search(r"(chain|agent|invoke|pipe|run\(|arun\(|graph)", code_text, re.I)),
             "output":      bool(re.search(r"(print\(|display\(|response|result\s*=|answer)", code_text, re.I)),
         }
-    else:  # ML
+    elif nb_type == "RECOMMENDER":
+        pipeline_checks = {
+            "data_load":   bool(re.search(r"(read_csv|load_dataset|pd\.DataFrame|pd\.read_|fetch_)", code_text, re.I)),
+            "matrix":      bool(re.search(r"(pivot|pivot_table|matrix|sparse|csr_matrix|TfidfVectorizer|cosine_similarity)", code_text, re.I)),
+            "model":       bool(re.search(r"(fit\(|NMF|SVD|surprise|ALS|collaborative|content.based|cosin)", code_text, re.I)),
+            "recommend":   bool(re.search(r"(recommend|top_n|similar|suggest)", code_text, re.I)),
+        }
+    elif nb_type == "CONCEPTUAL":
+        pipeline_checks = {
+            "explains":    bool(re.search(r"(print\(|display\(|Markdown|HTML\()", code_text, re.I)),
+            "code":        bool(re.search(r"(def |class |import )", code_text, re.I)),
+            "output":      bool(re.search(r"(\.show\(|plt\.|visuali|plot)", code_text, re.I)),
+        }
         pipeline_checks = {
             "data_load":  bool(re.search(r"(read_csv|load_dataset|pd\.DataFrame|pd\.read_|datasets\.load|fetch_|download)", code_text, re.I)),
             "preprocess": bool(re.search(r"(train_test_split|StandardScaler|LabelEncoder|fillna|dropna|Pipeline|ColumnTransformer|tokenize|transform)", code_text, re.I)),
@@ -347,9 +366,11 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
                 for o in cell.get("outputs", []))
             for cell in nb.cells if cell.get("cell_type") == "code"
         )
-        if nb_type in ("EDA", "LLM") and has_text_outputs:
+        if nb_type in ("EDA", "LLM", "RECOMMENDER", "CONCEPTUAL") and has_text_outputs:
             scores["performance"] = 25   # 83% of 30 for non-metric notebooks
-        elif nb_type == "EDA":
+        elif nb_type in ("RECOMMENDER", "CONCEPTUAL") and has_text_outputs:
+            scores["performance"] = 25
+        elif nb_type in ("RECOMMENDER", "CONCEPTUAL"):
             scores["performance"] = 20
         else:
             scores["performance"] = 0
