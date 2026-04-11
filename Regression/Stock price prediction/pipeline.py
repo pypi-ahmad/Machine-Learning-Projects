@@ -30,6 +30,11 @@ def load_data():
     import yfinance as yf
     df = yf.download("AAPL", period="10y", auto_adjust=True).reset_index()
     df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {MAX_ROWS} rows")
     print(f"Dataset shape: {df.shape}")
     return df
 
@@ -39,6 +44,11 @@ def preprocess(df):
     df.dropna(subset=[TARGET], inplace=True)
     y = df[TARGET]
     X = df.drop(columns=[TARGET])
+    # Sanitize column names for LightGBM/XGBoost compatibility
+    X.columns = [str(c).replace(' ', '_').replace('[', '_').replace(']', '_')
+                 .replace(',', '_').replace(':', '_').replace('{', '_')
+                 .replace('}', '_').replace('<', '_').replace('>', '_')
+                 .replace('"', '_') for c in X.columns]
     cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
@@ -112,6 +122,12 @@ def run_eda(df, target, save_dir):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {}      # name -> y_pred
     timings = {}      # name -> wall-clock seconds
 
@@ -119,35 +135,37 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from catboost import CatBoostRegressor
         t0 = time.perf_counter()
-        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
-                              devices="0", early_stopping_rounds=50, verbose=100)
+        m = CatBoostRegressor(iterations=300, learning_rate=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=30, verbose=100)
         m.fit(X_train, y_train, eval_set=(X_test, y_test))
         timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = m.predict(X_test)
         print(f"CatBoost RMSE: {mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}  ({timings['CatBoost']:.1f}s)")
     except Exception as e:
         print(f"CatBoost: {e}")
+    _gpu_cleanup()
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
         t0 = time.perf_counter()
-        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+        m = lgb.LGBMRegressor(n_estimators=300, lr=0.05, max_depth=8,
                               device="gpu", verbose=-1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
-              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+              callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         print(f"LightGBM RMSE: {mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}  ({timings['LightGBM']:.1f}s)")
     except Exception as e:
         print(f"LightGBM: {e}")
+    _gpu_cleanup()
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBRegressor
         t0 = time.perf_counter()
-        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
-                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+        m = XGBRegressor(n_estimators=300, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=30,
                          verbosity=1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
         timings["XGBoost"] = time.perf_counter() - t0
@@ -155,6 +173,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"XGBoost RMSE: {mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}  ({timings['XGBoost']:.1f}s)")
     except Exception as e:
         print(f"XGBoost: {e}")
+    _gpu_cleanup()
 
     # ── AutoGluon Tabular ──
     try:
@@ -164,19 +183,20 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         train_ag = X_train.copy(); train_ag["Close"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="Close", path=tmp, problem_type="regression", verbosity=0)
-            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
+            predictor.fit(train_ag, time_limit=60, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0
             print(f"AutoGluon RMSE: {mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}  ({timings['AutoGluon']:.1f}s)")
     except Exception as e:
         print(f"AutoGluon: {e}")
+    _gpu_cleanup()
 
     # ── RealTabPFN-v2 (prior-fitted network — regression) ──
     try:
         from tabpfn import TabPFNRegressor
         if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
             t0 = time.perf_counter()
-            m = TabPFNRegressor(device="cuda", N_ensemble_configurations=32)
+            m = TabPFNRegressor(device="cuda", n_estimators=32)
             m.fit(X_train.values, y_train.values)
             timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
@@ -185,6 +205,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
         print(f"TabPFN-v2: {e}")
+    _gpu_cleanup()
 
     # ── TabM (deep tabular) ──
     try:
@@ -210,21 +231,23 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         t0 = time.perf_counter()
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
-        for ep in range(100):
+        for ep in range(50):
             model.train(); loss = nn.MSELoss()(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
+        del model, Xt, Xv, yt
         timings["TabM"] = time.perf_counter() - t0
         print(f"TabM RMSE: {mean_squared_error(y_test, results['TabM'], squared=False):.4f}  ({timings['TabM']:.1f}s)")
     except Exception as e:
         print(f"TabM: {e}")
+    _gpu_cleanup()
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="regression", time_budget=120, verbose=0)
+        automl.fit(X_train, y_train, task="regression", time_budget=60, verbose=0)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
         print(f"FLAML ({automl.best_estimator}) RMSE: {mean_squared_error(y_test, results['FLAML'], squared=False):.4f}  ({timings['FLAML']:.1f}s)")
@@ -236,7 +259,21 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from lazypredict.Supervised import LazyRegressor
         t0 = time.perf_counter()
         lazy = LazyRegressor(verbose=0, ignore_warnings=True)
-        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        # Disable MLflow sklearn autologging to avoid logging 25+ LazyPredict models
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=True)
+        except Exception:
+            pass
+        _lp_max = 5000
+        _X_train_lp = X_train.iloc[:_lp_max] if hasattr(X_train, 'iloc') and len(X_train) > _lp_max else X_train
+        _X_test_lp = X_test.iloc[:_lp_max] if hasattr(X_test, 'iloc') and len(X_test) > _lp_max else X_test
+        _y_train_lp = y_train.iloc[:_lp_max] if hasattr(y_train, 'iloc') and len(y_train) > _lp_max else y_train
+        _y_test_lp = y_test.iloc[:_lp_max] if hasattr(y_test, 'iloc') and len(y_test) > _lp_max else y_test
+        lazy_models, _ = lazy.fit(_X_train_lp, _X_test_lp, _y_train_lp, _y_test_lp)
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=False)
+        except Exception:
+            pass
         timings["LazyPredict"] = time.perf_counter() - t0
         print(f"\nLazyPredict — Top 5 regressors:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
@@ -331,6 +368,10 @@ def cross_validate_best(X, y, save_dir):
     ]:
         try:
             model = build_fn()
+            try:
+                import mlflow as _mlflow_cv; _mlflow_cv.sklearn.autolog(disable=True)
+            except Exception:
+                pass
             scores = -cross_val_score(model, X, y, cv=cv, scoring=rmse_scorer, n_jobs=1)
             cv_results[name] = {"rmse_mean": round(float(scores.mean()), 4),
                                 "rmse_std": round(float(scores.std()), 4),

@@ -42,6 +42,11 @@ def load_data():
         if _matches: _fp = _matches[0]
         print(f"Downloaded mlg-ulb/creditcardfraud from Kaggle")
     df = pd.read_csv(_fp)
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {MAX_ROWS} rows")
     print(f"Dataset shape: {df.shape}")
     print(f"Fraud rate: {df[TARGET].mean():.4%}")
     return df
@@ -51,6 +56,11 @@ def preprocess(df):
     df = df.copy()
     df.dropna(subset=[TARGET], inplace=True)
     y = df[TARGET]; X = df.drop(columns=[TARGET])
+    # Sanitize column names for LightGBM/XGBoost compatibility
+    X.columns = [str(c).replace(' ', '_').replace('[', '_').replace(']', '_')
+                 .replace(',', '_').replace(':', '_').replace('{', '_')
+                 .replace('}', '_').replace('<', '_').replace('>', '_')
+                 .replace('"', '_') for c in X.columns]
     cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
     X[num_cols] = X[num_cols].fillna(X[num_cols].median())
@@ -115,6 +125,12 @@ def find_best_threshold(y_true, y_proba):
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
     from sklearn.calibration import CalibratedClassifierCV
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {}      # name -> {preds, proba, thresh, model}
     timings = {}      # name -> wall-clock seconds
     # Hold out calibration split from training data
@@ -124,15 +140,15 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
 
     for name, builder in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=1000, lr=0.03, depth=8, task_type="GPU", devices="0",
-            scale_pos_weight=scale, eval_metric="F1", early_stopping_rounds=50, verbose=100)),
+            iterations=300, learning_rate=0.03, depth=8, task_type="GPU", devices="0",
+            scale_pos_weight=scale, eval_metric="F1", early_stopping_rounds=30, verbose=100)),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            n_estimators=300, learning_rate=0.03, max_depth=8,
             device="gpu", scale_pos_weight=scale, verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            n_estimators=300, learning_rate=0.03, max_depth=8,
             device="cuda", tree_method="hist", scale_pos_weight=scale,
-            eval_metric="aucpr", early_stopping_rounds=50, verbosity=1, n_jobs=-1)),
+            eval_metric="aucpr", early_stopping_rounds=30, verbosity=1, n_jobs=-1)),
     ]:
         try:
             t0 = time.perf_counter()
@@ -140,7 +156,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             if name == "LightGBM":
                 import lightgbm as lgb
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)],
-                      callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+                      callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
             else:
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)] if name == "XGBoost"
                       else (X_cal, y_cal), verbose=100 if name == "XGBoost" else None)
@@ -160,6 +176,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print(f"{name} F1: {f1_score(y_test, preds):.4f} (t={thresh:.3f}) [calibrated]  ({timings[name]:.1f}s)")
         except Exception as e:
             print(f"{name}: {e}")
+        _gpu_cleanup()
 
     # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     for pyod_name, pyod_builder in [
@@ -170,7 +187,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         try:
             t0 = time.perf_counter()
             pm = pyod_builder()
-            pm.fit(X_train.values if hasattr(X_train, "values") else X_train)
+            # Subsample large datasets for PyOD (CPU-bound, slow > 50k rows)
+            MAX_PYOD = 50_000
+            if len(X_train) > MAX_PYOD:
+                _idx = np.random.RandomState(42).choice(len(X_train), MAX_PYOD, replace=False)
+                _Xp = X_train.iloc[_idx] if hasattr(X_train, "iloc") else X_train[_idx]
+            else:
+                _Xp = X_train
+            pm.fit(_Xp.values if hasattr(_Xp, "values") else _Xp)
             scores = pm.decision_function(X_test.values if hasattr(X_test, "values") else X_test)
             pyod_preds = pm.predict(X_test.values if hasattr(X_test, "values") else X_test)
             n_anom = pyod_preds.sum()
@@ -187,7 +211,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120,
+        # Scale FLAML budget with dataset size
+        _flaml_budget = 30 if len(X_train) > 100_000 else 60
+        automl.fit(X_train, y_train, task="classification", time_budget=_flaml_budget,
                    metric="ap", verbose=0)
         flaml_proba = automl.predict_proba(X_test)[:, 1]
         flaml_thresh = find_best_threshold(y_test, flaml_proba)
@@ -201,9 +227,31 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     # ── LazyPredict (quick sweep benchmark) ──
     try:
         from lazypredict.Supervised import LazyClassifier
+        import mlflow
+        mlflow.sklearn.autolog(disable=True)
         t0 = time.perf_counter()
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
-        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        _lp_max = 5000
+        _lp_xt = X_train.iloc[:_lp_max] if len(X_train) > _lp_max else X_train
+        _lp_xe = X_test.iloc[:_lp_max] if len(X_test) > _lp_max else X_test
+        _lp_yt = y_train.iloc[:_lp_max] if len(y_train) > _lp_max else y_train
+        _lp_ye = y_test.iloc[:_lp_max] if len(y_test) > _lp_max else y_test
+        # Disable MLflow sklearn autologging to avoid logging 25+ LazyPredict models
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=True)
+        except Exception:
+            pass
+        _lp_max = 5000
+        __lp_xt_lp = _lp_xt.iloc[:_lp_max] if hasattr(_lp_xt, 'iloc') and len(_lp_xt) > _lp_max else _lp_xt
+        __lp_xe_lp = _lp_xe.iloc[:_lp_max] if hasattr(_lp_xe, 'iloc') and len(_lp_xe) > _lp_max else _lp_xe
+        __lp_yt_lp = _lp_yt.iloc[:_lp_max] if hasattr(_lp_yt, 'iloc') and len(_lp_yt) > _lp_max else _lp_yt
+        __lp_ye_lp = _lp_ye.iloc[:_lp_max] if hasattr(_lp_ye, 'iloc') and len(_lp_ye) > _lp_max else _lp_ye
+        lazy_models, _ = lazy.fit(__lp_xt_lp, __lp_xe_lp, __lp_yt_lp, __lp_ye_lp)
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=False)
+        except Exception:
+            pass
+        mlflow.sklearn.autolog(disable=False)
         timings["LazyPredict"] = time.perf_counter() - t0
         print(f"\nLazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
@@ -285,6 +333,10 @@ def cross_validate_best(X, y, save_dir):
     ]:
         try:
             model = build_fn()
+            try:
+                import mlflow as _mlflow_cv; _mlflow_cv.sklearn.autolog(disable=True)
+            except Exception:
+                pass
             scores = cross_val_score(model, X, y, cv=cv, scoring="f1", n_jobs=1)
             cv_results[name] = {"f1_mean": round(float(scores.mean()), 4),
                                 "f1_std": round(float(scores.std()), 4),

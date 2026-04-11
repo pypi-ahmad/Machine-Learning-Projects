@@ -1,0 +1,21 @@
+{
+  "GMM": {
+    "n_clusters": 5,
+    "noise": 0,
+    "silhouette": 0.3868,
+    "calinski_harabasz": 119.0,
+    "davies_bouldin": 1.3595,
+    "time_s": 3.1,
+    "best_k": 5,
+    "avg_confidence": 0.9998
+  },
+  "KMeans": {
+    "n_clusters": 8,
+    "noise": 0,
+    "silhouette": 0.3969,
+    "calinski_harabasz": 143.1,
+    "davies_bouldin": 0.8952,
+    "time_s": 0.6,
+    "best_k": 8
+  }
+}

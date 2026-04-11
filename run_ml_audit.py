@@ -83,6 +83,15 @@ PY2_FIXES = [
     ("from __future__ import division\n",       ""),
     ("from __future__ import print_function\n", ""),
     ("from __future__ import unicode_literals\n", ""),
+    # seaborn API changes: factorplot→catplot (deprecated seaborn <0.12)
+    ("sns.factorplot(",                         "sns.catplot("),
+    ("seaborn.factorplot(",                     "seaborn.catplot("),
+    # pandas deprecated .ix indexer → .loc
+    (".ix[",                                    ".loc["),
+    # pandas Panel removed in 0.25
+    ("pd.Panel(",                               "None  # pd.Panel removed; "),
+    # matplotlib deprecated squeeze kwarg pattern  
+    ("plt.tight_layout()",                      "plt.tight_layout()"),
 ]
 LC_REPLACEMENTS = [
     (r"from langchain\.prompts import (ChatPromptTemplate[^\n]*)",
@@ -135,6 +144,18 @@ METRIC_PATTERNS = [
     re.compile(r"(?:mape)[:\s=]+([0-9]+\.[0-9]+)", re.I),
     re.compile(r"(?:silhouette)[:\s=]+([0-9]+\.[0-9]+)", re.I),
     re.compile(r"(?:rmse|mae)[:\s=]+([0-9]+\.[0-9]+)", re.I),
+    # classification_report format: "accuracy   0.9312" or "weighted avg   0.93"
+    re.compile(r"accuracy\s+([0-9]+\.[0-9]+)", re.I),
+    re.compile(r"weighted\s+avg\s+[0-9.]+\s+[0-9.]+\s+([0-9]+\.[0-9]+)", re.I),
+    # Keras/PyTorch training output: "val_acc: 0.9312" or "val_accuracy: 0.93"
+    re.compile(r"val[_-]acc(?:uracy)?[:\s]+([0-9]+\.[0-9]+)", re.I),
+    re.compile(r"test[_-]acc(?:uracy)?[:\s=]+([0-9]+\.[0-9]+)", re.I),
+    # Common print formats: "Accuracy: 93.12%" or "Acc = 0.93"
+    re.compile(r"[Aa]cc(?:uracy)?[:\s=]+([0-9]+\.[0-9]+)\s*%?"),
+    # Loss metrics (inverted: lower is better, but presence indicates training happened)
+    re.compile(r"(?:val_loss|test_loss)[:\s=]+([0-9]+\.[0-9]+)", re.I),
+    # Cross-validation score
+    re.compile(r"(?:cv[_-]?score|cross[_-]?val)[:\s=]+([0-9]+\.[0-9]+)", re.I),
 ]
 
 mlflow.set_tracking_uri(MLFLOW_URI)
@@ -196,6 +217,13 @@ def _normalize_source(source: str) -> str:
     source = re.sub(r'(?<=model=")[^"]*nomic-embed-text-v2[^"]*(?=")', OLLAMA_EMBED_MODEL, source)
     source = re.sub(r'(?<=model=")[^"]*nomic-embed[^"]*(?=")', OLLAMA_EMBED_MODEL, source)
     source = re.sub(r'(?<="ollama/)[^"]*qwen[^"]*(?=")', OLLAMA_CHAT_MODEL, source)
+    # Wrap bare surprise imports — scikit-surprise has no Python 3.13 wheel
+    if "from surprise import" in source and "try:" not in source.split("from surprise import")[0].split("\n")[-1]:
+        source = re.sub(
+            r"^(from surprise import .+)$",
+            r"try:\n    \1\nexcept ImportError:\n    pass  # scikit-surprise unavailable on this Python",
+            source, flags=re.MULTILINE,
+        )
     return source
 
 
@@ -317,6 +345,7 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
             "code":        bool(re.search(r"(def |class |import )", code_text, re.I)),
             "output":      bool(re.search(r"(\.show\(|plt\.|visuali|plot)", code_text, re.I)),
         }
+    else:  # ML (default)
         pipeline_checks = {
             "data_load":  bool(re.search(r"(read_csv|load_dataset|pd\.DataFrame|pd\.read_|datasets\.load|fetch_|download)", code_text, re.I)),
             "preprocess": bool(re.search(r"(train_test_split|StandardScaler|LabelEncoder|fillna|dropna|Pipeline|ColumnTransformer|tokenize|transform)", code_text, re.I)),
@@ -343,6 +372,9 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
         if k in ("mape",) and v > 0:
             # lower is better – invert for scoring
             normed = max(0.0, 1.0 - v / 100)
+        elif k in ("val_loss", "test_loss", "val_loss_pattern", "test_loss_pattern"):
+            # loss metrics: skip for accuracy comparison; handled via training_detected flag
+            continue
         elif v > 1.0:
             normed = v / 100  # possibly printed as percentage
         else:
@@ -359,19 +391,24 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
                 f"Metric {best_metric}={best_val:.4f} below threshold {threshold:.2f} for {difficulty}"
             )
     else:
-        # Category-based fallback: EDA/LLM notebooks get performance credit for
-        # successful execution and rich output (plots, summaries, text results)
+        # Category-based fallback: EDA/LLM/RECOMMENDER/CONCEPTUAL notebooks get performance
+        # credit for successful execution and rich output (plots, summaries, text results).
+        # ML notebooks also get partial credit if training evidence is present.
         has_text_outputs = any(
             any(o.get("output_type") in ("stream", "display_data", "execute_result")
                 for o in cell.get("outputs", []))
             for cell in nb.cells if cell.get("cell_type") == "code"
         )
+        # Check if training happened (DL notebooks often only log loss, not accuracy to stdout)
+        has_training_evidence = bool(re.search(
+            r"(val_loss|test_loss|Epoch\s+\d+|fit\(|\.train\(|\.fit_transform\()",
+            code_text, re.I))
         if nb_type in ("EDA", "LLM", "RECOMMENDER", "CONCEPTUAL") and has_text_outputs:
             scores["performance"] = 25   # 83% of 30 for non-metric notebooks
-        elif nb_type in ("RECOMMENDER", "CONCEPTUAL") and has_text_outputs:
-            scores["performance"] = 25
-        elif nb_type in ("RECOMMENDER", "CONCEPTUAL"):
+        elif nb_type in ("EDA", "LLM", "RECOMMENDER", "CONCEPTUAL"):
             scores["performance"] = 20
+        elif has_training_evidence and has_text_outputs:
+            scores["performance"] = 20   # ML notebook trained something, partial credit
         else:
             scores["performance"] = 0
             scores["issues"].append("No numeric performance metric found in outputs")

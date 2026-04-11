@@ -875,6 +875,11 @@ TARGET = "{target}"
 def load_data():
     """Download dataset from the internet."""
 {data_load}
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {{MAX_ROWS}} rows")
     print(f"Dataset shape: {{df.shape}}")
     print(f"Target distribution:\\n{{df[TARGET].value_counts()}}")
     return df
@@ -973,6 +978,12 @@ def run_eda(df, target, save_dir):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {{}}      # name -> y_pred
     probas  = {{}}      # name -> probability array (for ROC-AUC / PR-AUC / calibration)
     timings = {{}}      # name -> wall-clock seconds
@@ -984,10 +995,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from catboost import CatBoostClassifier
         t0 = time.perf_counter()
         cb = CatBoostClassifier(
-            iterations=1000, learning_rate=0.05, depth=8,
+            iterations=200, learning_rate=0.05, depth=8,
             task_type="GPU", devices="0",
             eval_metric="AUC" if is_binary else "MultiClass",
-            early_stopping_rounds=50, verbose=100,
+            early_stopping_rounds=30, verbose=100,
             auto_class_weights="Balanced",
         )
         cb.fit(X_train, y_train, eval_set=(X_test, y_test))
@@ -997,33 +1008,35 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"\\nCatBoost Accuracy: {{accuracy_score(y_test, results['CatBoost']):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
         print(f"CatBoost: {{e}}")
+    _gpu_cleanup()
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
         t0 = time.perf_counter()
         m = lgb.LGBMClassifier(
-            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            n_estimators=200, learning_rate=0.05, max_depth=8,
             device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
-              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+              callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         probas["LightGBM"] = m.predict_proba(X_test)
         print(f"\\nLightGBM Accuracy: {{accuracy_score(y_test, results['LightGBM']):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
         print(f"LightGBM: {{e}}")
+    _gpu_cleanup()
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBClassifier
         t0 = time.perf_counter()
         m = XGBClassifier(
-            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            n_estimators=200, learning_rate=0.05, max_depth=8,
             device="cuda", tree_method="hist",
             eval_metric="auc" if is_binary else "mlogloss",
-            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+            early_stopping_rounds=30, verbosity=1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
         timings["XGBoost"] = time.perf_counter() - t0
@@ -1032,6 +1045,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"\\nXGBoost Accuracy: {{accuracy_score(y_test, results['XGBoost']):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
         print(f"XGBoost: {{e}}")
+    _gpu_cleanup()
 
     # ── AutoGluon Tabular ──
     try:
@@ -1042,7 +1056,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         test_ag = X_test.copy(); test_ag["{target}"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="{target}", path=tmp, verbosity=0)
-            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
+            predictor.fit(train_ag, time_limit=60, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["{target}"])).values
             try:
                 probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["{target}"])).values
@@ -1052,6 +1066,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print(f"\\nAutoGluon Accuracy: {{accuracy_score(y_test, results['AutoGluon']):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
         print(f"AutoGluon: {{e}}")
+    _gpu_cleanup()
 
     # ── RealTabPFN-v2 (prior-fitted network) ──
     try:
@@ -1071,6 +1086,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
         print(f"TabPFN-v2: {{e}}")
+    _gpu_cleanup()
 
     # ── TabM (parameter-efficient tabular ensembling) ──
     try:
@@ -1106,24 +1122,26 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
         loss_fn = nn.CrossEntropyLoss()
-        for ep in range(100):
+        for ep in range(50):
             model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad():
             logits = model(Xv)
             results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
             probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
+        del model, Xt, Xv, yt
         timings["TabM"] = time.perf_counter() - t0
         print(f"\\nTabM Accuracy: {{accuracy_score(y_test, results['TabM']):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
         print(f"TabM: {{e}}")
+    _gpu_cleanup()
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        automl.fit(X_train, y_train, task="classification", time_budget=30, verbose=0)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
         try:
@@ -1314,6 +1332,11 @@ TARGET = "{target}"
 
 def load_data():
 {data_load}
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {{MAX_ROWS}} rows")
     print(f"Dataset shape: {{df.shape}}")
     return df
 
@@ -1396,6 +1419,12 @@ def run_eda(df, target, save_dir):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {{}}      # name -> y_pred
     timings = {{}}      # name -> wall-clock seconds
 
@@ -1403,35 +1432,37 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
     try:
         from catboost import CatBoostRegressor
         t0 = time.perf_counter()
-        m = CatBoostRegressor(iterations=1000, lr=0.05, depth=8, task_type="GPU",
-                              devices="0", early_stopping_rounds=50, verbose=100)
+        m = CatBoostRegressor(iterations=300, lr=0.05, depth=8, task_type="GPU",
+                              devices="0", early_stopping_rounds=30, verbose=100)
         m.fit(X_train, y_train, eval_set=(X_test, y_test))
         timings["CatBoost"] = time.perf_counter() - t0
         results["CatBoost"] = m.predict(X_test)
         print(f"CatBoost RMSE: {{mean_squared_error(y_test, results['CatBoost'], squared=False):.4f}}  ({{timings['CatBoost']:.1f}}s)")
     except Exception as e:
         print(f"CatBoost: {{e}}")
+    _gpu_cleanup()
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
         t0 = time.perf_counter()
-        m = lgb.LGBMRegressor(n_estimators=1000, lr=0.05, max_depth=8,
+        m = lgb.LGBMRegressor(n_estimators=300, lr=0.05, max_depth=8,
                               device="gpu", verbose=-1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
-              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+              callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         print(f"LightGBM RMSE: {{mean_squared_error(y_test, results['LightGBM'], squared=False):.4f}}  ({{timings['LightGBM']:.1f}}s)")
     except Exception as e:
         print(f"LightGBM: {{e}}")
+    _gpu_cleanup()
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBRegressor
         t0 = time.perf_counter()
-        m = XGBRegressor(n_estimators=1000, learning_rate=0.05, max_depth=8,
-                         device="cuda", tree_method="hist", early_stopping_rounds=50,
+        m = XGBRegressor(n_estimators=300, learning_rate=0.05, max_depth=8,
+                         device="cuda", tree_method="hist", early_stopping_rounds=30,
                          verbosity=1, n_jobs=-1)
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
         timings["XGBoost"] = time.perf_counter() - t0
@@ -1439,6 +1470,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"XGBoost RMSE: {{mean_squared_error(y_test, results['XGBoost'], squared=False):.4f}}  ({{timings['XGBoost']:.1f}}s)")
     except Exception as e:
         print(f"XGBoost: {{e}}")
+    _gpu_cleanup()
 
     # ── AutoGluon Tabular ──
     try:
@@ -1448,12 +1480,13 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         train_ag = X_train.copy(); train_ag["{target}"] = y_train.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="{target}", path=tmp, problem_type="regression", verbosity=0)
-            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
+            predictor.fit(train_ag, time_limit=60, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(X_test).values
             timings["AutoGluon"] = time.perf_counter() - t0
             print(f"AutoGluon RMSE: {{mean_squared_error(y_test, results['AutoGluon'], squared=False):.4f}}  ({{timings['AutoGluon']:.1f}}s)")
     except Exception as e:
         print(f"AutoGluon: {{e}}")
+    _gpu_cleanup()
 
     # ── RealTabPFN-v2 (prior-fitted network — regression) ──
     try:
@@ -1469,6 +1502,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
         print(f"TabPFN-v2: {{e}}")
+    _gpu_cleanup()
 
     # ── TabM (deep tabular) ──
     try:
@@ -1494,21 +1528,23 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         t0 = time.perf_counter()
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
-        for ep in range(100):
+        for ep in range(50):
             model.train(); loss = nn.MSELoss()(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad(): results["TabM"] = model(Xv).cpu().numpy()
+        del model, Xt, Xv, yt
         timings["TabM"] = time.perf_counter() - t0
         print(f"TabM RMSE: {{mean_squared_error(y_test, results['TabM'], squared=False):.4f}}  ({{timings['TabM']:.1f}}s)")
     except Exception as e:
         print(f"TabM: {{e}}")
+    _gpu_cleanup()
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="regression", time_budget=120, verbose=0)
+        automl.fit(X_train, y_train, task="regression", time_budget=60, verbose=0)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
         print(f"FLAML ({{automl.best_estimator}}) RMSE: {{mean_squared_error(y_test, results['FLAML'], squared=False):.4f}}  ({{timings['FLAML']:.1f}}s)")
@@ -1688,6 +1724,11 @@ TARGET = "{target}"
 
 def load_data():
 {data_load}
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {{MAX_ROWS}} rows")
     print(f"Dataset shape: {{df.shape}}")
     print(f"Fraud rate: {{df[TARGET].mean():.4%}}")
     return df
@@ -1761,6 +1802,12 @@ def find_best_threshold(y_true, y_proba):
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
     from sklearn.calibration import CalibratedClassifierCV
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {{}}      # name -> {{preds, proba, thresh, model}}
     timings = {{}}      # name -> wall-clock seconds
     # Hold out calibration split from training data
@@ -1770,15 +1817,15 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
 
     for name, builder in [
         ("CatBoost", lambda: __import__("catboost").CatBoostClassifier(
-            iterations=1000, lr=0.03, depth=8, task_type="GPU", devices="0",
-            scale_pos_weight=scale, eval_metric="F1", early_stopping_rounds=50, verbose=100)),
+            iterations=300, lr=0.03, depth=8, task_type="GPU", devices="0",
+            scale_pos_weight=scale, eval_metric="F1", early_stopping_rounds=30, verbose=100)),
         ("LightGBM", lambda: __import__("lightgbm").LGBMClassifier(
-            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            n_estimators=300, learning_rate=0.03, max_depth=8,
             device="gpu", scale_pos_weight=scale, verbose=-1, n_jobs=-1)),
         ("XGBoost", lambda: __import__("xgboost").XGBClassifier(
-            n_estimators=1000, learning_rate=0.03, max_depth=8,
+            n_estimators=300, learning_rate=0.03, max_depth=8,
             device="cuda", tree_method="hist", scale_pos_weight=scale,
-            eval_metric="aucpr", early_stopping_rounds=50, verbosity=1, n_jobs=-1)),
+            eval_metric="aucpr", early_stopping_rounds=30, verbosity=1, n_jobs=-1)),
     ]:
         try:
             t0 = time.perf_counter()
@@ -1786,7 +1833,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             if name == "LightGBM":
                 import lightgbm as lgb
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)],
-                      callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+                      callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
             else:
                 m.fit(X_tr, y_tr, eval_set=[(X_cal, y_cal)] if name == "XGBoost"
                       else (X_cal, y_cal), verbose=100 if name == "XGBoost" else None)
@@ -1806,6 +1853,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print(f"{{name}} F1: {{f1_score(y_test, preds):.4f}} (t={{thresh:.3f}}) [calibrated]  ({{timings[name]:.1f}}s)")
         except Exception as e:
             print(f"{{name}}: {{e}}")
+        _gpu_cleanup()
 
     # ── PyOD Anomaly Scoring (unsupervised cross-check) ──
     for pyod_name, pyod_builder in [
@@ -1816,7 +1864,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         try:
             t0 = time.perf_counter()
             pm = pyod_builder()
-            pm.fit(X_train.values if hasattr(X_train, "values") else X_train)
+            # Subsample large datasets for PyOD (CPU-bound, slow > 50k rows)
+            MAX_PYOD = 50_000
+            if len(X_train) > MAX_PYOD:
+                _idx = np.random.RandomState(42).choice(len(X_train), MAX_PYOD, replace=False)
+                _Xp = X_train.iloc[_idx] if hasattr(X_train, "iloc") else X_train[_idx]
+            else:
+                _Xp = X_train
+            pm.fit(_Xp.values if hasattr(_Xp, "values") else _Xp)
             scores = pm.decision_function(X_test.values if hasattr(X_test, "values") else X_test)
             pyod_preds = pm.predict(X_test.values if hasattr(X_test, "values") else X_test)
             n_anom = pyod_preds.sum()
@@ -1833,7 +1888,9 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120,
+        # Scale FLAML budget with dataset size
+        _flaml_budget = 30 if len(X_train) > 100_000 else 60
+        automl.fit(X_train, y_train, task="classification", time_budget=_flaml_budget,
                    metric="ap", verbose=0)
         flaml_proba = automl.predict_proba(X_test)[:, 1]
         flaml_thresh = find_best_threshold(y_test, flaml_proba)
@@ -4199,6 +4256,11 @@ def load_data():
     # Drop ID-like columns
     for c in df.columns:
         if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    # Cap rows to prevent timeout on large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {{MAX_ROWS}} rows")
     print(f"Dataset shape: {{df.shape}}")
     return df
 

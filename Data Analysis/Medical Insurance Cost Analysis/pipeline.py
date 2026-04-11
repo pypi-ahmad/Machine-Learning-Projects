@@ -148,6 +148,11 @@ def main():
 
     # Define features and target
     X = df.drop(columns=['charges'])
+    # Sanitize column names for LightGBM/XGBoost compatibility
+    X.columns = [str(c).replace(' ', '_').replace('[', '_').replace(']', '_')
+                 .replace(',', '_').replace(':', '_').replace('{', '_')
+                 .replace('}', '_').replace('<', '_').replace('>', '_')
+                 .replace('"', '_') for c in X.columns]
     y = df['charges']
 
     # Handle non-numeric columns for modeling

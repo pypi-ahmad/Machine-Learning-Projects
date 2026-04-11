@@ -2,7 +2,7 @@
   "ECOD": {
     "anomalies": 29,
     "anomaly_pct": 0.051,
-    "time_s": 0.9,
+    "time_s": 0.5,
     "score_p50": 47.3784,
     "score_p95": 78.9623,
     "score_p99": 95.3724,
@@ -22,7 +22,7 @@
   "IForest": {
     "anomalies": 29,
     "anomaly_pct": 0.051,
-    "time_s": 0.3,
+    "time_s": 0.2,
     "score_p50": -0.1323,
     "score_p95": 0.0,
     "score_p99": 0.084,
@@ -32,7 +32,7 @@
   "LOF": {
     "anomalies": 29,
     "anomaly_pct": 0.051,
-    "time_s": 2.9,
+    "time_s": 2.6,
     "score_p50": 1.07,
     "score_p95": 1.5112,
     "score_p99": 1.9688,

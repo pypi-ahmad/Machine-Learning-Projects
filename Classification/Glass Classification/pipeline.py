@@ -41,6 +41,11 @@ def load_data():
         if _matches: _fp = _matches[0]
         print(f"Downloaded uciml/glass from Kaggle")
     df = pd.read_csv(_fp)
+    # Cap rows to prevent timeout on very large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {MAX_ROWS} rows")
     print(f"Dataset shape: {df.shape}")
     print(f"Target distribution:\n{df[TARGET].value_counts()}")
     return df
@@ -57,6 +62,11 @@ def preprocess(df):
 
     y = df[TARGET]
     X = df.drop(columns=[TARGET])
+    # Sanitize column names for LightGBM/XGBoost compatibility
+    X.columns = [str(c).replace(' ', '_').replace('[', '_').replace(']', '_')
+                 .replace(',', '_').replace(':', '_').replace('{', '_')
+                 .replace('}', '_').replace('<', '_').replace('>', '_')
+                 .replace('"', '_') for c in X.columns]
 
     cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
     num_cols = X.select_dtypes(include=["number"]).columns.tolist()
@@ -139,6 +149,12 @@ def run_eda(df, target, save_dir):
 
 
 def train_and_evaluate(X_train, X_test, y_train, y_test):
+    import gc
+    def _gpu_cleanup():
+        gc.collect()
+        try:
+            import torch; torch.cuda.empty_cache()
+        except Exception: pass
     results = {}      # name -> y_pred
     probas  = {}      # name -> probability array (for ROC-AUC / PR-AUC / calibration)
     timings = {}      # name -> wall-clock seconds
@@ -150,10 +166,10 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from catboost import CatBoostClassifier
         t0 = time.perf_counter()
         cb = CatBoostClassifier(
-            iterations=1000, learning_rate=0.05, depth=8,
+            iterations=200, learning_rate=0.05, depth=8,
             task_type="GPU", devices="0",
             eval_metric="AUC" if is_binary else "MultiClass",
-            early_stopping_rounds=50, verbose=100,
+            early_stopping_rounds=30, verbose=100,
             auto_class_weights="Balanced",
         )
         cb.fit(X_train, y_train, eval_set=(X_test, y_test))
@@ -163,33 +179,35 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"\nCatBoost Accuracy: {accuracy_score(y_test, results['CatBoost']):.4f}  ({timings['CatBoost']:.1f}s)")
     except Exception as e:
         print(f"CatBoost: {e}")
+    _gpu_cleanup()
 
     # ── LightGBM (GPU) ──
     try:
         import lightgbm as lgb
         t0 = time.perf_counter()
         m = lgb.LGBMClassifier(
-            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            n_estimators=200, learning_rate=0.05, max_depth=8,
             device="gpu", class_weight="balanced", verbose=-1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)],
-              callbacks=[lgb.early_stopping(50), lgb.log_evaluation(100)])
+              callbacks=[lgb.early_stopping(30), lgb.log_evaluation(100)])
         timings["LightGBM"] = time.perf_counter() - t0
         results["LightGBM"] = m.predict(X_test)
         probas["LightGBM"] = m.predict_proba(X_test)
         print(f"\nLightGBM Accuracy: {accuracy_score(y_test, results['LightGBM']):.4f}  ({timings['LightGBM']:.1f}s)")
     except Exception as e:
         print(f"LightGBM: {e}")
+    _gpu_cleanup()
 
     # ── XGBoost (CUDA) ──
     try:
         from xgboost import XGBClassifier
         t0 = time.perf_counter()
         m = XGBClassifier(
-            n_estimators=1000, learning_rate=0.05, max_depth=8,
+            n_estimators=200, learning_rate=0.05, max_depth=8,
             device="cuda", tree_method="hist",
             eval_metric="auc" if is_binary else "mlogloss",
-            early_stopping_rounds=50, verbosity=1, n_jobs=-1,
+            early_stopping_rounds=30, verbosity=1, n_jobs=-1,
         )
         m.fit(X_train, y_train, eval_set=[(X_test, y_test)], verbose=100)
         timings["XGBoost"] = time.perf_counter() - t0
@@ -198,6 +216,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         print(f"\nXGBoost Accuracy: {accuracy_score(y_test, results['XGBoost']):.4f}  ({timings['XGBoost']:.1f}s)")
     except Exception as e:
         print(f"XGBoost: {e}")
+    _gpu_cleanup()
 
     # ── AutoGluon Tabular ──
     try:
@@ -208,7 +227,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         test_ag = X_test.copy(); test_ag["Type"] = y_test.values
         with tempfile.TemporaryDirectory() as tmp:
             predictor = TabularPredictor(label="Type", path=tmp, verbosity=0)
-            predictor.fit(train_ag, time_limit=120, presets="medium_quality")
+            predictor.fit(train_ag, time_limit=60, presets="medium_quality")
             results["AutoGluon"] = predictor.predict(test_ag.drop(columns=["Type"])).values
             try:
                 probas["AutoGluon"] = predictor.predict_proba(test_ag.drop(columns=["Type"])).values
@@ -218,13 +237,14 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print(f"\nAutoGluon Accuracy: {accuracy_score(y_test, results['AutoGluon']):.4f}  ({timings['AutoGluon']:.1f}s)")
     except Exception as e:
         print(f"AutoGluon: {e}")
+    _gpu_cleanup()
 
     # ── RealTabPFN-v2 (prior-fitted network) ──
     try:
         from tabpfn import TabPFNClassifier
         if X_train.shape[0] <= 10000 and X_train.shape[1] <= 500:
             t0 = time.perf_counter()
-            m = TabPFNClassifier(device="cuda", N_ensemble_configurations=32)
+            m = TabPFNClassifier(device="cuda", n_estimators=32)
             m.fit(X_train.values, y_train.values)
             timings["TabPFN-v2"] = time.perf_counter() - t0
             results["TabPFN-v2"] = m.predict(X_test.values)
@@ -237,6 +257,7 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
             print("TabPFN-v2: dataset too large (>10k rows or >500 cols), skipped")
     except Exception as e:
         print(f"TabPFN-v2: {e}")
+    _gpu_cleanup()
 
     # ── TabM (parameter-efficient tabular ensembling) ──
     try:
@@ -272,24 +293,26 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         model = TabMNet().to(device)
         opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-2)
         loss_fn = nn.CrossEntropyLoss()
-        for ep in range(100):
+        for ep in range(50):
             model.train(); loss = loss_fn(model(Xt), yt); loss.backward(); opt.step(); opt.zero_grad()
         model.eval()
         with torch.no_grad():
             logits = model(Xv)
             results["TabM"] = torch.argmax(logits, dim=-1).cpu().numpy()
             probas["TabM"] = torch.softmax(logits, dim=-1).cpu().numpy()
+        del model, Xt, Xv, yt
         timings["TabM"] = time.perf_counter() - t0
         print(f"\nTabM Accuracy: {accuracy_score(y_test, results['TabM']):.4f}  ({timings['TabM']:.1f}s)")
     except Exception as e:
         print(f"TabM: {e}")
+    _gpu_cleanup()
 
     # ── Baseline Comparison: FLAML AutoML ──
     try:
         from flaml import AutoML
         t0 = time.perf_counter()
         automl = AutoML()
-        automl.fit(X_train, y_train, task="classification", time_budget=120, verbose=0)
+        automl.fit(X_train, y_train, task="classification", time_budget=30, verbose=0)
         timings["FLAML"] = time.perf_counter() - t0
         results["FLAML"] = automl.predict(X_test)
         try:
@@ -305,7 +328,21 @@ def train_and_evaluate(X_train, X_test, y_train, y_test):
         from lazypredict.Supervised import LazyClassifier
         t0 = time.perf_counter()
         lazy = LazyClassifier(verbose=0, ignore_warnings=True)
-        lazy_models, _ = lazy.fit(X_train, X_test, y_train, y_test)
+        # Disable MLflow sklearn autologging to avoid logging 25+ LazyPredict models
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=True)
+        except Exception:
+            pass
+        _lp_max = 5000
+        _X_train_lp = X_train.iloc[:_lp_max] if hasattr(X_train, 'iloc') and len(X_train) > _lp_max else X_train
+        _X_test_lp = X_test.iloc[:_lp_max] if hasattr(X_test, 'iloc') and len(X_test) > _lp_max else X_test
+        _y_train_lp = y_train.iloc[:_lp_max] if hasattr(y_train, 'iloc') and len(y_train) > _lp_max else y_train
+        _y_test_lp = y_test.iloc[:_lp_max] if hasattr(y_test, 'iloc') and len(y_test) > _lp_max else y_test
+        lazy_models, _ = lazy.fit(_X_train_lp, _X_test_lp, _y_train_lp, _y_test_lp)
+        try:
+            import mlflow as _mlflow; _mlflow.sklearn.autolog(disable=False)
+        except Exception:
+            pass
         timings["LazyPredict"] = time.perf_counter() - t0
         print(f"\nLazyPredict — Top 5 classifiers:  ({timings['LazyPredict']:.1f}s)")
         print(lazy_models.head().to_string())
@@ -410,6 +447,10 @@ def cross_validate_best(X, y, save_dir):
     ]:
         try:
             model = build_fn()
+            try:
+                import mlflow as _mlflow_cv; _mlflow_cv.sklearn.autolog(disable=True)
+            except Exception:
+                pass
             scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy", n_jobs=1)
             cv_results[name] = {"mean": round(float(scores.mean()), 4),
                                 "std": round(float(scores.std()), 4),

@@ -1,11 +1,11 @@
 {
   "CatBoost": {
-    "accuracy": 0.7374,
-    "f1_weighted": 0.7515,
-    "roc_auc": 0.8455,
-    "pr_auc": 0.6683,
-    "brier": 0.1635,
-    "time_s": 5.3
+    "accuracy": 0.7509,
+    "f1_weighted": 0.7635,
+    "roc_auc": 0.8427,
+    "pr_auc": 0.6562,
+    "brier": 0.1592,
+    "time_s": 1.9
   },
   "LightGBM": {
     "accuracy": 0.7573,
@@ -13,7 +13,7 @@
     "roc_auc": 0.8405,
     "pr_auc": 0.6441,
     "brier": 0.1587,
-    "time_s": 1.9
+    "time_s": 2.0
   },
   "XGBoost": {
     "accuracy": 0.7857,
@@ -21,22 +21,22 @@
     "roc_auc": 0.8328,
     "pr_auc": 0.6281,
     "brier": 0.1447,
-    "time_s": 0.5
+    "time_s": 0.4
   },
   "TabM": {
-    "accuracy": 0.758,
-    "f1_weighted": 0.749,
-    "roc_auc": 0.7954,
-    "pr_auc": 0.5591,
-    "brier": 0.1642,
-    "time_s": 1.9
+    "accuracy": 0.7828,
+    "f1_weighted": 0.7769,
+    "roc_auc": 0.828,
+    "pr_auc": 0.6148,
+    "brier": 0.145,
+    "time_s": 1.0
   },
   "FLAML": {
-    "accuracy": 0.7984,
-    "f1_weighted": 0.7878,
-    "roc_auc": 0.8438,
-    "pr_auc": 0.657,
-    "brier": 0.1367,
-    "time_s": 121.4
+    "accuracy": 0.802,
+    "f1_weighted": 0.7917,
+    "roc_auc": 0.841,
+    "pr_auc": 0.6494,
+    "brier": 0.1375,
+    "time_s": 30.4
   }
 }

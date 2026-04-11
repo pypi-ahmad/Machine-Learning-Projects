@@ -212,7 +212,7 @@ def forecast(df, target):
                 n_estimators=500, learning_rate=0.05, max_depth=6,
                 device="gpu", verbose=-1, n_jobs=-1)),
             ("CatBoost-Lag", lambda: __import__("catboost").CatBoostRegressor(
-                iterations=500, lr=0.05, depth=6, task_type="GPU",
+                iterations=500, learning_rate=0.05, depth=6, task_type="GPU",
                 devices="0", verbose=0)),
             ("XGBoost-Lag", lambda: __import__("xgboost").XGBRegressor(
                 n_estimators=500, learning_rate=0.05, max_depth=6,

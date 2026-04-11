@@ -2,7 +2,7 @@
   "ECOD": {
     "anomalies": 69,
     "anomaly_pct": 0.0503,
-    "time_s": 1.1,
+    "time_s": 0.6,
     "score_p50": 6.1613,
     "score_p95": 11.3529,
     "score_p99": 14.0194,
@@ -22,7 +22,7 @@
   "IForest": {
     "anomalies": 69,
     "anomaly_pct": 0.0503,
-    "time_s": 0.3,
+    "time_s": 0.2,
     "score_p50": -0.1153,
     "score_p95": 0.0,
     "score_p99": 0.0691,

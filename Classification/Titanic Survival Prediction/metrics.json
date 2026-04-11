@@ -1,0 +1,26 @@
+{
+  "LightGBM": {
+    "accuracy": 0.8779,
+    "f1_weighted": 0.8804,
+    "roc_auc": 0.9349,
+    "pr_auc": 0.8302,
+    "brier": 0.0953,
+    "time_s": 1.6
+  },
+  "XGBoost": {
+    "accuracy": 0.7405,
+    "f1_weighted": 0.63,
+    "roc_auc": 0.926,
+    "pr_auc": 0.8156,
+    "brier": 0.1821,
+    "time_s": 0.2
+  },
+  "TabM": {
+    "accuracy": 0.8817,
+    "f1_weighted": 0.8765,
+    "roc_auc": 0.9281,
+    "pr_auc": 0.8254,
+    "brier": 0.0923,
+    "time_s": 2.1
+  }
+}

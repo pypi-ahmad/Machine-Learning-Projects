@@ -1,0 +1,17 @@
+{
+  "model": "yolo26m",
+  "task": "track",
+  "videos": [
+    {
+      "file": "pedestrain.mp4"
+    }
+  ],
+  "time_s": 34.3,
+  "validation": {
+    "task": "track",
+    "input_files": 2,
+    "processed": 1,
+    "time_s": 34.3,
+    "passed": true
+  }
+}

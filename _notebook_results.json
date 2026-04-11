@@ -1,37 +1,97 @@
 {
   "Anomaly detection and fraud detection/Anomaly Detection - Numenta Benchmark/Anomaly Detection - Numenta Benchmark.ipynb": {
     "status": "ok",
-    "time_s": 18.6,
+    "time_s": 20.2,
     "error": null
   },
   "Anomaly detection and fraud detection/Anomaly Detection - Social Networks Twitter Bot/Anomaly Detection - Social Networks Twitter Bot.ipynb": {
     "status": "ok",
-    "time_s": 8.2,
+    "time_s": 6.3,
     "error": null
   },
   "Anomaly detection and fraud detection/Anomaly Detection in Images - CIFAR-10/Anomaly Detection in Images - CIFAR-10.ipynb": {
     "status": "ok",
-    "time_s": 18.4,
+    "time_s": 11.9,
     "error": null
   },
   "Anomaly detection and fraud detection/Banknote Authentication/Banknote Authentication.ipynb": {
     "status": "ok",
-    "time_s": 11.9,
+    "time_s": 8.3,
     "error": null
   },
   "Anomaly detection and fraud detection/Breast Cancer Detection - Wisconsin Dataset/Breast Cancer Detection - Wisconsin Dataset.ipynb": {
     "status": "ok",
-    "time_s": 16.8,
+    "time_s": 12.6,
     "error": null
   },
   "Anomaly detection and fraud detection/Fraud Detection - IEEE-CIS/Fraud Detection - IEEE-CIS.ipynb": {
     "status": "ok",
-    "time_s": 260.9,
+    "time_s": 102.5,
     "error": null
   },
   "Anomaly detection and fraud detection/Fraud Detection in Financial Transactions/Fraud Detection in Financial Transactions.ipynb": {
     "status": "ok",
-    "time_s": 263.2,
+    "time_s": 105.8,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Fraudulent Credit Card Transaction Detection/Fraudulent Credit Card Transaction Detection.ipynb": {
+    "status": "ok",
+    "time_s": 100.2,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Insurance Fraud Detection/Insurance Fraud Detection.ipynb": {
+    "status": "ok",
+    "time_s": 163.7,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Intrusion Detection/Intrusion Detection.ipynb": {
+    "status": "ok",
+    "time_s": 283.5,
+    "error": null
+  },
+  "Anomaly detection and fraud detection/Traffic Flow Prediction - METR-LA/Traffic Flow Prediction - METR-LA.ipynb": {
+    "status": "ok",
+    "time_s": 8.2,
+    "error": null
+  },
+  "Classification/Adult Salary Prediction/Adult Salary Prediction.ipynb": {
+    "status": "ok",
+    "time_s": 194.1,
+    "error": null
+  },
+  "Classification/Advanced Credit Card Fraud Detection/Advanced Credit Card Fraud Detection.ipynb": {
+    "status": "ok",
+    "time_s": 361.3,
+    "error": null
+  },
+  "Classification/Autoencoder Fashion MNIST/Autoencoder Fashion MNIST.ipynb": {
+    "status": "ok",
+    "time_s": 222.1,
+    "error": null
+  },
+  "Classification/Autoencoder for Customer Churn/Autoencoder for Customer Churn.ipynb": {
+    "status": "ok",
+    "time_s": 288.3,
+    "error": null
+  },
+  "Classification/Bayesian Logistic Regression - Bank Marketing/Bayesian Logistic Regression - Bank Marketing.ipynb": {
+    "status": "ok",
+    "time_s": 286.3,
+    "error": null
+  },
+  "Classification/Breast Cancer Detection/Breast Cancer Detection.ipynb": {
+    "status": "ok",
+    "time_s": 305.3,
+    "error": null
+  },
+  "Classification/Breast Cancer Prediction/Breast Cancer Prediction.ipynb": {
+    "status": "ok",
+    "time_s": 274.1,
+    "error": null
+  },
+  "Classification/CIFAR-10 Classification/CIFAR-10 Classification.ipynb": {
+    "status": "ok",
+    "time_s": 238.2,
     "error": null
   }
 }

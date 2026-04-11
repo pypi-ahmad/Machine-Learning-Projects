@@ -1,20 +1,8 @@
 {
-  "CatBoost": {
-    "accuracy": 0.814,
-    "f1_weighted": 0.8187,
-    "roc_auc_ovr": 0.9486,
-    "time_s": 14.6
-  },
   "LightGBM": {
     "accuracy": 0.8372,
     "f1_weighted": 0.8366,
-    "roc_auc_ovr": 0.9435,
-    "time_s": 2.8
-  },
-  "FLAML": {
-    "accuracy": 0.7907,
-    "f1_weighted": 0.7918,
-    "roc_auc_ovr": 0.9414,
-    "time_s": 120.2
+    "roc_auc_ovr": 0.9443,
+    "time_s": 36.3
   }
 }

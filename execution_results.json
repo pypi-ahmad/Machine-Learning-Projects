@@ -941,5 +941,619 @@
    "metrics.json"
   ],
   "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Customer Segmentation - E-Commerce\\Customer Segmentation - E-Commerce.ipynb",
+  "project": "Customer Segmentation - E-Commerce",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 521.6,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json",
+   "shokunin_United_Kingdom_map.png"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Earthquake Prediction\\Earthquake Prediction.ipynb",
+  "project": "Earthquake Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 434.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "database.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Garbage Classification\\Garbage Classification.ipynb",
+  "project": "Garbage Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 405.4,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Glass Classification\\Glass Classification.ipynb",
+  "project": "Glass Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 115.3,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Groundhog Day Predictions\\Groundhog Day Predictions.ipynb",
+  "project": "Groundhog Day Predictions",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 81.9,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "dataset.csv",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\H2O Higgs Boson\\H2O Higgs Boson.ipynb",
+  "project": "H2O Higgs Boson",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 50.3,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "training.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Healthcare Heart Disease Prediction\\Healthcare Heart Disease Prediction.ipynb",
+  "project": "Healthcare Heart Disease Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 40.2,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "heart.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Heart Disease Prediction\\Heart Disease Prediction.ipynb",
+  "project": "Heart Disease Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 44.3,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "heart.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Pneumonia Classification\\Pneumonia Classification.ipynb",
+  "project": "Pneumonia Classification",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 253.6,
+  "artifacts": [
+   "confusion_matrix.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Social Network Ads Analysis\\Social Network Ads Analysis.ipynb",
+  "project": "Social Network Ads Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 44.5,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "Social_Network_Ads.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Student Performance Prediction\\Student Performance Prediction.ipynb",
+  "project": "Student Performance Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 35.5,
+  "artifacts": [
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Titanic - Handling Missing Values\\Titanic - Handling Missing Values.ipynb",
+  "project": "Titanic - Handling Missing Values",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 30.1,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "titanic.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Titanic Survival Prediction\\Titanic Survival Prediction.ipynb",
+  "project": "Titanic Survival Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 32.6,
+  "artifacts": [
+   "calibration_plot.png",
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Weather Classification - Decision Trees\\Weather Classification - Decision Trees.ipynb",
+  "project": "Weather Classification - Decision Trees",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 70.5,
+  "artifacts": [
+   "cm_lightgbm.png",
+   "cm_tabm.png",
+   "cm_xgboost.png",
+   "cv_results.json",
+   "daily_weather.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Wine Quality Analysis\\Wine Quality Analysis.ipynb",
+  "project": "Wine Quality Analysis",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 52.8,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "winequality.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Classification\\Wine Quality Prediction\\Wine Quality Prediction.ipynb",
+  "project": "Wine Quality Prediction",
+  "family": "Classification",
+  "status": "success",
+  "time_s": 51.3,
+  "artifacts": [
+   "cm_catboost.png",
+   "cm_flaml.png",
+   "cm_lightgbm.png",
+   "cv_results.json",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "eda_target.png",
+   "metrics.json",
+   "winequality-red.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Credit Card Customer Segmentation\\Credit Card Customer Segmentation.ipynb",
+  "project": "Credit Card Customer Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 331.1,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Customer Segmentation\\Customer Segmentation.ipynb",
+  "project": "Customer Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 138.8,
+  "artifacts": [
+   "clustering_results.png",
+   "Customers.csv",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Customer Segmentation - Bank\\Customer Segmentation - Bank.ipynb",
+  "project": "Customer Segmentation - Bank",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 197.6,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Financial Time Series Clustering\\Financial Time Series Clustering.ipynb",
+  "project": "Financial Time Series Clustering",
+  "family": "Clustering",
+  "status": "cell_error",
+  "time_s": 8.8,
+  "artifacts": [],
+  "error": "\u001b[31mModuleNotFoundError\u001b[39m: No module named 'yfinance'"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Housing Price Segmentation\\Housing Price Segmentation.ipynb",
+  "project": "Housing Price Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 64.8,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\KMeans Clustering - Imagery Analysis\\KMeans Clustering - Imagery Analysis.ipynb",
+  "project": "KMeans Clustering - Imagery Analysis",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 17.3,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Mall Customer Segmentation\\Mall Customer Segmentation.ipynb",
+  "project": "Mall Customer Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 12.7,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Mall Customer Segmentation - Advanced\\Mall Customer Segmentation - Advanced.ipynb",
+  "project": "Mall Customer Segmentation - Advanced",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 15.0,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "Mall_Customers.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Mall Customer Segmentation - Detailed\\Mall Customer Segmentation - Detailed.ipynb",
+  "project": "Mall Customer Segmentation - Detailed",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 15.8,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "Mall_Customers.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Mall Customer Segmentation Data\\Mall Customer Segmentation Data.ipynb",
+  "project": "Mall Customer Segmentation Data",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 15.3,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "Mall_Customers.csv",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Online Retail Customer Segmentation\\Online Retail Customer Segmentation.ipynb",
+  "project": "Online Retail Customer Segmentation",
+  "family": "Clustering",
+  "status": "cell_error",
+  "time_s": 14.2,
+  "artifacts": [],
+  "error": "\u001b[31mUnicodeDecodeError\u001b[39m: 'utf-8' codec can't decode byte 0xa3 in position 79780: invalid start byte"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Online Retail Segmentation Analysis\\Online Retail Segmentation Analysis.ipynb",
+  "project": "Online Retail Segmentation Analysis",
+  "family": "Clustering",
+  "status": "cell_error",
+  "time_s": 14.6,
+  "artifacts": [],
+  "error": "\u001b[31mUnicodeDecodeError\u001b[39m: 'utf-8' codec can't decode byte 0xa3 in position 79780: invalid start byte"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Spotify Song Cluster Analysis\\Spotify Song Cluster Analysis.ipynb",
+  "project": "Spotify Song Cluster Analysis",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 321.0,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Turkiye Student Evaluation - Advanced\\Turkiye Student Evaluation - Advanced.ipynb",
+  "project": "Turkiye Student Evaluation - Advanced",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 22.1,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json",
+   "turkiye-student-evaluation_generic.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Turkiye Student Evaluation Analysis\\Turkiye Student Evaluation Analysis.ipynb",
+  "project": "Turkiye Student Evaluation Analysis",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 19.3,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json",
+   "turkiye-student-evaluation_generic.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Vehicle Crash Data Clustering\\Vehicle Crash Data Clustering.ipynb",
+  "project": "Vehicle Crash Data Clustering",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 36.1,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Weather Data Clustering - KMeans\\Weather Data Clustering - KMeans.ipynb",
+  "project": "Weather Data Clustering - KMeans",
+  "family": "Clustering",
+  "status": "cell_error",
+  "time_s": 16.6,
+  "artifacts": [],
+  "error": "\u001b[31mModuleNotFoundError\u001b[39m: No module named 'yfinance'"
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Wholesale Customer Segmentation\\Wholesale Customer Segmentation.ipynb",
+  "project": "Wholesale Customer Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 18.0,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Wholesale Segmentation Analysis\\Wholesale Segmentation Analysis.ipynb",
+  "project": "Wholesale Segmentation Analysis",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 16.0,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json",
+   "Wholesale customers data.csv"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Clustering\\Wine Segmentation\\Wine Segmentation.ipynb",
+  "project": "Wine Segmentation",
+  "family": "Clustering",
+  "status": "success",
+  "time_s": 16.8,
+  "artifacts": [
+   "clustering_results.png",
+   "eda_correlation.png",
+   "eda_distributions.png",
+   "eda_summary.csv",
+   "kmeans_elbow_silhouette.png",
+   "metrics.json"
+  ],
+  "error": ""
+ },
+ {
+  "notebook": "E:\\Github\\Machine-Learning-Projects\\Computer Vision\\Captcha Recognition\\Captcha Recognition.ipynb",
+  "project": "Captcha Recognition",
+  "family": "Computer Vision",
+  "status": "cell_error",
+  "time_s": 9.7,
+  "artifacts": [],
+  "error": "\u001b[31mHTTPError\u001b[39m: HTTP Error 404: Not Found"
  }
 ]

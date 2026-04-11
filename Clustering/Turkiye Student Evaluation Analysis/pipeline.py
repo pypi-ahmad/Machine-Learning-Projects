@@ -25,6 +25,11 @@ def load_data():
     # Drop ID-like columns
     for c in df.columns:
         if str(c).lower() in ("id", "customerid", "customer_id"): df.drop(columns=[c], inplace=True, errors="ignore")
+    # Cap rows to prevent timeout on large datasets
+    MAX_ROWS = 50000
+    if len(df) > MAX_ROWS:
+        df = df.sample(n=MAX_ROWS, random_state=42).reset_index(drop=True)
+        print(f"Sampled to {MAX_ROWS} rows")
     print(f"Dataset shape: {df.shape}")
     return df
 
