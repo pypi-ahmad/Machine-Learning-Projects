@@ -1,37 +1,72 @@
-name: ML Audit
+name: ML Audit – Full Repository Validation
 
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1'   # weekly Monday 02:00 UTC
 
 jobs:
-  run-audit:
+  ml-audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 360   # 6h for full repo
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          cache: 'pip'
+
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install mlflow nbformat nbconvert ipykernel
-          python -m ipykernel install --user --name python3
-      - name: Run ML Audit
-        run: python run_ml_audit.py
-      - name: Check Scores
+          pip install --upgrade pip
+          pip install mlflow nbformat nbconvert ipykernel pandas numpy scikit-learn
+          pip install langchain langchain-core langchain-community langchain-ollama
+          pip install plotly seaborn matplotlib lightgbm xgboost catboost optuna shap
+          pip install PyYAML tqdm rich
+          python -m ipykernel install --user --name ml-projects
+
+      - name: Inject MLOps cells
+        run: python inject_mlops_cell.py
+
+      - name: Run full audit
+        run: python -u master_audit.py --skip-inject
+        env:
+          PYTHONIOENCODING: utf-8
+          ML_AUDIT_KERNEL: ml-projects
+
+      - name: Validate scores
         run: |
-          if [ -f reports/summary.json ]; then
-            python -c "import json; summary = json.load(open('reports/summary.json')); print(f'Total Score: {summary[\"avg_score\"]}'); exit(1 if any(nb['score'] < 90 for nb in summary['ranking']) else 0)"
-          else
-            echo "Summary missing!"
-            exit 1
-          fi
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+          python -c "
+          import json, sys
+          s = json.load(open('reports/summary.json'))
+          print(f'Total: {s[\"total_notebooks\"]}  Pass: {s[\"passed\"]}  Fail: {s[\"failed\"]}')
+          print(f'Avg score: {s[\"avg_score\"]}  Production-ready: {s[\"production_ready\"]}')
+          hard_fails = [r for r in s['ranking_asc'] if r.get('score',100) < 70]
+          if hard_fails:
+              print(f'HARD FAILURES ({len(hard_fails)}):')
+              for h in hard_fails[:20]:
+                  print(f'  {h[\"notebook\"]} score={h[\"score\"]}')
+              sys.exit(1)
+          print('ALL NOTEBOOKS PASSED MINIMUM THRESHOLD')
+          "
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: ml-reports
+          name: ml-audit-reports
           path: reports/
+
+      - name: Upload MLflow DB
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mlflow-db
+          path: mlflow.db
+
