@@ -93,5 +93,35 @@
     "status": "ok",
     "time_s": 238.2,
     "error": null
+  },
+  "Classification/Cotton Disease Prediction/Cotton Disease Prediction.ipynb": {
+    "status": "ok",
+    "time_s": 202.1,
+    "error": null
+  },
+  "Classification/Credit Card Fraud - Imbalanced Dataset/Credit Card Fraud - Imbalanced Dataset.ipynb": {
+    "status": "ok",
+    "time_s": 363.2,
+    "error": null
+  },
+  "Classification/Credit Risk Modeling - German Credit/Credit Risk Modeling - German Credit.ipynb": {
+    "status": "ok",
+    "time_s": 257.9,
+    "error": null
+  },
+  "Classification/Customer Churn Prediction - Telecom/Customer Churn Prediction - Telecom.ipynb": {
+    "status": "ok",
+    "time_s": 257.3,
+    "error": null
+  },
+  "Classification/Customer Lifetime Value Prediction/Customer Lifetime Value Prediction.ipynb": {
+    "status": "ok",
+    "time_s": 262.3,
+    "error": null
+  },
+  "Classification/Customer Segmentation - E-Commerce/Customer Segmentation - E-Commerce.ipynb": {
+    "status": "ok",
+    "time_s": 503.3,
+    "error": null
   }
 }
