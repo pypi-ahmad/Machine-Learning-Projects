@@ -363,8 +363,17 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
     # ── performance: 30 ───────────────────────────────────────────────────────
     difficulty  = estimate_difficulty(nb_path)
     nb_type     = _notebook_type(nb_path)
-    thresholds  = {"EASY": 0.90, "MEDIUM": 0.80, "HARD": 0.70}
-    threshold   = thresholds[difficulty]
+    # Base thresholds (for accuracy/F1/AUC-type metrics)
+    base_thresholds = {"EASY": 0.90, "MEDIUM": 0.80, "HARD": 0.70}
+    # Metric-specific thresholds (override base where metric range differs)
+    METRIC_THRESHOLDS = {
+        "silhouette": 0.30,   # good clustering = 0.3-0.7, 0.5 is excellent
+        "rmse":       None,    # skip — lower-is-better, hard to threshold
+        "mae":        None,    # skip — lower-is-better
+        "mape":       None,    # handled separately via inversion
+        "r2":         0.60,   # R² ≥ 0.6 reasonable regression
+    }
+    threshold   = base_thresholds[difficulty]
     best_metric = None
     best_val    = 0.0
     for k, v in metrics.items():
@@ -375,20 +384,30 @@ def _score_notebook(ran: bool, nb: nbformat.NotebookNode, nb_path: Path, metrics
         elif k in ("val_loss", "test_loss", "val_loss_pattern", "test_loss_pattern"):
             # loss metrics: skip for accuracy comparison; handled via training_detected flag
             continue
+        elif METRIC_THRESHOLDS.get(k.lower()) is None and k.lower() in ("rmse", "mae"):
+            # Skip lower-is-better metrics without domain threshold
+            continue
         elif v > 1.0:
             normed = v / 100  # possibly printed as percentage
         else:
             normed = v
+        # Use metric-specific threshold for normalization
+        metric_threshold = METRIC_THRESHOLDS.get(k.lower(), threshold)
+        # For silhouette / r2: compare against their own threshold for perf_ratio
         if normed > best_val:
             best_val    = normed
             best_metric = k
 
     if best_metric:
-        perf_ratio      = min(best_val / threshold, 1.0)
+        # Use metric-specific threshold for performance ratio calculation
+        effective_threshold = METRIC_THRESHOLDS.get(best_metric.lower(), threshold)
+        if effective_threshold is None:
+            effective_threshold = threshold
+        perf_ratio      = min(best_val / effective_threshold, 1.0)
         scores["performance"] = int(30 * perf_ratio)
-        if best_val < threshold:
+        if best_val < effective_threshold:
             scores["issues"].append(
-                f"Metric {best_metric}={best_val:.4f} below threshold {threshold:.2f} for {difficulty}"
+                f"Metric {best_metric}={best_val:.4f} below threshold {effective_threshold:.2f} for {difficulty}"
             )
     else:
         # Category-based fallback: EDA/LLM/RECOMMENDER/CONCEPTUAL notebooks get performance
