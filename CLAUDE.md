@@ -31,3 +31,4 @@
 - `.claude/rules/ipynb-projects.md`
 - `.claude/rules/single-file-py-projects.md`
 - `.claude/rules/repo-execution-validation.md`
+- `.claude/rules/one-by-one-file-execution.md`

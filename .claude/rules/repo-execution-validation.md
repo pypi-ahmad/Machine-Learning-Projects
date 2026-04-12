@@ -18,16 +18,6 @@ For every future task:
 7. If any error remains, continue fixing and rerunning in a loop until there are zero errors.
 8. Do not stop at partial completion.
 
-## One-by-one file creation rule
-If the user asks to create many `.py` or `.ipynb` files:
-- never use a generator script
-- never use a batch creation script
-- never create helper automation just to generate many files
-- create each target file directly
-- implement each file one by one
-- write the actual content in the file itself
-- verify each file individually
-
 ## Notebook audit rule
 When auditing notebooks:
 - restart kernel
@@ -124,7 +114,6 @@ Also require:
 - no severe divergence
 - no invalid overfitting
 - reasonable train/validation behavior
-- loss curves must converge
 
 ## Baseline rule
 Every model or workflow must be compared against a simple baseline when the task supports it.
