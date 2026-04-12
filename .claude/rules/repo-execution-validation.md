@@ -154,3 +154,17 @@ A task is complete only when:
 - the result meets the task-appropriate standard
 - baseline comparison is shown where relevant
 - no unrelated functionality was broken
+
+## Stricter engineering expectations
+- Prefer deterministic or seeded runs where practical.
+- Prefer idempotent data-loading and setup steps.
+- Prefer explicit error handling over silent fallbacks.
+- Prefer scoped, reviewable changes over sweeping rewrites.
+- Preserve working behavior unless the requested change requires adjustment.
+- Always verify the target path, file type, and project style before editing.
+
+## Review mindset
+- Treat every change as if it will be code-reviewed by a senior engineer.
+- Avoid unnecessary abstractions.
+- Remove duplication only when it is clearly safe.
+- Keep naming, structure, and flow consistent with the surrounding project.

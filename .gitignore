@@ -89,3 +89,5 @@ kaggle.json
 .DS_Store
 Thumbs.db
 desktop.ini
+# Claude Code local preferences (personal, not versioned)
+CLAUDE.local.md
