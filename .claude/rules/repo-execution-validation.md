@@ -75,6 +75,11 @@ Thresholds by difficulty:
 - MEDIUM: primary metric >= 0.80
 - HARD: primary metric >= 0.70
 
+prefer current contAdditional rules:
+- For imbalanced classification, do not rely on accuracy alone
+- Use PR-AUC / Recall / F1 as the main decision metric when appropriate
+- Explicit threshold tuning is required for recall-critical problems
+
 ### Regression
 Use:
 - R2
@@ -101,6 +106,9 @@ Thresholds by difficulty:
 - MEDIUM: silhouette >= 0.50
 - HARD: silhouette >= 0.40
 
+Additional rule:
+- Clusters must be interpretable and clearly described
+
 ### Time series
 Use:
 - MAE
@@ -114,12 +122,21 @@ Thresholds by difficulty:
 - MEDIUM: MAPE <= 20%
 - HARD: MAPE <= 30%
 
+Additional rules:
+- No data leakage
+- Forecast must be visually reasonable against actuals
+- Model must beat naive or seasonal naive baseline clearly
+
 ### Imbalanced fraud / anomaly detection
 Use:
 - PR-AUC
 - Recall
 - threshold tuning
 - calibration if relevant
+
+Thresholds:
+- Prefer PR-AUC >= 0.90 when realistically achievable
+- Or Recall >= 0.90 when recall is the critical objective
 
 Rule:
 - do not rely on accuracy alone
@@ -158,37 +175,37 @@ Threshold:
 Each notebook must receive a score from 0 to 100:
 
 1. Execution: 20
-- runs end-to-end without errors
+   - runs end-to-end without errors
 
 2. Pipeline Completeness: 20
-- data loading
-- preprocessing
-- EDA
-- feature engineering where needed
-- training
-- validation
-- testing
-- evaluation
-- error analysis
-- interpretability where applicable
+   - data loading
+   - preprocessing
+   - EDA
+   - feature engineering where needed
+   - training
+   - validation
+   - testing
+   - evaluation
+   - error analysis
+   - interpretability where applicable
 
 3. Performance: 30
-- meets or exceeds task-specific threshold
+   - meets or exceeds task-specific threshold
 
 4. Code Quality: 10
-- clean, modular, readable
-- no dead code
-- no hardcoded paths
+   - clean, modular, readable
+   - no dead code
+   - no hardcoded paths
 
 5. Reproducibility: 10
-- seeds fixed where appropriate
-- deterministic or controlled behavior where practical
-- environment stability
+   - seeds fixed where appropriate
+   - deterministic or controlled behavior where practical
+   - environment stability
 
 6. MLOps Practices: 10
-- logging
-- artifacts
-- experiment tracking if applicable
+   - logging
+   - artifacts
+   - experiment tracking if applicable
 
 Score interpretation:
 - 90–100: production-ready
@@ -253,6 +270,7 @@ Then:
 - no silent failures
 - no unrelated edits
 - keep implementations reproducible where practical
+- no Google Colab dependence
 
 ## Prioritization rule
 When multiple notebooks need work:

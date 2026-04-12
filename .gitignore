@@ -91,3 +91,7 @@ Thumbs.db
 desktop.ini
 # Claude Code local preferences (personal, not versioned)
 CLAUDE.local.md
+
+# ─── Claude Code Worktrees ────────────────────────────────────────────────────
+.claude/worktrees/
+
