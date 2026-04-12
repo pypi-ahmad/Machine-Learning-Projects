@@ -1,21 +1,30 @@
 # Repository Instructions
 
-## General rules
+## General working rules
 - Make minimal, safe, non-regressive changes.
 - Inspect the target file or project before editing.
 - Do not touch unrelated files or projects.
 - Do not hallucinate datasets, file paths, columns, APIs, outputs, metrics, or features.
 - If something is unclear, inspect first and choose the safest grounded implementation.
+- Prefer educational, reproducible, maintainable outputs.
 
-## Scope rules
-- Use notebook rules only for `.ipynb` projects.
-- Use single-file Python rules only for one-file `.py` projects.
-- Do not mix notebook and `.py` project instructions.
+## Scope discipline
+- Follow shared rules from this file for all work.
+- Follow file-type-specific rules from `.claude/rules/` only when they match the target file type.
+- Do not mix notebook rules into single-file Python projects.
+- Do not mix single-file Python app rules into notebook projects.
 
 ## Git discipline
 - Stage only relevant files.
-- Do not use blanket staging for unrelated work.
-- Do not commit caches, junk files, model weights, or unrelated artifacts.
+- Never use blanket staging for unrelated work.
+- Do not commit caches, generated junk, model weights, or unrelated artifacts.
+- Use clear, scoped commit messages.
+
+## Quality expectations
+- Keep outputs runnable.
+- Keep structure clean and easy to study.
+- Prefer simple, readable solutions over clever ones.
+- Preserve working behavior unless there is a clear, safe reason to improve it.
 
 ## Task workflow
 For every task, first inspect the repository and determine whether the requested functionality already exists.
@@ -47,5 +56,5 @@ Finish only when:
 - no unrelated functionality was broken
 
 ## Rule files
-- `.claude/rules/ipynb-projects.md`
-- `.claude/rules/single-file-py-projects.md`
+- Use `.claude/rules/ipynb-projects.md` for notebook-only projects.
+- Use `.claude/rules/single-file-py-projects.md` for single-file Python projects.

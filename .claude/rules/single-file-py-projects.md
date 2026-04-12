@@ -1,50 +1,47 @@
-# Single-File Python Project Instructions
+# Single-File Python Project Rules
 
-Apply these instructions only when working on single-file Python projects.
+Apply these rules only when the target project is a single-file Python project.
 
-## Scope
-- This rule applies only to single-file `.py` projects.
-- Do not apply these rules to `.ipynb` projects.
-- Do not mix notebook requirements into `.py` projects.
-
-## Output format
+## Hard constraints
 - The project must remain a single `.py` file.
 - Prefer `main.py` unless the project already has a different single-file entrypoint.
 - Do not create notebooks.
-- Do not create helper modules, packages, or multiple Python files.
+- Do not create helper modules, utility modules, packages, or multiple Python files.
 - Do not use FastAPI or Flask.
-- Streamlit is allowed only if a lightweight UI genuinely improves the project.
-- If Streamlit is not needed, prefer CLI or Tkinter.
+- Streamlit is allowed only when a lightweight UI is clearly useful.
+- If Streamlit is not needed, prefer a plain CLI or Tkinter.
+- Work only on the target Python file and any strictly necessary local assets.
+- Do not touch unrelated projects.
 
-## Project size
+## Project size target
 - Keep the project small to medium in scope.
-- The implementation must remain understandable in one file.
-- Avoid designs that genuinely require a multi-file architecture.
+- The entire implementation must stay understandable in one file.
+- Avoid ideas that genuinely require a multi-file architecture.
 
-## Preferred project types
-- CLI utilities
+## Preferred project styles
+- CLI tools
 - Tkinter desktop tools
 - mini games
 - file utilities
-- small dashboards in Streamlit when justified
+- small dashboards in Streamlit when a UI adds real value
 - lightweight demos that are realistic in one file
 
-## Required code structure inside the single file
+## Required code organization inside the single file
 1. Module docstring or file header
 2. Imports
 3. Configuration / constants
 4. Helper functions
-5. Core logic
+5. Core business logic
 6. UI or CLI layer
 7. Main entrypoint
 8. Optional argument parsing or launch block
 
 ## Code quality rules
-- Use clear function boundaries.
+- Use clear function boundaries even inside one file.
 - Avoid giant monolithic functions.
 - Use descriptive variable names.
 - Keep imports minimal.
-- Add comments only where helpful.
+- Add comments only where truly helpful.
 - Add docstrings for major functions when useful.
 - Prefer readability over abstraction.
 
@@ -52,11 +49,11 @@ Apply these instructions only when working on single-file Python projects.
 Use Streamlit only when the project benefits from:
 - forms
 - charts
-- file or image upload
-- lightweight dashboards
-- small model demos
+- image or file upload
+- simple dashboards
+- lightweight model demos
 
-If the project is a calculator, parser, utility, mini game, automation tool, or local helper script, prefer CLI or Tkinter first.
+If the project is a calculator, parser, utility, mini game, automation script, or local helper tool, prefer CLI or Tkinter first.
 
 ## UI rules
 
@@ -66,9 +63,9 @@ If the project is a calculator, parser, utility, mini game, automation tool, or 
 - show helpful error messages
 
 ### If Tkinter
-- keep the UI simple
+- keep the interface simple
 - avoid overengineering
-- keep all logic readable in one file
+- keep the UI readable in one file
 
 ### If Streamlit
 - keep the app simple
@@ -84,7 +81,7 @@ If the project is a calculator, parser, utility, mini game, automation tool, or 
 ## Educational preference
 When the project is for learning:
 - include a top-of-file explanation in a module docstring
-- keep the logic easy to follow
+- keep the flow easy to follow
 - prefer obvious patterns over clever compactness
 
 ## Guardrails

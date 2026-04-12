@@ -1,23 +1,20 @@
-# Notebook-Only Project Instructions
+# Notebook-Only Project Rules
 
-Apply these instructions only when working on notebook-based projects.
+Apply these rules only when the target project is a Jupyter notebook project.
 
-## Scope
-- This rule applies only to `.ipynb` projects.
-- Do not apply these rules to `.py` projects.
-- Do not mix notebook requirements into single-file Python app work.
-
-## Output format
+## Hard constraints
 - Output must be `.ipynb` only.
 - Do not create any `.py` files.
 - Do not move logic into helper scripts.
-- Do not split logic into modules.
-- Do not create app frameworks such as Streamlit, Gradio, Flask, or FastAPI unless the user explicitly changes the project type.
+- Do not add Streamlit, Gradio, Flask, or FastAPI.
+- Keep everything notebook-first and learning-focused.
+- Work only on the target notebook and any strictly necessary local data/artifact folders.
+- Do not touch unrelated notebooks or projects.
+- Keep the notebook runnable top-to-bottom.
 
-## Project purpose
-- The notebook must be educational, reproducible, and easy to study later.
-- It must teach, not just execute.
-- It must run top-to-bottom logically.
+## Notebook purpose
+The notebook must teach, not just run.
+It should read like a guided lab or learning project.
 
 ## Required notebook structure
 1. Title
@@ -51,24 +48,25 @@ Apply these instructions only when working on notebook-based projects.
 
 ## Writing rules
 - Use markdown cells generously.
-- Add markdown explanations before every major code block.
+- Add a markdown explanation before every major code block.
 - Explain why each step is done, not just what it does.
 - Avoid giant unexplained code cells.
-- Keep code clean and easy to learn from.
+- Keep code easy to study later.
 - Use a professional but beginner-friendly tone.
 
 ## Dataset rules
-- Handle dataset loading inside the notebook.
-- If public download is possible, do it in the notebook.
-- If Kaggle is used, include credential setup and fallback guidance.
-- Never assume files already exist locally.
+- Handle dataset download or loading inside the notebook.
+- Prefer public download inside the notebook when practical.
+- If Kaggle is used, add a setup section for credentials and a safe fallback explanation.
+- Never assume the dataset is already present locally.
+- Make loading idempotent.
 - Validate:
   - missing files
   - missing columns
   - malformed rows
   - duplicates
   - target leakage risks
-- Explain the dataset source, target, key columns, and limitations in markdown.
+- Explain dataset source, target, important columns, and limitations in markdown.
 
 ## Evaluation rules
 Choose metrics that fit the notebook task.
@@ -113,10 +111,11 @@ Choose metrics that fit the notebook task.
 - If using forecasting, explain why the chosen library fits.
 
 ## Guardrails
-- No hallucinated datasets, results, metrics, or file paths.
+- No hallucinated results.
 - No fake benchmark scores.
 - No unrelated edits.
-- Preserve working behavior unless there is a clear and safe reason to improve it.
+- No hidden assumptions about files or credentials.
+- Preserve working behavior unless there is a clear reason to improve it safely.
 
 ## Final checks
 Before finishing:
