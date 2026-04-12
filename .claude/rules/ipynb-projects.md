@@ -1,6 +1,6 @@
 # Notebook-Only Project Rules
 
-Apply these rules only when the target project is a Jupyter notebook project.
+Apply these rules only when working on notebook-based projects.
 
 ## Hard constraints
 - Output must be `.ipynb` only.
@@ -14,7 +14,7 @@ Apply these rules only when the target project is a Jupyter notebook project.
 
 ## Notebook purpose
 The notebook must teach, not just run.
-It should read like a guided lab or learning project.
+It should feel like a guided lab or learning project.
 
 ## Required notebook structure
 1. Title
@@ -57,7 +57,7 @@ It should read like a guided lab or learning project.
 ## Dataset rules
 - Handle dataset download or loading inside the notebook.
 - Prefer public download inside the notebook when practical.
-- If Kaggle is used, add a setup section for credentials and a safe fallback explanation.
+- If Kaggle is used, include credential setup and a safe fallback explanation.
 - Never assume the dataset is already present locally.
 - Make loading idempotent.
 - Validate:
@@ -66,7 +66,7 @@ It should read like a guided lab or learning project.
   - malformed rows
   - duplicates
   - target leakage risks
-- Explain dataset source, target, important columns, and limitations in markdown.
+- Explain dataset source, target, key columns, and limitations in markdown.
 
 ## Evaluation rules
 Choose metrics that fit the notebook task.
@@ -114,8 +114,7 @@ Choose metrics that fit the notebook task.
 - No hallucinated results.
 - No fake benchmark scores.
 - No unrelated edits.
-- No hidden assumptions about files or credentials.
-- Preserve working behavior unless there is a clear reason to improve it safely.
+- Preserve working behavior unless there is a clear and safe reason to improve it.
 
 ## Final checks
 Before finishing:

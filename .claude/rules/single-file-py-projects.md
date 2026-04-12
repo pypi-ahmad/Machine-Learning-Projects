@@ -1,6 +1,6 @@
 # Single-File Python Project Rules
 
-Apply these rules only when the target project is a single-file Python project.
+Apply these rules only when working on single-file Python projects.
 
 ## Hard constraints
 - The project must remain a single `.py` file.
@@ -8,22 +8,22 @@ Apply these rules only when the target project is a single-file Python project.
 - Do not create notebooks.
 - Do not create helper modules, utility modules, packages, or multiple Python files.
 - Do not use FastAPI or Flask.
-- Streamlit is allowed only when a lightweight UI is clearly useful.
-- If Streamlit is not needed, prefer a plain CLI or Tkinter.
+- Streamlit is allowed only when a lightweight UI genuinely improves the project.
+- If Streamlit is not needed, prefer CLI or Tkinter.
 - Work only on the target Python file and any strictly necessary local assets.
 - Do not touch unrelated projects.
 
 ## Project size target
 - Keep the project small to medium in scope.
-- The entire implementation must stay understandable in one file.
+- The implementation must remain understandable in one file.
 - Avoid ideas that genuinely require a multi-file architecture.
 
-## Preferred project styles
+## Preferred project types
 - CLI tools
 - Tkinter desktop tools
 - mini games
 - file utilities
-- small dashboards in Streamlit when a UI adds real value
+- small dashboards in Streamlit when justified
 - lightweight demos that are realistic in one file
 
 ## Required code organization inside the single file
@@ -37,11 +37,11 @@ Apply these rules only when the target project is a single-file Python project.
 8. Optional argument parsing or launch block
 
 ## Code quality rules
-- Use clear function boundaries even inside one file.
+- Use clear function boundaries.
 - Avoid giant monolithic functions.
 - Use descriptive variable names.
 - Keep imports minimal.
-- Add comments only where truly helpful.
+- Add comments only where helpful.
 - Add docstrings for major functions when useful.
 - Prefer readability over abstraction.
 
@@ -49,11 +49,11 @@ Apply these rules only when the target project is a single-file Python project.
 Use Streamlit only when the project benefits from:
 - forms
 - charts
-- image or file upload
-- simple dashboards
-- lightweight model demos
+- file or image upload
+- lightweight dashboards
+- small model demos
 
-If the project is a calculator, parser, utility, mini game, automation script, or local helper tool, prefer CLI or Tkinter first.
+If the project is a calculator, parser, utility, mini game, automation tool, or local helper script, prefer CLI or Tkinter first.
 
 ## UI rules
 
@@ -63,9 +63,9 @@ If the project is a calculator, parser, utility, mini game, automation script, o
 - show helpful error messages
 
 ### If Tkinter
-- keep the interface simple
+- keep the UI simple
 - avoid overengineering
-- keep the UI readable in one file
+- keep all logic readable in one file
 
 ### If Streamlit
 - keep the app simple
@@ -81,7 +81,7 @@ If the project is a calculator, parser, utility, mini game, automation script, o
 ## Educational preference
 When the project is for learning:
 - include a top-of-file explanation in a module docstring
-- keep the flow easy to follow
+- keep the logic easy to follow
 - prefer obvious patterns over clever compactness
 
 ## Guardrails
