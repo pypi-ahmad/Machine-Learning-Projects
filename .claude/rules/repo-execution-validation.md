@@ -145,6 +145,7 @@ Then:
 - no silent failures
 - no unrelated edits
 - keep implementations reproducible where practical
+- For multi-file tasks, file-by-file direct implementation is mandatory; generator scripts and bulk file automation are forbidden unless explicitly requested by the user.
 
 ## Final completion rule
 A task is complete only when:

@@ -26,6 +26,7 @@
 - If it exists but is incomplete, incorrect, not as instructed, or has errors, fix it.
 - After creating or fixing anything, run it and validate it.
 - If errors remain, continue fixing and rerunning until there are zero errors.
+- Use `.claude/rules/one-by-one-file-execution.md` whenever a task involves multiple file creations or edits.
 
 ## Rule files
 - `.claude/rules/ipynb-projects.md`

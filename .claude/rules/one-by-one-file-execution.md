@@ -35,7 +35,7 @@ For each requested file:
 - No bulk templating scripts
 - No mass search-and-replace across many targets without explicit permission
 - No writing one script that outputs many final `.py` or `.ipynb` files
-- No temporary automation used to bypass one-by-one implementation
+- No "temporary automation" used to bypass one-by-one implementation
 
 ## Allowed approach
 - Directly create the actual target file.
