@@ -15,25 +15,10 @@
 - Do not mix `.py` app instructions into notebook projects.
 
 ## Git discipline
-- Never use `git add -A`.
 - Stage only relevant files.
 - Never use blanket staging for unrelated work.
 - Do not commit caches, model weights, temporary files, or unrelated artifacts.
 - Use clean, scoped commit messages.
-
-## Dataset preferences
-- Use Kaggle as the default source to download datasets.
-- All datasets must be downloaded programmatically inside the running code itself (not manually or ahead of time).
-
-## Model and library preferences
-- Always use the latest and best models available as of April 2026.
-- Use FLAML for AutoML wherever possible.
-- Use LazyPredict for quick baseline comparison wherever possible.
-- For YOLO tasks, prefer `yolo26m` as the default model.
-
-## Hardware and runtime preferences
-- Always use local GPU / CUDA by default wherever possible.
-- Prefer local Ollama for LLM inference wherever possible.
 
 ## Execution discipline
 - Before creating something new, check whether it already exists.
@@ -42,10 +27,7 @@
 - After creating or fixing anything, run it and validate it.
 - If errors remain, continue fixing and rerunning until there are zero errors.
 
-## Documentation discipline
-- After every task execution, update `README.md` and `USAGE.md` at the repository root.
-- Keep both files professional, intelligent, and FAANG-grade in quality.
-- `README.md` must accurately describe what this repo is, its structure, projects, and how to get started.
-- `USAGE.md` must explain how to use the repo: setup, running projects, dependencies, and workflows.
-- Only update sections relevant to the work just completed — do not rewrite unrelated parts.
-- Keep content grounded in what actually exists — never describe features or projects that do not exist yet.
+## Rule files
+- `.claude/rules/ipynb-projects.md`
+- `.claude/rules/single-file-py-projects.md`
+- `.claude/rules/repo-execution-validation.md`
