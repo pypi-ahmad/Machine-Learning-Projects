@@ -26,10 +26,473 @@
 - If it exists but is incomplete, incorrect, not as instructed, or has errors, fix it.
 - After creating or fixing anything, run it and validate it.
 - If errors remain, continue fixing and rerunning until there are zero errors.
-- Use `.claude/rules/one-by-one-file-execution.md` whenever a task involves multiple file creations or edits.
 
-## Rule files
-- `.claude/rules/ipynb-projects.md`
-- `.claude/rules/single-file-py-projects.md`
-- `.claude/rules/repo-execution-validation.md`
-- `.claude/rules/one-by-one-file-execution.md`
+---
+
+# Notebook-Only Project Rules
+
+Apply these rules only when working on notebook-based projects.
+
+## Hard constraints
+- Output must be `.ipynb` only.
+- Do not create any `.py` files.
+- Do not move logic into helper scripts.
+- Do not add Streamlit, Gradio, Flask, or FastAPI.
+- Keep everything notebook-first and learning-focused.
+- Work only on the target notebook and any strictly necessary local data/artifact folders.
+- Do not touch unrelated notebooks or projects.
+- Keep the notebook runnable top-to-bottom.
+
+## Notebook purpose
+The notebook must teach, not just run.
+It should feel like a guided lab or learning project.
+
+## Required notebook structure
+1. Title
+2. Project overview
+3. Learning objectives
+4. Problem statement
+5. Why this project matters
+6. Dataset overview
+7. Dataset source and license notes
+8. Environment setup
+9. Imports
+10. Configuration / constants
+11. Dataset download and loading
+12. Data validation checks
+13. Data cleaning / preprocessing
+14. Exploratory data analysis
+15. Task-specific preparation
+16. Baseline approach
+17. Main workflow / model / method
+18. Training or execution
+19. Inference / outputs / examples
+20. Evaluation
+21. Error analysis
+22. Interpretation / insights
+23. Limitations
+24. How to improve this project
+25. Production considerations
+26. Common mistakes
+27. Mini challenge / exercises
+28. Final summary / key takeaways
+
+## Writing rules
+- Use markdown cells generously.
+- Add a markdown explanation before every major code block.
+- Explain why each step is done, not just what it does.
+- Avoid giant unexplained code cells.
+- Keep code easy to study later.
+- Use a professional but beginner-friendly tone.
+
+## Dataset rules (notebooks)
+- Handle dataset download or loading inside the notebook.
+- Prefer public download inside the notebook when practical.
+- If Kaggle is used, include credential setup and a safe fallback explanation.
+- Never assume the dataset is already present locally.
+- Make loading idempotent.
+- Validate:
+  - missing files
+  - missing columns
+  - malformed rows
+  - duplicates
+  - target leakage risks
+- Explain dataset source, target, key columns, and limitations in markdown.
+
+## Evaluation rules (notebooks)
+Choose metrics that fit the notebook task.
+
+### Classification
+- accuracy
+- precision
+- recall
+- F1
+- confusion matrix
+- ROC-AUC when meaningful
+- PR-AUC when imbalance matters
+
+### Regression
+- RMSE
+- MAE
+- R2
+- residual analysis
+
+### Time series
+- time-aware split
+- MAE
+- RMSE
+- MAPE or sMAPE where appropriate
+- naive / seasonal naive baseline where possible
+
+### Retrieval / RAG
+- retrieval quality
+- groundedness / source support
+- qualitative failure cases
+
+### Generation / summarization
+- qualitative comparison
+- prompt variation comparison where relevant
+- explicit limitations
+
+## Modeling rules (notebooks)
+- Start with a baseline when applicable.
+- Use LazyPredict only where appropriate: classification and regression.
+- Use FLAML where appropriate.
+- For time series, do not misuse LazyPredict as a native forecasting framework.
+- If using forecasting, explain why the chosen library fits.
+
+## Guardrails (notebooks)
+- No hallucinated results.
+- No fake benchmark scores.
+- No unrelated edits.
+- Preserve working behavior unless there is a clear and safe reason to improve it.
+
+## Final checks (notebooks)
+Before finishing:
+- verify the output is `.ipynb` only
+- verify no `.py` files were created
+- verify the notebook runs logically top-to-bottom
+- verify all required sections exist
+- verify evaluation matches the task
+- verify explanations are strong and grounded
+
+---
+
+# Single-File Python Project Rules
+
+Apply these rules only when working on single-file Python projects.
+
+## Hard constraints
+- The project must remain a single `.py` file.
+- Prefer `main.py` unless the project already has a different single-file entrypoint.
+- Do not create notebooks.
+- Do not create helper modules, utility modules, packages, or multiple Python files.
+- Do not use FastAPI or Flask.
+- Streamlit is allowed only when a lightweight UI genuinely improves the project.
+- If Streamlit is not needed, prefer CLI or Tkinter.
+- Work only on the target Python file and any strictly necessary local assets.
+- Do not touch unrelated projects.
+
+## Project size target
+- Keep the project small to medium in scope.
+- The implementation must remain understandable in one file.
+- Avoid ideas that genuinely require a multi-file architecture.
+
+## Preferred project types
+- CLI tools
+- Tkinter desktop tools
+- mini games
+- file utilities
+- small dashboards in Streamlit when justified
+- lightweight demos that are realistic in one file
+
+## Required code organization inside the single file
+1. Module docstring or file header
+2. Imports
+3. Configuration / constants
+4. Helper functions
+5. Core business logic
+6. UI or CLI layer
+7. Main entrypoint
+8. Optional argument parsing or launch block
+
+## Code quality rules
+- Use clear function boundaries.
+- Avoid giant monolithic functions.
+- Use descriptive variable names.
+- Keep imports minimal.
+- Add comments only where helpful.
+- Add docstrings for major functions when useful.
+- Prefer readability over abstraction.
+
+## Streamlit rule
+Use Streamlit only when the project benefits from:
+- forms
+- charts
+- file or image upload
+- lightweight dashboards
+- small model demos
+
+If the project is a calculator, parser, utility, mini game, automation tool, or local helper script, prefer CLI or Tkinter first.
+
+## UI rules
+
+### If CLI
+- use clear prompts
+- validate inputs
+- show helpful error messages
+
+### If Tkinter
+- keep the UI simple
+- avoid overengineering
+- keep all logic readable in one file
+
+### If Streamlit
+- keep the app simple
+- do not turn it into a platform
+- keep it runnable from one script only
+
+## Data and file handling
+- Avoid hardcoded absolute paths.
+- Use relative paths or user input.
+- Validate file existence before reading.
+- Fail clearly and safely.
+
+## Educational preference
+When the project is for learning:
+- include a top-of-file explanation in a module docstring
+- keep the logic easy to follow
+- prefer obvious patterns over clever compactness
+
+## Guardrails (single-file)
+- No unrelated edits.
+- No extra `.py` files.
+- No notebooks.
+- No hidden side effects.
+- No fake functionality.
+- No unnecessary dependencies.
+
+## Final checks (single-file)
+Before finishing:
+- verify there is only one Python file for the project
+- verify the file is runnable
+- verify no notebook was added
+- verify no FastAPI or Flask was added
+- verify Streamlit is used only if justified
+- verify the code remains readable and maintainable
+
+---
+
+# Repository Execution, Validation, and Quality Rules
+
+Apply these rules whenever the task involves creating, fixing, validating, or auditing repository work.
+
+## Existence-first rule
+For every future task:
+
+1. First inspect the repository and determine whether the requested functionality, file, feature, notebook, script, or workflow already exists.
+2. If it exists, verify that it:
+   - is fully implemented
+   - matches the instructions exactly
+   - runs successfully
+   - has zero errors
+3. If all of the above are true, skip reimplementation.
+4. If it is missing, create it.
+5. If it exists but is incomplete, incorrect, not as instructed, not runnable, or throws errors, then fix it.
+6. After any creation or fix, run it and validate it.
+7. If any error remains, continue fixing and rerunning in a loop until there are zero errors.
+8. Do not stop at partial completion.
+
+## Notebook audit rule
+When auditing notebooks:
+- restart kernel
+- run all cells
+- if any issue exists, fix it and rerun
+- continue until all targeted notebooks pass the requested checks
+
+## Metric and threshold rule
+Use task-appropriate metrics.
+Do not force one generic metric on all tasks.
+
+### Classification
+Use:
+- accuracy
+- precision
+- recall
+- F1
+- ROC-AUC when meaningful
+- PR-AUC when imbalance matters
+- confusion matrix
+
+Thresholds by difficulty:
+- EASY: primary metric >= 0.90
+- MEDIUM: primary metric >= 0.80
+- HARD: primary metric >= 0.70
+
+### Regression
+Use:
+- R2
+- RMSE
+- MAE
+- residual analysis
+
+Thresholds by difficulty:
+- EASY: R2 >= 0.90
+- MEDIUM: R2 >= 0.75
+- HARD: R2 >= 0.60
+
+Additional rule:
+- RMSE / MAE must be at least 30–50% better than a naive baseline where that comparison makes sense
+
+### Clustering
+Use:
+- silhouette score
+- cluster separation quality
+- interpretability
+
+Thresholds by difficulty:
+- EASY: silhouette >= 0.60
+- MEDIUM: silhouette >= 0.50
+- HARD: silhouette >= 0.40
+
+Additional rule:
+- Clusters must be interpretable and clearly described
+
+### Time series
+Use:
+- MAE
+- RMSE
+- MAPE or sMAPE where appropriate
+- leakage-safe time splits
+- baseline comparison vs naive / seasonal naive
+
+Thresholds by difficulty:
+- EASY: MAPE <= 10%
+- MEDIUM: MAPE <= 20%
+- HARD: MAPE <= 30%
+
+Additional rules:
+- No data leakage
+- Forecast must be visually reasonable against actuals
+- Model must beat naive or seasonal naive baseline clearly
+
+### Imbalanced fraud / anomaly detection
+Use:
+- PR-AUC
+- Recall
+- threshold tuning
+- calibration if relevant
+
+Thresholds:
+- Prefer PR-AUC >= 0.90 when realistically achievable
+- Or Recall >= 0.90 when recall is the critical objective
+
+Rule:
+- do not rely on accuracy alone
+
+### NLP / CV / deep learning
+If classification-based:
+- follow classification thresholds above
+
+Also require:
+- stable training
+- no severe divergence
+- no invalid overfitting
+- reasonable train/validation behavior
+
+## Baseline rule
+Every model or workflow must be compared against a simple baseline when the task supports it.
+Final output must clearly improve over that baseline.
+
+## Improvement loop
+If the implementation:
+- fails to run
+- gives errors
+- uses wrong metrics
+- performs weakly
+- does not meet the required threshold
+- does not beat the baseline where relevant
+
+Then:
+1. identify the root cause
+2. fix preprocessing / data / leakage / logic issues
+3. improve features or model choice
+4. tune and compare alternatives
+5. rerun from scratch
+6. reevaluate
+7. repeat until the result is strong and error-free
+
+## Engineering rules
+- no hardcoded paths
+- no dead code
+- no missing dependencies
+- no hidden assumptions
+- no silent failures
+- no unrelated edits
+- keep implementations reproducible where practical
+- For multi-file tasks, file-by-file direct implementation is mandatory; generator scripts and bulk file automation are forbidden unless explicitly requested by the user.
+
+## Final completion rule
+A task is complete only when:
+- the requested work exists
+- it matches the instructions
+- it runs successfully
+- it has zero errors
+- the correct metrics are used
+- the result meets the task-appropriate standard
+- baseline comparison is shown where relevant
+- no unrelated functionality was broken
+
+## Stricter engineering expectations
+- Prefer deterministic or seeded runs where practical.
+- Prefer idempotent data-loading and setup steps.
+- Prefer explicit error handling over silent fallbacks.
+- Prefer scoped, reviewable changes over sweeping rewrites.
+- Preserve working behavior unless the requested change requires adjustment.
+- Always verify the target path, file type, and project style before editing.
+
+## Review mindset
+- Treat every change as if it will be code-reviewed by a senior engineer.
+- Avoid unnecessary abstractions.
+- Remove duplication only when it is clearly safe.
+- Keep naming, structure, and flow consistent with the surrounding project.
+
+---
+
+# One-by-One File Creation and Editing Rule
+
+Apply this rule whenever the task involves creating, editing, fixing, or updating multiple files.
+
+## Core rule
+- Work on files one by one.
+- Do not use bulk generation.
+- Do not use scripts, generators, batch writers, scaffolding code, or automation to create many files at once.
+- Do not write a helper script whose main purpose is to generate or modify multiple target files.
+- Do not programmatically mass-edit files unless the user explicitly asks for that approach.
+
+## Required workflow
+For each requested file:
+
+1. Identify the exact target file.
+2. Check whether it already exists.
+3. If it exists:
+   - inspect it
+   - verify whether it already satisfies the requested instructions
+   - verify whether it runs or works correctly
+4. If it is already correct and fully working, skip unnecessary rewrite.
+5. If it is missing, create that file directly.
+6. If it exists but is incomplete, incorrect, broken, or not as instructed, fix that file directly.
+7. After editing or creating that file, validate it individually.
+8. Then move to the next file.
+
+## Validation rule
+- Validate each file individually after working on it.
+- Do not defer validation until the very end if the file can be checked earlier.
+- If the file has errors, fix that same file and revalidate before moving on.
+
+## Forbidden approaches
+- No generator scripts
+- No batch file creation scripts
+- No bulk templating scripts
+- No mass search-and-replace across many targets without explicit permission
+- No writing one script that outputs many final `.py` or `.ipynb` files
+- No "temporary automation" used to bypass one-by-one implementation
+
+## Allowed approach
+- Directly create the actual target file.
+- Directly write the actual final content into that file.
+- Directly edit the actual target file when fixing or improving it.
+- Repeat file by file until all requested files are done.
+
+## Quality rule
+- Each file must be treated as a real deliverable, not as generated boilerplate.
+- Keep each file aligned with the specific instructions for that file type and project type.
+- Prefer correctness, validation, and stability over speed.
+
+## Completion rule
+A multi-file task is complete only when:
+- every requested file has been handled individually
+- every file is created or fixed directly
+- every file has been validated individually
+- no bulk-generation method was used
+- no unrelated files were modified
