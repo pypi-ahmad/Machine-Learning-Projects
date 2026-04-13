@@ -1,5 +1,8 @@
 # AGENTS.md
 
+## Testing rule
+- No pytest testing will be used from now. Validate by running the target file directly (e.g., `python pipeline.py`).
+
 ## Architecture
 
 This is a **315-project ML monorepo** organized into 23 problem families (Classification, Regression, NLP, Computer Vision, etc.). Each family folder contains self-contained project subdirectories with a `pipeline.py` entrypoint.
@@ -16,7 +19,7 @@ Shared infrastructure lives in the repo root:
 
 | Type | Output | Rules |
 |------|--------|-------|
-| **Notebook** (`.ipynb`) | Learning-focused notebook only | No `.py` files, no web frameworks, must follow 28-section structure (see `CLAUDE.md`) |
+| **Notebook** (`.ipynb`) | Learning-focused notebook only | No `.py` files, no web frameworks, must follow 30-section structure (see `CLAUDE.md`) |
 | **Single-file Python** | One `main.py` or `pipeline.py` | No notebooks, no multi-file packages, prefer CLI/Tkinter over Streamlit |
 
 Determine the type by inspecting the target folder before editing. Notebook projects live alongside legacy `.ipynb` files. Pipeline projects have `pipeline.py`.
@@ -120,16 +123,22 @@ Apply these rules only when working on notebook-based projects.
 - Do not create any `.py` files.
 - Do not move logic into helper scripts.
 - Do not add Streamlit, Gradio, Flask, or FastAPI.
+- Do not build apps or dashboards.
 - Keep everything notebook-first and learning-focused.
+- Keep all notebooks educational, professional, and reproducible.
 - Work only on the target notebook and any strictly necessary local data/artifact folders.
 - Do not touch unrelated notebooks or projects.
 - Keep the notebook runnable top-to-bottom.
+- Do not hallucinate datasets, columns, targets, or metrics.
+- If a dataset is public, download it inside the notebook when practical.
+- If a dataset cannot be auto-downloaded, explain the fallback path clearly in markdown.
+- Do not break anything already in the repo.
 
 ## Notebook purpose
 The notebook must teach, not just run.
 It should feel like a guided lab or learning project.
 
-## Required notebook structure
+## Required notebook structure (30 sections)
 1. Title
 2. Project overview
 3. Learning objectives
@@ -140,24 +149,26 @@ It should feel like a guided lab or learning project.
 8. Environment setup
 9. Imports
 10. Configuration / constants
-11. Dataset download and loading
+11. Dataset download or loading
 12. Data validation checks
-13. Data cleaning / preprocessing
-14. Exploratory data analysis
-15. Task-specific preparation
-16. Baseline approach
-17. Main workflow / model / method
-18. Training or execution
-19. Inference / outputs / examples
-20. Evaluation
-21. Error analysis
-22. Interpretation / insights
-23. Limitations
-24. How to improve this project
-25. Production considerations
-26. Common mistakes
-27. Mini challenge / exercises
-28. Final summary / key takeaways
+13. Exploratory data analysis
+14. Target analysis
+15. Train/validation/test split strategy
+16. Preprocessing strategy
+17. Feature engineering
+18. Baseline model
+19. LazyPredict benchmark
+20. FLAML AutoML run
+21. Top 3 model selection
+22. Final training and evaluation of top 3
+23. Error analysis
+24. Interpretation and business insight
+25. Limitations
+26. How to improve this project
+27. Production considerations
+28. Common mistakes
+29. Mini challenge / exercises
+30. Final summary / key takeaways
 
 ## Writing rules
 - Use markdown cells generously.
@@ -181,6 +192,24 @@ It should feel like a guided lab or learning project.
   - target leakage risks
 - Explain dataset source, target, key columns, and limitations in markdown.
 
+## Kaggle download rules (notebooks)
+- Use Kaggle API or `kagglehub` inside the notebook when practical.
+- Add a setup cell that checks for Kaggle credentials.
+- Expect `KAGGLE_API_TOKEN` in system environment variables.
+- Do not silently fail — raise a clear error if credentials are missing.
+- Keep dataset download reproducible and easy to rerun.
+
+## Preprocessing rules (notebooks)
+- Split the data before fitting preprocessors to avoid leakage.
+- Handle missing values properly — explicit strategy (impute, drop, flag), explained in markdown.
+- Handle categorical encoding properly — choose encoder per feature cardinality.
+- Handle scaling only where needed — tree models skip it; distance-based / linear models get it.
+- Handle outliers when relevant — IQR, z-score, capping, or domain-specific logic.
+- Handle class imbalance when relevant — SMOTE, class weights, or stratified sampling.
+- Use `sklearn.pipeline.Pipeline` or `ColumnTransformer` wherever reasonable.
+- Use Feature-engine or sklearn preprocessing tools where helpful.
+- Explain all preprocessing decisions in markdown before the code cell.
+
 ## Evaluation rules (notebooks)
 Choose metrics that fit the notebook task.
 
@@ -192,12 +221,14 @@ Choose metrics that fit the notebook task.
 - confusion matrix
 - ROC-AUC when meaningful
 - PR-AUC when imbalance matters
+- class distribution discussion
 
 ### Regression
 - RMSE
 - MAE
 - R2
 - residual analysis
+- target distribution discussion
 
 ### Time series
 - time-aware split
@@ -205,6 +236,7 @@ Choose metrics that fit the notebook task.
 - RMSE
 - MAPE or sMAPE where appropriate
 - naive / seasonal naive baseline where possible
+- forecast error interpretation
 
 ### Retrieval / RAG
 - retrieval quality
@@ -216,12 +248,43 @@ Choose metrics that fit the notebook task.
 - prompt variation comparison where relevant
 - explicit limitations
 
+### General evaluation rules
+- Explain what each metric means.
+- Explain which metric matters most for the specific project.
+- Compare baseline vs LazyPredict candidates vs FLAML vs top 3 final models.
+- Do not fake results.
+- Do not claim production-readiness without justification.
+
+## Project design philosophy
+- These projects are for learning machine learning properly.
+- Prefer realistic tabular datasets and business/scientific use cases.
+- Use LazyPredict only where appropriate: classification and regression.
+- Use FLAML where appropriate: classification, regression, and optionally time-series forecasting.
+- For each classification/regression project:
+  1. Perform full EDA.
+  2. Perform data cleaning and preprocessing.
+  3. Create a baseline model.
+  4. Run LazyPredict benchmark.
+  5. Run FLAML AutoML.
+  6. Identify the top 3 models.
+  7. Train/evaluate those top 3 properly.
+  8. Compare results.
+  9. Explain tradeoffs.
+- For time-series projects:
+  - Use FLAML if appropriate.
+  - Do not force LazyPredict if it does not naturally fit.
+  - Keep the notebook honest about tool fit.
+
 ## Modeling rules (notebooks)
 - Start with a baseline when applicable.
 - Use LazyPredict only where appropriate: classification and regression.
-- Use FLAML where appropriate.
+- LazyPredict is for quick benchmark comparison only — not final model selection.
+- Use FLAML where appropriate — it handles AutoML search and optimization.
+- Final top 3 models should be selected using actual results, not assumptions.
+- If FLAML and LazyPredict disagree on top models, explain why.
 - For time series, do not misuse LazyPredict as a native forecasting framework.
 - If using forecasting, explain why the chosen library fits.
+- Keep the notebook educational rather than just chasing the highest score.
 
 ## Guardrails (notebooks)
 - No hallucinated results.
