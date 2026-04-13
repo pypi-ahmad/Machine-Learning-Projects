@@ -8,5 +8,5 @@ has_dataset: false
 has_legacy_deps: true
 duplicate_of: null
 source_dir: "Source Code"
-phase1b: "notebook-only, no script changes"
-notes: "Notebook-only; tf.keras MobileNetV2"
+phase1b: "modern detection wrapper and trainer aligned; legacy notebook retained"
+notes: "Legacy MobileNetV2 notebook retained, but modern method is YOLO detection with SIFT fallback"

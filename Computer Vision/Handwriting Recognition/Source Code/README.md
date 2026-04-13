@@ -1,22 +1,22 @@
 # Handwriting Recognition
 
-> **Task:** Classification &nbsp;|&nbsp; **Key:** `handwriting_recognition` &nbsp;|&nbsp; **Framework:** Ultralytics YOLO26-cls
+> **Task:** OCR &nbsp;|&nbsp; **Key:** `handwriting_recognition` &nbsp;|&nbsp; **Framework:** TrOCR / PaddleOCR
 
 ---
 
 ## Overview
 
-Classifies handwritten characters/digits. Legacy code used a custom TF/Keras HTR CNN+RNN. Modern wrapper uses YOLO26-cls.
+Recognizes handwritten text from images. The modern pipeline is OCR-first: TrOCR is the preferred recognizer for handwritten lines or words, with PaddleOCR as a broader fallback stack when TrOCR is unavailable.
 
 ## Technology
 
 | Aspect | Details |
 |--------|---------|
-| **Task Type** | Classification (`cls`) |
+| **Task Type** | OCR (`ocr`) |
 | **Legacy Stack** | Custom TF/Keras HTR CNN+RNN |
-| **Modern Stack** | Ultralytics YOLO26-cls |
-| **Dataset** | EMNIST (manual download) |
-| **Key Metrics** | accuracy, CER |
+| **Modern Stack** | TrOCR (`microsoft/trocr-base-handwritten`) with PaddleOCR fallback |
+| **Dataset** | IAM Handwriting Database (manual registration/download) |
+| **Key Metrics** | CER, WER, qualitative OCR review |
 | **Download** | manual_page (enabled: no) |
 
 ## Project Structure
@@ -40,42 +40,40 @@ discover_projects()
 result = run("handwriting_recognition", "path/to/image.jpg")
 ```
 
-**How it works:** `modern.py` calls `resolve("handwriting_recognition", "cls")` to find the best available weights (custom-trained first, then Ultralytics `yolo26n-cls.pt` default). It then loads the model via `load_yolo(weights)` and runs `self.model(input_data, verbose=False)`.  Visualize with `output[0].plot()`.
+**How it works:** `modern.py` loads TrOCR first and generates text autoregressively from the image. If the HuggingFace TrOCR stack is not installed, the project falls back to PaddleOCR and returns recognized lines plus bounding boxes for visualization.
 
 ### Training
+
+The packaged `train.py` script is retained only as a **legacy closed-set character-classification baseline**. It is not the recommended path for line/word handwriting OCR.
+
+If you want to study or compare against that baseline:
 
 ```bash
 cd "Handwriting Recognition/Source Code"
 python train.py --epochs 25 --model resnet18
 ```
 
-Delegates to `train.train_classification.train_classification()` (torchvision transfer learning).
-Trained weights are auto-registered in `ModelRegistry`.
-
-```python
-from train.train_classification import train_classification
-train_classification(data_dir="data/handwriting_recognition", model_name="resnet18", epochs=25)
-```
+For the modern OCR pipeline, use `modern.py` for inference and treat TrOCR / PaddleOCR as the primary method.
 
 ### Dataset
 
-Config: `configs/datasets/handwriting_recognition.yaml`
+Dataset registration is required. Download the IAM Handwriting Database from:
 
-> **Manual download required.** Visit [https://www.nist.gov/itl/products-and-services/emnist-dataset](https://www.nist.gov/itl/products-and-services/emnist-dataset), then place files into `data/handwriting_recognition/`.
+- [IAM Handwriting Database](http://www.fki.inf.unibe.ch/databases/iam-handwriting-database)
+
+Then extract it into `data/handwriting_recognition/`.
 
 ```bash
 python -m utils.data_downloader handwriting_recognition       # download (if enabled)
 python scripts/validate_datasets.py          # status report
 ```
 
-### Evaluate Accuracy
+### Evaluation Notes
 
-```bash
-python -m benchmarks.evaluate_accuracy --project handwriting_recognition
-```
+For OCR work, prefer character error rate (CER), word error rate (WER), and qualitative review of failure cases instead of plain image-classification accuracy.
 
 ## Links
 
 - [Root README](../../README.md)
 - [Project Inventory](../../reports/PROJECT_INVENTORY.md)
-- [Dataset Config](../../configs/datasets/handwriting_recognition.yaml)
+- [Dataset Resolver Entry](../../utils/datasets.py)

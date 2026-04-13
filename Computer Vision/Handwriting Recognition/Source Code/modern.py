@@ -24,7 +24,7 @@ from core.registry import register
 
 @register("handwriting_recognition")
 class HandwritingRecognitionModern(CVProject):
-    project_type = "classification"
+    project_type = "ocr"
     description = "Handwritten text recognition (sequence-to-sequence OCR)"
     legacy_tech = "Custom TF/Keras HTR CNN+RNN"
     modern_tech = "TrOCR (HuggingFace) / PaddleOCR"

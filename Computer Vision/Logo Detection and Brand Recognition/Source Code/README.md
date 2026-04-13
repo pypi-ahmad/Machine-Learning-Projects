@@ -1,23 +1,23 @@
 # Logo Detection and Brand Recognition
 
-> **Task:** Classification &nbsp;|&nbsp; **Key:** `logo_detection` &nbsp;|&nbsp; **Framework:** Ultralytics YOLO26-cls
+> **Task:** Detection / matching &nbsp;|&nbsp; **Key:** `logo_detection` &nbsp;|&nbsp; **Framework:** YOLO26m detect + SIFT fallback
 
 ---
 
 ## Overview
 
-Classifies brand logos from images. Legacy code used MobileNetV2 in a notebook.
+Detects logos inside scenes and supports optional brand recognition. The modern pipeline is detection-first: use custom YOLO logo weights when available, or fall back to SIFT template matching for known logos.
 
 ## Technology
 
 | Aspect | Details |
 |--------|---------|
-| **Task Type** | Classification (`cls`) |
+| **Task Type** | Detection (`detect`) with optional brand matching |
 | **Legacy Stack** | MobileNetV2 (notebook) |
-| **Modern Stack** | Ultralytics YOLO26-cls |
-| **Dataset** | FlickrLogos-32 / custom (manual download) |
-| **Key Metrics** | accuracy |
-| **Download** | manual_page (enabled: no) |
+| **Modern Stack** | YOLO26m detect (custom logo weights) or SIFT template matching |
+| **Dataset** | Flickr Logos / OpenLogo / LogoDet-style data prepared for YOLO if training detection |
+| **Key Metrics** | mAP, precision, recall; brand-match quality if a recognition stage is added |
+| **Download** | URL dataset resolver for raw assets; YOLO-format annotations required for detector training |
 
 ## Project Structure
 
@@ -40,42 +40,38 @@ discover_projects()
 result = run("logo_detection", "path/to/image.jpg")
 ```
 
-**How it works:** `modern.py` calls `resolve("logo_detection", "cls")` to find the best available weights (custom-trained first, then Ultralytics `yolo26n-cls.pt` default). It then loads the model via `load_yolo(weights)` and runs `self.model(input_data, verbose=False)`.  Visualize with `output[0].plot()`.
+**How it works:** `modern.py` calls `resolve("logo_detection", "detect")` to look for custom logo-detector weights. If they are available, it runs YOLO detection and returns logo bounding boxes. If not, the project falls back to SIFT template matching against a local template directory.
 
 ### Training
 
+Preferred training is YOLO detection training with a prepared `data.yaml`:
+
 ```bash
 cd "Logo Detection and Brand Recognition/Source Code"
-python train.py --epochs 25 --model resnet18
+python train.py --data path/to/data.yaml --epochs 50 --model yolo26m.pt
 ```
 
-Delegates to `train.train_classification.train_classification()` (torchvision transfer learning).
-Trained weights are auto-registered in `ModelRegistry`.
+`train.py` validates that you provide a YOLO-format `data.yaml` (or a directory containing one) and then delegates to the shared detection training helper.
 
-```python
-from train.train_classification import train_classification
-train_classification(data_dir="data/logo_detection", model_name="resnet18", epochs=25)
-```
+If you only want closed-set brand classification on cropped logos, keep that as a separate baseline rather than the default scene-logo method.
 
 ### Dataset
 
-Config: `configs/datasets/logo_detection.yaml`
+The repository dataset resolver can download the raw Flickr Logos archive into `data/logo_detection/`.
 
-> **Manual download required.** Visit [https://www.uni-augsburg.de/en/fakultaet/fai/informatik/prof/mmc/research/dataSets/flickrlogos/](https://www.uni-augsburg.de/en/fakultaet/fai/informatik/prof/mmc/research/dataSets/flickrlogos/), then place files into `data/logo_detection/`.
+If you want to train a detector, you still need YOLO-format annotations and a `data.yaml`. Prepare those before launching `train.py`.
 
 ```bash
 python -m utils.data_downloader logo_detection       # download (if enabled)
 python scripts/validate_datasets.py          # status report
 ```
 
-### Evaluate Accuracy
+### Evaluation Notes
 
-```bash
-python -m benchmarks.evaluate_accuracy --project logo_detection
-```
+For scene logo detection, prefer localization metrics such as precision, recall, and mAP. If you add a second-stage brand recognizer, evaluate that stage separately from detection quality.
 
 ## Links
 
 - [Root README](../../README.md)
 - [Project Inventory](../../reports/PROJECT_INVENTORY.md)
-- [Dataset Config](../../configs/datasets/logo_detection.yaml)
+- [Dataset Resolver Entry](../../utils/datasets.py)

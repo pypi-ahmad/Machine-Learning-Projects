@@ -9,5 +9,5 @@ has_legacy_deps: true
 duplicate_of: null
 source_dir: "Source Code"
 entry_point: "main.py"
-phase1b: "backslash path bug fixed, entry point created"
-notes: "TF 2.x with tf.compat.v1 session API; snapshot moved to /models/handwriting_recognition/"
+phase1b: "modern OCR wrapper added; legacy baseline entry point retained"
+notes: "Legacy TF/Keras HTR stack retained, but modern method is TrOCR with PaddleOCR fallback"

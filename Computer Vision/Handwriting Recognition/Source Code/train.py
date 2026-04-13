@@ -1,4 +1,9 @@
-"""Train Handwriting Recognition — classification.
+"""Train Handwriting Recognition — legacy closed-set classification baseline.
+
+The modern default inference path for this project is OCR-first
+(``TrOCR`` / ``PaddleOCR`` in ``modern.py``). This script is retained only for
+older character-classification style experiments where a simple image-folder
+dataset is still useful.
 
 Usage::
 
@@ -19,7 +24,9 @@ from train.train_classification import train_classification
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Train Handwriting Recognition (classification)")
+    parser = argparse.ArgumentParser(
+        description="Train Handwriting Recognition legacy classification baseline"
+    )
     parser.add_argument("--data", type=str, default=None, help="Path to image-folder dataset")
     parser.add_argument("--model", type=str, default="resnet18", help="resnet18|resnet50|efficientnet_b0|mobilenet_v2")
     parser.add_argument("--epochs", type=int, default=25)

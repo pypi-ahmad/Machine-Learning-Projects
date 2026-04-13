@@ -1,8 +1,8 @@
 {
   "project": "Handwriting Recognition",
   "key": "handwriting_recognition",
-  "category": "Classification",
-  "type": "classification",
+  "category": "OCR & Document AI",
+  "type": "ocr",
   "tech": "TrOCR (HuggingFace) / PaddleOCR",
   "model_family": [
     "PaddleOCR",
