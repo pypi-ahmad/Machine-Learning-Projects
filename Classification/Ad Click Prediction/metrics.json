@@ -1,0 +1,21 @@
+{
+  "CatBoost": {
+    "Accuracy": 0.975,
+    "F1": 0.975,
+    "Precision": 0.975,
+    "Recall": 0.975
+  },
+  "XGBoost": {
+    "Accuracy": 0.96,
+    "F1": 0.96,
+    "Precision": 0.9602,
+    "Recall": 0.96
+  },
+  "LightGBM": {
+    "Accuracy": 0.955,
+    "F1": 0.955,
+    "Precision": 0.955,
+    "Recall": 0.955
+  },
+  "best_model": "CatBoost"
+}

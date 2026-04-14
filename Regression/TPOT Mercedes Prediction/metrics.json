@@ -1,0 +1,18 @@
+{
+  "CatBoost": {
+    "R2": 0.5854,
+    "RMSE": 8.0335,
+    "MAE": 5.3464
+  },
+  "LightGBM": {
+    "R2": 0.5302,
+    "RMSE": 8.551,
+    "MAE": 5.8013
+  },
+  "XGBoost": {
+    "R2": 0.5029,
+    "RMSE": 8.7966,
+    "MAE": 5.8447
+  },
+  "best_model": "CatBoost"
+}

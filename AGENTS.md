@@ -72,6 +72,126 @@ Some packages (mediapipe, paddleocr, TTS, implicit, lightfm) are commented out d
 - **Clustering**: UMAP + HDBSCAN, Gaussian Mixture; baseline K-Means
 - **RL**: PPO, SAC (Stable-Baselines3); baseline DQN
 
+## NLP/LLM framework stack
+
+- **Hugging Face Transformers** for text classification, token classification, summarization, translation, and generation tasks
+- **spaCy** for production-style NLP pipelines (tokenization, NER, rule-based matching, information extraction)
+- **Haystack** for RAG, search, and agent-style NLP apps
+- **DSPy** for optimizing modular LLM programs and advanced NLP pipelines
+
+## Tech stack upgrade guide (April 2026)
+
+Use these defaults for new projects. Do not use the old defaults unless explicitly requested.
+
+- **Tabular classification**: CatBoost, LightGBM, XGBoost, AutoGluon Tabular, TabPFN-v2, TabM; baselines via FLAML/LazyPredict
+- **Tabular regression**: CatBoostRegressor, LightGBMRegressor, XGBoostRegressor, AutoGluon Tabular, TabPFN-v2, TabM; baselines via FLAML/LazyPredict
+- **Fraud / imbalanced classification**: CatBoost, LightGBM, XGBoost + calibrated thresholds / class weights; FLAML/LazyPredict yes
+- **Tabular anomaly detection**: PyOD 2 with ECOD/COPOD/IForest as defaults; no FLAML/LazyPredict
+- **Clustering**: UMAP + HDBSCAN, optional Gaussian Mixture; baseline K-Means; no FLAML/LazyPredict
+- **NLP classification**: ModernBERT; XLM-RoBERTa for multilingual; baseline TF-IDF + MultinomialNB; no FLAML/LazyPredict
+- **NER / IE**: GLiNER; no FLAML/LazyPredict
+- **Text embeddings / similarity / semantic search**: Qwen3-Embedding, BGE-M3, Sentence Transformers; no FLAML/LazyPredict
+- **Translation / chatbot / generation / summarization**: Qwen3-Instruct for chatbot/generation/summarization, NLLB-200 for translation; no FLAML/LazyPredict
+- **CV detection / tracking / segmentation / pose**: YOLO26 family; no FLAML/LazyPredict
+- **OCR / document CV**: PaddleOCR, PaddleOCR-VL-1.5; no FLAML/LazyPredict
+- **Face / hand / gesture / face ID**: MediaPipe Face Landmarker, MediaPipe Hand Landmarker, InsightFace; no FLAML/LazyPredict
+- **Image classification**: DINOv3 backbone or ConvNeXt V2; no FLAML/LazyPredict
+- **Vision-language / captioning**: Qwen3-VL or Molmo 2; no FLAML/LazyPredict
+- **Medical segmentation**: nnU-Net baseline, MedSAM / MedSAM2 optional; no FLAML/LazyPredict
+- **Recommendation systems**: implicit for CF, LightFM for hybrid, Sentence Transformers / Qwen3-Embedding / BGE-M3 for content-based; no FLAML/LazyPredict
+- **Time series forecasting**: AutoGluon TimeSeries, Chronos-Bolt / Chronos-2, TimesFM 2.0; baselines ARIMA, Prophet, GBDT lag-features; FLAML sometimes
+- **RL**: PPO default, SAC for continuous control, DQN as baseline only; no FLAML/LazyPredict
+- **Audio / speech**: Whisper, Wav2Vec2 / HuBERT, SpeechBrain SepFormer, XTTS-v2; no FLAML/LazyPredict
+
+### Practical tabular rules
+- Default for most tabular supervised projects: CatBoost first, LightGBM/XGBoost next
+- Small tabular datasets (up to ~10K rows, ~500 features): add TabPFN-v2
+- Neural tabular contender: add TabM
+- Automated strong baselines: use AutoGluon Tabular alongside FLAML/LazyPredict, not instead of them
+
+### Fraud and anomaly rules
+- Supervised fraud: CatBoost + LightGBM + XGBoost with calibrated thresholds / class weights
+- Unsupervised anomaly: PyOD 2 (ECOD / COPOD / IForest as fast baselines)
+- Image anomaly detection: anomalib with PatchCore as first model
+- Add AutoGluon/FLAML only for labeled fraud classification, not for unsupervised anomaly scoring
+
+### Clustering rules
+- UMAP + HDBSCAN as primary; K-Means only as baseline
+- Gaussian Mixture when soft assignments / probabilities are needed
+
+### NLP rules
+- ModernBERT for English text classification; XLM-RoBERTa for multilingual
+- Keep TF-IDF + MultinomialNB only as baseline/demo
+- GLiNER for NER / zero-shot entity extraction
+- Qwen3-Instruct for chatbot / generation / summarization
+- NLLB-200 for translation
+- BART as smaller classic summarizer when a general LLM is not needed
+
+### Recommendation rules
+- implicit for implicit-feedback collaborative filtering
+- LightFM for hybrid recommendation with user/item metadata
+- Sentence Transformers / Qwen3-Embedding / BGE-M3 for content-based
+- Keep Surprise SVD/KNN only as baseline
+
+### CV rules
+- YOLO26 for detection / segmentation / pose / OBB / tracking
+- PaddleOCR for standard OCR; PaddleOCR-VL-1.5 for document parsing
+- MediaPipe Face Landmarker for face landmarks / expressions
+- MediaPipe Hand Landmarker for hand / gesture
+- InsightFace for face recognition / verification
+- DINOv3 or ConvNeXt V2 for image classification backbone
+- Qwen3-VL or Molmo 2 for vision-language / captioning
+- nnU-Net for medical segmentation baseline; MedSAM / MedSAM2 optional
+
+### CV model weight registry
+- `general_detect`: yolo26m.pt
+- `general_cls`: yolo26m-cls.pt
+- `general_seg`: yolo26m-seg.pt
+- `general_pose_body`: yolo26m-pose.pt
+- `general_obb`: yolo26m-obb.pt
+- `face_detect`: custom face detector weights (weights/face_detect_yolo26m.pt)
+- `face_attr`: DeepFace pipeline
+- `face_recognition`: InsightFace pipeline
+- `face_landmarks`: MediaPipe Face Landmarker
+- `hand_landmarks`: MediaPipe Hand Landmarker
+- `gesture_recognizer`: MediaPipe Gesture Recognizer
+- `ocr_detect`: PaddleOCR text detector
+- `ocr_recognize`: PaddleOCR recognizer or TrOCR for handwriting
+- `medical_seg`: yolo26m-seg.pt first, optional MedSAM comparison track
+
+### Time series rules
+- AutoGluon TimeSeries as main practical framework
+- Chronos-Bolt / Chronos-2 for foundation-model forecasting
+- TimesFM as another foundation-model baseline
+- Keep LightGBM/CatBoost/XGBoost with lag features for tabularized baselines
+- ARIMA / Prophet as baseline only
+
+### RL rules
+- PPO as default general-purpose RL algorithm
+- SAC for continuous-control tasks
+- DQN only for simple discrete environments / educational baseline
+
+### Audio rules
+- Whisper for speech-to-text / transcription
+- Wav2Vec2 / HuBERT for speech/audio representation and classification
+- SpeechBrain SepFormer for speech enhancement / denoising
+- XTTS-v2 for voice cloning / multilingual TTS
+
+### FLAML / LazyPredict scope
+Add them for:
+- tabular classification and regression
+- fraud projects with labeled targets
+- lag-feature time-series projects reframed as tabular
+
+Do NOT use them for:
+- CV / OCR / face / gesture
+- NLP transformers / embeddings / LLM tasks
+- recommendation systems
+- RL
+- anomaly detection on images
+- association rule learning
+- speech/audio generative models
+
 ## Git discipline
 
 - **Never** use `git add -A` — stage only relevant files
@@ -138,7 +258,7 @@ Apply these rules only when working on notebook-based projects.
 The notebook must teach, not just run.
 It should feel like a guided lab or learning project.
 
-## Required notebook structure (30 sections)
+## Required notebook structure (31 sections)
 1. Title
 2. Project overview
 3. Learning objectives
@@ -157,18 +277,19 @@ It should feel like a guided lab or learning project.
 16. Preprocessing strategy
 17. Feature engineering
 18. Baseline model
-19. LazyPredict benchmark
+19. LazyPredict benchmark (classification/regression or tabularized lag-feature time-series baseline only)
 20. FLAML AutoML run
-21. Top 3 model selection
-22. Final training and evaluation of top 3
-23. Error analysis
-24. Interpretation and business insight
-25. Limitations
-26. How to improve this project
-27. Production considerations
-28. Common mistakes
-29. Mini challenge / exercises
-30. Final summary / key takeaways
+21. Additional best-library workflow for the project type
+22. Top 3 model selection
+23. Final training and evaluation of top 3
+24. Error analysis
+25. Interpretation and business insight
+26. Limitations
+27. How to improve this project
+28. Production considerations
+29. Common mistakes
+30. Mini challenge / exercises
+31. Final summary / key takeaways
 
 ## Writing rules
 - Use markdown cells generously.
@@ -206,7 +327,7 @@ It should feel like a guided lab or learning project.
 - Handle scaling only where needed — tree models skip it; distance-based / linear models get it.
 - Handle outliers when relevant — IQR, z-score, capping, or domain-specific logic.
 - Handle class imbalance when relevant — SMOTE, class weights, or stratified sampling.
-- Use `sklearn.pipeline.Pipeline` or `ColumnTransformer` wherever reasonable.
+- Use `sklearn.pipeline.Pipeline` or `ColumnTransformer` only when specifically requested.
 - Use Feature-engine or sklearn preprocessing tools where helpful.
 - Explain all preprocessing decisions in markdown before the code cell.
 
@@ -236,6 +357,8 @@ Choose metrics that fit the notebook task.
 - RMSE
 - MAPE or sMAPE where appropriate
 - naive / seasonal naive baseline where possible
+- forecast plots
+- error interpretation by horizon where useful
 - forecast error interpretation
 
 ### Retrieval / RAG
@@ -248,12 +371,31 @@ Choose metrics that fit the notebook task.
 - prompt variation comparison where relevant
 - explicit limitations
 
+### Clustering
+- silhouette score where valid
+- Davies-Bouldin or Calinski-Harabasz if useful
+- qualitative interpretation of clusters
+
+### Recommendation
+- ranking or similarity evaluation if available
+- clearly explain offline proxy limitations
+
+### CV
+- task-appropriate metrics: accuracy, F1, IoU, mAP, OCR output quality — only where actually supported
+- do not fake benchmark results
+
+### Agentic workflow
+- evaluate task success, tool use correctness, and common failure cases
+- include qualitative traces/examples if helpful
+
 ### General evaluation rules
 - Explain what each metric means.
 - Explain which metric matters most for the specific project.
 - Compare baseline vs LazyPredict candidates vs FLAML vs top 3 final models.
 - Do not fake results.
 - Do not claim production-readiness without justification.
+- Explain what a "good" or "bad" result means in the specific project context.
+- Never hallucinate dataset schema; inspect and infer from the actual notebook/data only.
 
 ## Project design philosophy
 - These projects are for learning machine learning properly.
@@ -271,8 +413,12 @@ Choose metrics that fit the notebook task.
   8. Compare results.
   9. Explain tradeoffs.
 - For time-series projects:
-  - Use FLAML if appropriate.
-  - Do not force LazyPredict if it does not naturally fit.
+  - Always include FLAML.
+  - Include one additional best-fit time-series library chosen from: AutoGluon TimeSeries, sktime, Darts, StatsForecast, or MLForecast.
+  - Include LazyPredict only if you build a lag-feature tabular baseline.
+  - Do not use LazyPredict as the primary forecasting framework.
+  - Always compare against naive or seasonal naive baseline.
+  - Use time-aware train/validation/test split only.
   - Keep the notebook honest about tool fit.
 
 ## Modeling rules (notebooks)
@@ -286,11 +432,34 @@ Choose metrics that fit the notebook task.
 - If using forecasting, explain why the chosen library fits.
 - Keep the notebook educational rather than just chasing the highest score.
 
+## Time-series library guidance
+- **AutoGluon TimeSeries**: strong probabilistic forecasting and strong general default
+- **sktime**: excellent for forecasting pipelines and reduction-based workflows
+- **Darts**: user-friendly forecasting and deep learning forecasting experiments
+- **StatsForecast**: strong statistical baselines and scalable forecasting
+- **MLForecast**: excellent for lag-feature machine-learning forecasting
+- **FLAML**: use for efficient AutoML forecasting
+- **LazyPredict**: only for tabularized lag-feature baseline, not as the main forecasting framework
+
+For time-series notebooks, end with top 3 forecasting approaches based on actual results.
+
 ## Guardrails (notebooks)
 - No hallucinated results.
 - No fake benchmark scores.
 - No unrelated edits.
 - Preserve working behavior unless there is a clear and safe reason to improve it.
+- Inspect existing notebook content before rewriting.
+- Only describe models, datasets, metrics, and outputs that are actually present or safely implemented.
+- Do not invent missing files, APIs, images, charts, or evaluation results.
+- If something is uncertain, explicitly note the uncertainty in markdown and choose the safest grounded version.
+- If code is broken, fix it honestly rather than pretending it worked.
+- If the notebook lacks enough information for a feature, do not fabricate it.
+- Refactor carefully so the notebook still runs top-to-bottom.
+- Do not introduce unnecessary dependencies.
+- Keep path handling robust.
+- Ensure variables are defined before use.
+- Make cell order logical and executable.
+- Remove dead or duplicate cells only after verifying they are not needed.
 
 ## Final checks (notebooks)
 Before finishing:
@@ -300,6 +469,11 @@ Before finishing:
 - verify all required sections exist
 - verify evaluation matches the task
 - verify explanations are strong and grounded
+- verify no Streamlit/app framework was added
+- verify metrics match the actual task type
+- verify dataset handling is clearly explained
+- verify there are no hallucinated claims
+- verify working behavior was not broken
 
 ---
 

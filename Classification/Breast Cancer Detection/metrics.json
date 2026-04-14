@@ -1,42 +1,21 @@
 {
   "CatBoost": {
-    "accuracy": 0.9474,
-    "f1_weighted": 0.9474,
-    "roc_auc": 0.995,
-    "pr_auc": 0.9971,
-    "brier": 0.0362,
-    "time_s": 1.3
+    "Accuracy": 0.9561,
+    "F1": 0.9558,
+    "Precision": 0.9569,
+    "Recall": 0.9561
   },
   "LightGBM": {
-    "accuracy": 0.9737,
-    "f1_weighted": 0.9736,
-    "roc_auc": 0.9927,
-    "pr_auc": 0.9956,
-    "brier": 0.0312,
-    "time_s": 1.2
+    "Accuracy": 0.9561,
+    "F1": 0.9558,
+    "Precision": 0.9569,
+    "Recall": 0.9561
   },
   "XGBoost": {
-    "accuracy": 0.9474,
-    "f1_weighted": 0.9471,
-    "roc_auc": 0.9927,
-    "pr_auc": 0.9958,
-    "brier": 0.0357,
-    "time_s": 0.5
+    "Accuracy": 0.9474,
+    "F1": 0.9471,
+    "Precision": 0.9474,
+    "Recall": 0.9474
   },
-  "TabM": {
-    "accuracy": 0.9298,
-    "f1_weighted": 0.9306,
-    "roc_auc": 0.9917,
-    "pr_auc": 0.9942,
-    "brier": 0.0558,
-    "time_s": 1.7
-  },
-  "FLAML": {
-    "accuracy": 0.9561,
-    "f1_weighted": 0.9558,
-    "roc_auc": 0.9911,
-    "pr_auc": 0.9947,
-    "brier": 0.0387,
-    "time_s": 32.5
-  }
+  "best_model": "CatBoost"
 }

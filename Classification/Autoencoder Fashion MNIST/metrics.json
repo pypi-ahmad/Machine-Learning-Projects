@@ -1,12 +1,21 @@
 {
-  "DINOv2": {
-    "val_accuracy": 0.722,
-    "epochs": 3,
-    "time_s": 126.8
+  "LightGBM": {
+    "Accuracy": 0.8387,
+    "F1": 0.8388,
+    "Precision": 0.8391,
+    "Recall": 0.8387
   },
-  "ConvNeXtV2": {
-    "val_accuracy": 0.535,
-    "epochs": 2,
-    "time_s": 71.7
-  }
+  "XGBoost": {
+    "Accuracy": 0.8373,
+    "F1": 0.837,
+    "Precision": 0.837,
+    "Recall": 0.8373
+  },
+  "CatBoost": {
+    "Accuracy": 0.8267,
+    "F1": 0.8255,
+    "Precision": 0.8256,
+    "Recall": 0.8267
+  },
+  "best_model": "LightGBM"
 }
