@@ -110,7 +110,7 @@ def _run_image(path: str, detector: OBBDetector, cfg: OBBConfig,
     if args.save_video:
         out_path = Path(args.save_video).with_suffix(".jpg")
         cv2.imwrite(str(out_path), vis)
-        log.info("Saved annotated image → %s", out_path)
+        log.info("Saved annotated image -> %s", out_path)
 
     log.info("Detections: %d  |  %s", result.total, result.class_counts)
 
@@ -130,7 +130,7 @@ def _run_video(source: int | str, detector: OBBDetector, cfg: OBBConfig,
     if args.save_video:
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         writer = cv2.VideoWriter(args.save_video, fourcc, fps, (fw, fh))
-        log.info("Recording → %s", args.save_video)
+        log.info("Recording -> %s", args.save_video)
 
     frame_idx = 0
     with OBBExporter(cfg, image_shape=(fh, fw)) as exporter:

@@ -1,4 +1,4 @@
-"""Interactive Video Object Cutout Studio — configuration."""
+"""Interactive Video Object Cutout Studio -- configuration."""
 
 from __future__ import annotations
 
@@ -14,14 +14,14 @@ class CutoutConfig:
 
     # ── Model ──────────────────────────────────────────────
     model_id: str = "facebook/sam2.1-hiera-small"
-    device: str | None = None  # None → auto-detect (cuda / cpu)
+    device: str | None = None  # None -> auto-detect (cuda / cpu)
 
     # ── Prediction ─────────────────────────────────────────
     multimask_output: bool = True
     mask_threshold: float = 0.0   # logit threshold for binary mask
 
     # ── Video ──────────────────────────────────────────────
-    max_frames: int = 0       # 0 → all frames
+    max_frames: int = 0       # 0 -> all frames
     frame_stride: int = 1     # extract every Nth frame
 
     # ── Visualisation (BGR) ────────────────────────────────

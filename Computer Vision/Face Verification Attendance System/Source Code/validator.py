@@ -1,9 +1,6 @@
 """Validation module for Face Verification Attendance System.
 
-Checks pipeline state and results for common issues:
-- No gallery loaded
-- No faces detected
-- Low detection confidence
+Checks pipeline state and results for common issues.
 """
 
 from __future__ import annotations
@@ -74,7 +71,7 @@ class AttendanceValidator:
         if self.cfg.warn_no_gallery and gallery_size == 0:
             report.warnings.append(Warning(
                 "gallery",
-                "No identities enrolled — all faces will be Unknown",
+                "No identities enrolled -- all faces will be Unknown",
             ))
 
         # No faces detected

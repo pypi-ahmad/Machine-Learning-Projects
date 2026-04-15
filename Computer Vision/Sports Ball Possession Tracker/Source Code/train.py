@@ -34,7 +34,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--imgsz", type=int, default=1280)
     p.add_argument("--device", default="", help="CUDA device or 'cpu'")
-    p.add_argument("--project", default=str(REPO_ROOT / "runs" / "sports_possession"),
+    p.add_argument("--project", default=str(Path(__file__).resolve().parent / "runs"),
                     help="Output project dir")
     p.add_argument("--name", default="train", help="Run name")
     p.add_argument("--force-download", action="store_true")
@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> None:
     if not data_yaml.exists():
         data_yaml = data_root / "processed" / "data.yaml"
     if not data_yaml.exists():
-        log.error("data.yaml not found under %s — cannot train", data_root)
+        log.error("data.yaml not found under %s -- cannot train", data_root)
         sys.exit(1)
 
     log.info("Training: data_yaml=%s  model=%s  epochs=%d", data_yaml, args.model, args.epochs)

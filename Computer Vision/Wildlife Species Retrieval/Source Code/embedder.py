@@ -1,7 +1,9 @@
 """Wildlife Species Retrieval — feature embedding extractor.
+"""Wildlife Species Retrieval — feature embedding extractor.
 
 Uses a pretrained torchvision backbone (classification head removed)
 to produce a fixed-length, L2-normalised embedding for any image.
+"""
 """
 
 from __future__ import annotations
@@ -109,7 +111,7 @@ class WildlifeEmbedder:
         return vec
 
     def embed_batch(self, images: list[np.ndarray]) -> np.ndarray:
-        """Embed a batch → (N, D) float32 matrix, L2-normalised rows."""
+        """Embed a batch -> (N, D) float32 matrix, L2-normalised rows."""
         import torch
 
         if not self.is_loaded:

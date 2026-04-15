@@ -68,7 +68,7 @@ class DrowsinessPipeline:
         if ok:
             log.info("Drowsiness pipeline ready")
         else:
-            log.error("Pipeline failed to load — MediaPipe unavailable")
+            log.error("Pipeline failed to load -- MediaPipe unavailable")
 
     def process(self, frame: np.ndarray) -> DrowsinessResult:
         """Process a single frame.

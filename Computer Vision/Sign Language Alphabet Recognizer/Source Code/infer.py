@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — CLI entry point."""
+"""Sign Language Alphabet Recognizer -- CLI entry point."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Sign Language Alphabet Recognizer — webcam / image / video inference",
+        description="Sign Language Alphabet Recognizer -- webcam / image / video inference",
     )
     p.add_argument(
         "--source", default="0",

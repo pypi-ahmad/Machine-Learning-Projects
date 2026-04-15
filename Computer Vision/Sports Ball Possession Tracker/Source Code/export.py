@@ -46,7 +46,7 @@ class PossessionExporter:
             self._csv_fh = open(out, "w", newline="", encoding="utf-8")
             self._csv_writer = csv.DictWriter(self._csv_fh, fieldnames=CSV_FIELDS)
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def write_frame(self, state: PossessionState, num_players: int) -> None:
         """Record one frame."""
@@ -81,7 +81,7 @@ class PossessionExporter:
                 "timeline": self._json_timeline,
             }
             out.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
-            log.info("JSON export → %s (%d frames)", out, len(self._json_timeline))
+            log.info("JSON export -> %s (%d frames)", out, len(self._json_timeline))
 
     def __enter__(self) -> PossessionExporter:
         return self

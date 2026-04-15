@@ -61,7 +61,7 @@ class FrameExporter:
                 self._csv_fh, fieldnames=_CSV_COLUMNS,
             )
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def __enter__(self) -> FrameExporter:
         return self
@@ -111,4 +111,4 @@ class FrameExporter:
                 json.dumps(payload, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            log.info("JSON export → %s", out)
+            log.info("JSON export -> %s", out)

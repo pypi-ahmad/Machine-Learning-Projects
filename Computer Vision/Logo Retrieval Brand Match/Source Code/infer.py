@@ -1,4 +1,5 @@
 """Logo Retrieval Brand Match — CLI entry point.
+"""Logo Retrieval Brand Match — CLI entry point.
 
 Query the logo index with an image and retrieve the most similar brands.
 
@@ -15,6 +16,7 @@ Usage::
 
     # With optional logo detection
     python infer.py --source scene.jpg --use-detector
+"""
 """
 
 from __future__ import annotations
@@ -138,8 +140,8 @@ def _run_directory(args: argparse.Namespace) -> None:
         r = result.retrieval
 
         brand_str = r.top_brand or "?"
-        score_str = f"{r.top_score:.4f}" if r.hits else "—"
-        print(f"  [{idx + 1}/{len(images)}] {img_path.name:25s} → "
+        score_str = f"{r.top_score:.4f}" if r.hits else "--"
+        print(f"  [{idx + 1}/{len(images)}] {img_path.name:25s} -> "
               f"{brand_str:20s} ({score_str})")
 
         if csv_exp and r.hits:
@@ -165,7 +167,7 @@ def _run_directory(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Logo Retrieval Brand Match — query logo images",
+        description="Logo Retrieval Brand Match -- query logo images",
     )
     parser.add_argument("--source", type=str, required=True,
                         help="Image or directory of query images")

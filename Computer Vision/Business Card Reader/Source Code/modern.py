@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: PaddleOCR → CardParser → CardValidator → Export
+Pipeline: EasyOCR -> CardParser -> CardValidator -> Export
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ class BusinessCardReader(CVProject):
     project_type = "detection"
     description = "Business card OCR + contact field extraction to JSON/CSV"
     legacy_tech = "N/A (new project)"
-    modern_tech = "PaddleOCR detection + recognition + regex/heuristic field parsing"
+    modern_tech = "EasyOCR detection + recognition + regex/heuristic field parsing"
 
     def __init__(self) -> None:
         super().__init__()

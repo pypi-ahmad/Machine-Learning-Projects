@@ -1,4 +1,4 @@
-"""Finger Counter Pro — per-frame metrics export (CSV / JSON)."""
+"""Finger Counter Pro -- per-frame metrics export (CSV / JSON)."""
 
 from __future__ import annotations
 

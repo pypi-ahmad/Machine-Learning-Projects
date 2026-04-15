@@ -1,7 +1,9 @@
 """Interactive Video Object Cutout Studio — idempotent dataset bootstrap.
+"""Interactive Video Object Cutout Studio — idempotent dataset bootstrap.
 
 Downloads DAVIS 2017 trainval (480p) for benchmarking / demo purposes.
 The project also works on arbitrary local media.
+"""
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ if str(_REPO) not in sys.path:
 
 def ensure_davis_dataset(force: bool = False) -> Path:
     """Download and prepare the DAVIS 2017 benchmark dataset (idempotent).
+    """Download and prepare the DAVIS 2017 benchmark dataset (idempotent).
 
     Parameters
     ----------
@@ -30,6 +33,7 @@ def ensure_davis_dataset(force: bool = False) -> Path:
     -------
     Path
         Root of the prepared dataset directory.
+    """
     """
     from scripts.download_data import ensure_dataset
 
@@ -48,7 +52,7 @@ def ensure_davis_dataset(force: bool = False) -> Path:
     if davis_root:
         _write_info(raw_dir, davis_root, processed)
     else:
-        print("[WARN] DAVIS directory structure not found — raw files available.")
+        print("[WARN] DAVIS directory structure not found -- raw files available.")
         _write_info(raw_dir, raw_dir, processed)
 
     ready_marker.touch()

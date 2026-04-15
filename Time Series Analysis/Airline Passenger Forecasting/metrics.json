@@ -1,0 +1,51 @@
+{
+  "project": "Airline Passenger Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 13.606890369285484,
+  "best_RMSE": 16.705628235384218,
+  "best_MAPE": 4.2340044069933835,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 13.606890369285484,
+      "RMSE": 16.705628235384218,
+      "MAPE": 4.2340044069933835
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 24.694621398120802,
+      "RMSE": 28.63803902008242,
+      "MAPE": 6.499580419060489
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 25.607142857142865,
+      "RMSE": 33.37506554300681,
+      "MAPE": 6.850699859920491
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 32.557142857142864,
+      "RMSE": 38.296773456034884,
+      "MAPE": 8.539265383414614
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 36.016040371691254,
+      "RMSE": 41.141382325598535,
+      "MAPE": 9.48913359340322
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 37.206819171097194,
+      "RMSE": 40.82854410655867,
+      "MAPE": 9.890826672906618
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 38.614285714285714,
+      "RMSE": 41.73480904130611,
+      "MAPE": 10.326480208155305
+    }
+  ]
+}

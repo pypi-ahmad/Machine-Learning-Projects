@@ -4,11 +4,9 @@ Provides a clean interface for optional text translation.
 OCR is completely independent of translation — this module
 is only invoked when ``translate_enabled=True`` in config.
 
-Built-in providers:
-- ``"googletrans"`` — requires ``pip install googletrans==4.0.0-rc1``
-
-Custom providers can be registered by subclassing :class:`TranslationProvider`
-and passing to :class:`Translator`.
+No provider ships enabled by default. Custom providers can be injected by
+subclassing :class:`TranslationProvider` and passing an instance to
+:class:`Translator`.
 
 Usage::
 
@@ -18,7 +16,7 @@ Usage::
     cfg = SceneTextConfig(translate_enabled=True, translate_target_lang="es")
     t = Translator(cfg)
     translated = t.translate("Hello world")
-    # → "Hola mundo" (if googletrans installed)
+    # Returns the original text unless a custom provider is injected.
 """
 
 from __future__ import annotations
@@ -43,31 +41,8 @@ class TranslationProvider(ABC):
         ...
 
 
-class GoogleTransProvider(TranslationProvider):
-    """Translation via ``googletrans`` (free, unofficial Google API).
-
-    Install: ``pip install googletrans==4.0.0-rc1``
-    """
-
-    def __init__(self) -> None:
-        self._client = None
-
-    def _init(self) -> None:
-        from googletrans import Translator as GT
-        self._client = GT()
-
-    def translate(self, text: str, target_lang: str) -> str:
-        if self._client is None:
-            self._init()
-        result = self._client.translate(text, dest=target_lang)
-        return result.text
-
-    def name(self) -> str:
-        return "googletrans"
-
-
 class NoOpProvider(TranslationProvider):
-    """Passthrough — returns text unchanged.  Used when no provider is configured."""
+    """Passthrough -- returns text unchanged.  Used when no provider is configured."""
 
     def translate(self, text: str, target_lang: str) -> str:
         return text
@@ -76,10 +51,8 @@ class NoOpProvider(TranslationProvider):
         return "noop"
 
 
-# -- Provider registry -------------------------------------------------
-
 _BUILTIN_PROVIDERS: dict[str, type[TranslationProvider]] = {
-    "googletrans": GoogleTransProvider,
+    "noop": NoOpProvider,
 }
 
 
@@ -135,16 +108,15 @@ class Translator:
     @staticmethod
     def _resolve_provider(name: str) -> TranslationProvider:
         if not name:
-            log.info("No translation provider configured — using noop")
+            log.info("No translation provider configured -- using noop hook")
             return NoOpProvider()
 
         cls = _BUILTIN_PROVIDERS.get(name.lower())
         if cls is None:
             log.warning(
-                "Unknown translation provider '%s' — using noop. "
-                "Available: %s",
+                "Unknown translation provider '%s' -- using noop hook. "
+                "No bundled providers ship with this project.",
                 name,
-                ", ".join(_BUILTIN_PROVIDERS),
             )
             return NoOpProvider()
 
@@ -154,7 +126,7 @@ class Translator:
             return instance
         except Exception:
             log.warning(
-                "Failed to initialise provider '%s' — using noop",
+                "Failed to initialise provider '%s' -- using noop",
                 name,
                 exc_info=True,
             )

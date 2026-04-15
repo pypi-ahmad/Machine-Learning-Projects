@@ -1,7 +1,9 @@
 """Food Freshness Grader — grading engine.
+"""Food Freshness Grader — grading engine.
 
 Loads a trained classification model and produces freshness grades
 with confidence scores.
+"""
 """
 
 from __future__ import annotations
@@ -95,7 +97,7 @@ class FreshnessGrader:
                 model.load_state_dict(ckpt)
             logger.info("Loaded weights from %s", p)
         else:
-            logger.warning("No weights found at %s — using random init", p)
+            logger.warning("No weights found at %s -- using random init", p)
 
         model.eval()
         model.to(self._device)

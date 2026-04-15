@@ -1,4 +1,4 @@
-"""Road Pothole Segmentation — overlay and visual report rendering."""
+"""Road Pothole Segmentation -- overlay and visual report rendering."""
 
 from __future__ import annotations
 

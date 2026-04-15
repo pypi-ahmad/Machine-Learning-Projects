@@ -45,7 +45,7 @@ def main(argv: list[str] | None = None) -> None:
     if not data_yaml.exists():
         data_yaml = data_root / "processed" / "data.yaml"
     if not data_yaml.exists():
-        log.error("data.yaml not found under %s — cannot evaluate", data_root)
+        log.error("data.yaml not found under %s -- cannot evaluate", data_root)
         sys.exit(1)
 
     model = load_yolo(args.model, device=args.device or None)
@@ -59,7 +59,7 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     box = metrics.box
-    log.info("──── Detection Results ────")
+    log.info("---- Detection Results ----")
     log.info("mAP@50    : %.4f", box.map50)
     log.info("mAP@50-95 : %.4f", box.map)
     log.info("Precision : %.4f", box.mp)
@@ -67,7 +67,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if hasattr(box, "ap_class_index") and box.ap_class_index is not None:
         names = model.names
-        log.info("──── Per-class AP@50 ────")
+        log.info("---- Per-class AP@50 ----")
         for i, cls_idx in enumerate(box.ap_class_index):
             ap50 = box.ap50[i] if hasattr(box, "ap50") else 0.0
             log.info("  %-15s  %.4f", names.get(int(cls_idx), cls_idx), ap50)

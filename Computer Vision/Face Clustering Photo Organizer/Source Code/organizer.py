@@ -88,7 +88,7 @@ class PhotoOrganizer:
             self._write_manifest(result, root)
 
         log.info(
-            "Organized %d clusters → %s",
+            "Organized %d clusters -> %s",
             result.num_clusters, clusters_dir,
         )
         return root
@@ -122,5 +122,5 @@ class PhotoOrganizer:
             json.dumps(manifest, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        log.info("Manifest → %s", manifest_path)
+        log.info("Manifest -> %s", manifest_path)
         return manifest_path

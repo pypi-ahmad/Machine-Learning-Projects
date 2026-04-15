@@ -1,4 +1,5 @@
 """Dataset bootstrap for Gesture Controlled Slideshow.
+"""Dataset bootstrap for Gesture Controlled Slideshow.
 
 Downloads and prepares a public hand-gesture dataset from
 Hugging Face for evaluating the gesture recognition pipeline.
@@ -9,6 +10,7 @@ Usage::
 
     data_root = ensure_gesture_dataset()            # idempotent
     data_root = ensure_gesture_dataset(force=True)  # force
+"""
 """
 
 from __future__ import annotations
@@ -34,6 +36,7 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv"}
 
 def ensure_gesture_dataset(*, force: bool = False) -> Path:
     """Download and prepare the gesture evaluation dataset.
+    """Download and prepare the gesture evaluation dataset.
 
     1. Delegates to ``scripts/download_data.py:ensure_dataset``.
     2. Collects media into ``data/processed/media/``.
@@ -45,10 +48,11 @@ def ensure_gesture_dataset(*, force: bool = False) -> Path:
     Path
         The project data root.
     """
+    """
     ready_marker = DATA_ROOT / "processed" / ".ready"
     if ready_marker.exists() and not force:
         log.info(
-            "[%s] Dataset already prepared at %s — skipping",
+            "[%s] Dataset already prepared at %s -- skipping",
             PROJECT_KEY, DATA_ROOT,
         )
         return DATA_ROOT

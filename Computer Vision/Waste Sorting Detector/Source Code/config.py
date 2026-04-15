@@ -73,11 +73,15 @@ class WasteConfig:
 
     # Export
     export_dir: str = "outputs"
+    export_csv: str = ""
+    export_json: str = ""
     save_events_csv: bool = True
     save_events_json: bool = True
 
     # Inference / display
     show_display: bool = True
+    show_counts: bool = True
+    show_zones: bool = True
     save_video: bool = False
     output_fps: int = 25
 
@@ -136,11 +140,15 @@ def load_config(path: str | Path) -> WasteConfig:
 
     # Export
     cfg.export_dir = data.get("export_dir", cfg.export_dir)
+    cfg.export_csv = data.get("export_csv", cfg.export_csv)
+    cfg.export_json = data.get("export_json", cfg.export_json)
     cfg.save_events_csv = data.get("save_events_csv", cfg.save_events_csv)
     cfg.save_events_json = data.get("save_events_json", cfg.save_events_json)
 
     # Inference
     cfg.show_display = data.get("show_display", cfg.show_display)
+    cfg.show_counts = data.get("show_counts", cfg.show_counts)
+    cfg.show_zones = data.get("show_zones", cfg.show_zones)
     cfg.save_video = data.get("save_video", cfg.save_video)
     cfg.output_fps = data.get("output_fps", cfg.output_fps)
 

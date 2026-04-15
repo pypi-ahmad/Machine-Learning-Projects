@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — CVProject registry entry."""
+"""Yoga Pose Correction Coach -- CVProject registry entry."""
 
 from __future__ import annotations
 

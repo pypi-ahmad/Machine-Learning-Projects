@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — evaluation with confusion matrix."""
+"""Sign Language Alphabet Recognizer -- evaluation with confusion matrix."""
 
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ def evaluate_model(
     labels: list[str],
 ) -> dict[str, Any]:
     """Run evaluation and return a structured report.
+    """Run evaluation and return a structured report.
 
     Returns
     -------
@@ -22,6 +23,7 @@ def evaluate_model(
         per_class       – list of {label, precision, recall, f1, support}
         confusion_matrix – 2-D list (true × predicted)
         labels          – ordered label list
+    """
     """
     from sklearn.metrics import (
         accuracy_score,
@@ -86,7 +88,7 @@ def save_confusion_matrix_image(
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
-        print("matplotlib not installed — skipping confusion matrix image.")
+        print("matplotlib not installed -- skipping confusion matrix image.")
         return
 
     fig, ax = plt.subplots(figsize=(max(8, len(labels) * 0.6), max(6, len(labels) * 0.5)))

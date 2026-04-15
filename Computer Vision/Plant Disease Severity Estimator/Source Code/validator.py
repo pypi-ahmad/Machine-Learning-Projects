@@ -1,4 +1,4 @@
-"""Plant Disease Severity Estimator — input validation."""
+"""Plant Disease Severity Estimator -- input validation."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp", ".tif", ".tiff"}
 
 def validate_image(path: str | Path) -> np.ndarray:
     """Read and validate a single image file.
+    """Read and validate a single image file.
 
     Raises
     ------
@@ -19,6 +20,7 @@ def validate_image(path: str | Path) -> np.ndarray:
         If the file does not exist.
     ValueError
         If the file cannot be decoded as an image.
+    """
     """
     p = Path(path)
     if not p.exists():
@@ -33,6 +35,7 @@ def validate_image(path: str | Path) -> np.ndarray:
 
 def collect_images(source: str | Path) -> list[Path]:
     """Collect image paths from a file or directory.
+    """Collect image paths from a file or directory.
 
     Parameters
     ----------
@@ -43,6 +46,7 @@ def collect_images(source: str | Path) -> list[Path]:
     -------
     list[Path]
         Sorted list of image paths.
+    """
     """
     p = Path(source)
     if p.is_file():

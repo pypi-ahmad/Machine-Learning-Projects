@@ -1,4 +1,5 @@
 """Sign Language Alphabet Recognizer — training pipeline.
+"""Sign Language Alphabet Recognizer — training pipeline.
 
 Workflow:
 1. Load dataset images (auto-downloaded via bootstrap).
@@ -7,6 +8,7 @@ Workflow:
 4. Train an MLP classifier via sklearn.
 5. Evaluate on a held-out test split.
 6. Save model + evaluation report.
+"""
 """
 
 from __future__ import annotations
@@ -100,7 +102,7 @@ def main(
     detector.close()
 
     if not features_list:
-        print("No features extracted — aborting.")
+        print("No features extracted -- aborting.")
         sys.exit(1)
 
     X = np.array(features_list, dtype=np.float32)

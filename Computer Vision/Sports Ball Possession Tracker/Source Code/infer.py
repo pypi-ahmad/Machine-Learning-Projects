@@ -30,7 +30,7 @@ log = logging.getLogger("sports_possession.infer")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Sports Ball Possession Tracker — Inference")
+    p = argparse.ArgumentParser(description="Sports Ball Possession Tracker -- Inference")
     p.add_argument("--source", default="0", help="Video path or camera index")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--model", default=None, help="Override model weights")
@@ -91,7 +91,7 @@ def run(argv: list[str] | None = None) -> None:
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         Path(cfg.output_path).parent.mkdir(parents=True, exist_ok=True)
         writer = cv2.VideoWriter(cfg.output_path, fourcc, fps, (fw, fh))
-        log.info("Recording → %s", cfg.output_path)
+        log.info("Recording -> %s", cfg.output_path)
 
     frame_idx = 0
     try:

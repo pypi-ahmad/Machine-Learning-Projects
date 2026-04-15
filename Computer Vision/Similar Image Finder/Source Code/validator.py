@@ -1,4 +1,4 @@
-"""Similar Image Finder — input validation helpers."""
+"""Similar Image Finder -- input validation helpers."""
 
 from __future__ import annotations
 
@@ -48,8 +48,10 @@ def collect_images(directory: str | Path, *, recursive: bool = True) -> list[Pat
 
 def infer_category(image_path: Path, root: Path) -> str:
     """Infer category from the immediate parent directory name.
+    """Infer category from the immediate parent directory name.
 
     If the parent is the root itself, returns empty string.
+    """
     """
     try:
         rel = image_path.relative_to(root)

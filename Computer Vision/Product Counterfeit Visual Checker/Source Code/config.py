@@ -1,4 +1,4 @@
-"""Product Counterfeit Visual Checker — configuration."""
+"""Product Counterfeit Visual Checker -- configuration."""
 
 from __future__ import annotations
 
@@ -11,17 +11,19 @@ from typing import Any
 @dataclass
 class CounterfeitConfig:
     """All tuneable knobs for the visual screening pipeline.
+    """All tuneable knobs for the visual screening pipeline.
 
     NOTE: This tool performs *screening* — it flags visual mismatch risk
     relative to approved references.  It does **not** prove or disprove
     counterfeit status.
+    """
     """
 
     # ── Embedding backbone ────────────────────────────────
     backbone: str = "efficientnet_b0"   # torchvision model name
     embedding_dim: int = 1280           # depends on backbone
     imgsz: int = 224                    # input resize
-    device: str | None = None           # None → auto
+    device: str | None = None           # None -> auto
 
     # ── Reference store ───────────────────────────────────
     reference_path: str = "references/product_refs.npz"
@@ -35,8 +37,8 @@ class CounterfeitConfig:
     histogram_bins: int = 64                # bins per channel for histograms
 
     # ── Risk thresholds ───────────────────────────────────
-    high_risk_threshold: float = 0.55       # below → high mismatch risk
-    medium_risk_threshold: float = 0.75     # below → medium mismatch risk
+    high_risk_threshold: float = 0.55       # below -> high mismatch risk
+    medium_risk_threshold: float = 0.75     # below -> medium mismatch risk
     # above medium → low mismatch risk
 
     # ── Retrieval ─────────────────────────────────────────

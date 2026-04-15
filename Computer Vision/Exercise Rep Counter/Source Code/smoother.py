@@ -1,13 +1,15 @@
-"""Exercise Rep Counter — angle smoothing (EMA)."""
+"""Exercise Rep Counter -- angle smoothing (EMA)."""
 
 from __future__ import annotations
 
 
 class AngleSmoother:
     """Exponential moving average on raw joint angles.
+    """Exponential moving average on raw joint angles.
 
     Smoothing is applied *before* stage detection so that
     transient noise doesn't cause false stage transitions.
+    """
     """
 
     def __init__(self, alpha: float = 0.4) -> None:

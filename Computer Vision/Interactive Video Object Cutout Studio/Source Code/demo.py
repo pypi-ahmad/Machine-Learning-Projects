@@ -1,4 +1,5 @@
 """Interactive Video Object Cutout Studio — interactive demo.
+"""Interactive Video Object Cutout Studio — interactive demo.
 
 Provides a guided, step-by-step experience:
   1. Load image or video.
@@ -16,6 +17,7 @@ Usage::
 
     # With pre-set output options
     python demo.py --source clip.mp4 --save-cutout --save-mask
+"""
 """
 
 from __future__ import annotations
@@ -52,10 +54,10 @@ def _demo_image(image_path: str, cfg: CutoutConfig, args: argparse.Namespace) ->
     print("=== Image Segmentation Demo ===")
     print("Annotate the object you want to cut out, then press Enter.\n")
 
-    collector = PromptCollector(window_name="SAM 2 — Click to Prompt")
+    collector = PromptCollector(window_name="SAM 2 -- Click to Prompt")
     prompts = collector.collect(image)
     if prompts is None or prompts.is_empty:
-        print("[INFO] Cancelled — no prompts provided.")
+        print("[INFO] Cancelled -- no prompts provided.")
         return
 
     print("Running SAM 2 segmentation ...")
@@ -127,10 +129,10 @@ def _demo_video(video_path: str, cfg: CutoutConfig, args: argparse.Namespace) ->
         return
 
     print(f"\nPrompt on frame {frame_idx}. Annotate the object, then press Enter.\n")
-    collector = PromptCollector(window_name="SAM 2 — Prompt on Frame")
+    collector = PromptCollector(window_name="SAM 2 -- Prompt on Frame")
     prompts = collector.collect(first_frame)
     if prompts is None or prompts.is_empty:
-        print("[INFO] Cancelled — no prompts provided.")
+        print("[INFO] Cancelled -- no prompts provided.")
         return
 
     print("Propagating masks across all frames ...")
@@ -187,7 +189,7 @@ def _demo_video(video_path: str, cfg: CutoutConfig, args: argparse.Namespace) ->
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Interactive Video Object Cutout Studio — interactive demo",
+        description="Interactive Video Object Cutout Studio -- interactive demo",
     )
     parser.add_argument("--source", type=str, required=True,
                         help="Image or video path")

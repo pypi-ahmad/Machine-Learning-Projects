@@ -1,4 +1,4 @@
-"""Wound Area Measurement — overlay and visual report rendering."""
+"""Wound Area Measurement -- overlay and visual report rendering."""
 
 from __future__ import annotations
 

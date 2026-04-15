@@ -1,7 +1,9 @@
 """Logo Retrieval Brand Match — feature embedding extractor.
+"""Logo Retrieval Brand Match — feature embedding extractor.
 
 Uses a pretrained torchvision backbone (classification head removed)
 to produce a fixed-length embedding vector for any logo image.
+"""
 """
 
 from __future__ import annotations
@@ -114,7 +116,7 @@ class LogoEmbedder:
         return vec
 
     def embed_batch(self, images: list[np.ndarray]) -> np.ndarray:
-        """Embed a batch of BGR images → (N, D) float32 matrix."""
+        """Embed a batch of BGR images -> (N, D) float32 matrix."""
         import torch
 
         if self._model is None:

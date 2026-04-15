@@ -1,4 +1,5 @@
 """Food Freshness Grader — training script.
+"""Food Freshness Grader — training script.
 
 Trains a classification model using the shared training pipeline.
 
@@ -8,6 +9,7 @@ Usage::
     python train.py --data path/to/dataset --epochs 30
     python train.py --model efficientnet_b0 --batch 16
     python train.py --force-download
+"""
 """
 
 from __future__ import annotations
@@ -42,7 +44,7 @@ def main() -> None:
             "food_freshness_grader", force=args.force_download
         )
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 

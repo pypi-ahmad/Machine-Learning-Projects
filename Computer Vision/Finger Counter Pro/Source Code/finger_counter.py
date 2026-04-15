@@ -1,8 +1,10 @@
 """Finger Counter Pro — core finger-state detection and counting.
+"""Finger Counter Pro — core finger-state detection and counting.
 
 This module is intentionally self-contained and testable:
 all public functions take plain data (coordinates, handedness)
 and return plain results (bools, ints, dataclass).
+"""
 """
 
 from __future__ import annotations
@@ -60,8 +62,10 @@ def is_finger_extended(
     margin: float = 0.02,
 ) -> bool:
     """Return True if a non-thumb finger's tip is above its PIP joint.
+    """Return True if a non-thumb finger's tip is above its PIP joint.
 
     All values are normalised y-coordinates (0 = top, 1 = bottom).
+    """
     """
     return tip_y < pip_y - margin
 
@@ -72,6 +76,7 @@ def is_thumb_extended(
     handedness: str,
 ) -> bool:
     """Return True if the thumb tip has moved outward past the IP joint.
+    """Return True if the thumb tip has moved outward past the IP joint.
 
     MediaPipe mirrors handedness labels (the label describes the hand
     as seen from the camera's perspective), so:
@@ -79,6 +84,7 @@ def is_thumb_extended(
       (tip.x < ip.x)
     - "Left"  label → user's left hand  → thumb extends to the RIGHT
       (tip.x > ip.x)
+    """
     """
     if handedness == "Right":
         return tip_x < ip_x
@@ -117,7 +123,7 @@ def count_fingers(fingers_up: list[bool]) -> int:
 # ---------------------------------------------------------------------------
 
 class FingerCounter:
-    """Stateless analyser — call :meth:`analyse` per hand."""
+    """Stateless analyser -- call :meth:`analyse` per hand."""
 
     def __init__(self, finger_up_margin: float = 0.02) -> None:
         self._margin = finger_up_margin

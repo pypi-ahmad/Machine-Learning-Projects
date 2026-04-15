@@ -30,7 +30,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Cell Counting Instance Segmentation — segment and count cells/nuclei",
+        description="Cell Counting Instance Segmentation -- segment and count cells/nuclei",
     )
     p.add_argument(
         "--source", default="0",

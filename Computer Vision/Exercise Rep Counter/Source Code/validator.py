@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — quality validator."""
+"""Exercise Rep Counter -- quality validator."""
 
 from __future__ import annotations
 

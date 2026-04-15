@@ -37,7 +37,7 @@ class LayoutExporter:
         if cfg.save_crops:
             self._crops_dir = Path(cfg.crops_dir)
             self._crops_dir.mkdir(parents=True, exist_ok=True)
-            log.info("Crop export dir → %s", self._crops_dir)
+            log.info("Crop export dir -> %s", self._crops_dir)
 
     def write(self, result: PageResult, image: np.ndarray, *,
               source_name: str = "") -> None:
@@ -56,7 +56,7 @@ class LayoutExporter:
             out = Path(self.cfg.export_json)
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps(self._json_pages, indent=2), encoding="utf-8")
-            log.info("JSON export → %s (%d pages)", out, len(self._json_pages))
+            log.info("JSON export -> %s (%d pages)", out, len(self._json_pages))
 
     # ------------------------------------------------------------------
     # Helpers

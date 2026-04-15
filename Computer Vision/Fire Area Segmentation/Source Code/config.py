@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — configuration."""
+"""Fire Area Segmentation -- configuration."""
 
 from __future__ import annotations
 

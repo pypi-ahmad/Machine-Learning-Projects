@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_drowsiness_dataset
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv"}
@@ -40,11 +40,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "driver_drowsiness_monitor", force=args.force_download,
-        )
-        data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        data_path = ensure_drowsiness_dataset(force=args.force_download)
+        data_dir = str(data_path / "processed" / "media")
+        print(f"[INFO] Prepared dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -60,6 +58,10 @@ def main(argv: list[str] | None = None) -> None:
         cfg = DrowsinessConfig()
         pipeline = DrowsinessPipeline(cfg)
         pipeline.load()
+
+        if not pipeline.detector.ready:
+            print("[ERROR] MediaPipe Face Landmarker unavailable -- cannot evaluate")
+            return
 
         data_root = Path(data_dir)
 
@@ -149,7 +151,7 @@ def main(argv: list[str] | None = None) -> None:
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")

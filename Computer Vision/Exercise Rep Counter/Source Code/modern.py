@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — CVProject registry entry."""
+"""Exercise Rep Counter -- CVProject registry entry."""
 
 from __future__ import annotations
 

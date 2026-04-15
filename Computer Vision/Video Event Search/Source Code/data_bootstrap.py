@@ -1,4 +1,5 @@
 """Dataset bootstrap for Video Event Search.
+"""Dataset bootstrap for Video Event Search.
 
 Downloads the Pedestrian Dataset from Kaggle (crosswalk / night /
 fourway video scenes with bounding-box CSVs) and prepares the repo's
@@ -10,6 +11,7 @@ Usage::
 
     data_root = ensure_video_event_dataset()            # idempotent
     data_root = ensure_video_event_dataset(force=True)   # force re-download
+"""
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ DATA_ROOT = REPO_ROOT / "data" / PROJECT_KEY
 
 def ensure_video_event_dataset(*, force: bool = False) -> Path:
     """Download and prepare the pedestrian video dataset.
+    """Download and prepare the pedestrian video dataset.
 
     1. Delegates to ``scripts/download_data.py:ensure_dataset`` for the
        Kaggle download.
@@ -44,9 +47,10 @@ def ensure_video_event_dataset(*, force: bool = False) -> Path:
     Path
         The project's data root.
     """
+    """
     ready_marker = DATA_ROOT / "processed" / ".ready"
     if ready_marker.exists() and not force:
-        log.info("[%s] Dataset already prepared at %s — skipping", PROJECT_KEY, DATA_ROOT)
+        log.info("[%s] Dataset already prepared at %s -- skipping", PROJECT_KEY, DATA_ROOT)
         return DATA_ROOT
 
     from scripts.download_data import ensure_dataset as _ensure
@@ -63,7 +67,7 @@ def ensure_video_event_dataset(*, force: bool = False) -> Path:
             if f.parent != raw_dir:
                 dest = raw_dir / f.name
                 shutil.move(str(f), str(dest))
-                log.info("Moved %s → %s", f.name, dest)
+                log.info("Moved %s -> %s", f.name, dest)
 
     # Write dataset_info.json
     info = {

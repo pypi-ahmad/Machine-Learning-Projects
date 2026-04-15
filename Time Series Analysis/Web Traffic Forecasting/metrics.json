@@ -1,0 +1,51 @@
+{
+  "project": "Web Traffic Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 2860.995278520431,
+  "best_RMSE": 3746.8298965358977,
+  "best_MAPE": 3.9203151543180437,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 2860.995278520431,
+      "RMSE": 3746.8298965358977,
+      "MAPE": 3.9203151543180437
+    },
+    {
+      "model": "Seasonal Naive (7d)",
+      "MAE": 8133.785714285715,
+      "RMSE": 14301.550657683443,
+      "MAPE": 8.44891706124483
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 8290.6376953125,
+      "RMSE": 14679.279546353766,
+      "MAPE": 8.589623856177866
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 8352.7275390625,
+      "RMSE": 14942.366613090444,
+      "MAPE": 8.626059525488747
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 8549.24504826489,
+      "RMSE": 15039.982097772776,
+      "MAPE": 8.842808478500862
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 8669.4287109375,
+      "RMSE": 15099.584100232694,
+      "MAPE": 9.034178096843377
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 15977.285714285714,
+      "RMSE": 17253.347468162312,
+      "MAPE": 21.00631181703799
+    }
+  ]
+}

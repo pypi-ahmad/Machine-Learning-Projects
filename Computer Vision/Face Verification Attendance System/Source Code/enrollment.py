@@ -1,18 +1,8 @@
 """Enrollment manager for Face Verification Attendance System.
 
 Handles registering known identities: stores normalized embeddings
-as a gallery on disk (JSON), supports multi-image enrollment with
-mean embedding, and loads/saves gallery persistence.
-
-Usage::
-
-    from enrollment import EnrollmentManager
-
-    mgr = EnrollmentManager(cfg, embedder)
-    mgr.enroll("Alice", [img1, img2])
-    mgr.save()
-    mgr.load()
-    gallery = mgr.gallery  # {name: np.ndarray}
+as a gallery on disk, supports multi-image enrollment, and loads/saves
+gallery persistence.
 """
 
 from __future__ import annotations
@@ -34,11 +24,12 @@ log = logging.getLogger("face_attendance.enrollment")
 class EnrollmentManager:
     """Manage a gallery of enrolled face identities."""
 
-    def __init__(self, cfg: FaceAttendanceConfig, embedder=None) -> None:
+    def __init__(self, cfg: FaceAttendanceConfig, embedder=None, detector=None) -> None:
         self.cfg = cfg
         self._embedder = embedder
-        self._gallery: dict[str, np.ndarray] = {}       # name → mean embedding
-        self._raw: dict[str, list[np.ndarray]] = {}      # name → all embeddings
+        self._detector = detector
+        self._gallery: dict[str, np.ndarray] = {}       # name -> mean embedding
+        self._raw: dict[str, list[np.ndarray]] = {}      # name -> all embeddings
 
     @property
     def gallery(self) -> dict[str, np.ndarray]:
@@ -75,7 +66,7 @@ class EnrollmentManager:
             True if at least one face was successfully enrolled.
         """
         if self._embedder is None or not self._embedder.ready:
-            log.error("Embedder not loaded — cannot enroll")
+            log.error("Embedder not loaded -- cannot enroll")
             return False
 
         embeddings: list[np.ndarray] = []
@@ -84,7 +75,7 @@ class EnrollmentManager:
             if frame is None:
                 log.warning("Cannot read image for '%s'", name)
                 continue
-            emb = self._embedder.extract_single(frame)
+            emb = self._embedder.extract_single(self._select_face_crop(frame))
             if emb is not None:
                 embeddings.append(emb)
 
@@ -109,6 +100,16 @@ class EnrollmentManager:
             name, len(embeddings), self._gallery[name].shape[0],
         )
         return True
+
+    def _select_face_crop(self, frame: np.ndarray) -> np.ndarray:
+        if self._detector is None or self._detector.backend == "none":
+            return frame
+
+        detections = self._detector.detect(frame)
+        if not detections:
+            return frame
+
+        return detections[0].crop
 
     def enroll_single(self, name: str, image) -> bool:
         """Convenience: enroll from a single image."""
@@ -149,7 +150,7 @@ class EnrollmentManager:
         out.write_text(
             json.dumps(data, indent=2), encoding="utf-8",
         )
-        log.info("Gallery saved (%d identities) → %s", len(data), out)
+        log.info("Gallery saved (%d identities) -> %s", len(data), out)
         return out
 
     def load(self, path: str | Path | None = None) -> bool:
@@ -175,7 +176,7 @@ class EnrollmentManager:
             name: np.array(emb, dtype=np.float32)
             for name, emb in data.items()
         }
-        log.info("Gallery loaded (%d identities) ← %s", len(self._gallery), src)
+        log.info("Gallery loaded (%d identities) <- %s", len(self._gallery), src)
         return True
 
     def set_gallery(self, gallery: dict[str, np.ndarray]) -> None:

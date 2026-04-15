@@ -1,21 +1,26 @@
 {
-  "LightGBM": {
-    "Accuracy": 1.0,
-    "F1": 1.0,
-    "Precision": 1.0,
-    "Recall": 1.0
-  },
-  "XGBoost": {
-    "Accuracy": 1.0,
-    "F1": 1.0,
-    "Precision": 1.0,
-    "Recall": 1.0
-  },
   "CatBoost": {
-    "Accuracy": 0.9991,
-    "F1": 0.9991,
-    "Precision": 0.9992,
-    "Recall": 0.9991
+    "accuracy": 0.9919,
+    "f1": 0.9919,
+    "precision": 0.9919,
+    "recall": 0.9919
   },
-  "best_model": "LightGBM"
+  "LightGBM": {
+    "accuracy": 1.0,
+    "f1": 1.0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "Logistic Regression": {
+    "accuracy": 0.9856,
+    "f1": 0.9854,
+    "precision": 0.9854,
+    "recall": 0.9856
+  },
+  "FLAML": {
+    "accuracy": 1.0,
+    "f1": 1.0,
+    "precision": 1.0,
+    "recall": 1.0
+  }
 }

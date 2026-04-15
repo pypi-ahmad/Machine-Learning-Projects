@@ -28,7 +28,7 @@ class RecognitionResult:
     """Result for a single line image."""
 
     text: str
-    confidence: float              # mean token-level log-prob → [0, 1]
+    confidence: float              # mean token-level log-prob -> [0, 1]
     token_scores: list[float]      # per-token confidence
 
 

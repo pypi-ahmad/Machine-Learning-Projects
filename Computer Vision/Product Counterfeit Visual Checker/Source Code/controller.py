@@ -1,7 +1,9 @@
 """Product Counterfeit Visual Checker — high-level controller.
+"""Product Counterfeit Visual Checker — high-level controller.
 
 Orchestrates embedding, reference management, comparison,
 visualisation, and export for counterfeit screening.
+"""
 """
 
 from __future__ import annotations
@@ -69,7 +71,7 @@ class CounterfeitController:
 
         ref_path = Path(self.cfg.reference_path)
         if ref_path.exists() and not force:
-            logger.info("Reference store exists at %s — use force=True to rebuild",
+            logger.info("Reference store exists at %s -- use force=True to rebuild",
                         ref_path)
             if self._store and len(self._store) > 0:
                 return self._store
@@ -79,7 +81,7 @@ class CounterfeitController:
         if not images:
             raise FileNotFoundError(f"No images found in {root}")
 
-        logger.info("Building references from %d images in %s …", len(images), root)
+        logger.info("Building references from %d images in %s ...", len(images), root)
 
         self._store = ReferenceStore(metric=self.cfg.similarity_metric)
 
@@ -106,7 +108,7 @@ class CounterfeitController:
 
         ref_path.parent.mkdir(parents=True, exist_ok=True)
         self._store.save(str(ref_path))
-        logger.info("Reference store saved → %s  (%s)", ref_path, self._store.summary())
+        logger.info("Reference store saved -> %s  (%s)", ref_path, self._store.summary())
 
         self._comparator = ProductComparator(self._embedder, self._store, self.cfg)
         return self._store
@@ -155,7 +157,7 @@ class CounterfeitController:
             p = Path(save_path)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), grid)
-            logger.info("Screening grid saved → %s", p)
+            logger.info("Screening grid saved -> %s", p)
 
         if show:
             cv2.imshow("Counterfeit Screening", grid)
@@ -193,7 +195,7 @@ class CounterfeitController:
             p = Path(save_path)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), heatmap)
-            logger.info("Region heatmap saved → %s", p)
+            logger.info("Region heatmap saved -> %s", p)
 
     # ── export ────────────────────────────────────────────
 
@@ -206,7 +208,7 @@ class CounterfeitController:
     ) -> None:
         if json_path:
             export_json(result, json_path)
-            logger.info("JSON exported → %s", json_path)
+            logger.info("JSON exported -> %s", json_path)
         if csv_path:
             export_csv(result, csv_path)
-            logger.info("CSV exported → %s", csv_path)
+            logger.info("CSV exported -> %s", csv_path)

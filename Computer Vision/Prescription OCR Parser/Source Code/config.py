@@ -1,7 +1,7 @@
 """Configuration dataclasses for Prescription OCR Parser.
 
 Provides :class:`PrescriptionConfig` with all tunables for the
-PaddleOCR-based prescription reading pipeline: OCR settings,
+OCR-based prescription reading pipeline: OCR settings,
 medicine field extraction rules, validation, export, and display.
 """
 
@@ -34,6 +34,7 @@ class PrescriptionConfig:
     """Top-level project configuration."""
 
     # ── OCR ────────────────────────────────────────────────
+    ocr_backend: str = "auto"
     ocr_lang: str = "en"
     use_gpu: bool = False
     det_db_thresh: float = 0.3

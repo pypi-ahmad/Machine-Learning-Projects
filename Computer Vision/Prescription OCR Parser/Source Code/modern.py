@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: PaddleOCR → field extraction → structured Rx output.
+Pipeline: PaddleOCR-first OCR -> field extraction -> structured Rx output.
 
 **DISCLAIMER:** This tool is for informational and educational
 purposes only.  It does not provide medical advice.
@@ -32,10 +32,10 @@ class PrescriptionOCRParser(CVProject):
     project_type = "ocr"
     description = (
         "Prescription OCR with medicine name, dosage, frequency extraction "
-        "(informational only — not for clinical use)"
+        "(informational only -- not for clinical use)"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "PaddleOCR + pattern-based medicine field extraction"
+    modern_tech = "PaddleOCR-first OCR + pattern-based medicine field extraction"
 
     def __init__(self) -> None:
         super().__init__()

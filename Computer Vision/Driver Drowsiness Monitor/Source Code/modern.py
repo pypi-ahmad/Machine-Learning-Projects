@@ -28,11 +28,11 @@ class DriverDrowsinessModern(CVProject):
 
     project_type = "detection"
     description = (
-        "MediaPipe Face Mesh landmark analysis for drowsiness "
+        "MediaPipe Face Landmarker analysis for drowsiness "
         "detection using EAR, MAR, PERCLOS, and head pose"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "MediaPipe Face Mesh + EAR/MAR/head-pose rule engine"
+    modern_tech = "MediaPipe Face Landmarker + EAR/MAR/head-pose rule engine"
 
     def __init__(self) -> None:
         super().__init__()

@@ -1,4 +1,5 @@
 """Product Counterfeit Visual Checker — reference builder CLI.
+"""Product Counterfeit Visual Checker — reference builder CLI.
 
 Build the approved-reference embedding store from a directory of
 product images organised into product sub-folders.
@@ -6,6 +7,7 @@ product images organised into product sub-folders.
 Usage:
     python reference_builder.py --image-dir data/grocery/processed/products
     python reference_builder.py --image-dir data/grocery/processed/products --force
+"""
 """
 
 from __future__ import annotations
@@ -63,7 +65,7 @@ def main() -> None:
                                   force=args.force)
     elapsed = time.perf_counter() - t0
 
-    logger.info("Done in %.1fs  —  %s", elapsed, store.summary())
+    logger.info("Done in %.1fs  --  %s", elapsed, store.summary())
     ctrl.close()
 
 

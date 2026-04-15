@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: CardDetector → PaddleOCR → Template parser → Validator → Export
+Pipeline: CardDetector -> EasyOCR -> Template parser -> Validator -> Export
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ class IDCardKYCParser(CVProject):
     project_type = "detection"
     description = "ID card detection + perspective correction + OCR field extraction"
     legacy_tech = "N/A (new project)"
-    modern_tech = "Contour detection + PaddleOCR + template-based field parsing"
+    modern_tech = "Contour detection + EasyOCR + template-based field parsing"
 
     def __init__(self) -> None:
         super().__init__()

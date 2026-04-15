@@ -1,8 +1,10 @@
 """Product Counterfeit Visual Checker — reference store.
+"""Product Counterfeit Visual Checker — reference store.
 
 Manages a collection of approved product reference embeddings stored
 in a NumPy .npz archive.  Each entry has a path, product label, and
 embedding vector.
+"""
 """
 
 from __future__ import annotations
@@ -119,7 +121,7 @@ class ReferenceStore:
             paths=np.array(self._paths, dtype=object),
             products=np.array(self._products, dtype=object),
         )
-        logger.info("Reference store saved → %s  (%d entries)", p, len(self))
+        logger.info("Reference store saved -> %s  (%d entries)", p, len(self))
 
     def load(self, path: str) -> None:
         data = np.load(path, allow_pickle=True)

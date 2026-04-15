@@ -1,4 +1,5 @@
-paddleocr
-paddlepaddle
-opencv-python
+paddleocr>=3.0.0
+easyocr>=1.7.0
+opencv-python-headless
 numpy
+PyYAML

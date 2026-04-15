@@ -1,4 +1,4 @@
-"""Similar Image Finder — CVProject registry entry."""
+"""Similar Image Finder -- CVProject registry entry."""
 
 from __future__ import annotations
 

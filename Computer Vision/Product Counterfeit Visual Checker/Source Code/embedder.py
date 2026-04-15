@@ -1,7 +1,9 @@
 """Product Counterfeit Visual Checker — feature extraction.
+"""Product Counterfeit Visual Checker — feature extraction.
 
 Extracts L2-normalised embeddings from product images using a
 pretrained CNN backbone.
+"""
 """
 
 from __future__ import annotations
@@ -91,7 +93,7 @@ class ProductEmbedder:
 
     @torch.no_grad()
     def embed(self, image_bgr: np.ndarray) -> np.ndarray:
-        """Embed a single BGR image → L2-normalised vector."""
+        """Embed a single BGR image -> L2-normalised vector."""
         assert self._model is not None, "Call load() first"
         rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
         tensor = self._transform(rgb).unsqueeze(0).to(self._device)
@@ -104,7 +106,7 @@ class ProductEmbedder:
 
     @torch.no_grad()
     def embed_batch(self, images_bgr: Sequence[np.ndarray]) -> np.ndarray:
-        """Embed a batch of BGR images → (N, D) L2-normalised."""
+        """Embed a batch of BGR images -> (N, D) L2-normalised."""
         assert self._model is not None, "Call load() first"
         tensors = []
         for img in images_bgr:
@@ -125,9 +127,11 @@ class ProductEmbedder:
         grid: tuple[int, int] = (3, 3),
     ) -> np.ndarray:
         """Embed image patches from a grid layout → (R*C, D).
+        """Embed image patches from a grid layout → (R*C, D).
 
         Splits the image into *grid* (rows, cols) patches and embeds each.
         Used for region-aware comparison.
+        """
         """
         assert self._model is not None, "Call load() first"
         rows, cols = grid

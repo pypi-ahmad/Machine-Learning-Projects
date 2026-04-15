@@ -1,4 +1,4 @@
-"""Interactive Video Object Cutout Studio — input validation."""
+"""Interactive Video Object Cutout Studio -- input validation."""
 
 from __future__ import annotations
 

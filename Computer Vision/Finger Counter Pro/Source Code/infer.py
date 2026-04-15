@@ -1,4 +1,4 @@
-"""Finger Counter Pro — CLI entry point."""
+"""Finger Counter Pro -- CLI entry point."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Finger Counter Pro — robust multi-hand finger counting",
+        description="Finger Counter Pro -- robust multi-hand finger counting",
     )
     p.add_argument(
         "--source",

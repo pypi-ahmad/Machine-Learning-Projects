@@ -1,6 +1,6 @@
 # Driver Drowsiness Monitor
 
-Real-time driver drowsiness detection using **MediaPipe Face Mesh** landmarks.
+Real-time driver drowsiness detection using **MediaPipe Face Landmarker** landmarks.
 Monitors eye closure (EAR), yawning (MAR), head pose, and generates
 time-stamped alerts with configurable cooldowns.
 
@@ -39,7 +39,7 @@ time-stamped alerts with configurable cooldowns.
 ## Architecture
 
 ```
-landmark_detector.py   MediaPipe Face Mesh (468 landmarks)
+landmark_detector.py   MediaPipe Face Landmarker (dense face landmarks)
         │
    ┌────┴────┬──────────┐
    ▼         ▼          ▼
@@ -54,6 +54,14 @@ blink_tracker  yawn_tracker  head_pose
 export     visualize
 ```
 
+## Dataset
+
+- **Source:** Hugging Face dataset `ckcl/driver-safety-dataset`
+- **Prepared Path:** `data/driver_drowsiness_monitor/processed/media/`
+- **Download:** Automatic on first `python train.py` or `python data_bootstrap.py` run
+- **Force re-download:** `python train.py --force-download` or `python data_bootstrap.py --force`
+- **Practical note:** the public dataset is image-based, while the project itself supports webcam, single-image, and video inputs at inference time.
+
 ## Quick Start
 
 ```bash
@@ -63,6 +71,9 @@ pip install -r requirements.txt
 # Webcam (press 'q' to quit)
 cd "Driver Drowsiness Monitor/Source Code"
 python infer.py --source 0
+
+# Prepare the evaluation dataset locally
+python data_bootstrap.py
 
 # Video file
 python infer.py --source ~/driving_clip.mp4
@@ -137,7 +148,8 @@ drowsiness alert.
 
 Ratio of vertical lip distances to horizontal lip width. Values
 above `mar_threshold` sustained for `yawn_consec_frames` register
-a yawn event.
+a yawn-like mouth-opening event. This is a fatigue proxy, not a clinical
+yawn detector.
 
 ### Head Pose
 
@@ -151,7 +163,7 @@ triggers a distraction alert.
 Driver Drowsiness Monitor/
 ├── Source Code/
 │   ├── config.py             # DrowsinessConfig dataclass
-│   ├── landmark_detector.py  # MediaPipe Face Mesh wrapper
+│   ├── landmark_detector.py  # MediaPipe Face Landmarker wrapper
 │   ├── blink_tracker.py      # EAR, blink count, PERCLOS
 │   ├── yawn_tracker.py       # MAR, yawn detection
 │   ├── head_pose.py          # solvePnP head-pose estimation
@@ -174,6 +186,8 @@ Driver Drowsiness Monitor/
 - MediaPipe ≥ 0.10.14
 - OpenCV ≥ 4.10
 - NumPy ≥ 1.26
+- PyYAML ≥ 6.0
+- huggingface-hub ≥ 0.30
 
 ## License
 

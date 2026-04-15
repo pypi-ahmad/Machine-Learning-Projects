@@ -1,8 +1,10 @@
 """Similar Image Finder — feature embedding extractor.
+"""Similar Image Finder — feature embedding extractor.
 
 Uses a pretrained torchvision backbone (classification head removed)
 to produce a fixed-length, L2-normalised embedding for any image.
 This module is independent of the index and retrieval layers.
+"""
 """
 
 from __future__ import annotations
@@ -110,7 +112,7 @@ class ImageEmbedder:
         return vec
 
     def embed_batch(self, images: list[np.ndarray]) -> np.ndarray:
-        """Embed a batch → (N, D) float32 matrix, L2-normalised rows."""
+        """Embed a batch -> (N, D) float32 matrix, L2-normalised rows."""
         import torch
 
         if not self.is_loaded:

@@ -21,10 +21,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_blink_headpose_dataset
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv"}
+
+
+def _collect_media_files(data_dir: Path) -> tuple[list[Path], list[Path]]:
+    media_dir = data_dir / "processed" / "media"
+    search_root = media_dir if media_dir.exists() else data_dir
+    images = sorted(
+        f for f in search_root.rglob("*")
+        if f.suffix.lower() in IMAGE_EXTS
+    )
+    videos = sorted(
+        f for f in search_root.rglob("*")
+        if f.suffix.lower() in VIDEO_EXTS
+    )
+    return images, videos
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -40,11 +54,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "blink_headpose_analyzer", force=args.force_download,
-        )
+        data_path = ensure_blink_headpose_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -62,15 +74,7 @@ def main(argv: list[str] | None = None) -> None:
         pipeline.load()
 
         data_root = Path(data_dir)
-
-        images = sorted(
-            f for f in data_root.rglob("*")
-            if f.suffix.lower() in IMAGE_EXTS
-        )
-        videos = sorted(
-            f for f in data_root.rglob("*")
-            if f.suffix.lower() in VIDEO_EXTS
-        )
+        images, videos = _collect_media_files(data_root)
 
         print(f"[INFO] Found {len(images)} images, {len(videos)} videos")
 
@@ -147,7 +151,7 @@ def main(argv: list[str] | None = None) -> None:
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")

@@ -1,83 +1,112 @@
-"""Train Invoice Field Extractor — OCR + field extraction.
+"""Train / evaluate Invoice Field Extractor.
 
-Note: This project uses PaddleOCR (pre-trained) and rule-based field
-extraction, so training is optional. The train script fine-tunes
-PaddleOCR text detection on invoice/document layouts if a labeled
-dataset is provided.
+This project uses PaddleOCR (pre-trained) + rule-based field parsing,
+so there is no model training.  This script downloads the dataset and
+runs the OCR + extraction pipeline on sample images to evaluate quality.
 
 Usage::
 
     python train.py
-    python train.py --data path/to/dataset --epochs 50
+    python train.py --force-download
+    python train.py --max-samples 10
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_invoice_dataset
+
+log = logging.getLogger("invoice_extractor.train")
+
+IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Train/Prepare Invoice Field Extractor")
-    parser.add_argument("--data", type=str, default=None, help="Path to invoice dataset")
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch", type=int, default=8)
-    parser.add_argument("--device", type=str, default=None)
-    parser.add_argument("--force-download", action="store_true", help="Force re-download dataset")
-    args = parser.parse_args()
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Evaluate Invoice Field Extractor")
+    p.add_argument("--max-samples", type=int, default=20, help="Max images to evaluate")
+    p.add_argument("--force-download", action="store_true")
+    return p.parse_args(argv)
 
-    if args.data is None:
-        data_path = DatasetResolver().resolve("invoice_field_extractor", force=args.force_download)
-        data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
-    else:
-        data_dir = args.data
 
-    # Evaluate OCR + extraction on the dataset
-    print(f"[INFO] Dataset ready at {data_dir}")
-    print("[INFO] PaddleOCR is pre-trained; this script validates extraction on the dataset.")
-    print("[INFO] To run inference: use modern.py via the project registry.")
+def main(argv: list[str] | None = None) -> None:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(name)s | %(message)s")
+    args = _parse_args(argv)
 
-    # Run evaluation on sample images
+    # 1. Ensure dataset
+    data_root = ensure_invoice_dataset(force=args.force_download)
+    log.info("Dataset at %s", data_root)
+
+    # 2. Collect images
+    images: list[Path] = []
+    for ext in IMAGE_EXTS:
+        images.extend(data_root.rglob(f"*{ext}"))
+    images.sort()
+
+    if not images:
+        log.error("No images found in %s", data_root)
+        sys.exit(1)
+
+    images = images[: args.max_samples]
+    log.info("Evaluating on %d images", len(images))
+
+    # 3. Run OCR + extraction
     try:
-        from modern import InvoiceFieldExtractorModern
+        import cv2
+        from config import InvoiceConfig
+        from ocr_engine import OCREngine
+        from parser import InvoiceParser
+        from validator import InvoiceValidator
 
-        proj = InvoiceFieldExtractorModern()
-        proj.load()
-
-        data_root = Path(data_dir)
-        images = list(data_root.rglob("*.jpg")) + list(data_root.rglob("*.png"))
-        if not images:
-            print("[WARN] No images found in dataset directory.")
-            return
+        cfg = InvoiceConfig()
+        engine = OCREngine(cfg)
+        parser_inst = InvoiceParser()
+        validator = InvoiceValidator(cfg)
 
         results = []
-        for img_path in images[:20]:  # Evaluate on up to 20 samples
-            out = proj.predict(str(img_path))
+        for img_path in images:
+            img = cv2.imread(str(img_path))
+            if img is None:
+                continue
+            blocks = engine.run(img)
+            result = parser_inst.parse(blocks)
+            report = validator.validate(result)
+
+            field_names = list(result.fields.keys())
             results.append({
                 "file": img_path.name,
-                "num_lines": out["num_lines"],
-                "fields_found": sum(1 for v in out["fields"].values()
-                                    if v is not None and v != []),
+                "num_blocks": len(blocks),
+                "fields_found": len(result.fields),
+                "field_names": field_names,
+                "line_items": len(result.line_items),
+                "valid": report.valid,
+                "warnings": len(report.warnings),
             })
-            print(f"  {img_path.name}: {out['num_lines']} lines, "
-                  f"{results[-1]['fields_found']} fields extracted")
+            log.info("  %s: %d blocks, %d fields [%s], %d line items",
+                     img_path.name, len(blocks), len(field_names),
+                     ", ".join(field_names), len(result.line_items))
 
-        # Summary
-        out_path = Path(__file__).parent / "runs" / "eval_results.json"
+        # 4. Save results
+        out_path = Path(__file__).resolve().parent / "runs" / "eval_results.json"
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(results, indent=2), encoding="utf-8")
-        print(f"\n[INFO] Evaluation results saved to {out_path}")
+        log.info("Evaluation results saved to %s", out_path)
 
-    except ImportError as e:
-        print(f"[WARN] Could not run evaluation: {e}")
-        print("[INFO] Install paddleocr: pip install paddleocr paddlepaddle")
+        # 5. Summary
+        total_fields = sum(r["fields_found"] for r in results)
+        avg_fields = total_fields / len(results) if results else 0
+        log.info("Summary: %d images, avg %.1f fields/image", len(results), avg_fields)
+
+    except ImportError as exc:
+        log.error("Cannot run evaluation: %s", exc)
+        log.info("Install paddleocr: pip install paddleocr paddlepaddle")
 
 
 if __name__ == "__main__":

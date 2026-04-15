@@ -40,7 +40,7 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Gaze Direction Estimator — Inference",
+        description="Gaze Direction Estimator -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="'0' for webcam, or path to video/image")
@@ -94,6 +94,10 @@ def run(argv: list[str] | None = None) -> None:
     cfg = load_config(args.config) if args.config else GazeConfig()
     _apply_overrides(cfg, args)
 
+    if args.calibrate and not cfg.show_display:
+        log.error("Calibration requires display output; remove --no-display")
+        return
+
     if args.force_download:
         from data_bootstrap import ensure_gaze_dataset
         ensure_gaze_dataset(force=True)
@@ -131,7 +135,7 @@ def _run_calibration(
     calibrator = pipeline.calibrator
     calibrator.reset()
 
-    log.info("Starting calibration — follow on-screen instructions")
+    log.info("Starting calibration -- follow on-screen instructions")
 
     for position in CALIBRATION_POSITIONS:
         log.info("Look %s and press SPACE", position)
@@ -150,9 +154,9 @@ def _run_calibration(
             vis = frame.copy()
             status = f"Calibration: Look {position}"
             if collecting:
-                status += f" — collecting ({count}/{cfg.calibration_frames})"
+                status += f" -- collecting ({count}/{cfg.calibration_frames})"
             else:
-                status += " — press SPACE to start"
+                status += " -- press SPACE to start"
             cv2.putText(
                 vis, status, (20, 40),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2,
@@ -197,7 +201,7 @@ def _run_stream(
         log.error("Cannot open source: %s", source)
         return
 
-    log.info("Processing stream: %s — press 'q' to quit", label)
+    log.info("Processing stream: %s -- press 'q' to quit", label)
     frame_idx = 0
     out_dir = Path(cfg.output_dir)
 
@@ -213,7 +217,7 @@ def _run_stream(
 
             if cfg.show_display:
                 vis = draw_overlay(frame, result, cfg)
-                cv2.imshow(f"Gaze Direction — {label}", vis)
+                cv2.imshow(f"Gaze Direction -- {label}", vis)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -227,8 +231,9 @@ def _run_stream(
             frame_idx += 1
 
     cap.release()
-    cv2.destroyAllWindows()
-    log.info("Done — %d frames processed", frame_idx)
+    if cfg.show_display:
+        cv2.destroyAllWindows()
+    log.info("Done -- %d frames processed", frame_idx)
 
 
 def _run_image(

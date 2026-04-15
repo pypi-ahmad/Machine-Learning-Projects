@@ -1,4 +1,5 @@
 """Visual Anomaly Detector — anomaly scoring.
+"""Visual Anomaly Detector — anomaly scoring.
 
 Implements Mahalanobis distance and k-NN anomaly scoring against a
 learned distribution of normal features. Scoring is fully separated
@@ -12,6 +13,7 @@ Usage::
     scorer.fit(normal_features)               # (N, D) array
     score = scorer.score(feature_vector)       # scalar anomaly score
     scores = scorer.score_batch(features)      # (M,) array
+"""
 """
 
 from __future__ import annotations
@@ -48,6 +50,7 @@ class AnomalyScorer:
 
     def fit(self, features: np.ndarray) -> dict:
         """Fit the scorer to normal feature vectors.
+        """Fit the scorer to normal feature vectors.
 
         Parameters
         ----------
@@ -58,6 +61,7 @@ class AnomalyScorer:
         -------
         dict
             Fitting summary.
+        """
         """
         if features.ndim != 2 or features.shape[0] < 2:
             raise ValueError(
@@ -86,11 +90,13 @@ class AnomalyScorer:
 
     def score(self, feature: np.ndarray) -> dict[str, float]:
         """Score a single feature vector.
+        """Score a single feature vector.
 
         Returns
         -------
         dict
             ``mahalanobis``, ``knn``, and ``combined`` scores.
+        """
         """
         if not self._fitted:
             raise RuntimeError("Scorer not fitted. Call fit() first.")
@@ -136,7 +142,7 @@ class AnomalyScorer:
             knn_k=np.array(self.knn_k),
             regularization=np.array(self.regularization),
         )
-        log.info("Saved scorer → %s", path)
+        log.info("Saved scorer -> %s", path)
 
     def load(self, path: str | Path) -> None:
         """Load fitted scorer from NPZ file."""

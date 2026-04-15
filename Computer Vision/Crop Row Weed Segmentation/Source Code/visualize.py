@@ -1,4 +1,4 @@
-"""Crop Row & Weed Segmentation — overlay and mask rendering."""
+"""Crop Row & Weed Segmentation -- overlay and mask rendering."""
 
 from __future__ import annotations
 
@@ -56,8 +56,10 @@ def render_class_masks(
     cfg: CropWeedConfig,
 ) -> np.ndarray:
     """Render an RGB image where each pixel is coloured by class.
+    """Render an RGB image where each pixel is coloured by class.
 
     Pixels not covered by any class are black (background/soil).
+    """
     """
     h, w = seg.image_hw
     canvas = np.zeros((h, w, 3), dtype=np.uint8)

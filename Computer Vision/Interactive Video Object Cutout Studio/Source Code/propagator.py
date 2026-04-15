@@ -1,8 +1,10 @@
 """Interactive Video Object Cutout Studio — video mask propagation.
+"""Interactive Video Object Cutout Studio — video mask propagation.
 
 Wraps SAM2VideoPredictor for propagating mask prompts across video
 frames.  Handles frame extraction from video files and state
 management for the video predictor.
+"""
 """
 
 from __future__ import annotations
@@ -35,7 +37,7 @@ class PropagationResult:
 
 
 class VideoPropagator:
-    """SAM 2 video predictor — propagates prompts across frames."""
+    """SAM 2 video predictor -- propagates prompts across frames."""
 
     def __init__(self, cfg: CutoutConfig | None = None) -> None:
         if cfg is None:
@@ -72,8 +74,10 @@ class VideoPropagator:
         output_dir: str | Path | None = None,
     ) -> tuple[Path, int]:
         """Extract JPEG frames from *video_path* into *output_dir*.
+        """Extract JPEG frames from *video_path* into *output_dir*.
 
         Returns (frames_dir, frame_count).
+        """
         """
         video_path = Path(video_path)
         if output_dir is None:

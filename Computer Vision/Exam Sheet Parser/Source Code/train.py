@@ -1,8 +1,8 @@
 """Train / Evaluate Exam Sheet Parser.
 
-This project uses PaddleOCR (pre-trained) and rule-based layout
-parsing, so no training is needed.  This script downloads the
-dataset and evaluates the full pipeline on sample images.
+This project uses pre-trained OCR and rule-based layout parsing, so no
+training is needed. This script prepares the dataset and evaluates the
+full pipeline on sample images.
 
 Usage::
 
@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_exam_sheet_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -38,16 +38,14 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "exam_sheet_parser", force=args.force_download,
-        )
+        data_path = ensure_exam_sheet_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Prepared dataset -> {data_path}")
     else:
         data_dir = args.data
 
     print(f"[INFO] Dataset ready at {data_dir}")
-    print("[INFO] PaddleOCR is pre-trained; evaluating layout parsing on images.")
+    print("[INFO] OCR is pre-trained; evaluating layout parsing on images.")
 
     try:
         from modern import ExamSheetParserModern
@@ -102,7 +100,7 @@ def main(argv: list[str] | None = None) -> None:
             json.dumps(results, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except Exception as exc:
         print(f"[ERROR] Evaluation failed: {exc}")

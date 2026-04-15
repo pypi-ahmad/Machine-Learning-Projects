@@ -40,7 +40,7 @@ def main() -> None:
                         help="Batch size")
     parser.add_argument("--imgsz", type=int, default=640,
                         help="Input image size")
-    parser.add_argument("--model", type=str, default="yolo11m.pt",
+    parser.add_argument("--model", type=str, default="yolo26m.pt",
                         help="Base YOLO model")
     args = parser.parse_args()
 
@@ -67,8 +67,9 @@ def main() -> None:
         epochs=args.epochs,
         batch=args.batch,
         imgsz=args.imgsz,
-        project=str(REPO_ROOT / "runs" / "traffic_violation_analyzer"),
+        project=str(Path(__file__).resolve().parent / "runs"),
         name="train",
+        registry_project="traffic_violation_analyzer",
     )
 
 

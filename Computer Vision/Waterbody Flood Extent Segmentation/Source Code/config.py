@@ -1,4 +1,4 @@
-"""Waterbody & Flood Extent Segmentation — configuration."""
+"""Waterbody & Flood Extent Segmentation -- configuration."""
 
 from __future__ import annotations
 

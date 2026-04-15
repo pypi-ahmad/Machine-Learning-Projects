@@ -59,7 +59,7 @@ class AnalyzerPipeline:
         if ok:
             log.info("Analyzer pipeline ready")
         else:
-            log.error("Pipeline failed to load — MediaPipe unavailable")
+            log.error("Pipeline failed to load -- MediaPipe unavailable")
 
     def process(self, frame: np.ndarray) -> AnalysisResult:
         """Process a single frame.

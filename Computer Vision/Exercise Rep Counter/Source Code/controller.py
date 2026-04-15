@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — pipeline orchestrator."""
+"""Exercise Rep Counter -- pipeline orchestrator."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class ControllerResult:
 
 
 class ExerciseController:
-    """Orchestrates: detect → analyse exercise → smooth → count reps."""
+    """Orchestrates: detect -> analyse exercise -> smooth -> count reps."""
 
     def __init__(self, config: ExerciseConfig | None = None) -> None:
         self.cfg = config or ExerciseConfig()

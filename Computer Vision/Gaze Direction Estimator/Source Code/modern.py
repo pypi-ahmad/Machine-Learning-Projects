@@ -26,11 +26,11 @@ class GazeDirectionModern(CVProject):
 
     project_type = "detection"
     description = (
-        "MediaPipe iris landmark analysis for coarse gaze-direction "
+        "MediaPipe face landmark analysis for coarse gaze-direction "
         "classification (LEFT/RIGHT/UP/DOWN/CENTER)"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "MediaPipe Face Mesh iris landmarks + ratio-based classifier"
+    modern_tech = "MediaPipe Face Landmarker iris landmarks + ratio-based classifier"
 
     def __init__(self) -> None:
         super().__init__()

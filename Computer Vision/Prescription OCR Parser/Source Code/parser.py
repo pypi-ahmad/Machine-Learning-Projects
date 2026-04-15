@@ -1,6 +1,6 @@
 """High-level parser for Prescription OCR Parser.
 
-Orchestrates PaddleOCR → field extraction → structured result.
+Orchestrates OCR -> field extraction -> structured result.
 
 **DISCLAIMER:** This tool is for informational and educational
 purposes only.  It does not provide medical advice.
@@ -49,7 +49,7 @@ class PrescriptionParser:
         self._extractor = FieldExtractor(cfg)
 
     def parse(self, image: np.ndarray) -> PrescriptionResult:
-        """Full pipeline: OCR → extract → structure."""
+        """Full pipeline: OCR -> extract -> structure."""
         blocks = self._engine.run(image)
         return self._build_result(blocks)
 

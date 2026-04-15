@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — CVProject registry entry."""
+"""Sign Language Alphabet Recognizer -- CVProject registry entry."""
 
 from __future__ import annotations
 

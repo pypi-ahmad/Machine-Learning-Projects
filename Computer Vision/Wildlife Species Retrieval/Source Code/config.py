@@ -1,4 +1,4 @@
-"""Wildlife Species Retrieval — configuration."""
+"""Wildlife Species Retrieval -- configuration."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ class WildlifeConfig:
     backbone: str = "efficientnet_b0"
     embedding_dim: int = 1280
     imgsz: int = 224
-    device: str | None = None           # None → auto
+    device: str | None = None           # None -> auto
 
     # ── Index ─────────────────────────────────────────────
     index_path: str = "index/wildlife_index.npz"

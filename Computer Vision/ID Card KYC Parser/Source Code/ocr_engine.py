@@ -1,6 +1,6 @@
-"""PaddleOCR engine wrapper for ID Card KYC Parser.
+"""EasyOCR engine wrapper for ID Card KYC Parser.
 
-Thin abstraction over PaddleOCR that returns structured
+Thin abstraction over EasyOCR that returns structured
 ``OCRBlock`` dataclasses, hiding the raw tuple format.
 
 Usage::
@@ -33,45 +33,34 @@ class OCRBlock:
 
 
 class OCREngine:
-    """PaddleOCR wrapper with lazy initialisation."""
+    """EasyOCR wrapper with lazy initialisation."""
 
     def __init__(self, cfg) -> None:
         self.cfg = cfg
         self._ocr = None
 
     def _init_ocr(self) -> None:
-        from paddleocr import PaddleOCR
+        import easyocr
 
-        self._ocr = PaddleOCR(
-            use_angle_cls=True,
-            lang=self.cfg.ocr_lang,
-            use_gpu=self.cfg.use_gpu,
-            det_db_thresh=self.cfg.det_db_thresh,
-            rec_batch_num=self.cfg.rec_batch_num,
-            show_log=False,
+        lang = self.cfg.ocr_lang if hasattr(self.cfg, "ocr_lang") else "en"
+        self._ocr = easyocr.Reader(
+            [lang],
+            gpu=getattr(self.cfg, "use_gpu", True),
         )
-        log.info(
-            "PaddleOCR initialised (lang=%s, gpu=%s)",
-            self.cfg.ocr_lang,
-            self.cfg.use_gpu,
-        )
+        log.info("EasyOCR initialised (lang=%s)", lang)
 
     def run(self, image: np.ndarray) -> list[OCRBlock]:
         """Run OCR on a BGR image and return structured blocks."""
         if self._ocr is None:
             self._init_ocr()
 
-        result = self._ocr.ocr(image, cls=True)
+        result = self._ocr.readtext(image)
         blocks: list[OCRBlock] = []
 
-        if result is None:
+        if not result:
             return blocks
 
-        for page in result:
-            if page is None:
-                continue
-            for line in page:
-                bbox_raw, (text, conf) = line
+        for bbox_raw, text, conf in result:
                 bbox = [[int(p[0]), int(p[1])] for p in bbox_raw]
                 cx = int(np.mean([p[0] for p in bbox]))
                 cy = int(np.mean([p[1] for p in bbox]))

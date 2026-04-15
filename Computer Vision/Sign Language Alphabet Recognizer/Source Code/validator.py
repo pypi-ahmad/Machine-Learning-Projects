@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — quality validator."""
+"""Sign Language Alphabet Recognizer -- quality validator."""
 
 from __future__ import annotations
 

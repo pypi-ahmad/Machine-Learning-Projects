@@ -79,7 +79,7 @@ class CelebrityFaceModern(CVProject):
         except ImportError:
             pass
 
-        print("  [celebrity] No face-analysis library — install insightface or deepface")
+        print("  [celebrity] No face-analysis library -- install insightface or deepface")
 
     def predict(self, input_data):
         frame = input_data if isinstance(input_data, np.ndarray) else cv2.imread(str(input_data))

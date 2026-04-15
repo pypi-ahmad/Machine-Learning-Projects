@@ -32,7 +32,7 @@ log = logging.getLogger("ppe_compliance.evaluate")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="PPE Compliance Monitor — Evaluation")
-    parser.add_argument("--model", type=str, default="yolo11m.pt",
+    parser.add_argument("--model", type=str, default="yolo26m.pt",
                         help="Model weights path")
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--force-download", action="store_true")
@@ -71,7 +71,7 @@ def main() -> None:
     out_path = Path("outputs") / "eval_report.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    log.info("Evaluation report → %s", out_path)
+    log.info("Evaluation report -> %s", out_path)
 
     print(f"\nmAP@50  : {report['mAP50']:.4f}")
     print(f"mAP@50-95: {report['mAP50_95']:.4f}")

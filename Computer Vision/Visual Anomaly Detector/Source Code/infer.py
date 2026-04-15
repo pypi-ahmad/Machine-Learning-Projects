@@ -1,4 +1,5 @@
 """Visual Anomaly Detector — inference pipeline.
+"""Visual Anomaly Detector — inference pipeline.
 
 Supports single-image and folder-level inference with anomaly scoring,
 heatmap generation, and result export.
@@ -9,6 +10,7 @@ Usage::
     python infer.py --source folder/ --export results.json
     python infer.py --source image.png --heatmap
     python infer.py --source folder/ --threshold 4.0 --no-display
+"""
 """
 
 from __future__ import annotations
@@ -131,7 +133,7 @@ def infer_image(
             out_dir.mkdir(parents=True, exist_ok=True)
             out_path = out_dir / f"result_{Path(path).stem}.jpg"
             cv2.imwrite(str(out_path), annotated)
-            log.info("Saved → %s", out_path)
+            log.info("Saved -> %s", out_path)
 
     return result
 
@@ -173,7 +175,7 @@ def infer_folder(
         if (i + 1) % 20 == 0 or i == len(images) - 1:
             print(f"  [{i + 1}/{len(images)}] anomalies so far: {anomaly_count}")
 
-    print(f"\n[RESULT] {len(images)} images — "
+    print(f"\n[RESULT] {len(images)} images -- "
           f"{anomaly_count} anomalies, "
           f"{len(images) - anomaly_count} normal")
 
@@ -190,7 +192,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
-        description="Visual Anomaly Detector — image & folder inference",
+        description="Visual Anomaly Detector -- image & folder inference",
     )
     parser.add_argument("--source", required=True,
                         help="Image path or folder path")
@@ -232,7 +234,7 @@ def main() -> None:
             show=show, save_dir=args.save_dir, heatmap=args.heatmap,
         )
         results = [result]
-        print(f"[RESULT] {result['label']} — score={result.get('anomaly_score', 0):.4f}")
+        print(f"[RESULT] {result['label']} -- score={result.get('anomaly_score', 0):.4f}")
     else:
         print(f"[ERROR] Source not found: {source}")
         sys.exit(1)

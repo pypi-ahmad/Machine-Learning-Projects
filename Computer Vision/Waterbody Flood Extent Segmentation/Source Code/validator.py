@@ -1,4 +1,4 @@
-"""Waterbody & Flood Extent Segmentation — input validation."""
+"""Waterbody & Flood Extent Segmentation -- input validation."""
 
 from __future__ import annotations
 
@@ -47,7 +47,7 @@ def validate_source(source: str) -> ValidationReport:
         return report
     ext = p.suffix.lower()
     if ext not in _IMAGE_EXTS and ext not in _VIDEO_EXTS:
-        report.warn(f"Unexpected extension '{ext}' — may not be supported")
+        report.warn(f"Unexpected extension '{ext}' -- may not be supported")
     return report
 
 

@@ -30,7 +30,7 @@ def validate_image_path(path: str | Path) -> ValidationReport:
         report.fail(f"File not found: {p}")
         return report
     if p.suffix.lower() not in _IMAGE_EXTS:
-        report.warn(f"Unexpected extension '{p.suffix}' — may not be an image")
+        report.warn(f"Unexpected extension '{p.suffix}' -- may not be an image")
     return report
 
 

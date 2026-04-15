@@ -1,4 +1,5 @@
 """Visual Anomaly Detector — export utilities.
+"""Visual Anomaly Detector — export utilities.
 
 Export scored results to JSON and CSV.
 
@@ -8,6 +9,7 @@ Usage::
 
     export_results(results, "output/results.json")
     export_results(results, "output/results.csv", fmt="csv")
+"""
 """
 
 from __future__ import annotations
@@ -37,6 +39,7 @@ def export_results(
     fmt: str = "json",
 ) -> Path:
     """Export inference results to file.
+    """Export inference results to file.
 
     Parameters
     ----------
@@ -52,6 +55,7 @@ def export_results(
     Path
         Path to exported file.
     """
+    """
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -63,5 +67,5 @@ def export_results(
     else:
         out.write_text(json.dumps(results, indent=2, default=str), encoding="utf-8")
 
-    log.info("Exported %d results → %s", len(results), out)
+    log.info("Exported %d results -> %s", len(results), out)
     return out

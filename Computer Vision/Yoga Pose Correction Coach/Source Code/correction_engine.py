@@ -1,10 +1,12 @@
 """Yoga Pose Correction Coach — rule-based correction hints.
+"""Yoga Pose Correction Coach — rule-based correction hints.
 
 Each pose has a set of checkpoints.  A checkpoint inspects a
 specific measured angle and produces a human-readable hint if
 the angle is outside the acceptable range.
 
 Hints are intentionally phrased as gentle suggestions, not commands.
+"""
 """
 
 from __future__ import annotations
@@ -30,8 +32,10 @@ def generate_corrections(
     max_hints: int = 3,
 ) -> list[CorrectionHint]:
     """Return correction hints for *pose_name* given measured *angles*.
+    """Return correction hints for *pose_name* given measured *angles*.
 
     Hints are sorted by severity (major first), capped at *max_hints*.
+    """
     """
     rules = _CORRECTION_RULES.get(pose_name)
     if rules is None:
@@ -78,7 +82,7 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         {
             "key": "l_knee", "joint": "left knee", "expected": 170,
             "too_low": "Try to straighten your left leg fully.",
-            "too_high": "Avoid locking your left knee — keep a micro-bend.",
+            "too_high": "Avoid locking your left knee -- keep a micro-bend.",
         },
         {
             "key": "r_knee", "joint": "right knee", "expected": 170,
@@ -88,29 +92,29 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         {
             "key": "torso_vertical", "joint": "torso", "expected": 0,
             "too_low": "Good torso alignment.",
-            "too_high": "Try to stand more upright — tuck your tailbone.",
+            "too_high": "Try to stand more upright -- tuck your tailbone.",
         },
         {
             "key": "shoulder_level", "joint": "shoulders", "expected": 0,
             "too_low": "Good shoulder alignment.",
-            "too_high": "Level your shoulders — one may be raised.",
+            "too_high": "Level your shoulders -- one may be raised.",
         },
     ],
     "warrior_ii": [
         {
             "key": "l_knee", "joint": "front knee", "expected": 95,
             "too_low": "Bend your front knee a bit more toward 90°.",
-            "too_high": "Your front knee may be too far forward — try easing back.",
+            "too_high": "Your front knee may be too far forward -- try easing back.",
         },
         {
             "key": "l_shoulder", "joint": "left arm", "expected": 90,
             "too_low": "Raise your left arm to shoulder height.",
-            "too_high": "Lower your left arm — aim for shoulder height.",
+            "too_high": "Lower your left arm -- aim for shoulder height.",
         },
         {
             "key": "r_shoulder", "joint": "right arm", "expected": 90,
             "too_low": "Raise your right arm to shoulder height.",
-            "too_high": "Lower your right arm — aim for shoulder height.",
+            "too_high": "Lower your right arm -- aim for shoulder height.",
         },
         {
             "key": "l_elbow", "joint": "left elbow", "expected": 170,
@@ -120,14 +124,14 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         {
             "key": "torso_vertical", "joint": "torso", "expected": 0,
             "too_low": "Good torso alignment.",
-            "too_high": "Keep your torso upright — avoid leaning forward.",
+            "too_high": "Keep your torso upright -- avoid leaning forward.",
         },
     ],
     "warrior_i": [
         {
             "key": "l_knee", "joint": "front knee", "expected": 95,
             "too_low": "Bend your front knee a bit more toward 90°.",
-            "too_high": "Your front knee may be past your toes — ease back slightly.",
+            "too_high": "Your front knee may be past your toes -- ease back slightly.",
         },
         {
             "key": "l_shoulder", "joint": "left arm", "expected": 170,
@@ -142,7 +146,7 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         {
             "key": "torso_vertical", "joint": "torso", "expected": 0,
             "too_low": "Good torso alignment.",
-            "too_high": "Keep your torso upright — avoid leaning.",
+            "too_high": "Keep your torso upright -- avoid leaning.",
         },
     ],
     "tree": [
@@ -164,7 +168,7 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         {
             "key": "hip_level", "joint": "hips", "expected": 0,
             "too_low": "Good hip alignment.",
-            "too_high": "Try to level your hips — one may be dropped.",
+            "too_high": "Try to level your hips -- one may be dropped.",
         },
     ],
     "downward_dog": [
@@ -190,8 +194,8 @@ _CORRECTION_RULES: dict[str, list[dict]] = {
         },
         {
             "key": "l_hip", "joint": "hips", "expected": 70,
-            "too_low": "Push your hips higher — aim for an inverted V.",
-            "too_high": "Your hips may be too high — find the inverted V shape.",
+            "too_low": "Push your hips higher -- aim for an inverted V.",
+            "too_high": "Your hips may be too high -- find the inverted V shape.",
         },
     ],
 }

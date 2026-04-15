@@ -1,4 +1,4 @@
-"""Product Counterfeit Visual Checker — CVProject registry entry."""
+"""Product Counterfeit Visual Checker -- CVProject registry entry."""
 
 from __future__ import annotations
 

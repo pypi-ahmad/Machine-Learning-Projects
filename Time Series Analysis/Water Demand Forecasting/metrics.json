@@ -1,0 +1,51 @@
+{
+  "project": "Water Demand Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 17.330278849059795,
+  "best_RMSE": 20.352039187897407,
+  "best_MAPE": 3.463134069536175,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 17.330278849059795,
+      "RMSE": 20.352039187897407,
+      "MAPE": 3.463134069536175
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 21.5756935509071,
+      "RMSE": 27.432341946075443,
+      "MAPE": 4.772408222201376
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 25.260012521584745,
+      "RMSE": 31.133410294767586,
+      "MAPE": 5.558585654989145
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 26.800000000000004,
+      "RMSE": 33.677907128730965,
+      "MAPE": 5.7928559620783995
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 34.00714285714285,
+      "RMSE": 42.25430662750755,
+      "MAPE": 7.509767679010637
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 35.11555199289829,
+      "RMSE": 44.449182538800834,
+      "MAPE": 7.783142885827742
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 35.75000000000001,
+      "RMSE": 43.130160146766364,
+      "MAPE": 7.815576938292593
+    }
+  ]
+}

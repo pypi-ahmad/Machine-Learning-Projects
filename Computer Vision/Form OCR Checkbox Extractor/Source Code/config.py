@@ -35,7 +35,7 @@ class FormCheckboxConfig:
     checkbox_max_size: int = 60        # max side length (px)
     checkbox_aspect_lo: float = 0.7    # min aspect ratio (w/h)
     checkbox_aspect_hi: float = 1.4    # max aspect ratio
-    fill_threshold: float = 0.35       # pixel-fill ratio → checked
+    fill_threshold: float = 0.35       # pixel-fill ratio -> checked
     radio_circularity: float = 0.75    # min circularity for radio buttons
     adaptive_block_size: int = 25      # adaptive-threshold block size
     adaptive_c: int = 10              # constant subtracted in adaptive thresh

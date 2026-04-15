@@ -69,7 +69,7 @@ class CellNucleiSegmentationModern(CVProject):
                 self._backend = "medsam"
                 print(f"  [cell_nuclei] MedSAM comparison loaded ({ckpt.name})")
         except ImportError:
-            print("  [cell_nuclei] MedSAM not installed — comparison skipped")
+            print("  [cell_nuclei] MedSAM not installed -- comparison skipped")
 
     @staticmethod
     def _find_checkpoint(name: str):

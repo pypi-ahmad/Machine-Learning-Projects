@@ -1,0 +1,16 @@
+IT Security Policy — Effective January 2025
+
+Section 1: Password Requirements
+Minimum 14 characters with uppercase, lowercase, number, and special character. Passwords must be changed every 90 days. No reuse of last 12 passwords. Multi-factor authentication (MFA) is mandatory for all accounts.
+
+Section 2: Device Management
+Only company-issued or IT-approved personal devices may access company systems. All devices must have endpoint protection. Automatic OS updates must be enabled.
+
+Section 3: Data Classification
+Confidential: Financial data, PII, trade secrets — restricted access only. Internal: Company comms, project docs — employee access only. Public: Marketing materials — no restrictions.
+
+Section 4: Incident Response
+Report all security incidents to security@company.com within 1 hour. Do not attempt to investigate on your own. Preserve evidence. IT Security responds within 30 minutes during business hours.
+
+Section 5: Software Installation
+Only IT-approved software on company devices. Submit requests via IT portal. Open-source software requires security review. No torrent software.

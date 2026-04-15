@@ -1,4 +1,4 @@
-"""Finger Counter Pro — overlay renderer."""
+"""Finger Counter Pro -- overlay renderer."""
 
 from __future__ import annotations
 

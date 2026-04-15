@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_scene_text_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -38,11 +38,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "scene_text_reader_translator", force=args.force_download,
-        )
+        data_path = ensure_scene_text_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -97,7 +95,7 @@ def main(argv: list[str] | None = None) -> None:
             json.dumps(results, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except Exception as exc:
         print(f"[ERROR] Evaluation failed: {exc}")

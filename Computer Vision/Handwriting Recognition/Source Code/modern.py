@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Handwriting Recognition.
+"""Modern v2 pipeline — Handwriting Recognition.
 
 Replaces: Custom TF/Keras HTR model
 Uses:     TrOCR (HuggingFace) for handwritten text line/word recognition,
@@ -8,6 +9,7 @@ Pipeline: preprocess image → TrOCR generates text autoregressively
           (no image-level classification — proper sequence-to-sequence OCR)
 
 The original implementation is preserved in src/main.py.
+"""
 """
 
 import sys
@@ -57,7 +59,7 @@ class HandwritingRecognitionModern(CVProject):
             from paddleocr import PaddleOCR
             self._ocr = PaddleOCR(use_angle_cls=True, lang="en", use_gpu=True, show_log=False)
             self._backend = "paddle"
-            print("  [handwriting] TrOCR not available — using PaddleOCR")
+            print("  [handwriting] TrOCR not available -- using PaddleOCR")
             return
         except ImportError:
             pass

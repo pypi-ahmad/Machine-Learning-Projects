@@ -1,7 +1,8 @@
 """Dataset bootstrap for Sports Ball Possession Tracker.
 
-Downloads and prepares a public sports detection dataset (players + ball)
-from Roboflow in YOLO format.
+Downloads a public sports detection dataset (players + ball) via
+DatasetResolver.  Falls back to generating a small synthetic
+YOLO-format dataset for demo and CI purposes.
 
 Usage::
 
@@ -15,10 +16,13 @@ from __future__ import annotations
 
 import json
 import logging
-import shutil
+import random
 import sys
 import time
 from pathlib import Path
+
+import cv2
+import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -28,49 +32,139 @@ log = logging.getLogger("sports_possession.data_bootstrap")
 PROJECT_KEY = "sports_ball_possession_tracker"
 DATA_ROOT = REPO_ROOT / "data" / PROJECT_KEY
 
+CLASS_NAMES = ["player", "ball"]
+
 
 def ensure_sports_dataset(*, force: bool = False) -> Path:
-    """Download and prepare the sports detection dataset.
+    """Download or generate the sports detection dataset.
 
-    1. Delegates to ``scripts/download_data.py:ensure_dataset``.
-    2. Organises into ``data/raw/`` and ``data/processed/``.
-    3. Writes ``data/dataset_info.json`` with provenance metadata.
-    4. Idempotent — skips if ``.ready`` marker exists unless *force*.
-
-    Returns
-    -------
-    Path
-        The project data root (``data/sports_ball_possession_tracker/``).
+    Returns the project data root containing a ``data.yaml``.
     """
-    ready_marker = DATA_ROOT / "processed" / ".ready"
+    ready_marker = DATA_ROOT / ".ready"
     if ready_marker.exists() and not force:
-        log.info("[%s] Dataset already prepared at %s — skipping", PROJECT_KEY, DATA_ROOT)
+        log.info("[%s] Dataset ready at %s -- skipping", PROJECT_KEY, DATA_ROOT)
         return DATA_ROOT
 
-    from scripts.download_data import ensure_dataset as _ensure
-    data_path = _ensure(PROJECT_KEY, force=force)
+    # Try real download first
+    try:
+        from scripts.download_data import ensure_dataset as _ensure
+        data_path = _ensure(PROJECT_KEY, force=force)
+        data_yaml = _find_data_yaml(data_path)
+        if data_yaml is not None:
+            log.info("[%s] Real dataset found at %s", PROJECT_KEY, data_path)
+            ready_marker.parent.mkdir(parents=True, exist_ok=True)
+            ready_marker.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
+            return data_path
+    except Exception as exc:
+        log.warning("[%s] Real download failed (%s) -- generating synthetic data", PROJECT_KEY, exc)
 
-    raw_dir = data_path / "raw"
-    processed_dir = data_path / "processed"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    processed_dir.mkdir(parents=True, exist_ok=True)
+    # Synthetic fallback
+    _generate_synthetic(DATA_ROOT)
 
-    data_yaml = _find_data_yaml(data_path)
-    if data_yaml is not None:
-        _organise_raw(data_path, raw_dir, data_yaml)
-        _prepare_processed(raw_dir, processed_dir, data_yaml)
-    else:
-        log.warning("[%s] No data.yaml found — dataset may need manual prep", PROJECT_KEY)
-
-    _write_info(data_path)
+    # Metadata
+    info = {
+        "dataset_key": PROJECT_KEY,
+        "source_type": "synthetic",
+        "description": "Auto-generated sports field with players and ball",
+        "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    (DATA_ROOT / "dataset_info.json").write_text(
+        json.dumps(info, indent=2), encoding="utf-8"
+    )
 
     ready_marker.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
-    log.info("[%s] Dataset prepared at %s", PROJECT_KEY, DATA_ROOT)
+    log.info("[%s] Synthetic dataset ready at %s", PROJECT_KEY, DATA_ROOT)
     return DATA_ROOT
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Synthetic dataset generator
+# ---------------------------------------------------------------------------
+
+_SPLIT_COUNTS = {"train": 60, "valid": 15, "test": 15}
+
+_PLAYER_COLOURS = [
+    (200, 50, 50), (50, 50, 200), (200, 200, 50), (50, 200, 200),
+    (200, 50, 200), (100, 150, 50),
+]
+
+
+def _generate_synthetic(root: Path) -> None:
+    """Create a tiny YOLO-format sports dataset with players and a ball."""
+    random.seed(42)
+    np.random.seed(42)
+
+    for split, count in _SPLIT_COUNTS.items():
+        img_dir = root / split / "images"
+        lbl_dir = root / split / "labels"
+        img_dir.mkdir(parents=True, exist_ok=True)
+        lbl_dir.mkdir(parents=True, exist_ok=True)
+
+        for idx in range(count):
+            img, labels = _make_frame(idx)
+            cv2.imwrite(str(img_dir / f"frame_{idx:04d}.png"), img)
+            lbl_dir.joinpath(f"frame_{idx:04d}.txt").write_text(
+                "\n".join(labels), encoding="utf-8"
+            )
+
+    # data.yaml
+    yaml_text = (
+        f"path: {root}\n"
+        f"train: train/images\n"
+        f"val: valid/images\n"
+        f"test: test/images\n"
+        f"nc: {len(CLASS_NAMES)}\n"
+        f"names: {CLASS_NAMES}\n"
+    )
+    (root / "data.yaml").write_text(yaml_text, encoding="utf-8")
+
+
+def _make_frame(seed_offset: int) -> tuple[np.ndarray, list[str]]:
+    """Generate a synthetic sports field frame with players and a ball."""
+    h, w = 720, 1280
+    # Green field background
+    img = np.full((h, w, 3), (50, 140, 50), dtype=np.uint8)
+    # Add field lines
+    cv2.line(img, (w // 2, 0), (w // 2, h), (220, 220, 220), 2)
+    cv2.circle(img, (w // 2, h // 2), 80, (220, 220, 220), 2)
+    labels: list[str] = []
+
+    # Players (class 0)
+    n_players = random.randint(4, 10)
+    for i in range(n_players):
+        pw, ph = random.randint(30, 50), random.randint(60, 100)
+        x1 = random.randint(20, w - pw - 20)
+        y1 = random.randint(20, h - ph - 20)
+        x2, y2 = x1 + pw, y1 + ph
+        colour = _PLAYER_COLOURS[i % len(_PLAYER_COLOURS)]
+        cv2.rectangle(img, (x1, y1), (x2, y2), colour, -1)
+        # Head
+        cv2.circle(img, ((x1 + x2) // 2, y1 - 8), 8, (180, 160, 140), -1)
+
+        cx = (x1 + x2) / 2 / w
+        cy = (y1 + y2) / 2 / h
+        nw = pw / w
+        nh = ph / h
+        labels.append(f"0 {cx:.6f} {cy:.6f} {nw:.6f} {nh:.6f}")
+
+    # Ball (class 1) — one per frame
+    bx = random.randint(40, w - 40)
+    by = random.randint(40, h - 40)
+    br = random.randint(8, 14)
+    cv2.circle(img, (bx, by), br, (255, 255, 255), -1)
+    cv2.circle(img, (bx, by), br, (0, 0, 0), 1)
+
+    cx = bx / w
+    cy = by / h
+    nw = (br * 2) / w
+    nh = (br * 2) / h
+    labels.append(f"1 {cx:.6f} {cy:.6f} {nw:.6f} {nh:.6f}")
+
+    return img, labels
+
+
+# ---------------------------------------------------------------------------
+# Helpers
 # ---------------------------------------------------------------------------
 
 def _find_data_yaml(root: Path) -> Path | None:
@@ -82,56 +176,3 @@ def _find_data_yaml(root: Path) -> Path | None:
     for candidate in root.rglob("data.yaml"):
         return candidate
     return None
-
-
-def _organise_raw(data_path: Path, raw_dir: Path, data_yaml: Path) -> None:
-    yaml_parent = data_yaml.parent
-    for split in ("train", "valid", "val", "test"):
-        src = yaml_parent / split
-        if src.exists() and src != raw_dir / split:
-            dst = raw_dir / split
-            if dst.exists():
-                shutil.rmtree(dst)
-            shutil.copytree(str(src), str(dst))
-    shutil.copy2(str(data_yaml), str(raw_dir / "data.yaml"))
-
-
-def _prepare_processed(raw_dir: Path, processed_dir: Path, data_yaml: Path) -> None:
-    import yaml as _y
-
-    try:
-        cfg = _y.safe_load((raw_dir / "data.yaml").read_text(encoding="utf-8"))
-    except Exception:
-        shutil.copy2(str(raw_dir / "data.yaml"), str(processed_dir / "data.yaml"))
-        return
-
-    for key in ("train", "val", "test"):
-        if key in cfg:
-            split_dir = raw_dir / ("valid" if key == "val" and (raw_dir / "valid").exists() else key)
-            if split_dir.exists():
-                cfg[key] = str(split_dir / "images")
-
-    out_yaml = processed_dir / "data.yaml"
-    out_yaml.write_text(_y.dump(cfg, default_flow_style=False), encoding="utf-8")
-    shutil.copy2(str(out_yaml), str(DATA_ROOT / "data.yaml"))
-
-
-def _write_info(data_path: Path) -> None:
-    info_path = data_path / "dataset_info.json"
-    if info_path.exists():
-        return
-
-    from utils.datasets import DatasetResolver
-    resolver = DatasetResolver()
-    entry = resolver.registry.get(PROJECT_KEY, {})
-
-    info = {
-        "dataset_key": PROJECT_KEY,
-        "source_type": entry.get("type", "unknown"),
-        "description": entry.get("description", ""),
-        "source_workspace": entry.get("workspace", ""),
-        "source_project": entry.get("project", ""),
-        "source_version": entry.get("version", ""),
-        "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-    }
-    info_path.write_text(json.dumps(info, indent=2), encoding="utf-8")

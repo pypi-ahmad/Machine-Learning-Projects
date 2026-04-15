@@ -34,7 +34,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--imgsz", type=int, default=1024)
     p.add_argument("--device", default="", help="CUDA device or 'cpu'")
-    p.add_argument("--project", default=str(REPO_ROOT / "runs" / "doc_layout"),
+    p.add_argument("--project", default=str(Path(__file__).resolve().parent / "runs"),
                     help="Output project dir")
     p.add_argument("--name", default="train", help="Run name")
     p.add_argument("--force-download", action="store_true")

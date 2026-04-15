@@ -30,12 +30,12 @@ from visualize import save_annotated, save_grid
 
 
 def _print_result(path: Path | str, cr, rd) -> None:
-    status = "✓ ROUTED" if rd.routed else "⚠ REVIEW"
+    status = "ROUTED" if rd.routed else "REVIEW"
     print(
         f"  {Path(path).name:40s} "
         f"{cr.display_label:25s} "
         f"conf={cr.confidence:.2%}  "
-        f"→ {rd.pipeline:30s} [{status}]"
+        f"-> {rd.pipeline:30s} [{status}]"
     )
 
 
@@ -85,17 +85,17 @@ def main() -> None:
     cls_results = clf.classify_batch(images)
     routes = router.route_batch(cls_results)
 
-    print(f"\n{'─' * 90}")
-    print(f"  Document Type Classifier Router — {len(cls_results)} document(s)")
-    print(f"{'─' * 90}")
+    print(f"\n{'-' * 90}")
+    print(f"  Document Type Classifier Router -- {len(cls_results)} document(s)")
+    print(f"{'-' * 90}")
     for p, cr, rd in zip(paths, cls_results, routes):
         _print_result(p, cr, rd)
 
     routed = sum(1 for rd in routes if rd.routed)
     review = len(routes) - routed
-    print(f"{'─' * 90}")
+    print(f"{'-' * 90}")
     print(f"  Routed: {routed}  |  Manual review: {review}")
-    print(f"{'─' * 90}\n")
+    print(f"{'-' * 90}\n")
 
     # ── Optional outputs ──────────────────────────────────
     if args.save:

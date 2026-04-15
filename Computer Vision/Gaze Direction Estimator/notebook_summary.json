@@ -3,7 +3,7 @@
   "key": "gaze_direction_estimator",
   "category": "Detection",
   "type": "detection",
-  "tech": "MediaPipe Face Mesh iris landmarks + ratio-based classifier",
+  "tech": "MediaPipe Face Landmarker iris landmarks + ratio-based classifier",
   "model_family": [
     "MediaPipe"
   ],

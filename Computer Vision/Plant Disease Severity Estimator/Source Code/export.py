@@ -1,4 +1,4 @@
-"""Plant Disease Severity Estimator — structured export (JSON / CSV)."""
+"""Plant Disease Severity Estimator -- structured export (JSON / CSV)."""
 
 from __future__ import annotations
 

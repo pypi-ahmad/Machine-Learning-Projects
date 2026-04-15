@@ -1,4 +1,4 @@
-"""Road Pothole Segmentation — idempotent dataset bootstrap."""
+"""Road Pothole Segmentation -- idempotent dataset bootstrap."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ if str(_REPO) not in sys.path:
 
 def ensure_pothole_dataset(force: bool = False) -> Path:
     """Download and prepare the pothole dataset (idempotent).
+    """Download and prepare the pothole dataset (idempotent).
 
     Parameters
     ----------
@@ -26,6 +27,7 @@ def ensure_pothole_dataset(force: bool = False) -> Path:
     -------
     Path
         Root of the prepared dataset directory.
+    """
     """
     from scripts.download_data import ensure_dataset
 

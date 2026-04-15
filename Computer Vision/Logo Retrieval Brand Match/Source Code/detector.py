@@ -1,8 +1,10 @@
 """Logo Retrieval Brand Match — optional logo detector / cropper.
+"""Logo Retrieval Brand Match — optional logo detector / cropper.
 
 Uses YOLO to detect and crop logo regions from scene images.
 If no logo is detected, the full image is returned.
 Detection and retrieval are kept separate — this module is optional.
+"""
 """
 
 from __future__ import annotations
@@ -84,7 +86,7 @@ class LogoDetector:
 
 
 def centre_crop(image_bgr: np.ndarray, ratio: float = 0.8) -> np.ndarray:
-    """Simple centre crop — useful when logos are centred in the image."""
+    """Simple centre crop -- useful when logos are centred in the image."""
     h, w = image_bgr.shape[:2]
     dh, dw = int(h * (1 - ratio) / 2), int(w * (1 - ratio) / 2)
     return image_bgr[dh:h - dh, dw:w - dw]

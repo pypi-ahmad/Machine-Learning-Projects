@@ -1,4 +1,4 @@
-"""Logo Retrieval Brand Match — configuration."""
+"""Logo Retrieval Brand Match -- configuration."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ class LogoConfig:
     backbone: str = "efficientnet_b0"   # torchvision model name
     embedding_dim: int = 1280           # depends on backbone
     imgsz: int = 224                    # input resize
-    device: str | None = None           # None → auto
+    device: str | None = None           # None -> auto
 
     # ── Detection (optional cropping) ─────────────────────
     use_detector: bool = False

@@ -43,7 +43,7 @@ _DISCLAIMER = (
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Prescription OCR Parser — Inference",
+        description="Prescription OCR Parser -- Inference",
         epilog=_DISCLAIMER,
     )
     p.add_argument("--source", required=True, help="Image path or directory")
@@ -128,7 +128,7 @@ def run(argv: list[str] | None = None) -> None:
                 img, src_path.name, parser, validator, exporter, cfg,
             )
 
-    log.info("Done — processed %d prescription(s)", len(sources))
+    log.info("Done -- processed %d prescription(s)", len(sources))
 
 
 def _process_image(
@@ -171,7 +171,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"Rx: {label}", vis)

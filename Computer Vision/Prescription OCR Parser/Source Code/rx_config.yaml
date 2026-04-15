@@ -2,6 +2,7 @@
 # Copy this file and adjust values as needed.
 
 # ── OCR ────────────────────────────────────────────────────
+ocr_backend: "auto"
 ocr_lang: "en"
 use_gpu: false
 det_db_thresh: 0.3

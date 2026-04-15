@@ -32,7 +32,7 @@ log = logging.getLogger("traffic_violation.evaluate")
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Traffic Violation Analyzer — Evaluation")
-    parser.add_argument("--model", type=str, default="yolo11m.pt",
+    parser.add_argument("--model", type=str, default="yolo26m.pt",
                         help="Model weights path")
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--force-download", action="store_true")
@@ -71,12 +71,15 @@ def main() -> None:
     out_path = Path("outputs") / "eval_report.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
-    log.info("Evaluation report → %s", out_path)
+    log.info("Evaluation report -> %s", out_path)
 
     print(f"\nmAP@50  : {report['mAP50']:.4f}")
     print(f"mAP@50-95: {report['mAP50_95']:.4f}")
     for cls_name, vals in report["per_class"].items():
-        print(f"  {cls_name:20s}  P={vals['precision']:.3f}  R={vals['recall']:.3f}  AP50={vals['ap50']:.3f}")
+        p = vals['precision'] if vals['precision'] is not None else 0.0
+        r = vals['recall'] if vals['recall'] is not None else 0.0
+        a = vals['ap50'] if vals['ap50'] is not None else 0.0
+        print(f"  {cls_name:20s}  P={p:.3f}  R={r:.3f}  AP50={a:.3f}")
 
 
 if __name__ == "__main__":

@@ -29,12 +29,12 @@ log = logging.getLogger("waste_sorting.train")
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Train waste detection model")
-    p.add_argument("--model", default="yolo11n.pt", help="Base model weights")
+    p.add_argument("--model", default="yolo26m.pt", help="Base model weights")
     p.add_argument("--epochs", type=int, default=50)
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--device", default="", help="CUDA device or 'cpu'")
-    p.add_argument("--project", default=str(REPO_ROOT / "runs" / "waste_sorting"), help="Output project dir")
+    p.add_argument("--project", default=str(Path(__file__).resolve().parent / "runs"), help="Output project dir")
     p.add_argument("--name", default="train", help="Run name")
     p.add_argument("--force-download", action="store_true")
     return p.parse_args(argv)
@@ -56,14 +56,15 @@ def main(argv: list[str] | None = None) -> None:
     # 2. Train
     log.info("Training with data_yaml=%s  model=%s  epochs=%d", data_yaml, args.model, args.epochs)
     train_detection(
+        data_yaml=str(data_yaml),
         model=args.model,
-        data=str(data_yaml),
         epochs=args.epochs,
         batch=args.batch,
         imgsz=args.imgsz,
         device=args.device or None,
         project=args.project,
         name=args.name,
+        registry_project="waste_sorting_detector",
     )
 
 

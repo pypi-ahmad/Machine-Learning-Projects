@@ -76,14 +76,14 @@ class ClusterValidator:
         if result.num_clusters == 0 and result.total_faces > 0:
             report.warnings.append(Warning(
                 "clusters",
-                "No clusters formed — all faces may be singletons "
+                "No clusters formed -- all faces may be singletons "
                 "(try lowering distance_threshold)",
             ))
 
         if self.cfg.warn_single_face and result.num_clusters == 1:
             report.warnings.append(Warning(
                 "clusters",
-                "Only one cluster formed — all faces grouped as one identity",
+                "Only one cluster formed -- all faces grouped as one identity",
             ))
 
         if report.warnings:

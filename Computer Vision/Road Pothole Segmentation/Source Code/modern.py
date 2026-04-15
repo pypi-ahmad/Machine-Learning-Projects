@@ -1,4 +1,4 @@
-"""Road Pothole Segmentation — CVProject registry entry."""
+"""Road Pothole Segmentation -- CVProject registry entry."""
 
 from __future__ import annotations
 

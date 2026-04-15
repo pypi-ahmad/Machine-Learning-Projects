@@ -1,7 +1,7 @@
 """Configuration dataclasses for Exam Sheet Parser.
 
 Provides :class:`ExamSheetConfig` with all tunables for the
-PaddleOCR + layout-aware exam-sheet parsing pipeline: OCR settings,
+layout-aware exam-sheet parsing pipeline: OCR settings,
 layout detection, question extraction, validation, export, and display.
 """
 
@@ -21,7 +21,8 @@ sys.path.insert(0, str(REPO_ROOT))
 class ExamSheetConfig:
     """Top-level project configuration."""
 
-    # ── PaddleOCR ──────────────────────────────────────────
+    # ── OCR ────────────────────────────────────────────────
+    ocr_backend: str = "auto"
     ocr_lang: str = "en"
     use_gpu: bool = False
     det_db_thresh: float = 0.3
@@ -29,8 +30,8 @@ class ExamSheetConfig:
     use_angle_cls: bool = True
 
     # ── Layout parsing ─────────────────────────────────────
-    heading_min_height: int = 18       # px — blocks taller treated as heading
-    heading_font_ratio: float = 1.4    # if h > median_h * ratio → heading
+    heading_min_height: int = 18       # px -- blocks taller treated as heading
+    heading_font_ratio: float = 1.4    # if h > median_h * ratio -> heading
     question_number_pattern: str = r"^\s*(?:Q\.?\s*)?(\d{1,3})\s*[\.\)\:]"
     mcq_option_pattern: str = r"^\s*\(?([A-Ea-e])\s*[\.\)\:]"
     marks_pattern: str = r"\[?\(?\s*(\d{1,3})\s*(?:marks?|pts?|points?)\s*\)?\]?"
@@ -38,7 +39,7 @@ class ExamSheetConfig:
         "section", "part", "instructions", "note",
         "answer", "total", "time",
     ])
-    merge_y_tolerance: int = 12        # px — blocks within tol on Y merged
+    merge_y_tolerance: int = 12        # px -- blocks within tol on Y merged
     min_block_confidence: float = 0.25
 
     # ── Validation ─────────────────────────────────────────

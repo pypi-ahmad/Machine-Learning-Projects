@@ -1,4 +1,5 @@
 """Video Event Search — export utilities.
+"""Video Event Search — export utilities.
 
 Export events to JSON and CSV files.  Thin wrapper around
 :class:`event_store.EventStore` for convenience usage from the CLI.
@@ -8,6 +9,7 @@ Usage::
     from export import export_events
 
     export_events("outputs/events.json", "outputs/events.csv")
+"""
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ def export_events(
     fmt: str = "json",
 ) -> Path:
     """Re-export events from a JSON store to another format.
+    """Re-export events from a JSON store to another format.
 
     Parameters
     ----------
@@ -41,6 +44,7 @@ def export_events(
     -------
     Path
         Path to the exported file.
+    """
     """
     json_path = Path(json_path)
     if not json_path.exists():
@@ -57,7 +61,7 @@ def export_events(
     # Default: pretty-print JSON
     out = Path(csv_path) if csv_path else json_path
     out.write_text(json.dumps(events, indent=2), encoding="utf-8")
-    log.info("Exported %d events → %s", len(events), out)
+    log.info("Exported %d events -> %s", len(events), out)
     return out
 
 
@@ -72,4 +76,4 @@ def _write_csv(events: list[dict], path: Path) -> None:
         writer = csv.DictWriter(fh, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(events)
-    log.info("Exported %d events → %s (CSV)", len(events), path)
+    log.info("Exported %d events -> %s (CSV)", len(events), path)

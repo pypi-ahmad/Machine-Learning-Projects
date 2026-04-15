@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Visual Anomaly Detector.
+"""Modern v2 pipeline — Visual Anomaly Detector.
 
 Uses:     ResNet feature extraction + Mahalanobis / k-NN anomaly scoring
 Pipeline: Feature extractor → scorer → threshold → heatmap
@@ -9,6 +10,7 @@ generation to ``heatmap.py``, and visualisation to ``visualize.py``.
 
 This file is the thin CVProject adapter that plugs into the repo's
 global registry.
+"""
 """
 
 import sys
@@ -36,7 +38,7 @@ from visualize import draw_result
 @register("visual_anomaly_detector")
 class VisualAnomalyDetectorModern(CVProject):
     project_type = "anomaly"
-    description = "Unsupervised visual anomaly detection — train on normal, flag abnormal"
+    description = "Unsupervised visual anomaly detection -- train on normal, flag abnormal"
     legacy_tech = "N/A (new project)"
     modern_tech = "ResNet feature extraction + Mahalanobis / k-NN anomaly scoring + patch heatmaps"
 
@@ -74,7 +76,7 @@ class VisualAnomalyDetectorModern(CVProject):
                 self._threshold = meta.get("threshold", self._threshold)
             print(f"[visual_anomaly_detector] Loaded trained model from {model_path}")
         else:
-            print("[visual_anomaly_detector] No trained model found — "
+            print("[visual_anomaly_detector] No trained model found -- "
                   "run train.py first or call train_normal()")
 
         self._heatmap_gen = HeatmapGenerator(
@@ -113,6 +115,7 @@ class VisualAnomalyDetectorModern(CVProject):
 
     def train_normal(self, image_paths: list[str]) -> dict:
         """Train the anomaly scorer on normal images.
+        """Train the anomaly scorer on normal images.
 
         Parameters
         ----------
@@ -123,6 +126,7 @@ class VisualAnomalyDetectorModern(CVProject):
         -------
         dict
             Training summary.
+        """
         """
         features = self._extractor.extract_from_paths(image_paths, batch_size=32)
         summary = self._scorer.fit(features)

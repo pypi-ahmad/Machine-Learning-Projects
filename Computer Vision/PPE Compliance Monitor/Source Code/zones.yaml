@@ -6,7 +6,7 @@
 #
 # Copy this file and adjust polygons to match your camera view.
 
-model: yolo11m.pt
+model: yolo26m.pt
 conf_threshold: 0.30
 iou_threshold: 0.45
 imgsz: 640

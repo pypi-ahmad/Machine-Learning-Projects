@@ -1,7 +1,7 @@
-"""MediaPipe Face Mesh landmark index constants and helpers.
+"""MediaPipe face-landmark index constants and helpers.
 
 Centralises the landmark indices and 3D model points used across
-face-analysis projects.  Import from here instead of hard-coding::
+face-analysis projects. Import from here instead of hard-coding::
 
     from shared.landmarks import LEFT_EYE, RIGHT_EYE, MODEL_POINTS_3D
 """
@@ -61,7 +61,7 @@ def pixel_coords(
     landmarks
         ``face_landmarks.landmark`` list from MediaPipe.
     index : int
-        Landmark index (0–467).
+        Landmark index from the MediaPipe face-landmark output.
     frame_w, frame_h : int
         Frame dimensions.
 

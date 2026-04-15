@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: YOLO26m detect → crop + rectify → PaddleOCR → regex cleanup → dedup.
+Pipeline: YOLO26m detect → crop + rectify → PaddleOCR-first OCR → regex cleanup → dedup.
 """
 
 from __future__ import annotations
@@ -27,9 +27,9 @@ class NumberPlateReaderProModern(CVProject):
     """License plate detection + OCR + dedup pipeline."""
 
     project_type = "detection"
-    description = "License plate detection (YOLO26m) + OCR (PaddleOCR) + frame dedup"
+    description = "License plate detection (YOLO26m) + OCR (PaddleOCR-first) + frame dedup"
     legacy_tech = "N/A (new project)"
-    modern_tech = "YOLO26m plate detection + PaddleOCR recognition + regex cleanup"
+    modern_tech = "YOLO26m plate detection + PaddleOCR-first recognition + regex cleanup"
 
     def __init__(self) -> None:
         super().__init__()

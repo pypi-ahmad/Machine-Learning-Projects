@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Face Anti-Spoofing Detection.
+"""Modern v2 pipeline — Face Anti-Spoofing Detection.
 
 Replaces: Haar cascade face detector + Keras liveness classifier
 Uses:     YOLO face detector for face ROI + LBP texture analysis (primary)
@@ -9,6 +10,7 @@ Pipeline: YOLO face detector → crop face ROI → LBP variance → classify
 Note: LBP texture variance is a naive baseline.  Swap in a dedicated
       FAS model (e.g. MiniFASNet, CDCN) for production anti-spoofing.
       Register the model at registry key "face_antispoof".
+"""
 """
 
 import sys
@@ -25,9 +27,11 @@ from core.registry import register
 
 def _lbp_variance(gray_crop: np.ndarray) -> float:
     """Compute Local Binary Pattern variance as a simple texture measure.
+    """Compute Local Binary Pattern variance as a simple texture measure.
 
     Real face textures have higher variance than printed/screen replays.
     This is a naive baseline — replace with a trained FAS classifier.
+    """
     """
     if gray_crop.size < 100:
         return 0.0
@@ -47,7 +51,7 @@ class FaceAntiSpoofingModern(CVProject):
     legacy_tech = "Haar cascade + Keras anti-spoofing CNN"
     modern_tech = "YOLO face detector + LBP texture variance (baseline)"
 
-    LBP_THRESHOLD = 800.0  # Tunable: lower → more sensitive
+    LBP_THRESHOLD = 800.0  # Tunable: lower -> more sensitive
     _face_detector = None
     _haar = None
     _backend = "none"

@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Emotion Recognition from Facial Expression.
+"""Modern v2 pipeline — Emotion Recognition from Facial Expression.
 
 Replaces: Haar cascade face detector + Keras emotion classifier
 Uses:     YOLO face detector for face ROI + DeepFace emotion analysis
@@ -7,6 +8,7 @@ Pipeline: YOLO face detector → crop face ROI → DeepFace.analyze(crop, emotio
 Fallback: DeepFace single-pass (detection + analysis) if no YOLO face weights
 
 Merged: Absorbs "Face Emotion Recognition" (identical pipeline).
+"""
 """
 
 import sys
@@ -59,7 +61,7 @@ class EmotionRecognitionModern(CVProject):
         elif self._deepface:
             print("  [emotion] DeepFace single-pass (detection + emotion analysis)")
         else:
-            print("  [emotion] No backend available — install deepface: pip install deepface")
+            print("  [emotion] No backend available -- install deepface: pip install deepface")
 
     def predict(self, input_data):
         frame = input_data if isinstance(input_data, np.ndarray) else cv2.imread(str(input_data))

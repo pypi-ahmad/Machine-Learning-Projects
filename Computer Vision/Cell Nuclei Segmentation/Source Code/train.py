@@ -32,7 +32,7 @@ def main() -> None:
     if args.data is None:
         data_path = DatasetResolver().resolve("cell_nuclei_seg", force=args.force_download)
         data_yaml = str(data_path / "data.yaml")
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
         print("[INFO] Ensure data.yaml exists with YOLO-format segmentation annotations.")
     else:
         data_yaml = args.data

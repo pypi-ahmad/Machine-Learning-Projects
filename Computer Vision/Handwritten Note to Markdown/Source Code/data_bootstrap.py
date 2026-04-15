@@ -1,7 +1,8 @@
 """Dataset bootstrap for Handwritten Note to Markdown.
 
 Downloads and prepares a public handwriting recognition dataset
-for testing and benchmarking the TrOCR pipeline.
+for testing and benchmarking the TrOCR pipeline.  Falls back to
+synthetic handwritten-style images when the download is unavailable.
 
 Usage::
 
@@ -13,12 +14,15 @@ Usage::
 
 from __future__ import annotations
 
-import json
 import logging
+import random
 import shutil
 import sys
 import time
 from pathlib import Path
+
+import cv2
+import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -30,88 +34,137 @@ DATA_ROOT = REPO_ROOT / "data" / PROJECT_KEY
 
 
 def ensure_handwriting_dataset(*, force: bool = False) -> Path:
-    """Download and prepare the handwriting dataset.
+    """Download and prepare the handwriting dataset (idempotent).
 
-    1. Delegates to ``scripts/download_data.py:ensure_dataset``.
-    2. Organises images into ``data/processed/images/``.
-    3. Writes ``data/dataset_info.json`` with provenance metadata.
-    4. Idempotent — skips if ``.ready`` marker exists unless *force*.
-
-    Returns
-    -------
-    Path
-        The project data root (``data/handwritten_note_to_markdown/``).
+    Falls back to synthetic handwriting images when download fails.
     """
-    ready_marker = DATA_ROOT / "processed" / ".ready"
+    images_dir = DATA_ROOT / "images"
+    ready_marker = DATA_ROOT / ".ready"
+
     if ready_marker.exists() and not force:
-        log.info(
-            "[%s] Dataset already prepared at %s — skipping",
-            PROJECT_KEY, DATA_ROOT,
-        )
+        log.info("[%s] Dataset ready at %s -- skipping", PROJECT_KEY, DATA_ROOT)
         return DATA_ROOT
 
-    from scripts.download_data import ensure_dataset as _ensure
+    # Try downloading real dataset first
+    try:
+        from scripts.download_data import ensure_dataset as _ensure
+        data_path = _ensure(PROJECT_KEY, force=force)
 
-    data_path = _ensure(PROJECT_KEY, force=force)
+        images_dir.mkdir(parents=True, exist_ok=True)
+        count = 0
+        for img in data_path.rglob("*"):
+            if img.suffix.lower() in {".jpg", ".jpeg", ".png"} and img.parent != images_dir:
+                dst = images_dir / img.name
+                if not dst.exists():
+                    shutil.copy2(str(img), str(dst))
+                    count += 1
+        if count > 0:
+            log.info("[%s] Collected %d handwriting images", PROJECT_KEY, count)
+            ready_marker.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
+            return DATA_ROOT
+    except Exception as exc:
+        log.warning(
+            "[%s] Download failed (%s), generating synthetic handwriting images",
+            PROJECT_KEY, exc,
+        )
 
-    raw_dir = data_path / "raw"
-    processed_dir = data_path / "processed"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    processed_dir.mkdir(parents=True, exist_ok=True)
-
-    _collect_images(data_path, processed_dir)
-    _write_info(data_path)
-
-    ready_marker.write_text(
-        time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8",
-    )
-    log.info("[%s] Dataset prepared at %s", PROJECT_KEY, DATA_ROOT)
+    # Fallback: generate synthetic handwriting-style images
+    _generate_synthetic_notes(images_dir, n=20)
+    ready_marker.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
+    log.info("[%s] Synthetic dataset ready at %s", PROJECT_KEY, DATA_ROOT)
     return DATA_ROOT
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Synthetic handwritten note generator
 # ---------------------------------------------------------------------------
 
-IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
+_SENTENCES = [
+    "The quick brown fox jumps over the lazy dog",
+    "Meeting notes from Monday morning standup",
+    "Remember to buy milk eggs and bread",
+    "Call dentist office to reschedule appointment",
+    "Project deadline is next Friday at five pm",
+    "Ideas for the new product launch campaign",
+    "Review the quarterly financial report today",
+    "Schedule lunch with the marketing team",
+    "Pick up dry cleaning before six pm",
+    "Brainstorm session for website redesign",
+    "Read chapter seven of the textbook tonight",
+    "Submit expense reports by end of month",
+    "Water the plants in the office kitchen",
+    "Update resume and cover letter draft",
+    "Practice piano scales for thirty minutes",
+    "Fix the leaking faucet in the bathroom",
+    "Prepare presentation slides for Thursday",
+    "Send thank you cards to wedding guests",
+    "Check train schedule for weekend trip",
+    "Organize desk drawers and file cabinet",
+    "Write feedback for team performance review",
+    "Confirm hotel reservation for conference",
+    "Draft agenda for the board meeting",
+    "Review pull request from the dev team",
+    "Take dog to vet for annual checkup",
+]
+
+_TITLES = [
+    "TODO LIST", "Meeting Notes", "Shopping List", "Daily Journal",
+    "Project Ideas", "Action Items", "Reminders", "Quick Notes",
+    "Weekly Goals", "Study Notes",
+]
 
 
-def _collect_images(data_path: Path, processed_dir: Path) -> None:
-    """Collect all handwriting images into processed/images/."""
-    images_dir = processed_dir / "images"
-    images_dir.mkdir(parents=True, exist_ok=True)
+def _generate_synthetic_notes(out_dir: Path, n: int = 20) -> None:
+    """Render synthetic handwriting-style note images."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(42)
 
-    count = 0
-    for img in data_path.rglob("*"):
-        if img.suffix.lower() in IMAGE_EXTS and "processed" not in img.parts:
-            dst = images_dir / img.name
-            if not dst.exists():
-                shutil.copy2(str(img), str(dst))
-                count += 1
+    # Use FONT_HERSHEY_SCRIPT fonts to approximate handwriting
+    hand_fonts = [
+        cv2.FONT_HERSHEY_SCRIPT_SIMPLEX,
+        cv2.FONT_HERSHEY_SCRIPT_COMPLEX,
+    ]
 
-    log.info(
-        "[%s] Collected %d handwriting images into %s",
-        PROJECT_KEY, count, images_dir,
-    )
+    for i in range(n):
+        title = rng.choice(_TITLES)
+        num_lines = rng.randint(4, 8)
+        lines = rng.sample(_SENTENCES, min(num_lines, len(_SENTENCES)))
 
+        w, h = 800, 120 + num_lines * 55
+        # Slightly off-white with variation
+        bg_val = rng.randint(235, 250)
+        img = np.ones((h, w, 3), dtype=np.uint8) * bg_val
 
-def _write_info(data_path: Path) -> None:
-    info_path = data_path / "dataset_info.json"
-    if info_path.exists():
-        return
+        # Add subtle paper texture noise
+        noise = np.random.RandomState(i).randint(0, 8, img.shape, dtype=np.uint8)
+        img = np.clip(img.astype(np.int16) - noise, 0, 255).astype(np.uint8)
 
-    from utils.datasets import DatasetResolver
+        # Optional faint ruled lines
+        if rng.random() > 0.3:
+            for ly in range(90, h, 55):
+                cv2.line(img, (30, ly), (w - 30, ly), (210, 210, 230), 1)
 
-    resolver = DatasetResolver()
-    entry = resolver.registry.get(PROJECT_KEY, {})
+        font = rng.choice(hand_fonts)
+        # Dark ink colour with slight variation
+        ink = (
+            rng.randint(10, 40),
+            rng.randint(10, 40),
+            rng.randint(60, 100),
+        )
 
-    info = {
-        "dataset_key": PROJECT_KEY,
-        "source_type": entry.get("type", "unknown"),
-        "description": entry.get("description", ""),
-        "source_workspace": entry.get("workspace", ""),
-        "source_project": entry.get("project", ""),
-        "source_version": entry.get("version", ""),
-        "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-    }
-    info_path.write_text(json.dumps(info, indent=2), encoding="utf-8")
+        # Title (larger, bolder)
+        cv2.putText(img, title, (40, 55), font, 0.8, ink, 2)
+
+        # Lines
+        y = 120
+        for line in lines:
+            # Slight random x-offset and y-jitter for handwriting feel
+            x_off = rng.randint(35, 55)
+            y_jitter = rng.randint(-3, 3)
+            fs = rng.uniform(0.48, 0.58)
+            cv2.putText(img, line, (x_off, y + y_jitter), font, fs, ink, 1)
+            y += 55
+
+        cv2.imwrite(str(out_dir / f"note_{i:04d}.png"), img)
+
+    log.info("[%s] Generated %d synthetic notes in %s", PROJECT_KEY, n, out_dir)

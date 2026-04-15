@@ -1,0 +1,51 @@
+{
+  "project": "Temperature Forecasting",
+  "best_model": "FLAML Test (catboost)",
+  "best_MAE": 1.1309005591635455,
+  "best_RMSE": 1.7070813495459898,
+  "best_MAPE": 27.701787552924706,
+  "all_results": [
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 1.1309005591635455,
+      "RMSE": 1.7070813495459898,
+      "MAPE": 27.701787552924706
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 1.5275074680814231,
+      "RMSE": 2.1216542842643875,
+      "MAPE": 36.24244238474375
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 1.5499999999999994,
+      "RMSE": 2.4049057005569736,
+      "MAPE": 38.93664814522539
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 1.6214285714285712,
+      "RMSE": 2.492990172463582,
+      "MAPE": 40.34061605740854
+    },
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 1.7698652848680645,
+      "RMSE": 2.1310340541164954,
+      "MAPE": 39.02994801909202
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 2.1885740490709344,
+      "RMSE": 2.7043632999400553,
+      "MAPE": 48.15990654305091
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 2.6642857142857146,
+      "RMSE": 3.1019579070552936,
+      "MAPE": 56.33233690758094
+    }
+  ]
+}

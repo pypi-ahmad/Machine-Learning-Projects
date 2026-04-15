@@ -1,4 +1,4 @@
-"""Finger Counter Pro — configuration dataclass."""
+"""Finger Counter Pro -- configuration dataclass."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class FingerCounterConfig:
 
     # --- Smoothing ---
     enable_smoothing: bool = True
-    ema_alpha: float = 0.35       # 0→sluggish, 1→raw (per-hand count)
+    ema_alpha: float = 0.35       # 0->sluggish, 1->raw (per-hand count)
     vote_window: int = 5          # majority-vote window size
 
     # --- Display ---

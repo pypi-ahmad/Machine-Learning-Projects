@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — configuration dataclass."""
+"""Yoga Pose Correction Coach -- configuration dataclass."""
 
 from __future__ import annotations
 

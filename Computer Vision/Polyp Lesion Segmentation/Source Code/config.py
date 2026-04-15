@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — configuration."""
+"""Polyp Lesion Segmentation -- configuration."""
 
 from __future__ import annotations
 

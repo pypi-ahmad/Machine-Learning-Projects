@@ -37,7 +37,7 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Driver Drowsiness Monitor — Inference",
+        description="Driver Drowsiness Monitor -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="'0' for webcam, path to video file, or image")
@@ -113,6 +113,9 @@ def run(argv: list[str] | None = None) -> None:
 
     pipeline = DrowsinessPipeline(cfg)
     pipeline.load()
+    if not pipeline.detector.ready:
+        log.error("MediaPipe Face Landmarker unavailable")
+        return
     validator = DrowsinessValidator(cfg)
 
     source = args.source
@@ -140,7 +143,7 @@ def _run_stream(
         log.error("Cannot open source: %s", source)
         return
 
-    log.info("Processing stream: %s — press 'q' to quit", label)
+    log.info("Processing stream: %s -- press 'q' to quit", label)
     frame_idx = 0
     out_dir = Path(cfg.output_dir)
 
@@ -156,7 +159,7 @@ def _run_stream(
 
             if cfg.show_display:
                 vis = draw_overlay(frame, result, cfg)
-                cv2.imshow(f"Drowsiness Monitor — {label}", vis)
+                cv2.imshow(f"Drowsiness Monitor -- {label}", vis)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -170,7 +173,8 @@ def _run_stream(
             frame_idx += 1
 
     cap.release()
-    cv2.destroyAllWindows()
+    if cfg.show_display:
+        cv2.destroyAllWindows()
 
     # Save alert logs
     if pipeline.alert_manager.count > 0:
@@ -178,7 +182,7 @@ def _run_stream(
         pipeline.alert_manager.save_json()
 
     log.info(
-        "Done — %d frames, %d blinks, %d yawns, %d alerts",
+        "Done -- %d frames, %d blinks, %d yawns, %d alerts",
         frame_idx,
         pipeline.blink_tracker._total_blinks,
         pipeline.yawn_tracker._total_yawns,

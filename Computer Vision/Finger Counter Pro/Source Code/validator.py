@@ -1,4 +1,4 @@
-"""Finger Counter Pro — input quality validator."""
+"""Finger Counter Pro -- input quality validator."""
 
 from __future__ import annotations
 

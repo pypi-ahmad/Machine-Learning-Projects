@@ -65,7 +65,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # 3. Print summary
     box = metrics.box
-    log.info("──── OBB Evaluation Results ────")
+    log.info("---- OBB Evaluation Results ----")
     log.info("mAP@50    : %.4f", box.map50)
     log.info("mAP@50-95 : %.4f", box.map)
     log.info("Precision : %.4f", box.mp)
@@ -73,7 +73,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if hasattr(box, "ap_class_index") and box.ap_class_index is not None:
         names = model.names
-        log.info("──── Per-class AP@50 ────")
+        log.info("---- Per-class AP@50 ----")
         for i, cls_idx in enumerate(box.ap_class_index):
             ap50 = box.ap50[i] if hasattr(box, "ap50") else 0.0
             log.info("  %-20s  %.4f", names.get(int(cls_idx), cls_idx), ap50)

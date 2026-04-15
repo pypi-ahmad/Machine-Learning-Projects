@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: PaddleOCR → optional translation → structured output.
+Pipeline: PaddleOCR-first OCR → optional translation hook → structured output.
 """
 
 from __future__ import annotations
@@ -28,11 +28,11 @@ class SceneTextReaderTranslator(CVProject):
 
     project_type = "ocr"
     description = (
-        "Scene text detection and recognition (PaddleOCR) with "
+        "Scene text detection and recognition (PaddleOCR-first OCR) with "
         "optional translation hook"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "PaddleOCR scene text detection + recognition + translation hook"
+    modern_tech = "PaddleOCR-first scene text detection + recognition + translation hook"
 
     def __init__(self) -> None:
         super().__init__()

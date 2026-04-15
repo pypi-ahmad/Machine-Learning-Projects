@@ -1,4 +1,5 @@
 """Train / Evaluate Gesture Controlled Slideshow.
+"""Train / Evaluate Gesture Controlled Slideshow.
 
 MediaPipe Hands is pre-trained — this script downloads a sample
 hand-gesture dataset and runs the gesture recognition pipeline
@@ -9,6 +10,7 @@ Usage::
     python train.py
     python train.py --data path/to/hand_images
     python train.py --force-download
+"""
 """
 
 from __future__ import annotations
@@ -44,7 +46,7 @@ def main(argv: list[str] | None = None) -> None:
             "gesture_controlled_slideshow", force=args.force_download,
         )
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -144,7 +146,7 @@ def main(argv: list[str] | None = None) -> None:
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")

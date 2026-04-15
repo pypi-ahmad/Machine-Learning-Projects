@@ -1,7 +1,9 @@
 """Waterbody & Flood Extent Segmentation — coverage metrics.
+"""Waterbody & Flood Extent Segmentation — coverage metrics.
 
 Computes water coverage for single images and changed-area metrics for
 before/after comparison mode.
+"""
 """
 
 from __future__ import annotations
@@ -51,7 +53,7 @@ def compute_coverage(seg: SegmentationResult) -> CoverageMetrics:
 
 @dataclass
 class FloodChangeMetrics:
-    """Metrics for a before→after flood comparison."""
+    """Metrics for a before->after flood comparison."""
 
     before_water_px: int
     after_water_px: int

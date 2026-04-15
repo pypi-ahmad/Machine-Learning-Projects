@@ -1,4 +1,4 @@
-"""Logo Retrieval Brand Match — input validation."""
+"""Logo Retrieval Brand Match -- input validation."""
 
 from __future__ import annotations
 

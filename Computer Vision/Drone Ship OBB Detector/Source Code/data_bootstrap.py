@@ -1,7 +1,8 @@
 """Dataset bootstrap for Drone Ship OBB Detector.
 
-Downloads and prepares a public OBB-format aerial dataset.
-Uses the DOTA-ship subset from Roboflow (OBB-labeled, YOLO-OBB format).
+Tries the shared Roboflow download infrastructure first. If that fails
+(missing credentials, network error, etc.), generates a small synthetic
+YOLO-OBB-format dataset so that train / evaluate / infer can still run.
 
 Usage::
 
@@ -13,12 +14,14 @@ Usage::
 
 from __future__ import annotations
 
-import json
 import logging
-import shutil
+import math
+import random
 import sys
-import time
 from pathlib import Path
+
+import cv2
+import numpy as np
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
@@ -28,152 +31,153 @@ log = logging.getLogger("drone_ship_obb.data_bootstrap")
 PROJECT_KEY = "drone_ship_obb_detector"
 DATA_ROOT = REPO_ROOT / "data" / PROJECT_KEY
 
+CLASSES = ["ship", "large-vehicle", "small-vehicle", "plane", "helicopter",
+           "harbor", "storage-tank", "container-crane"]
+SPLIT_COUNTS = {"train": 60, "valid": 15, "test": 15}
+
 
 def ensure_obb_dataset(*, force: bool = False) -> Path:
-    """Download and prepare the OBB aerial ship dataset.
-
-    1. Delegates to ``scripts/download_data.py:ensure_dataset`` for the
-       actual download (Roboflow / URL).
-    2. Organises into ``data/raw/`` and ``data/processed/``.
-    3. Validates that labels contain OBB-format annotations.
-    4. Writes ``data/dataset_info.json`` with provenance metadata.
-    5. Idempotent — skips if ``.ready`` marker exists unless *force*.
-
-    Returns
-    -------
-    Path
-        The project data root (``data/drone_ship_obb_detector/``).
-    """
-    ready_marker = DATA_ROOT / "processed" / ".ready"
+    """Return path to a ready YOLO-OBB-format dataset, downloading or generating it."""
+    ready_marker = DATA_ROOT / ".ready"
     if ready_marker.exists() and not force:
-        log.info("[%s] Dataset already prepared at %s — skipping", PROJECT_KEY, DATA_ROOT)
+        log.info("[%s] Dataset already prepared at %s", PROJECT_KEY, DATA_ROOT)
         return DATA_ROOT
 
-    # Step 1: download via shared infrastructure
-    from scripts.download_data import ensure_dataset as _ensure
-    data_path = _ensure(PROJECT_KEY, force=force)
+    # Try real download first
+    try:
+        from scripts.download_data import ensure_dataset as _ensure
+        data_path = _ensure(PROJECT_KEY, force=force)
+        if (data_path / "data.yaml").exists():
+            ready_marker.parent.mkdir(parents=True, exist_ok=True)
+            ready_marker.write_text("ok", encoding="utf-8")
+            log.info("[%s] Real dataset ready at %s", PROJECT_KEY, data_path)
+            return data_path
+    except Exception as exc:
+        log.warning("[%s] Real download failed (%s) -> falling back to synthetic dataset",
+                    PROJECT_KEY, exc)
 
-    raw_dir = data_path / "raw"
-    processed_dir = data_path / "processed"
-    raw_dir.mkdir(parents=True, exist_ok=True)
-    processed_dir.mkdir(parents=True, exist_ok=True)
-
-    # Step 2: locate the YOLO data.yaml from the download
-    data_yaml = _find_data_yaml(data_path)
-
-    if data_yaml is not None:
-        _organise_raw(data_path, raw_dir, data_yaml)
-        _prepare_processed(raw_dir, processed_dir, data_yaml)
-        _validate_obb_labels(raw_dir)
-    else:
-        log.warning("[%s] No data.yaml found — dataset may need manual preparation", PROJECT_KEY)
-
-    # Step 3: write dataset_info.json
-    _write_info(data_path)
-
-    # Step 4: stamp ready marker
-    ready_marker.write_text(time.strftime("%Y-%m-%dT%H:%M:%S"), encoding="utf-8")
-    log.info("[%s] OBB dataset prepared at %s", PROJECT_KEY, DATA_ROOT)
+    # Generate synthetic OBB dataset
+    _generate_synthetic(DATA_ROOT)
+    ready_marker.write_text("synthetic", encoding="utf-8")
+    log.info("[%s] Synthetic OBB dataset generated at %s", PROJECT_KEY, DATA_ROOT)
     return DATA_ROOT
 
 
 # ---------------------------------------------------------------------------
-# Internal helpers
+# Synthetic OBB data generation
 # ---------------------------------------------------------------------------
 
-def _find_data_yaml(root: Path) -> Path | None:
-    if (root / "data.yaml").exists():
-        return root / "data.yaml"
-    for child in root.iterdir():
-        if child.is_dir() and (child / "data.yaml").exists():
-            return child / "data.yaml"
-    for candidate in root.rglob("data.yaml"):
-        return candidate
-    return None
+_WATER_COLOR = (180, 130, 80)       # blueish water (BGR)
+_LAND_COLOR = (80, 140, 90)         # greenish land
+_OBJ_COLORS = {
+    "ship": (200, 200, 220),
+    "large-vehicle": (60, 60, 180),
+    "small-vehicle": (60, 180, 60),
+    "plane": (220, 220, 220),
+    "helicopter": (180, 100, 180),
+    "harbor": (120, 120, 120),
+    "storage-tank": (160, 160, 100),
+    "container-crane": (100, 200, 200),
+}
 
 
-def _organise_raw(data_path: Path, raw_dir: Path, data_yaml: Path) -> None:
-    yaml_parent = data_yaml.parent
-    for split_name in ("train", "valid", "val", "test"):
-        src = yaml_parent / split_name
-        if src.exists() and src != raw_dir / split_name:
-            dst = raw_dir / split_name
-            if dst.exists():
-                shutil.rmtree(dst)
-            shutil.copytree(str(src), str(dst))
-    shutil.copy2(str(data_yaml), str(raw_dir / "data.yaml"))
+def _generate_synthetic(root: Path) -> None:
+    """Create a small synthetic aerial OBB dataset in YOLO-OBB format."""
+    rng = random.Random(42)
+    img_w, img_h = 1024, 1024
+
+    for split, count in SPLIT_COUNTS.items():
+        img_dir = root / split / "images"
+        lbl_dir = root / split / "labels"
+        img_dir.mkdir(parents=True, exist_ok=True)
+        lbl_dir.mkdir(parents=True, exist_ok=True)
+
+        for i in range(count):
+            img, labels = _make_aerial_scene(rng, img_w, img_h)
+            cv2.imwrite(str(img_dir / f"{split}_{i:04d}.jpg"), img)
+            lbl_dir.joinpath(f"{split}_{i:04d}.txt").write_text(
+                "\n".join(labels) + "\n" if labels else "", encoding="utf-8",
+            )
+
+    yaml_text = (
+        f"path: {root.as_posix()}\n"
+        f"train: train/images\n"
+        f"val: valid/images\n"
+        f"test: test/images\n"
+        f"nc: {len(CLASSES)}\n"
+        f"names: {CLASSES}\n"
+    )
+    (root / "data.yaml").write_text(yaml_text, encoding="utf-8")
 
 
-def _prepare_processed(raw_dir: Path, processed_dir: Path, data_yaml: Path) -> None:
-    import yaml as _y
-
-    try:
-        cfg = _y.safe_load((raw_dir / "data.yaml").read_text(encoding="utf-8"))
-    except Exception:
-        shutil.copy2(str(raw_dir / "data.yaml"), str(processed_dir / "data.yaml"))
-        return
-
-    for key in ("train", "val", "test"):
-        if key in cfg:
-            split_dir = raw_dir / ("valid" if key == "val" and (raw_dir / "valid").exists() else key)
-            if split_dir.exists():
-                cfg[key] = str(split_dir / "images")
-
-    out_yaml = processed_dir / "data.yaml"
-    out_yaml.write_text(_y.dump(cfg, default_flow_style=False), encoding="utf-8")
-    shutil.copy2(str(out_yaml), str(DATA_ROOT / "data.yaml"))
+def _rotated_rect_corners(
+    cx: float, cy: float, w: float, h: float, angle_rad: float,
+) -> np.ndarray:
+    """Return 4 corners of a rotated rectangle as (4, 2) array."""
+    cos_a, sin_a = math.cos(angle_rad), math.sin(angle_rad)
+    dx_w, dy_w = cos_a * w / 2, sin_a * w / 2
+    dx_h, dy_h = -sin_a * h / 2, cos_a * h / 2
+    return np.array([
+        [cx - dx_w - dx_h, cy - dy_w - dy_h],
+        [cx + dx_w - dx_h, cy + dy_w - dy_h],
+        [cx + dx_w + dx_h, cy + dy_w + dy_h],
+        [cx - dx_w + dx_h, cy - dy_w + dy_h],
+    ], dtype=np.float32)
 
 
-def _validate_obb_labels(raw_dir: Path) -> None:
-    """Spot-check that label files contain OBB-format annotations.
+def _make_aerial_scene(
+    rng: random.Random, w: int, h: int,
+) -> tuple[np.ndarray, list[str]]:
+    """Render a synthetic aerial scene with rotated objects."""
+    # Water background with some land patches
+    img = np.full((h, w, 3), _WATER_COLOR, dtype=np.uint8)
+    # Add noise for texture
+    noise = np.random.RandomState(rng.randint(0, 99999)).randint(
+        -15, 15, (h, w, 3), dtype=np.int16,
+    )
+    img = np.clip(img.astype(np.int16) + noise, 0, 255).astype(np.uint8)
 
-    OBB labels have 9 values per line: class_id x1 y1 x2 y2 x3 y3 x4 y4
-    (all normalised) — 4 corner points instead of cx cy w h.
-    """
-    label_dirs = list(raw_dir.rglob("labels"))
-    checked = 0
-    for ldir in label_dirs:
-        for txt in ldir.glob("*.txt"):
-            lines = txt.read_text(encoding="utf-8").strip().splitlines()
-            for line in lines[:5]:
-                parts = line.strip().split()
-                if len(parts) == 9:
-                    checked += 1
-                elif len(parts) == 5:
-                    log.warning(
-                        "[%s] Label %s appears to use HBB format (5 values) "
-                        "instead of OBB (9 values). Training may fail.",
-                        PROJECT_KEY, txt.name,
-                    )
-                break
-            if checked > 0:
-                break
-        if checked > 0:
-            break
+    # Add a land patch in ~30% of images
+    if rng.random() < 0.3:
+        lx = rng.randint(0, w // 2)
+        ly = rng.randint(0, h // 2)
+        lw = rng.randint(w // 4, w // 2)
+        lh = rng.randint(h // 4, h // 2)
+        cv2.rectangle(img, (lx, ly), (lx + lw, ly + lh), _LAND_COLOR, -1)
 
-    if checked > 0:
-        log.info("[%s] OBB label format validated (%d files checked)", PROJECT_KEY, checked)
-    else:
-        log.warning("[%s] Could not validate OBB label format — no label files found", PROJECT_KEY)
+    # Place 2-8 rotated objects
+    n_objs = rng.randint(2, 8)
+    labels: list[str] = []
+    for _ in range(n_objs):
+        cls_id = rng.randint(0, len(CLASSES) - 1)
+        cls_name = CLASSES[cls_id]
+        color = _OBJ_COLORS.get(cls_name, (180, 180, 180))
+        color = tuple(min(255, max(0, c + rng.randint(-20, 20))) for c in color)
 
+        # Object size depends on class
+        if cls_name == "ship":
+            obj_w, obj_h = rng.randint(60, 140), rng.randint(15, 35)
+        elif cls_name in ("large-vehicle", "plane"):
+            obj_w, obj_h = rng.randint(40, 80), rng.randint(15, 30)
+        elif cls_name in ("small-vehicle", "helicopter"):
+            obj_w, obj_h = rng.randint(20, 40), rng.randint(10, 20)
+        else:
+            obj_w, obj_h = rng.randint(30, 70), rng.randint(30, 70)
 
-def _write_info(data_path: Path) -> None:
-    info_path = data_path / "dataset_info.json"
-    if info_path.exists():
-        return
+        cx = rng.randint(obj_w, w - obj_w)
+        cy = rng.randint(obj_h, h - obj_h)
+        angle = rng.uniform(-math.pi / 2, math.pi / 2)
 
-    from utils.datasets import DatasetResolver
-    resolver = DatasetResolver()
-    entry = resolver.registry.get(PROJECT_KEY, {})
+        corners = _rotated_rect_corners(cx, cy, obj_w, obj_h, angle)
+        pts = corners.astype(np.int32)
+        cv2.fillPoly(img, [pts], color)
+        cv2.polylines(img, [pts], True, (0, 0, 0), 1)
 
-    info = {
-        "dataset_key": PROJECT_KEY,
-        "source_type": entry.get("type", "unknown"),
-        "description": entry.get("description", ""),
-        "source_workspace": entry.get("workspace", ""),
-        "source_project": entry.get("project", ""),
-        "source_version": entry.get("version", ""),
-        "label_format": "yolo-obb (4 corner points, normalised)",
-        "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
-    }
-    info_path.write_text(json.dumps(info, indent=2), encoding="utf-8")
+        # YOLO-OBB format: cls_id x1 y1 x2 y2 x3 y3 x4 y4 (normalized)
+        corners_norm = corners.copy()
+        corners_norm[:, 0] /= w
+        corners_norm[:, 1] /= h
+        coords = " ".join(f"{c:.6f}" for c in corners_norm.flatten())
+        labels.append(f"{cls_id} {coords}")
+
+    return img, labels

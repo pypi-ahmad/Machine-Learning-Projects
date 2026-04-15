@@ -1,4 +1,4 @@
-"""Waterbody & Flood Extent Segmentation — overlay and visual report rendering."""
+"""Waterbody & Flood Extent Segmentation -- overlay and visual report rendering."""
 
 from __future__ import annotations
 

@@ -106,9 +106,9 @@ def main() -> None:
 
     metrics = evaluate(args.data, clf, router)
 
-    print(f"\n{'═' * 70}")
-    print(f"  Document Type Classifier Router — Evaluation")
-    print(f"{'═' * 70}")
+    print(f"\n{'=' * 70}")
+    print(f"  Document Type Classifier Router -- Evaluation")
+    print(f"{'=' * 70}")
     print(f"  Overall accuracy: {metrics['overall_accuracy']:.2%} "
           f"({metrics['total_correct']}/{metrics['total_images']})")
     print(f"  Routed:           {metrics['routed']}")
@@ -118,7 +118,7 @@ def main() -> None:
     for cls, acc in metrics["per_class_accuracy"].items():
         label = DISPLAY_LABELS.get(cls, cls)
         print(f"    {label:30s}  {acc:.2%}")
-    print(f"{'═' * 70}\n")
+    print(f"{'=' * 70}\n")
 
     clf.close()
 

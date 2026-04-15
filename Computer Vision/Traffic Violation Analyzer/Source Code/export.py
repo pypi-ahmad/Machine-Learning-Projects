@@ -86,7 +86,7 @@ class EventExporter:
             self._json_path.write_text(
                 json.dumps(self._rows, indent=2), encoding="utf-8"
             )
-            log.info("Exported %d events → %s", len(self._rows), self._json_path)
+            log.info("Exported %d events -> %s", len(self._rows), self._json_path)
 
     @property
     def event_count(self) -> int:

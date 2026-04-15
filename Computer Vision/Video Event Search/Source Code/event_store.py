@@ -1,4 +1,5 @@
 """Video Event Search — event store.
+"""Video Event Search — event store.
 
 Append-only JSON event log with load/save and per-event schema.
 
@@ -11,6 +12,7 @@ Usage::
     store.add_batch(events)
     store.flush()
     all_events = store.load()
+"""
 """
 
 from __future__ import annotations
@@ -68,7 +70,7 @@ class EventStore:
             self.json_path.write_text(
                 json.dumps(self._events, indent=2), encoding="utf-8",
             )
-            log.info("Flushed %d events → %s", len(self._events), self.json_path)
+            log.info("Flushed %d events -> %s", len(self._events), self.json_path)
 
     def load(self) -> list[dict]:
         """Load events from JSON file on disk."""

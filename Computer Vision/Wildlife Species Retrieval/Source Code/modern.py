@@ -1,4 +1,4 @@
-"""Wildlife Species Retrieval — CVProject registry entry."""
+"""Wildlife Species Retrieval -- CVProject registry entry."""
 
 from __future__ import annotations
 

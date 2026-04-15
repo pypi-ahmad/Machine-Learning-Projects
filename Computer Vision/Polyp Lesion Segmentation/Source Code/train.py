@@ -1,4 +1,5 @@
 """Polyp Lesion Segmentation — training & evaluation.
+"""Polyp Lesion Segmentation — training & evaluation.
 
 Usage::
 
@@ -10,6 +11,7 @@ Usage::
 
     # Force re-download dataset
     python train.py --eval --force-download
+"""
 """
 
 from __future__ import annotations
@@ -37,7 +39,7 @@ def _train(args: argparse.Namespace) -> None:
             "polyp_lesion_segmentation", force=args.force_download,
         )
         data_yaml = str(data_path / "data.yaml")
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
         print("[INFO] Ensure data.yaml exists with YOLO-seg annotations.")
     else:
         data_yaml = args.data
@@ -154,7 +156,7 @@ def _find_subdir(root: Path, name: str) -> Path | None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Polyp Lesion Segmentation — train / evaluate",
+        description="Polyp Lesion Segmentation -- train / evaluate",
     )
     parser.add_argument("--eval", action="store_true",
                         help="Run evaluation on dataset images")

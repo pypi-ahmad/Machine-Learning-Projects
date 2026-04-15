@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: Line segmentation → TrOCR → Markdown formatting
+Pipeline: Line segmentation -> TrOCR -> Markdown formatting
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from core.registry import register
 
 @register("handwritten_note_to_markdown")
 class HandwrittenNoteToMarkdown(CVProject):
-    """Handwritten text recognition → Markdown / plain-text output."""
+    """Handwritten text recognition -> Markdown / plain-text output."""
 
     project_type = "ocr"
     description = "Handwritten note OCR using TrOCR with markdown formatting"

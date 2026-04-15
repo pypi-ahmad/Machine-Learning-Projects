@@ -1,4 +1,4 @@
-"""Wound Area Measurement — main controller."""
+"""Wound Area Measurement -- main controller."""
 
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ class FrameResult:
 
 
 class WoundController:
-    """High-level controller: segmentation → metrics → optional change tracking."""
+    """High-level controller: segmentation -> metrics -> optional change tracking."""
 
     def __init__(self, config: WoundConfig | None = None) -> None:
         self.cfg = config or WoundConfig()
@@ -55,6 +55,7 @@ class WoundController:
         track: bool = False,
     ) -> FrameResult:
         """Run wound segmentation + metrics on one image.
+        """Run wound segmentation + metrics on one image.
 
         Parameters
         ----------
@@ -64,6 +65,7 @@ class WoundController:
             Optional source label for change tracking.
         track : bool
             If True, record this frame in the change tracker.
+        """
         """
         seg = self._segmenter.segment(frame)
         metrics = compute_wound_metrics(seg)

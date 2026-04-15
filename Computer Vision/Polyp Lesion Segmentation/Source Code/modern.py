@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — CVProject registry entry."""
+"""Polyp Lesion Segmentation -- CVProject registry entry."""
 
 from __future__ import annotations
 

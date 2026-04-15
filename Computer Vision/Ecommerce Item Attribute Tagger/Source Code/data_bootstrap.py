@@ -1,4 +1,5 @@
 """Dataset bootstrap for Ecommerce Item Attribute Tagger.
+"""Dataset bootstrap for Ecommerce Item Attribute Tagger.
 
 Downloads the Fashion Product Images (Small) dataset from Kaggle
 and prepares label maps from ``styles.csv``.
@@ -9,6 +10,7 @@ Usage::
 
     data_root = ensure_tagger_dataset()
     data_root = ensure_tagger_dataset(force=True)
+"""
 """
 
 from __future__ import annotations
@@ -40,12 +42,14 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp"}
 
 def ensure_tagger_dataset(*, force: bool = False) -> Path:
     """Download and prepare the fashion product dataset.
+    """Download and prepare the fashion product dataset.
 
     Returns the project data root.
     """
+    """
     ready_marker = DATA_ROOT / "processed" / ".ready"
     if ready_marker.exists() and not force:
-        log.info("[%s] Dataset already prepared — skipping", PROJECT_KEY)
+        log.info("[%s] Dataset already prepared -- skipping", PROJECT_KEY)
         return DATA_ROOT
 
     from scripts.download_data import ensure_dataset as _ensure
@@ -67,7 +71,7 @@ def ensure_tagger_dataset(*, force: bool = False) -> Path:
         "project": PROJECT_KEY,
         "source": "kaggle:paramaggarwal/fashion-product-images-small",
         "license": "MIT",
-        "description": "Fashion Product Images (Small) — 44k products with attribute labels",
+        "description": "Fashion Product Images (Small) -- 44k products with attribute labels",
         "attributes": ATTRIBUTE_COLUMNS,
         "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
@@ -102,12 +106,14 @@ def _build_label_maps(
     min_samples: int = 20,
 ) -> dict[str, list[str]]:
     """Parse styles.csv and produce per-attribute label lists.
+    """Parse styles.csv and produce per-attribute label lists.
 
     Labels with fewer than ``min_samples`` occurrences are merged
     into ``<other>``.
 
     Also saves ``label_maps.json`` and ``styles_clean.csv`` to
     *processed_dir*.
+    """
     """
     import csv
 

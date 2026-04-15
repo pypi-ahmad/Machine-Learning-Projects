@@ -72,7 +72,7 @@ class GazePipeline:
         if ok:
             log.info("Gaze pipeline ready")
         else:
-            log.error("Pipeline failed to load — MediaPipe unavailable")
+            log.error("Pipeline failed to load -- MediaPipe unavailable")
 
     def process(self, frame: np.ndarray) -> GazeAnalysisResult:
         """Process a single frame.

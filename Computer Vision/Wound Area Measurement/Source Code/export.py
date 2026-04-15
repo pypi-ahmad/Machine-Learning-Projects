@@ -1,4 +1,4 @@
-"""Wound Area Measurement — structured output export."""
+"""Wound Area Measurement -- structured output export."""
 
 from __future__ import annotations
 

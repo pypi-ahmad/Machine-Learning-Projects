@@ -1,4 +1,4 @@
-"""Plant Disease Severity Estimator — CVProject registry entry."""
+"""Plant Disease Severity Estimator -- CVProject registry entry."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class PlantDiseaseSeverityEstimator(CVProject):
         "and assign a severity bucket (none / mild / moderate / severe)"
     )
     legacy_tech = "Manual scouting by agronomists"
-    modern_tech = "ResNet-18 transfer learning (ImageNet → PlantVillage)"
+    modern_tech = "ResNet-18 transfer learning (ImageNet -> PlantVillage)"
 
     def __init__(self) -> None:
         super().__init__()

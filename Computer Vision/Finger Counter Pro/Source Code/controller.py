@@ -1,4 +1,4 @@
-"""Finger Counter Pro — pipeline orchestrator."""
+"""Finger Counter Pro -- pipeline orchestrator."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class ControllerResult:
 
 
 class CountingController:
-    """Orchestrates: detect → count → smooth → validate."""
+    """Orchestrates: detect -> count -> smooth -> validate."""
 
     def __init__(self, config: FingerCounterConfig | None = None) -> None:
         self.cfg = config or FingerCounterConfig()

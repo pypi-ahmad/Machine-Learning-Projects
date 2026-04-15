@@ -35,7 +35,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Receipt Digitizer — Inference")
+    p = argparse.ArgumentParser(description="Receipt Digitizer -- Inference")
     p.add_argument("--source", required=True, help="Image path or directory")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--lang", default=None, help="OCR language (default: en)")
@@ -115,7 +115,7 @@ def run(argv: list[str] | None = None) -> None:
                 img, src_path.name, engine, parser, validator, exporter, cfg,
             )
 
-    log.info("Done — processed %d receipt(s)", len(sources))
+    log.info("Done -- processed %d receipt(s)", len(sources))
 
 
 def _process_image(
@@ -158,7 +158,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Saved → %s", out_path)
+        log.info("  Saved -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"Receipt: {label}", vis)

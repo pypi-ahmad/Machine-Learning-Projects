@@ -1,4 +1,5 @@
 """Road Pothole Segmentation — CLI entry point.
+"""Road Pothole Segmentation — CLI entry point.
 
 Usage::
 
@@ -17,6 +18,7 @@ Usage::
     # With JSON + CSV export
     python infer.py --source road.mp4 --export-json out.json --export-csv out.csv
 """
+"""
 
 from __future__ import annotations
 
@@ -27,7 +29,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Road Pothole Segmentation — detect, segment, and assess severity",
+        description="Road Pothole Segmentation -- detect, segment, and assess severity",
     )
     p.add_argument(
         "--source", default="0",
@@ -156,7 +158,7 @@ def _run_directory(ctrl, dir_path, cfg, args, out_dir, csv_exp, cv2, draw_overla
         if csv_exp:
             csv_exp.write_row(result.severity, source=str(img_path), frame_idx=idx)
 
-    print(f"\nDone — processed {len(images)} image(s)")
+    print(f"\nDone -- processed {len(images)} image(s)")
 
 
 def _run_video(ctrl, source, cfg, args, out_dir, csv_exp, cv2, draw_overlay, export_json, is_webcam):
@@ -215,7 +217,7 @@ def _run_video(ctrl, source, cfg, args, out_dir, csv_exp, cv2, draw_overlay, exp
             source=str(source), frame_idx=idx - 1,
         )
 
-    print(f"\nDone — processed {idx} frame(s)")
+    print(f"\nDone -- processed {idx} frame(s)")
 
 
 def _print_summary(result, name, prefix=""):

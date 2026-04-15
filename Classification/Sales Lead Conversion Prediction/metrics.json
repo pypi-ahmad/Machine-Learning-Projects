@@ -1,0 +1,26 @@
+{
+  "CatBoost": {
+    "accuracy": 0.7125,
+    "f1": 0.49,
+    "precision": 0.6462,
+    "recall": 0.3946
+  },
+  "LightGBM": {
+    "accuracy": 0.7025,
+    "f1": 0.4628,
+    "precision": 0.6288,
+    "recall": 0.3661
+  },
+  "Logistic Regression": {
+    "accuracy": 0.7219,
+    "f1": 0.5137,
+    "precision": 0.662,
+    "recall": 0.4196
+  },
+  "FLAML": {
+    "accuracy": 0.7081,
+    "f1": 0.4918,
+    "precision": 0.6295,
+    "recall": 0.4036
+  }
+}

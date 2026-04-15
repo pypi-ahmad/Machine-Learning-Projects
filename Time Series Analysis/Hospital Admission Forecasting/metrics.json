@@ -1,0 +1,51 @@
+{
+  "project": "Hospital Admission Forecasting",
+  "best_model": "FLAML Test (catboost)",
+  "best_MAE": 27.70348052023868,
+  "best_RMSE": 33.8429120760724,
+  "best_MAPE": 9.349625574454826,
+  "all_results": [
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 27.70348052023868,
+      "RMSE": 33.8429120760724,
+      "MAPE": 9.349625574454826
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 34.33557891845703,
+      "RMSE": 42.24661223242862,
+      "MAPE": 12.759501788585178
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 34.785714285714285,
+      "RMSE": 44.790783490739315,
+      "MAPE": 12.482045331898505
+    },
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 34.83138395295509,
+      "RMSE": 39.03074176933555,
+      "MAPE": 9.83025071694736
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 41.29899978637695,
+      "RMSE": 51.22584701441012,
+      "MAPE": 15.31283117389878
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 42.857142857142854,
+      "RMSE": 53.45492092809203,
+      "MAPE": 15.122629979013775
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 43.28571319580078,
+      "RMSE": 53.66696211139238,
+      "MAPE": 16.03452672825228
+    }
+  ]
+}

@@ -53,7 +53,7 @@ class DrowsinessValidator:
 
         if self.cfg.warn_no_face and not result.face_detected:
             report.warnings.append(Warning(
-                "face", "No face detected — driver may be out of frame",
+                "face", "No face detected -- driver may be out of frame",
             ))
 
         if report.warnings:

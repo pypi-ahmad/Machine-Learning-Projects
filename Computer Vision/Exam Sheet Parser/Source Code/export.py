@@ -60,7 +60,7 @@ class ExamSheetExporter:
                 self._csv_fh, fieldnames=_CSV_COLUMNS,
             )
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     # -- context manager -----------------------------------------------
 
@@ -125,7 +125,7 @@ class ExamSheetExporter:
                 encoding="utf-8",
             )
             log.info(
-                "JSON export → %s (%d records)",
+                "JSON export -> %s (%d records)",
                 out, len(self._json_records),
             )
 

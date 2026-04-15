@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: detect faces → InsightFace embeddings → cluster → organize.
+Pipeline: detect faces -> InsightFace embeddings -> cluster -> organize.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from core.registry import register
 
 @register("face_clustering_photo_organizer")
 class FaceClusteringModern(CVProject):
-    """Face clustering photo organizer — unsupervised identity grouping."""
+    """Face clustering photo organizer -- unsupervised identity grouping."""
 
     project_type = "detection"
     description = (

@@ -1,4 +1,4 @@
-"""Logo Retrieval Brand Match — CVProject registry entry."""
+"""Logo Retrieval Brand Match -- CVProject registry entry."""
 
 from __future__ import annotations
 

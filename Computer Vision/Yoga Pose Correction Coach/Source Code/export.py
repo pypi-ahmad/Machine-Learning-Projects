@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — per-frame metrics export."""
+"""Yoga Pose Correction Coach -- per-frame metrics export."""
 
 from __future__ import annotations
 

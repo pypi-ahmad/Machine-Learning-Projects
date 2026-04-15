@@ -1,6 +1,6 @@
 """Train / Evaluate Form OCR Checkbox Extractor.
 
-This project uses PaddleOCR (pre-trained) and OpenCV-based checkbox
+This project uses EasyOCR (pre-trained) and OpenCV-based checkbox
 detection, so training is optional.  This script downloads the
 dataset and evaluates the full pipeline on sample images.
 
@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_form_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -39,16 +39,14 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "form_ocr_checkbox_extractor", force=args.force_download,
-        )
+        data_path = ensure_form_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
     print(f"[INFO] Dataset ready at {data_dir}")
-    print("[INFO] PaddleOCR is pre-trained; evaluating checkbox + OCR on form images.")
+    print("[INFO] EasyOCR is pre-trained; evaluating checkbox + OCR on form images.")
 
     try:
         from modern import FormOCRCheckboxExtractor
@@ -113,7 +111,7 @@ def main(argv: list[str] | None = None) -> None:
 
     except ImportError as e:
         print(f"[WARN] Could not run evaluation: {e}")
-        print("[INFO] Install paddleocr: pip install paddleocr paddlepaddle")
+        print("[INFO] Install easyocr: pip install easyocr")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 """Waterbody & Flood Extent Segmentation — training & evaluation.
+"""Waterbody & Flood Extent Segmentation — training & evaluation.
 
 Usage::
 
@@ -10,6 +11,7 @@ Usage::
 
     # Force re-download dataset
     python train.py --eval --force-download
+"""
 """
 
 from __future__ import annotations
@@ -37,7 +39,7 @@ def _train(args: argparse.Namespace) -> None:
             "waterbody_flood_extent_segmentation", force=args.force_download,
         )
         data_yaml = str(data_path / "data.yaml")
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
         print("[INFO] Ensure data.yaml exists with YOLO-seg annotations.")
     else:
         data_yaml = args.data
@@ -114,7 +116,7 @@ def _evaluate(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Waterbody & Flood Extent Segmentation — train / evaluate",
+        description="Waterbody & Flood Extent Segmentation -- train / evaluate",
     )
     parser.add_argument("--eval", action="store_true",
                         help="Run evaluation on dataset images")

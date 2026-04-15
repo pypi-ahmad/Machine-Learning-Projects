@@ -1,4 +1,4 @@
-"""Wound Area Measurement — configuration."""
+"""Wound Area Measurement -- configuration."""
 
 from __future__ import annotations
 

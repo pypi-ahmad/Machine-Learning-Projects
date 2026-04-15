@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — overlay and visual report rendering."""
+"""Fire Area Segmentation -- overlay and visual report rendering."""
 
 from __future__ import annotations
 

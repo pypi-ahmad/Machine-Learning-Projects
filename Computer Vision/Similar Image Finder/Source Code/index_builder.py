@@ -1,9 +1,11 @@
 """Similar Image Finder — index builder CLI.
+"""Similar Image Finder — index builder CLI.
 
 Build, update, or rebuild the embedding index from an image directory.
 
 Usage:
     python index_builder.py --image-dir data/natural_images --force
+"""
 """
 
 from __future__ import annotations
@@ -58,7 +60,7 @@ def main() -> None:
     idx = ctrl.build_index(args.image_dir, batch_size=args.batch_size, force=args.force)
     elapsed = time.perf_counter() - t0
 
-    logger.info("Done in %.1fs  —  %s", elapsed, idx.summary())
+    logger.info("Done in %.1fs  --  %s", elapsed, idx.summary())
     ctrl.close()
 
 

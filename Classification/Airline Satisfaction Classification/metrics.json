@@ -1,21 +1,32 @@
 {
-  "LightGBM": {
-    "Accuracy": 0.9598,
-    "F1": 0.9597,
-    "Precision": 0.96,
-    "Recall": 0.9598
-  },
   "CatBoost": {
-    "Accuracy": 0.9597,
-    "F1": 0.9596,
-    "Precision": 0.9598,
-    "Recall": 0.9597
+    "accuracy": 0.6425,
+    "f1": 0.6383,
+    "precision": 0.6388,
+    "recall": 0.6425
+  },
+  "LightGBM": {
+    "accuracy": 0.636,
+    "f1": 0.6337,
+    "precision": 0.6332,
+    "recall": 0.636
   },
   "XGBoost": {
-    "Accuracy": 0.959,
-    "F1": 0.9589,
-    "Precision": 0.9591,
-    "Recall": 0.959
+    "accuracy": 0.635,
+    "f1": 0.6323,
+    "precision": 0.6319,
+    "recall": 0.635
   },
-  "best_model": "LightGBM"
+  "Logistic Regression": {
+    "accuracy": 0.654,
+    "f1": 0.6502,
+    "precision": 0.6508,
+    "recall": 0.654
+  },
+  "FLAML": {
+    "accuracy": 0.651,
+    "f1": 0.6467,
+    "precision": 0.6476,
+    "recall": 0.651
+  }
 }

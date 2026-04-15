@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — item detection / isolation.
+"""Ecommerce Item Attribute Tagger — item detection / isolation.
 
 For clean product images (studio shots) the full image is used.
 When ``use_detector=True``, YOLO is used to detect the primary item
@@ -13,6 +14,7 @@ Usage::
     det = ItemDetector(cfg)
     det.load()
     crop, box = det.isolate(image)
+"""
 """
 
 from __future__ import annotations
@@ -37,7 +39,7 @@ class ItemDetector:
     def load(self) -> None:
         """Load YOLO model if detector is enabled."""
         if not self.cfg.use_detector:
-            log.info("Detector disabled — using full image")
+            log.info("Detector disabled -- using full image")
             return
 
         import sys
@@ -54,12 +56,14 @@ class ItemDetector:
         self, image: np.ndarray,
     ) -> tuple[np.ndarray, tuple[int, int, int, int] | None]:
         """Isolate the primary item in the image.
+        """Isolate the primary item in the image.
 
         Returns
         -------
         tuple[np.ndarray, tuple | None]
             ``(cropped_image, (x1, y1, x2, y2))`` or
             ``(original_image, None)`` when no detection is used.
+        """
         """
         if self._model is None or not self.cfg.use_detector:
             return image, None
@@ -103,11 +107,13 @@ class ItemDetector:
         self, image: np.ndarray,
     ) -> list[dict]:
         """Detect all items in the image (for multi-item scenes).
+        """Detect all items in the image (for multi-item scenes).
 
         Returns
         -------
         list[dict]
             Each dict has: box, confidence, class_name, crop.
+        """
         """
         if self._model is None:
             return [{"box": None, "confidence": 1.0, "class_name": "full_image",

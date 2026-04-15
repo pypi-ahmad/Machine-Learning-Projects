@@ -1,7 +1,7 @@
 """Configuration dataclasses for Number Plate Reader Pro.
 
 Provides :class:`PlateConfig` with all tunables for the YOLO +
-PaddleOCR license-plate reading pipeline: detection, rectification,
+PaddleOCR-first license-plate reading pipeline: detection, rectification,
 OCR, regex cleanup, duplicate suppression, and export.
 """
 
@@ -35,6 +35,7 @@ class PlateConfig:
     upscale_threshold: int = 100       # upscale crop if width < this
 
     # ── PaddleOCR ──────────────────────────────────────────
+    ocr_backend: str = "auto"
     ocr_lang: str = "en"
     use_gpu: bool = False
     det_db_thresh: float = 0.3

@@ -1,4 +1,5 @@
 """Waterbody & Flood Extent Segmentation — CLI entry point.
+"""Waterbody & Flood Extent Segmentation — CLI entry point.
 
 Usage::
 
@@ -23,6 +24,7 @@ Usage::
         --export-json report.json --export-csv stats.csv \
         --save-annotated --save-masks
 """
+"""
 
 from __future__ import annotations
 
@@ -33,7 +35,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Waterbody & Flood Extent Segmentation — water detection and flood comparison",
+        description="Waterbody & Flood Extent Segmentation -- water detection and flood comparison",
     )
     # ── single-image / video / webcam ─────────────────────
     p.add_argument(
@@ -234,7 +236,7 @@ def _run_directory(ctrl, dir_path, cfg, args, out_dir, csv_exp,
                 "mean_confidence": round(cov.mean_confidence, 4),
             })
 
-    print(f"\nDone — processed {len(images)} image(s)")
+    print(f"\nDone -- processed {len(images)} image(s)")
 
 
 def _run_video(ctrl, source, cfg, args, out_dir, csv_exp,
@@ -301,7 +303,7 @@ def _run_video(ctrl, source, cfg, args, out_dir, csv_exp,
         if writer:
             writer.release()
 
-    print(f"\nDone — processed {idx} frame(s)")
+    print(f"\nDone -- processed {idx} frame(s)")
 
 
 # ── comparison mode ──────────────────────────────────────────
@@ -335,7 +337,7 @@ def _run_pair(ctrl, bp, ap, cfg, args, out_dir, csv_exp, cv2,
             result.comparison, result.flood_metrics, cfg,
         )
         if not args.no_display:
-            cv2.imshow(f"Flood Comparison — {bp.name}", report_img)
+            cv2.imshow(f"Flood Comparison -- {bp.name}", report_img)
             cv2.waitKey(0)
         if args.save_annotated:
             cv2.imwrite(str(out_dir / f"{bp.stem}_flood_report.jpg"), report_img)
@@ -420,7 +422,7 @@ def _run_batch_pairs(ctrl, before_dir, after_dir, cfg, args, out_dir, csv_exp,
                 "net_change": round(fm.net_change_ratio, 6),
             })
 
-    print(f"\nDone — processed {len(pairs)} pair(s)")
+    print(f"\nDone -- processed {len(pairs)} pair(s)")
 
 
 if __name__ == "__main__":

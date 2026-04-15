@@ -1,4 +1,4 @@
-"""Finger Counter Pro — dataset download + evaluation."""
+"""Finger Counter Pro -- dataset download + evaluation."""
 
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ def main(force_download: bool = False) -> None:
 
     media_dir = data_dir / "processed" / "media"
     if not media_dir.exists():
-        print("No processed media found — skipping evaluation.")
+        print("No processed media found -- skipping evaluation.")
         return
 
     exts = {".jpg", ".jpeg", ".png", ".bmp"}
@@ -30,10 +30,10 @@ def main(force_download: bool = False) -> None:
         p for p in media_dir.iterdir() if p.suffix.lower() in exts
     )
     if not images:
-        print("No images in processed/media — skipping evaluation.")
+        print("No images in processed/media -- skipping evaluation.")
         return
 
-    print(f"Evaluating on {len(images)} images …")
+    print(f"Evaluating on {len(images)} images ...")
     count_dist: dict[int, int] = {}
     hand_counts: dict[int, int] = {}
     processed = 0

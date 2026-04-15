@@ -38,7 +38,7 @@ def annotate_image(
                 cv2.FONT_HERSHEY_SIMPLEX, fs, cfg.text_color, thick)
 
     # ── Route label (below badge) ─────────────────────────
-    route_text = f"→ {route.pipeline}"
+    route_text = f"-> {route.pipeline}"
     y_route = th + 3 * pad + th
     cv2.putText(out, route_text, (pad, y_route),
                 cv2.FONT_HERSHEY_SIMPLEX, fs * 0.85, cfg.route_color, thick)

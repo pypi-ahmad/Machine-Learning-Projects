@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — quality validator."""
+"""Yoga Pose Correction Coach -- quality validator."""
 
 from __future__ import annotations
 

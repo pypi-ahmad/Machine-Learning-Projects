@@ -1,4 +1,5 @@
 """Dataset bootstrap for Visual Anomaly Detector.
+"""Dataset bootstrap for Visual Anomaly Detector.
 
 Downloads the MVTec-AD dataset from Hugging Face and prepares the
 data/raw / data/processed layout.
@@ -9,6 +10,7 @@ Usage::
 
     data_root = ensure_anomaly_dataset()             # idempotent
     data_root = ensure_anomaly_dataset(force=True)   # force re-download
+"""
 """
 
 from __future__ import annotations
@@ -32,6 +34,7 @@ IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff"}
 
 def ensure_anomaly_dataset(*, force: bool = False) -> Path:
     """Download and prepare the anomaly detection dataset.
+    """Download and prepare the anomaly detection dataset.
 
     1. Delegates to ``scripts/download_data.py:ensure_dataset``.
     2. Idempotent — skips if ``.ready`` marker exists unless *force*.
@@ -41,9 +44,10 @@ def ensure_anomaly_dataset(*, force: bool = False) -> Path:
     Path
         The project's data root.
     """
+    """
     ready_marker = DATA_ROOT / "processed" / ".ready"
     if ready_marker.exists() and not force:
-        log.info("[%s] Dataset already prepared at %s — skipping", PROJECT_KEY, DATA_ROOT)
+        log.info("[%s] Dataset already prepared at %s -- skipping", PROJECT_KEY, DATA_ROOT)
         return DATA_ROOT
 
     from scripts.download_data import ensure_dataset as _ensure
@@ -58,7 +62,7 @@ def ensure_anomaly_dataset(*, force: bool = False) -> Path:
     info = {
         "project": PROJECT_KEY,
         "source": "huggingface:alexrods/mvtec-ad",
-        "description": "MVTec Anomaly Detection — industrial product images",
+        "description": "MVTec Anomaly Detection -- industrial product images",
         "structure": "category/train/good/ + category/test/<defect_type>/",
         "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
@@ -72,9 +76,11 @@ def ensure_anomaly_dataset(*, force: bool = False) -> Path:
 
 def find_normal_images(data_root: Path) -> list[Path]:
     """Find normal/good images in common anomaly dataset layouts.
+    """Find normal/good images in common anomaly dataset layouts.
 
     Searches for directories named 'good', 'normal', or 'OK' under
     train/ or directly under data_root.
+    """
     """
     candidates = [
         data_root / "train" / "good",
@@ -103,11 +109,13 @@ def find_normal_images(data_root: Path) -> list[Path]:
 
 def find_test_images(data_root: Path) -> tuple[list[Path], list[Path]]:
     """Find test normal and anomalous images.
+    """Find test normal and anomalous images.
 
     Returns
     -------
     tuple[list[Path], list[Path]]
         ``(test_normal, test_anomaly)`` image paths.
+    """
     """
     test_normal: list[Path] = []
     test_anomaly: list[Path] = []

@@ -1,8 +1,8 @@
 """Configuration dataclass for Blink Headpose Analyzer.
 
 Provides :class:`AnalyzerConfig` with tunables for MediaPipe Face
-Mesh, blink counting (EAR), head-pose estimation, export, and
-display settings.
+Landmarker, blink counting (EAR), head-pose estimation, export,
+and display settings.
 """
 
 from __future__ import annotations
@@ -21,10 +21,10 @@ sys.path.insert(0, str(REPO_ROOT))
 class AnalyzerConfig:
     """Top-level project configuration."""
 
-    # ── MediaPipe Face Mesh ────────────────────────────────
+    # ── MediaPipe Face Landmarker ──────────────────────────
     max_num_faces: int = 1
-    refine_landmarks: bool = True
     min_detection_confidence: float = 0.5
+    min_presence_confidence: float = 0.5
     min_tracking_confidence: float = 0.5
 
     # ── Blink / EAR ───────────────────────────────────────

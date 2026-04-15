@@ -108,7 +108,7 @@ class AlertManager:
             evt = self._maybe_emit(
                 "yawn",
                 "warning",
-                "Yawn detected — possible fatigue",
+                "Yawn detected -- possible fatigue",
             )
             if evt:
                 new_alerts.append(evt)
@@ -173,7 +173,7 @@ class AlertManager:
                     "session": evt.session,
                 })
 
-        log.info("Alert CSV → %s (%d events)", out, len(self._events))
+        log.info("Alert CSV -> %s (%d events)", out, len(self._events))
         return out
 
     def save_json(self, path: str | Path | None = None) -> Path:
@@ -199,7 +199,7 @@ class AlertManager:
             ],
         }
         out.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        log.info("Alert JSON → %s (%d events)", out, len(self._events))
+        log.info("Alert JSON -> %s (%d events)", out, len(self._events))
         return out
 
     def reset(self) -> None:

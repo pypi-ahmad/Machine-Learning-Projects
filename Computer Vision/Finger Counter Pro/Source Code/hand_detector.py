@@ -1,4 +1,4 @@
-"""Finger Counter Pro — MediaPipe Hands wrapper with multi-hand support."""
+"""Finger Counter Pro -- MediaPipe Hands wrapper with multi-hand support."""
 
 from __future__ import annotations
 

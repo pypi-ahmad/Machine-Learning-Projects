@@ -1,4 +1,4 @@
-"""Industrial Scratch / Crack Segmentation — configuration."""
+"""Industrial Scratch / Crack Segmentation -- configuration."""
 
 from __future__ import annotations
 
@@ -22,8 +22,8 @@ class DefectConfig:
     #   min_area_px : discard detections below this area
     #   severity_thresholds : (low, medium, high) in fractional coverage
     min_area_px: int = 32
-    severity_low: float = 0.005        # ≤ 0.5 %  → low
-    severity_medium: float = 0.02      # ≤ 2.0 %  → medium  (else high)
+    severity_low: float = 0.005        # ≤ 0.5 %  -> low
+    severity_medium: float = 0.02      # ≤ 2.0 %  -> medium  (else high)
 
     # ── Visualisation (BGR) ───────────────────────────────
     scratch_color: tuple[int, int, int] = (0, 0, 255)       # red

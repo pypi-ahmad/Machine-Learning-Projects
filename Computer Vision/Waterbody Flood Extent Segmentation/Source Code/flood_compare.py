@@ -1,4 +1,5 @@
 """Waterbody & Flood Extent Segmentation — before/after flood comparison.
+"""Waterbody & Flood Extent Segmentation — before/after flood comparison.
 
 Compares water masks from two time-points to classify every pixel as:
   * **flooded_new** — water in *after* but not *before*
@@ -7,6 +8,7 @@ Compares water masks from two time-points to classify every pixel as:
   * **dry**         — no water in either
 
 Applies morphological cleanup and filters out tiny change regions.
+"""
 """
 
 from __future__ import annotations
@@ -29,12 +31,12 @@ class FloodRegion:
 
 @dataclass
 class ComparisonResult:
-    """Full before→after flood comparison output."""
+    """Full before->after flood comparison output."""
 
-    flooded_new_mask: np.ndarray     # uint8 (H, W) — 255 = new flooding
-    receded_mask: np.ndarray         # uint8 (H, W) — 255 = receded
-    permanent_mask: np.ndarray       # uint8 (H, W) — 255 = stable water
-    change_map: np.ndarray           # uint8 (H, W) — 0=dry, 1=new, 2=receded, 3=permanent
+    flooded_new_mask: np.ndarray     # uint8 (H, W) -- 255 = new flooding
+    receded_mask: np.ndarray         # uint8 (H, W) -- 255 = receded
+    permanent_mask: np.ndarray       # uint8 (H, W) -- 255 = stable water
+    change_map: np.ndarray           # uint8 (H, W) -- 0=dry, 1=new, 2=receded, 3=permanent
     regions: list[FloodRegion] = field(default_factory=list)
 
 
@@ -46,6 +48,7 @@ def compare_flood_extent(
     min_change_area: int = 200,
 ) -> ComparisonResult:
     """Pixel-level before→after flood comparison.
+    """Pixel-level before→after flood comparison.
 
     Parameters
     ----------
@@ -55,6 +58,7 @@ def compare_flood_extent(
         Kernel for morphological open/close.
     min_change_area
         Discard blobs smaller than this (pixels).
+    """
     """
     b = (before_mask > 127).astype(np.uint8)
     a = (after_mask > 127).astype(np.uint8)

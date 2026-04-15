@@ -1,4 +1,5 @@
 """Similar Image Finder — evaluate retrieval quality.
+"""Similar Image Finder — evaluate retrieval quality.
 
 Runs leave-one-out evaluation on the indexed dataset to measure
 top-1 and top-k category accuracy.
@@ -7,6 +8,7 @@ Usage::
 
     python evaluate.py --eval
     python evaluate.py --eval --max-queries 200
+"""
 """
 
 from __future__ import annotations
@@ -59,7 +61,7 @@ def _evaluate(args: argparse.Namespace) -> None:
     topk_correct = 0
     total = 0
 
-    print(f"\nEvaluating {max_q} queries (leave-one-out, k={top_k}) …\n")
+    print(f"\nEvaluating {max_q} queries (leave-one-out, k={top_k}) ...\n")
 
     for qi in query_indices:
         query_cat = categories[qi]

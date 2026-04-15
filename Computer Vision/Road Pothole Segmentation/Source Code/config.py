@@ -1,4 +1,4 @@
-"""Road Pothole Segmentation — configuration."""
+"""Road Pothole Segmentation -- configuration."""
 
 from __future__ import annotations
 

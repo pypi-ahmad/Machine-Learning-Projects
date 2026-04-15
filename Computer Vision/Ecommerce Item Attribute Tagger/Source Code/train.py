@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — training pipeline.
+"""Ecommerce Item Attribute Tagger — training pipeline.
 
 Trains a multi-head attribute classifier using the Fashion Product
 Images dataset.
@@ -9,6 +10,7 @@ Usage::
     python train.py --data path/to/dataset --epochs 20
     python train.py --backbone resnet50 --batch 32
     python train.py --force-download
+"""
 """
 
 from __future__ import annotations
@@ -149,11 +151,13 @@ def train_model(
     cfg: TaggerConfig,
 ) -> dict:
     """Train the multi-head attribute model.
+    """Train the multi-head attribute model.
 
     Returns
     -------
     dict
         Training summary with metrics and paths.
+    """
     """
     # Locate data
     processed = data_root / "processed"
@@ -251,7 +255,7 @@ def train_model(
         mean_acc = sum(per_head_acc.values()) / max(len(per_head_acc), 1)
 
         log.info(
-            "Epoch %d/%d — loss=%.4f  mean_acc=%.3f  %s",
+            "Epoch %d/%d -- loss=%.4f  mean_acc=%.3f  %s",
             epoch + 1, cfg.epochs, avg_loss, mean_acc,
             " ".join(f"{k}={v:.3f}" for k, v in per_head_acc.items()),
         )
@@ -268,7 +272,7 @@ def train_model(
                 "per_head_acc": per_head_acc,
             }
             torch.save(checkpoint, str(save_dir / "best_model.pt"))
-            log.info("  → Saved best model (acc=%.3f)", mean_acc)
+            log.info("  -> Saved best model (acc=%.3f)", mean_acc)
 
     print(f"\nTraining complete! Best mean accuracy: {best_acc:.2%}")
     return {
@@ -288,7 +292,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
-        description="Ecommerce Item Attribute Tagger — training",
+        description="Ecommerce Item Attribute Tagger -- training",
     )
     parser.add_argument("--data", type=str, default=None,
                         help="Path to dataset root")

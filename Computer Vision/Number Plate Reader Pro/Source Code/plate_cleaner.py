@@ -54,6 +54,9 @@ class PlateCleaner:
         # Collapse whitespace
         text = re.sub(r"\s+", " ", text).strip()
 
+        # Apply conservative OCR corrections where digit-like context exists.
+        text = self.apply_corrections(text)
+
         return text
 
     def is_valid(self, plate: str) -> bool:
@@ -68,9 +71,15 @@ class PlateCleaner:
         """Apply common OCR character corrections for plates.
 
         Example: in a position where a digit is expected, 'O' → '0'.
-        This is conservative — only applied to isolated characters.
+        This is conservative and only triggers when a character sits
+        adjacent to at least one digit.
         """
-        # Simple heuristic: if the plate has a clear letter-digit pattern
-        # we can correct specific characters. For now, just return as-is
-        # to avoid aggressive false corrections.
-        return plate
+        chars = list(plate)
+        for idx, char in enumerate(chars):
+            if char not in _OCR_CORRECTIONS:
+                continue
+            prev_is_digit = idx > 0 and chars[idx - 1].isdigit()
+            next_is_digit = idx + 1 < len(chars) and chars[idx + 1].isdigit()
+            if prev_is_digit or next_is_digit:
+                chars[idx] = _OCR_CORRECTIONS[char]
+        return "".join(chars)

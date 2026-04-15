@@ -1,8 +1,10 @@
 """Plant Disease Severity Estimator — visualisation utilities.
+"""Plant Disease Severity Estimator — visualisation utilities.
 
 Annotates leaf images with disease label, severity badge, confidence bar,
 and optional lesion-ratio gauge.  Also builds thumbnail grids for batch
 results.
+"""
 """
 
 from __future__ import annotations
@@ -42,7 +44,7 @@ def annotate_image(
                 cv2.FONT_HERSHEY_SIMPLEX, fs, cfg.text_color, thick)
 
     # ── Disease label (below badge) ───────────────────────
-    label = f"{result.plant} — {result.disease}"
+    label = f"{result.plant} -- {result.disease}"
     y_label = th + 3 * pad + th
     cv2.putText(out, label, (pad, y_label),
                 cv2.FONT_HERSHEY_SIMPLEX, fs * 0.9, sev_color, thick)

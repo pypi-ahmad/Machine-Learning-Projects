@@ -103,7 +103,7 @@ class EventExporter:
             self._json_path.write_text(
                 json.dumps(self._rows, indent=2), encoding="utf-8"
             )
-            log.info("Exported %d event rows → %s", len(self._rows), self._json_path)
+            log.info("Exported %d event rows -> %s", len(self._rows), self._json_path)
 
     # ---- internal ----------------------------------------------------------
 
@@ -126,4 +126,4 @@ class EventExporter:
             fname = f"{alert.zone_name}_{ts}.jpg"
             path = self._snap_dir / fname
             cv2.imwrite(str(path), frame)
-            log.info("Violation snapshot → %s", path)
+            log.info("Violation snapshot -> %s", path)

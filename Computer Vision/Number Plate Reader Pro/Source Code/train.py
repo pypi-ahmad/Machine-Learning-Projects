@@ -1,4 +1,4 @@
-"""Train Number Plate Reader Pro — YOLO plate detection.
+"""Train Number Plate Reader Pro.
 
 Usage::
 
@@ -13,12 +13,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_plate_dataset
 from train.train_detection import train_detection
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Train Number Plate Reader Pro (YOLO)")
     parser.add_argument("--data", type=str, default=None, help="Path to data.yaml")
     parser.add_argument("--model", type=str, default="yolo26m.pt", help="Base YOLO model")
@@ -27,13 +28,13 @@ def main() -> None:
     parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument("--force-download", action="store_true", help="Force re-download dataset")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve("number_plate_reader_pro", force=args.force_download)
+        data_path = ensure_plate_dataset(force=args.force_download)
         data_yaml = str(data_path / "data.yaml")
-        print(f"[INFO] Resolved dataset → {data_path}")
-        print("[INFO] Ensure data.yaml exists with YOLO-format plate annotations.")
+        print(f"[INFO] Resolved dataset -> {data_path}")
+        print(f"[INFO] Using YOLO dataset config -> {data_yaml}")
     else:
         data_yaml = args.data
 

@@ -1,4 +1,5 @@
 """Product Counterfeit Visual Checker — evaluate screening quality.
+"""Product Counterfeit Visual Checker — evaluate screening quality.
 
 Runs cross-product evaluation: for each product image, screen it
 against references from the same and different products, and measure
@@ -8,6 +9,7 @@ Usage::
 
     python evaluate.py --eval
     python evaluate.py --eval --max-queries 200
+"""
 """
 
 from __future__ import annotations
@@ -58,7 +60,7 @@ def _evaluate(args: argparse.Namespace) -> None:
     top3_correct = 0
     total = 0
 
-    print(f"\nEvaluating {max_q} queries (leave-one-out) …\n")
+    print(f"\nEvaluating {max_q} queries (leave-one-out) ...\n")
 
     for qi in query_indices:
         query_product = products[qi]
@@ -90,8 +92,8 @@ def _evaluate(args: argparse.Namespace) -> None:
     print(f"Top-1 product acc:  {top1_acc:.2%}")
     print(f"Top-3 product acc:  {top3_acc:.2%}")
     print(f"{'=' * 50}")
-    print(f"\nHigher accuracy → better at matching products to their")
-    print(f"correct references → more reliable mismatch flagging.")
+    print(f"\nHigher accuracy -> better at matching products to their")
+    print(f"correct references -> more reliable mismatch flagging.")
 
 
 def main() -> None:

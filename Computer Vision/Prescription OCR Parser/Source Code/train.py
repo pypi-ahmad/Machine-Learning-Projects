@@ -1,7 +1,7 @@
 """Train / Evaluate Prescription OCR Parser.
 
-This project uses PaddleOCR (pre-trained) and pattern-based field
-extraction, so no training is needed.  This script downloads the
+This project uses an OCR-first engine with PaddleOCR preferred and
+EasyOCR fallback, so no training is needed. This script downloads the
 dataset and evaluates the full pipeline on sample images.
 
 Usage::
@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_prescription_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -38,16 +38,14 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "prescription_ocr_parser", force=args.force_download,
-        )
+        data_path = ensure_prescription_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
     print(f"[INFO] Dataset ready at {data_dir}")
-    print("[INFO] PaddleOCR is pre-trained; evaluating extraction on images.")
+    print("[INFO] OCR engine is pre-trained; evaluating extraction on images.")
     print(
         "[INFO] DISCLAIMER: This tool is for informational purposes only. "
         "It does NOT provide medical advice."
@@ -108,7 +106,7 @@ def main(argv: list[str] | None = None) -> None:
 
     except ImportError as e:
         print(f"[WARN] Could not run evaluation: {e}")
-        print("[INFO] Install paddleocr: pip install paddleocr paddlepaddle")
+        print("[INFO] Install OCR deps: pip install paddleocr paddlepaddle easyocr")
 
 
 if __name__ == "__main__":

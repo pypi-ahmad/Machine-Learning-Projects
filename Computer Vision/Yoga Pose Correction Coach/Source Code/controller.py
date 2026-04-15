@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — pipeline orchestrator."""
+"""Yoga Pose Correction Coach -- pipeline orchestrator."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class CoachResult:
 
 
 class YogaCoachController:
-    """Orchestrates: detect → classify → smooth → correct → validate."""
+    """Orchestrates: detect -> classify -> smooth -> correct -> validate."""
 
     def __init__(self, config: YogaConfig | None = None) -> None:
         self.cfg = config or YogaConfig()

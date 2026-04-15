@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Lung Segmentation from Chest X-Ray.
+"""Modern v2 pipeline — Lung Segmentation from Chest X-Ray.
 
 Replaces: Notebook-only U-Net segmentation
 Uses:     YOLO26m-seg for chest X-ray segmentation (primary, trainable)
@@ -10,6 +11,7 @@ Compare:  MedSAM side-by-side evaluation (if installed + checkpoint)
 Fine-tune: python train_segmentation.py --data lung_xray.yaml
 
 The original notebook implementation is preserved in the .ipynb file.
+"""
 """
 
 import os
@@ -69,7 +71,7 @@ class LungSegmentationModern(CVProject):
                 self._backend = "medsam"
                 print(f"  [lung_seg] MedSAM comparison loaded ({ckpt.name})")
         except ImportError:
-            print("  [lung_seg] MedSAM not installed — comparison skipped")
+            print("  [lung_seg] MedSAM not installed -- comparison skipped")
 
     @staticmethod
     def _find_checkpoint(name: str):

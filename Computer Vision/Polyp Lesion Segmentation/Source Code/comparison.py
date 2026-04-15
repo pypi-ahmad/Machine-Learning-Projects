@@ -1,4 +1,5 @@
 """Polyp Lesion Segmentation — comparison backend hooks.
+"""Polyp Lesion Segmentation — comparison backend hooks.
 
 This module defines the abstract interface for alternative segmentation
 backends (e.g. MedSAM) and a registry to switch between them.  The YOLO
@@ -11,6 +12,7 @@ Usage::
 
     seg = get_backend("yolo", config)   # PolypSegmenter
     seg = get_backend("medsam", config) # MedSAMBackend (if available)
+"""
 """
 
 from __future__ import annotations
@@ -65,6 +67,7 @@ def available_backends() -> list[str]:
 
 def get_backend(name: str, config: PolypConfig) -> SegmentationBackend:
     """Instantiate a backend by name.
+    """Instantiate a backend by name.
 
     Parameters
     ----------
@@ -77,6 +80,7 @@ def get_backend(name: str, config: PolypConfig) -> SegmentationBackend:
     Returns
     -------
     SegmentationBackend
+    """
     """
     _ensure_builtins()
     if name not in _REGISTRY:
@@ -123,7 +127,7 @@ def _ensure_builtins() -> None:
     try:
         _register_medsam()
     except ImportError:
-        pass  # MedSAM not available — YOLO-only mode
+        pass  # MedSAM not available -- YOLO-only mode
 
 
 def _register_medsam() -> None:
@@ -134,10 +138,12 @@ def _register_medsam() -> None:
     @register_backend("medsam")
     class MedSAMBackend(SegmentationBackend):
         """MedSAM comparison backend.
+        """MedSAM comparison backend.
 
         Requires ``segment_anything`` and a MedSAM checkpoint.
         This is a *comparison* backend — the YOLO baseline should be
         preferred for routine inference.
+        """
         """
 
         name = "medsam"

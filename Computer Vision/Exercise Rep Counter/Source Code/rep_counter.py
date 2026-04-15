@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — rep-counting state machine."""
+"""Exercise Rep Counter -- rep-counting state machine."""
 
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ class RepState:
 
 class RepCounter:
     """Counts reps by detecting stage transitions.
+    """Counts reps by detecting stage transitions.
 
     A rep is counted on a *down → up* transition (the completion
     of the concentric phase).
@@ -27,6 +28,7 @@ class RepCounter:
     The optional *stable_frames* parameter requires the same stage
     to persist for N consecutive frames before confirming a
     transition, filtering out single-frame noise.
+    """
     """
 
     def __init__(self, stable_frames: int = 2) -> None:

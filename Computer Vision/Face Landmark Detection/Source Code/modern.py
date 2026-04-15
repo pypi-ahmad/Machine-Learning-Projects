@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Face Landmark Detection.
+"""Modern v2 pipeline — Face Landmark Detection.
 
 Replaces: dlib HOG face detector + shape_predictor_68
 Uses:     MediaPipe Face Landmarker (468 face mesh landmarks)
@@ -8,6 +9,7 @@ Pipeline: MediaPipe detects face + returns 468 dense landmarks in real-time.
           face-landmark dataset — default COCO pose only gives 5 face points.
 
 The original dlib implementation is preserved in faceLandmark.py.
+"""
 """
 
 import sys
@@ -46,7 +48,7 @@ class FaceLandmarkModern(CVProject):
             self._mp_face_mesh = mp.solutions.face_mesh
             print("  [face_landmark] MediaPipe Face Mesh loaded (468 landmarks)")
         except ImportError:
-            print("  [face_landmark] MediaPipe not installed — install mediapipe")
+            print("  [face_landmark] MediaPipe not installed -- install mediapipe")
             raise
 
     def predict(self, input_data):

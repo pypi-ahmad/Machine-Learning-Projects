@@ -1,6 +1,8 @@
 """Per-frame metric export for Gesture Controlled Slideshow.
+"""Per-frame metric export for Gesture Controlled Slideshow.
 
 Logs gesture, action, slide state per frame to CSV/JSON.
+"""
 """
 
 from __future__ import annotations
@@ -52,7 +54,7 @@ class GestureExporter:
                 self._csv_fh, fieldnames=_CSV_COLUMNS,
             )
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def __enter__(self) -> GestureExporter:
         return self
@@ -101,4 +103,4 @@ class GestureExporter:
                 json.dumps(payload, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            log.info("JSON export → %s", out)
+            log.info("JSON export -> %s", out)

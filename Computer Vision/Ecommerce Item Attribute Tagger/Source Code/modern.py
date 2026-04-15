@@ -1,7 +1,9 @@
 """Ecommerce Item Attribute Tagger — CVProject registry entry.
+"""Ecommerce Item Attribute Tagger — CVProject registry entry.
 
 Thin adapter that plugs into the repo's global registry so the
 project is discoverable via ``core.registry.PROJECT_REGISTRY``.
+"""
 """
 
 from __future__ import annotations
@@ -31,7 +33,7 @@ class EcommerceItemAttributeTagger(CVProject):
 
     project_type = "classification"
     description = (
-        "Multi-head attribute tagger — predicts category, colour, "
+        "Multi-head attribute tagger -- predicts category, colour, "
         "article type, season, usage, and gender from product images"
     )
     legacy_tech = "Manual data entry for product catalogs"

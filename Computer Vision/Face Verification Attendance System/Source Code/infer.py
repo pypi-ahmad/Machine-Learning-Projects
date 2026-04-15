@@ -41,7 +41,7 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Face Verification Attendance System — Inference",
+        description="Face Verification Attendance System -- Inference",
     )
     p.add_argument(
         "--mode", choices=["enroll", "verify"], default="verify",
@@ -165,7 +165,7 @@ def _run_enroll(
     # Save gallery
     gallery_path = pipeline.enrollment.save()
     log.info(
-        "Gallery saved: %d identities → %s",
+        "Gallery saved: %d identities -> %s",
         pipeline.enrollment.size, gallery_path,
     )
 
@@ -182,7 +182,7 @@ def _run_verify(
     """Run verification pipeline on images, video, or webcam."""
     # Load gallery
     if not pipeline.load_gallery():
-        log.warning("No gallery loaded — all faces will be Unknown")
+        log.warning("No gallery loaded -- all faces will be Unknown")
 
     source = args.source
     out_dir = Path(cfg.output_dir)
@@ -263,7 +263,7 @@ def _verify_webcam(
         log.error("Cannot open webcam device %d", device)
         return
 
-    log.info("Webcam verification — press 'q' to quit")
+    log.info("Webcam verification -- press 'q' to quit")
 
     while True:
         ret, frame = cap.read()
@@ -275,7 +275,7 @@ def _verify_webcam(
             frame, result, cfg,
             recent_attendance=pipeline.logger.recent_identities(),
         )
-        cv2.imshow("Face Attendance — Webcam", vis)
+        cv2.imshow("Face Attendance -- Webcam", vis)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
@@ -317,7 +317,7 @@ def _verify_video(
                 frame, result, cfg,
                 recent_attendance=pipeline.logger.recent_identities(),
             )
-            cv2.imshow("Face Attendance — Video", vis)
+            cv2.imshow("Face Attendance -- Video", vis)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
 

@@ -1,4 +1,5 @@
 """Pipeline controller for Gesture Controlled Slideshow.
+"""Pipeline controller for Gesture Controlled Slideshow.
 
 Orchestrates: hand detection → gesture recognition → debouncing
 → slideshow action.
@@ -10,6 +11,7 @@ Usage::
     ctrl = SlideshowController(cfg)
     ctrl.load()
     result = ctrl.process(frame)
+"""
 """
 
 from __future__ import annotations
@@ -45,8 +47,10 @@ class ControllerResult:
 
 class SlideshowController:
     """Full gesture-controlled slideshow pipeline.
+    """Full gesture-controlled slideshow pipeline.
 
     hand detection → gesture classify → debounce → slideshow action
+    """
     """
 
     def __init__(self, cfg: GestureConfig) -> None:
@@ -67,9 +71,10 @@ class SlideshowController:
         if ok:
             log.info("Controller pipeline ready")
         else:
-            log.error("Pipeline failed to load — MediaPipe unavailable")
+            log.error("Pipeline failed to load -- MediaPipe unavailable")
 
     def process(self, frame: np.ndarray) -> ControllerResult:
+        """Process a single frame.
         """Process a single frame.
 
         Parameters
@@ -80,6 +85,7 @@ class SlideshowController:
         Returns
         -------
         ControllerResult
+        """
         """
         if not self._loaded:
             self.load()
@@ -112,6 +118,7 @@ class SlideshowController:
 
     def handle_key(self, key: int) -> str:
         """Handle keyboard input as fallback.
+        """Handle keyboard input as fallback.
 
         Parameters
         ----------
@@ -122,6 +129,7 @@ class SlideshowController:
         -------
         str
             Action executed, or empty string.
+        """
         """
         if not self.cfg.enable_keyboard:
             return ""

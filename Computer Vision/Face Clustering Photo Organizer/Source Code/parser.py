@@ -97,7 +97,21 @@ class FaceClusterPipeline:
                 log.warning("Cannot read: %s", img_path)
                 continue
 
-            face_data = self.embedder.extract_from_frame(img)
+            face_data = []
+            detected_faces = self.detector.detect(img)
+            for detected_face in detected_faces:
+                embedding = self.embedder.extract_single(detected_face.crop)
+                if embedding is None:
+                    continue
+                face_data.append({
+                    "box": detected_face.box,
+                    "confidence": detected_face.confidence,
+                    "embedding": embedding,
+                    "crop": detected_face.crop,
+                })
+
+            if not face_data and self.detector.backend == "insightface":
+                face_data = self.embedder.extract_from_frame(img)
 
             if face_data:
                 images_with += 1
@@ -122,5 +136,5 @@ class FaceClusterPipeline:
             num_clusters=len(clusters),
             images_with_faces=images_with,
             images_without_faces=images_without,
-            backend=self.detector.backend or "insightface",
+            backend=self.detector.backend or "none",
         )

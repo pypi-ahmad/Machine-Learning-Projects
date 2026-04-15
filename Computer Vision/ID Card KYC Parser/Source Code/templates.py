@@ -156,7 +156,7 @@ _GENDER_VALUE = re.compile(r"\b(male|female|m|f)\b", re.IGNORECASE)
 
 
 class GenericTemplate:
-    """Catch-all template — extracts fields using label-value patterns."""
+    """Catch-all template -- extracts fields using label-value patterns."""
 
     name = "generic"
 
@@ -265,7 +265,7 @@ _MRZ_LINE = re.compile(r"[A-Z0-9<]{30,44}")
 
 
 class PassportMRZTemplate:
-    """Passport template — parses the Machine Readable Zone (MRZ)."""
+    """Passport template -- parses the Machine Readable Zone (MRZ)."""
 
     name = "passport"
 
@@ -299,7 +299,7 @@ class PassportMRZTemplate:
         mrz_lines: list[tuple[int, OCRBlock]],
         fields: dict[str, ExtractedField],
     ) -> None:
-        """Parse TD-3 (passport) MRZ — two lines of 44 characters."""
+        """Parse TD-3 (passport) MRZ -- two lines of 44 characters."""
         idx1, blk1 = mrz_lines[-2]
         idx2, blk2 = mrz_lines[-1]
         line1 = blk1.text.replace(" ", "").upper()
@@ -379,7 +379,7 @@ class PassportMRZTemplate:
 # ------------------------------------------------------------------
 
 class USDLTemplate:
-    """US Driver Licence — common field labels."""
+    """US Driver Licence -- common field labels."""
 
     name = "us_dl"
 
@@ -417,7 +417,7 @@ class USDLTemplate:
 # ------------------------------------------------------------------
 
 class EUIDTemplate:
-    """EU National ID — common field labels (multi-language)."""
+    """EU National ID -- common field labels (multi-language)."""
 
     name = "eu_id"
 

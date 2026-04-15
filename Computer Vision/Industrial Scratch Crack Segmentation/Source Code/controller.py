@@ -1,4 +1,4 @@
-"""Industrial Scratch / Crack Segmentation — main controller."""
+"""Industrial Scratch / Crack Segmentation -- main controller."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ class FrameResult:
 
 
 class DefectController:
-    """High-level controller: segmentation → metrics."""
+    """High-level controller: segmentation -> metrics."""
 
     def __init__(self, config: DefectConfig | None = None) -> None:
         self.cfg = config or DefectConfig()
@@ -47,6 +47,7 @@ class DefectController:
         source: str = "",
     ) -> FrameResult:
         """Run defect segmentation + metrics on one image.
+        """Run defect segmentation + metrics on one image.
 
         Parameters
         ----------
@@ -54,6 +55,7 @@ class DefectController:
             BGR image.
         source : str
             Optional source label.
+        """
         """
         seg = self._segmenter.segment(frame)
         metrics = compute_defect_metrics(

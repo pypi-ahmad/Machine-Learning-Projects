@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_face_cluster_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -42,11 +42,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "face_clustering_photo_organizer", force=args.force_download,
-        )
-        data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        data_path = ensure_face_cluster_dataset(force=args.force_download)
+        data_dir = str(data_path / "processed" / "identities")
+        print(f"[INFO] Prepared dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -69,7 +67,7 @@ def main(argv: list[str] | None = None) -> None:
         pipeline.load()
 
         if not pipeline.embedder.ready:
-            print("[ERROR] InsightFace not available — cannot evaluate")
+            print("[ERROR] InsightFace not available -- cannot evaluate")
             return
 
         data_root = Path(data_dir)
@@ -83,10 +81,10 @@ def main(argv: list[str] | None = None) -> None:
         # Select identities with >= 2 images
         usable = []
         all_images: list[str] = []
-        ground_truth: dict[str, str] = {}  # image_path → identity
+        ground_truth: dict[str, str] = {}  # image_path -> identity
 
         for id_dir in identity_dirs[: args.max_identities]:
-            imgs = list(id_dir.glob("*.jpg")) + list(id_dir.glob("*.png"))
+            imgs = _find_image_files(id_dir)
             if len(imgs) < 2:
                 continue
             usable.append(id_dir.name)
@@ -148,11 +146,11 @@ def main(argv: list[str] | None = None) -> None:
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")
-        print("[INFO] Install: pip install insightface onnxruntime-gpu scikit-learn")
+        print("[INFO] Install: pip install insightface onnxruntime scikit-learn")
     except Exception as exc:
         print(f"[ERROR] Evaluation failed: {exc}")
         raise
@@ -163,7 +161,7 @@ def _find_identity_dirs(data_root: Path) -> list[Path]:
     dirs = sorted(d for d in data_root.iterdir() if d.is_dir())
     if dirs:
         for d in dirs:
-            imgs = list(d.glob("*.jpg")) + list(d.glob("*.png"))
+            imgs = _find_image_files(d)
             if imgs:
                 return dirs
     # Try one level deeper
@@ -173,6 +171,14 @@ def _find_identity_dirs(data_root: Path) -> list[Path]:
             if deeper:
                 return deeper
     return []
+
+
+def _find_image_files(identity_dir: Path) -> list[Path]:
+    files = []
+    for child in sorted(identity_dir.iterdir()):
+        if child.is_file() and child.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}:
+            files.append(child)
+    return files
 
 
 if __name__ == "__main__":

@@ -47,8 +47,8 @@ def main() -> None:
             alt = data_root / "processed" / "data.yaml"
             if alt.exists():
                 data_yaml = str(alt)
-        print(f"[INFO] Dataset → {data_root}")
-        print(f"[INFO] data.yaml → {data_yaml}")
+        print(f"[INFO] Dataset -> {data_root}")
+        print(f"[INFO] data.yaml -> {data_yaml}")
     else:
         data_yaml = args.data
 

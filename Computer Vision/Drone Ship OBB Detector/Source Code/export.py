@@ -34,7 +34,7 @@ class OBBExporter:
         if cfg.export_txt:
             self._txt_dir = Path(cfg.export_txt)
             self._txt_dir.mkdir(parents=True, exist_ok=True)
-            log.info("TXT export dir → %s", self._txt_dir)
+            log.info("TXT export dir -> %s", self._txt_dir)
 
     def write(self, result: FrameResult, *, image_name: str | None = None,
               image_shape: tuple[int, int] | None = None) -> None:
@@ -56,7 +56,7 @@ class OBBExporter:
             out = Path(self.cfg.export_json)
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps(self._json_records, indent=2), encoding="utf-8")
-            log.info("JSON export → %s (%d records)", out, len(self._json_records))
+            log.info("JSON export -> %s (%d records)", out, len(self._json_records))
 
     # ------------------------------------------------------------------
     # Helpers

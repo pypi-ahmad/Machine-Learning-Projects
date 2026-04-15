@@ -1,12 +1,7 @@
 {
-  "DINOv2": {
-    "val_accuracy": 0.818,
-    "epochs": 3,
-    "time_s": 105.7
+  "DiseaseCNN": {
+    "Accuracy": 0.6065,
+    "F1": 0.6061
   },
-  "ConvNeXtV2": {
-    "val_accuracy": 0.566,
-    "epochs": 2,
-    "time_s": 73.2
-  }
+  "best_model": "DiseaseCNN"
 }

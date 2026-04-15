@@ -1,9 +1,11 @@
 """Train Emotion Recognition — classification (7 emotions).
+"""Train Emotion Recognition — classification (7 emotions).
 
 Usage::
 
     python train.py
     python train.py --data path/to/dataset --epochs 30
+"""
 """
 
 from __future__ import annotations
@@ -33,7 +35,7 @@ def main() -> None:
     if args.data is None:
         data_path = DatasetResolver().resolve("emotion_recognition", force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 

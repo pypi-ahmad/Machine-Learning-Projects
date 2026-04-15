@@ -1,4 +1,5 @@
 """CLI and demo app for Gesture Controlled Slideshow.
+"""CLI and demo app for Gesture Controlled Slideshow.
 
 Supports two display modes:
     - **cam-only**: webcam with gesture overlay (no slides needed)
@@ -11,6 +12,7 @@ Usage::
     python infer.py --source 0 --cam-only              # camera only
     python infer.py --source video.mp4 --cam-only      # from video
     python infer.py --source 0 --export-csv gestures.csv
+"""
 """
 
 from __future__ import annotations
@@ -39,7 +41,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Gesture Controlled Slideshow — Demo",
+        description="Gesture Controlled Slideshow -- Demo",
     )
     p.add_argument("--source", required=True,
                    help="'0' for webcam, or path to video")
@@ -124,7 +126,7 @@ def _run_stream(
         return
 
     log.info(
-        "Gesture slideshow running: %s — press 'q' to quit", label,
+        "Gesture slideshow running: %s -- press 'q' to quit", label,
     )
     log.info(
         "Keyboard: n=next, p=prev, SPACE=pause, t=pointer",
@@ -153,7 +155,7 @@ def _run_stream(
                         frame, result, cfg,
                         detector=controller.detector,
                     )
-                    cv2.imshow(f"Gesture Control — {label}", vis)
+                    cv2.imshow(f"Gesture Control -- {label}", vis)
                 else:
                     slide_img = controller.slideshow.current_slide()
                     vis = draw_slide_with_cam(
@@ -181,7 +183,7 @@ def _run_stream(
 
     cap.release()
     cv2.destroyAllWindows()
-    log.info("Done — %d frames processed", frame_idx)
+    log.info("Done -- %d frames processed", frame_idx)
 
 
 def _run_image(

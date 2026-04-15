@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — overlay and visual report rendering."""
+"""Polyp Lesion Segmentation -- overlay and visual report rendering."""
 
 from __future__ import annotations
 

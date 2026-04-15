@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — structured output export."""
+"""Fire Area Segmentation -- structured output export."""
 
 from __future__ import annotations
 

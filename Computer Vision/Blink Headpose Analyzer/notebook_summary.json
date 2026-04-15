@@ -3,7 +3,7 @@
   "key": "blink_headpose_analyzer",
   "category": "Detection",
   "type": "detection",
-  "tech": "MediaPipe Face Mesh + shared EAR/headpose utilities",
+  "tech": "MediaPipe Face Landmarker + shared EAR/headpose utilities",
   "model_family": [
     "MediaPipe"
   ],

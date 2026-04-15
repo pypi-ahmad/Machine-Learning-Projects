@@ -1,4 +1,4 @@
-"""Finger Counter Pro — CVProject registry entry."""
+"""Finger Counter Pro -- CVProject registry entry."""
 
 from __future__ import annotations
 

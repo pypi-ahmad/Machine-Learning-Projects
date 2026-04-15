@@ -1,7 +1,9 @@
 """Road Pothole Segmentation — YOLO26m-seg pothole extraction.
+"""Road Pothole Segmentation — YOLO26m-seg pothole extraction.
 
 Wraps Ultralytics YOLO26m-seg to produce per-instance pothole masks
 with confidence scores.
+"""
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ if str(_REPO) not in sys.path:
 class PotholeInstance:
     """One detected pothole."""
 
-    mask: np.ndarray               # binary uint8 (H, W) — 255 = pothole
+    mask: np.ndarray               # binary uint8 (H, W) -- 255 = pothole
     confidence: float
     bbox: tuple[int, int, int, int]  # (x1, y1, x2, y2)
     area_px: int                   # pixel count inside mask
@@ -62,7 +64,7 @@ class PotholeSegmenter:
         self._model = None
 
     def load(self) -> None:
-        """Load model weights (via resolve → load_yolo)."""
+        """Load model weights (via resolve -> load_yolo)."""
         from models.registry import resolve
         from utils.yolo import load_yolo
 

@@ -1,4 +1,5 @@
 """Polyp Lesion Segmentation — CLI entry point.
+"""Polyp Lesion Segmentation — CLI entry point.
 
 Usage::
 
@@ -26,6 +27,7 @@ Usage::
 DISCLAIMER: This tool is for research purposes only.
 It is NOT a medical device and must NOT be used for clinical diagnosis.
 """
+"""
 
 from __future__ import annotations
 
@@ -36,7 +38,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Polyp Lesion Segmentation — polyp detection and segmentation",
+        description="Polyp Lesion Segmentation -- polyp detection and segmentation",
         epilog="DISCLAIMER: Research only. NOT for clinical diagnosis.",
     )
     p.add_argument(
@@ -239,7 +241,7 @@ def _run_directory(ctrl, dir_path, cfg, args, out_dir, csv_exp,
         if csv_exp:
             csv_exp.write_row(_csv_row(result, str(img_path)))
 
-    print(f"\nDone — processed {len(images)} image(s)")
+    print(f"\nDone -- processed {len(images)} image(s)")
 
     if n_gt > 0:
         print(f"Mean Dice: {total_dice / n_gt:.4f}  "
@@ -311,7 +313,7 @@ def _run_video(ctrl, source, cfg, args, out_dir, csv_exp,
             backend=last_result.backend_name,
         )
 
-    print(f"\nDone — processed {idx} frame(s)")
+    print(f"\nDone -- processed {idx} frame(s)")
 
 
 # ── helpers ────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 """Logo Retrieval Brand Match — index builder script.
+"""Logo Retrieval Brand Match — index builder script.
 
 Build or update the embedding index from the dataset (or any directory
 of logo images organised in brand sub-folders).
@@ -16,6 +17,7 @@ Usage::
 
     # Update an existing index with new images
     python index_builder.py --data new_logos/ --update
+"""
 """
 
 from __future__ import annotations
@@ -89,7 +91,7 @@ def _build_index(args: argparse.Namespace) -> None:
         existing = set(idx._paths)
         entries = [(b, p) for b, p in entries if str(p) not in existing]
         if not entries:
-            print("No new images to add — index is up to date.")
+            print("No new images to add -- index is up to date.")
             return
         print(f"  Adding {len(entries)} new image(s)")
     else:
@@ -136,7 +138,7 @@ def _build_index(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Logo Retrieval Brand Match — build embedding index",
+        description="Logo Retrieval Brand Match -- build embedding index",
     )
     parser.add_argument("--data", type=str, default=None,
                         help="Directory of brand/image sub-folders")

@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — overlay renderer."""
+"""Exercise Rep Counter -- overlay renderer."""
 
 from __future__ import annotations
 

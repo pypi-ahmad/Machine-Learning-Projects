@@ -1,6 +1,6 @@
 """High-level parser for Handwritten Note to Markdown.
 
-Orchestrates line segmentation → TrOCR recognition → markdown
+Orchestrates line segmentation -> TrOCR recognition -> markdown
 formatting into a single :class:`NoteParseResult`.
 
 Usage::
@@ -51,7 +51,7 @@ class NoteParser:
         self._formatter = MarkdownFormatter(cfg)
 
     def parse(self, image: np.ndarray) -> NoteParseResult:
-        """Full pipeline: segment → recognise → format."""
+        """Full pipeline: segment -> recognise -> format."""
         # 1. Segment into lines
         regions = self._segmenter.segment(image)
 

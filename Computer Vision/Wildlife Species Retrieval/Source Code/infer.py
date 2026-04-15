@@ -1,4 +1,5 @@
 """Wildlife Species Retrieval — CLI query entry point.
+"""Wildlife Species Retrieval — CLI query entry point.
 
 Usage::
 
@@ -6,6 +7,7 @@ Usage::
     python infer.py --source photo.jpg --save-grid output/grid.jpg
     python infer.py --source photo.jpg --export-json results.json
     python infer.py --source photo.jpg --rerank
+"""
 """
 
 from __future__ import annotations
@@ -30,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
-        description="Wildlife species retrieval — find similar images"
+        description="Wildlife species retrieval -- find similar images"
     )
     ap.add_argument("--source", required=True, help="Query image path")
     ap.add_argument("--index-path", default=None, help="Override index path")

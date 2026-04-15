@@ -138,7 +138,7 @@ def _run_image(
         out = Path(cfg.export_dir) / "result.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(out), annotated)
-        log.info("Saved → %s", out)
+        log.info("Saved -> %s", out)
 
 
 def _run_video(

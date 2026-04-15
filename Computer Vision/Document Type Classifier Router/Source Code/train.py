@@ -44,8 +44,13 @@ def main() -> None:
         data_path = DatasetResolver().resolve(
             "document_type_classifier_router", force=args.force_download
         )
-        data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        # Dataset nests classes inside raw/docs-sm/
+        class_root = data_path / "raw" / "docs-sm"
+        if class_root.is_dir():
+            data_dir = str(class_root)
+        else:
+            data_dir = str(data_path)
+        print(f"[INFO] Resolved dataset -> {data_dir}")
     else:
         data_dir = args.data
 

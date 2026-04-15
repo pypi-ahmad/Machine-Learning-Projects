@@ -1,7 +1,7 @@
 # Blink Headpose Analyzer
 
 Reusable face-landmark analytics for **blink counting** and
-**head pose estimation** using MediaPipe Face Mesh.
+**head pose estimation** using MediaPipe Face Landmarker.
 
 Provides a `shared/` utility package that other face-analysis
 projects can import directly.
@@ -16,6 +16,7 @@ projects can import directly.
 | Head pose | `pose_estimator.py` | Yaw / Pitch / Roll via solvePnP |
 | Per-frame export | `export.py` | CSV and JSON metrics |
 | Real-time overlay | `visualize.py` | Eye contours, EAR bar, pose text |
+| Automatic bootstrap | `data_bootstrap.py` | Public LFW face dataset |
 
 ## Reusable Utilities (`shared/`)
 
@@ -74,8 +75,11 @@ from shared.landmarks import (
 # Install
 pip install -r requirements.txt
 
-# Webcam (press 'q' to quit)
+# Prepare the public evaluation dataset
 cd "Blink Headpose Analyzer/Source Code"
+python train.py --max-frames 20
+
+# Webcam (press 'q' to quit)
 python infer.py --source 0
 
 # Video file
@@ -87,6 +91,12 @@ python infer.py --source 0 --no-display --export-csv metrics.csv
 # JSON export
 python infer.py --source video.mp4 --export-json metrics.json
 ```
+
+## Dataset
+
+- Default bootstrap: `sklearn.datasets.fetch_lfw_people` (LFW), prepared automatically into `Computer Vision/data/blink_headpose_analyzer/processed/media`.
+- Helper fallback: if the local sklearn download path fails, the project can still fall back to the repo's shared dataset helper using a public LFW-style Hugging Face source.
+- Rebuild: pass `--force-download` to `train.py` or `infer.py`.
 
 ## CLI Reference
 
@@ -113,10 +123,10 @@ Optional:
 All tunables are configurable via YAML/JSON:
 
 ```yaml
-# MediaPipe
+# MediaPipe Face Landmarker
 max_num_faces: 1
-refine_landmarks: true
 min_detection_confidence: 0.5
+min_presence_confidence: 0.5
 min_tracking_confidence: 0.5
 
 # Blink detection
@@ -158,7 +168,7 @@ Blink Headpose Analyzer/
 │   │   ├── head_pose_math.py ← solvePnP + Euler
 │   │   └── landmarks.py      ← Landmark indices + helpers
 │   ├── config.py             ← AnalyzerConfig dataclass
-│   ├── landmark_engine.py    ← MediaPipe Face Mesh wrapper
+│   ├── landmark_engine.py    ← MediaPipe Face Landmarker wrapper
 │   ├── blink_counter.py      ← EAR-based blink counting
 │   ├── pose_estimator.py     ← Head pose tracker
 │   ├── analyzer.py           ← Pipeline orchestrator
@@ -179,6 +189,8 @@ Blink Headpose Analyzer/
 - MediaPipe ≥ 0.10.14
 - OpenCV ≥ 4.10
 - NumPy ≥ 1.26
+- scikit-learn ≥ 1.5
+- PyYAML ≥ 6.0
 
 ## License
 

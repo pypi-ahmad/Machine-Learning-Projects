@@ -1,4 +1,5 @@
 """Visual Anomaly Detector — training pipeline.
+"""Visual Anomaly Detector — training pipeline.
 
 Trains a one-class anomaly model on normal (non-defective) images,
 optionally evaluates on a test set, and auto-selects the threshold.
@@ -9,6 +10,7 @@ Usage::
     python train.py --data path/to/dataset
     python train.py --backbone resnet50 --scoring knn
     python train.py --force-download
+"""
 """
 
 from __future__ import annotations
@@ -40,11 +42,13 @@ def train(
     cfg: AnomalyConfig,
 ) -> tuple[AnomalyScorer, FeatureExtractor, float]:
     """Train the anomaly detector on normal images.
+    """Train the anomaly detector on normal images.
 
     Returns
     -------
     tuple
         ``(scorer, extractor, threshold)``
+    """
     """
     # Find normal images
     normal_paths = find_normal_images(data_root)
@@ -181,7 +185,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
-        description="Visual Anomaly Detector — train on normal images",
+        description="Visual Anomaly Detector -- train on normal images",
     )
     parser.add_argument("--data", type=str, default=None,
                         help="Path to anomaly dataset root")

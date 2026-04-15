@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — per-frame metrics export."""
+"""Sign Language Alphabet Recognizer -- per-frame metrics export."""
 
 from __future__ import annotations
 

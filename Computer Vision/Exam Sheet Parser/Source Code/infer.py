@@ -35,7 +35,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Exam Sheet Parser — Inference",
+        description="Exam Sheet Parser -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="Image path or directory of exam sheet scans")
@@ -121,7 +121,7 @@ def run(argv: list[str] | None = None) -> None:
                 out_dir,
             )
 
-    log.info("Done — processed %d exam sheet(s)", len(images))
+    log.info("Done -- processed %d exam sheet(s)", len(images))
 
 
 def _process_image(
@@ -147,7 +147,7 @@ def _process_image(
     q_summary = [f"Q{q.number}" for q in result.questions[:5]]
     marks_str = f", total={result.total_marks}m" if result.total_marks else ""
     log.info(
-        "%s: %d blocks, %d questions%s, conf=%.2f — %s",
+        "%s: %d blocks, %d questions%s, conf=%.2f -- %s",
         label,
         result.num_blocks,
         result.num_questions,
@@ -166,7 +166,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"Exam Sheet: {label}", vis)

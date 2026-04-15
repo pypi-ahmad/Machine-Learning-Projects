@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — main controller."""
+"""Polyp Lesion Segmentation -- main controller."""
 
 from __future__ import annotations
 
@@ -24,9 +24,11 @@ class FrameResult:
 
 class PolypController:
     """High-level controller: segmentation → metrics.
+    """High-level controller: segmentation → metrics.
 
     Supports hot-swapping the segmentation backend between YOLO (baseline)
     and optional comparison backends (e.g. MedSAM).
+    """
     """
 
     def __init__(self, config: PolypConfig | None = None) -> None:
@@ -62,6 +64,7 @@ class PolypController:
         gt_mask: np.ndarray | None = None,
     ) -> FrameResult:
         """Run polyp segmentation + metrics on one image.
+        """Run polyp segmentation + metrics on one image.
 
         Parameters
         ----------
@@ -71,6 +74,7 @@ class PolypController:
             Optional source label.
         gt_mask : np.ndarray | None
             Optional ground-truth mask for Dice/IoU evaluation.
+        """
         """
         if self._backend is None:
             self.load()

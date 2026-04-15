@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — configuration dataclass."""
+"""Sign Language Alphabet Recognizer -- configuration dataclass."""
 
 from __future__ import annotations
 

@@ -56,7 +56,7 @@ class AgeGenderModern(CVProject):
         elif self._deepface:
             print("  [age_gender] DeepFace single-pass (detection + analysis)")
         else:
-            print("  [age_gender] No backend available — install deepface: pip install deepface")
+            print("  [age_gender] No backend available -- install deepface: pip install deepface")
 
     def predict(self, input_data):
         frame = input_data if isinstance(input_data, np.ndarray) else cv2.imread(str(input_data))

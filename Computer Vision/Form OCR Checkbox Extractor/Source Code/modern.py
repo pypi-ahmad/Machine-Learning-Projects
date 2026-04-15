@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: PaddleOCR + OpenCV checkbox detection → label association → export
+Pipeline: EasyOCR + OpenCV checkbox detection -> label association -> export
 """
 
 from __future__ import annotations
@@ -27,9 +27,9 @@ class FormOCRCheckboxExtractor(CVProject):
     """Form checkbox/radio detection + OCR text extraction."""
 
     project_type = "detection"
-    description = "Checkbox/radio detection + PaddleOCR form field extraction"
+    description = "Checkbox/radio detection + EasyOCR form field extraction"
     legacy_tech = "N/A (new project)"
-    modern_tech = "OpenCV morphology + PaddleOCR + label association"
+    modern_tech = "OpenCV morphology + EasyOCR + label association"
 
     def __init__(self) -> None:
         super().__init__()

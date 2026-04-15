@@ -1,10 +1,12 @@
 """Gesture debouncing for Gesture Controlled Slideshow.
+"""Gesture debouncing for Gesture Controlled Slideshow.
 
 Prevents spurious actions by requiring:
 1. The same gesture to be detected for *stable_frames*
    consecutive frames.
 2. A minimum *debounce_sec* cooldown between triggered actions.
 3. Gesture confidence above *confidence_threshold*.
+"""
 """
 
 from __future__ import annotations
@@ -45,6 +47,7 @@ class GestureDebouncer:
 
     def update(self, state: GestureState) -> DebouncedResult:
         """Process a new gesture observation.
+        """Process a new gesture observation.
 
         Parameters
         ----------
@@ -54,6 +57,7 @@ class GestureDebouncer:
         Returns
         -------
         DebouncedResult
+        """
         """
         result = DebouncedResult(gesture=state.gesture)
 
@@ -93,7 +97,7 @@ class GestureDebouncer:
                 self._last_trigger_time = now
                 self._last_triggered_gesture = state.gesture
                 log.debug(
-                    "Triggered: %s → %s (stable=%d)",
+                    "Triggered: %s -> %s (stable=%d)",
                     state.gesture, action, self._stable_count,
                 )
 

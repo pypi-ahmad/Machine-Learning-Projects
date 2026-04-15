@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — MediaPipe Pose wrapper (33 body landmarks)."""
+"""Yoga Pose Correction Coach -- MediaPipe Pose wrapper (33 body landmarks)."""
 
 from __future__ import annotations
 

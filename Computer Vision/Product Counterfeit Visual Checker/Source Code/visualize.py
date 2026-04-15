@@ -1,6 +1,8 @@
 """Product Counterfeit Visual Checker — visualisation helpers.
+"""Product Counterfeit Visual Checker — visualisation helpers.
 
 Build comparison grids and mismatch heatmaps for screening results.
+"""
 """
 
 from __future__ import annotations
@@ -169,9 +171,9 @@ def _paste(canvas: np.ndarray, patch: np.ndarray, x: int, y: int) -> None:
 
 
 def _score_to_color(score: float) -> tuple[int, int, int]:
-    """Map a 0–1 similarity score to a BGR colour (red → yellow → green)."""
+    """Map a 0–1 similarity score to a BGR colour (red -> yellow -> green)."""
     if score >= 0.75:
-        return (80, 200, 80)    # green — low risk
+        return (80, 200, 80)    # green -- low risk
     elif score >= 0.55:
-        return (0, 180, 255)    # orange — medium risk
-    return (0, 0, 220)          # red — high risk
+        return (0, 180, 255)    # orange -- medium risk
+    return (0, 0, 220)          # red -- high risk

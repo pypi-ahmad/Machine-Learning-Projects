@@ -1,4 +1,4 @@
-"""Waterbody & Flood Extent Segmentation — structured output export."""
+"""Waterbody & Flood Extent Segmentation -- structured output export."""
 
 from __future__ import annotations
 

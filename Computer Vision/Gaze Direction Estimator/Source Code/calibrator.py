@@ -93,7 +93,7 @@ class GazeCalibrator:
 
         center_samples = self._samples.get("CENTER", [])
         if not center_samples:
-            log.warning("No CENTER samples — calibration skipped")
+            log.warning("No CENTER samples -- calibration skipped")
             return offsets
 
         # Compute mean ratio at each position
@@ -130,7 +130,7 @@ class GazeCalibrator:
             },
         }
         path.write_text(json.dumps(data, indent=2), encoding="utf-8")
-        log.info("Calibration saved → %s", path)
+        log.info("Calibration saved -> %s", path)
 
     @staticmethod
     def load(path: str | Path) -> CalibrationOffsets:

@@ -28,7 +28,7 @@ log = logging.getLogger("waste_sorting.evaluate")
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Evaluate waste detection model")
-    p.add_argument("--model", default="yolo11n.pt", help="Model weights")
+    p.add_argument("--model", default="yolo26m.pt", help="Model weights")
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--batch", type=int, default=8)
     p.add_argument("--device", default="", help="CUDA device or 'cpu'")

@@ -1,4 +1,4 @@
-"""Crop Row & Weed Segmentation — CVProject registry entry."""
+"""Crop Row & Weed Segmentation -- CVProject registry entry."""
 
 from __future__ import annotations
 

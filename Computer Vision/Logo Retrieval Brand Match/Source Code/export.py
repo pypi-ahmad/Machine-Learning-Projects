@@ -1,4 +1,4 @@
-"""Logo Retrieval Brand Match — export utilities."""
+"""Logo Retrieval Brand Match -- export utilities."""
 
 from __future__ import annotations
 

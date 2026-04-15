@@ -1,4 +1,4 @@
-"""Food Freshness Grader — configuration."""
+"""Food Freshness Grader -- configuration."""
 
 from __future__ import annotations
 
@@ -25,11 +25,13 @@ CLASS_NAMES: list[str] = sorted(
 
 def parse_label(class_name: str) -> tuple[str, str]:
     """Split a class name into (freshness_grade, produce_type).
+    """Split a class name into (freshness_grade, produce_type).
 
     >>> parse_label("fresh_apple")
     ('fresh', 'apple')
     >>> parse_label("stale_bitter_gourd")
     ('stale', 'bitter_gourd')
+    """
     """
     for grade in FRESHNESS_GRADES:
         prefix = f"{grade}_"
@@ -46,7 +48,7 @@ class FreshnessConfig:
     model_name: str = "resnet18"        # resnet18|resnet50|efficientnet_b0|mobilenet_v2
     num_classes: int = 12               # 6 produce × 2 freshness
     imgsz: int = 224
-    device: str | None = None           # None → auto
+    device: str | None = None           # None -> auto
 
     # ── Training ──────────────────────────────────────────
     epochs: int = 25
@@ -57,7 +59,7 @@ class FreshnessConfig:
 
     # ── Inference ─────────────────────────────────────────
     weights_path: str = "runs/freshness_cls/best_model.pt"
-    confidence_threshold: float = 0.3   # below → "uncertain"
+    confidence_threshold: float = 0.3   # below -> "uncertain"
 
     # ── Visualisation ─────────────────────────────────────
     font_scale: float = 0.7

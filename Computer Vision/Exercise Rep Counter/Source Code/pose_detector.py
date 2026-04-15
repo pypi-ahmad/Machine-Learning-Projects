@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — MediaPipe Pose wrapper (33 body landmarks)."""
+"""Exercise Rep Counter -- MediaPipe Pose wrapper (33 body landmarks)."""
 
 from __future__ import annotations
 

@@ -1,7 +1,9 @@
 """Logo Retrieval Brand Match — high-level controller.
+"""Logo Retrieval Brand Match — high-level controller.
 
 Orchestrates optional detection → embedding → retrieval.
 Detection and retrieval are kept separate.
+"""
 """
 
 from __future__ import annotations
@@ -25,7 +27,7 @@ class QueryResult:
 
 
 class LogoController:
-    """Top-level orchestrator: detect (optional) → embed → retrieve."""
+    """Top-level orchestrator: detect (optional) -> embed -> retrieve."""
 
     def __init__(self, cfg: LogoConfig | None = None) -> None:
         self.cfg = cfg or LogoConfig()
@@ -60,7 +62,7 @@ class LogoController:
         top_k: int | None = None,
         source: str | None = None,
     ) -> QueryResult:
-        """Run full pipeline: detect (optional) → embed → retrieve."""
+        """Run full pipeline: detect (optional) -> embed -> retrieve."""
         detection_used = False
 
         if self._detector is not None:

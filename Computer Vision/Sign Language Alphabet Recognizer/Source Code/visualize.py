@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — overlay renderer."""
+"""Sign Language Alphabet Recognizer -- overlay renderer."""
 
 from __future__ import annotations
 

@@ -55,7 +55,7 @@ class PlateReadResult:
 
 
 class PlateReaderPipeline:
-    """Full plate reading pipeline: detect → OCR → clean → dedup."""
+    """Full plate reading pipeline: detect -> OCR -> clean -> dedup."""
 
     def __init__(self, cfg: PlateConfig) -> None:
         self.cfg = cfg

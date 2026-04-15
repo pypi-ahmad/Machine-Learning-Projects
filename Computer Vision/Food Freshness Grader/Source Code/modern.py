@@ -1,4 +1,4 @@
-"""Food Freshness Grader — CVProject registry entry."""
+"""Food Freshness Grader -- CVProject registry entry."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class FoodFreshnessGraderModern(CVProject):
         "(6 produce types × fresh/stale) with confidence scores"
     )
     legacy_tech = "Manual visual inspection"
-    modern_tech = "ResNet-18 transfer learning (ImageNet → freshness)"
+    modern_tech = "ResNet-18 transfer learning (ImageNet -> freshness)"
 
     def __init__(self) -> None:
         super().__init__()

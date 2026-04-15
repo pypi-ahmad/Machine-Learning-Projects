@@ -41,7 +41,7 @@ class CrowdExporter:
             self._csv_fh = open(out, "w", newline="", encoding="utf-8")
             self._csv_writer = csv.DictWriter(self._csv_fh, fieldnames=fields)
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def write(self, result: FrameResult) -> None:
         """Record one frame."""
@@ -96,7 +96,7 @@ class CrowdExporter:
                 "timeline": self._json_frames,
             }
             out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-            log.info("JSON export → %s (%d frames, %d alerts)",
+            log.info("JSON export -> %s (%d frames, %d alerts)",
                      out, len(self._json_frames), len(self._all_alerts))
 
     def __enter__(self) -> CrowdExporter:

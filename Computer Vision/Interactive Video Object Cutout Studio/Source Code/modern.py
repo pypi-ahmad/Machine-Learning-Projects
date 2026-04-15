@@ -1,4 +1,4 @@
-"""Interactive Video Object Cutout Studio — CVProject registry entry."""
+"""Interactive Video Object Cutout Studio -- CVProject registry entry."""
 
 from __future__ import annotations
 
@@ -87,7 +87,7 @@ class VideoObjectCutoutModern(CVProject):
         self._ctrl.load_image_engine()
 
     def train(self, **kwargs) -> None:
-        print("SAM 2 is a foundation model — no project-specific training needed.")
+        print("SAM 2 is a foundation model -- no project-specific training needed.")
         print("Use fine-tuning scripts from facebookresearch/sam2 if desired.")
 
     def evaluate(self, **kwargs) -> None:

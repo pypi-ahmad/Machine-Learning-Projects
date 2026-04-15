@@ -1,9 +1,11 @@
 """Train Food Image Recognition — classification (101 classes, Food-101).
+"""Train Food Image Recognition — classification (101 classes, Food-101).
 
 Usage::
 
     python train.py
     python train.py --data path/to/dataset --epochs 30
+"""
 """
 
 from __future__ import annotations
@@ -33,7 +35,7 @@ def main() -> None:
     if args.data is None:
         data_path = DatasetResolver().resolve("food_image_recognition", force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 

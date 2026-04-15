@@ -1,4 +1,5 @@
 """Video Event Search — inference pipeline.
+"""Video Event Search — inference pipeline.
 
 Runs YOLO detection + tracking on video, generates structured events,
 stores them, and provides a query interface.
@@ -9,6 +10,7 @@ Usage (command-line)::
     python infer.py --source crosswalk.avi --config event_search.yaml
     python infer.py --query --event-type zone_enter
     python infer.py --query --summary
+"""
 """
 
 from __future__ import annotations
@@ -51,8 +53,10 @@ def run_pipeline(
     force_download: bool = False,
 ) -> Path:
     """Run detection + tracking + event generation on a video source.
+    """Run detection + tracking + event generation on a video source.
 
     Returns the path to the generated events JSON.
+    """
     """
     if force_download:
         from data_bootstrap import ensure_video_event_dataset
@@ -132,7 +136,7 @@ def run_pipeline(
 
         frame_idx += 1
         if frame_idx % 100 == 0:
-            log.info("Frame %d/%d — %d events so far", frame_idx,
+            log.info("Frame %d/%d -- %d events so far", frame_idx,
                      total_frames, store.count)
 
     cap.release()
@@ -193,7 +197,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
-        description="Video Event Search — detect, track, and search video events",
+        description="Video Event Search -- detect, track, and search video events",
     )
     sub = parser.add_subparsers(dest="command")
 

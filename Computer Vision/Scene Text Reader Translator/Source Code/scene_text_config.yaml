@@ -2,6 +2,7 @@
 # Copy and edit this file, then pass via: python infer.py --config scene_text_config.yaml
 
 # ── PaddleOCR ──────────────────────────────────────────
+ocr_backend: "auto"
 ocr_lang: "en"
 use_gpu: false
 det_db_thresh: 0.3
@@ -11,7 +12,7 @@ use_angle_cls: true
 # ── Translation hook ───────────────────────────────────
 translate_enabled: false
 translate_target_lang: "en"
-translate_provider: ""            # "googletrans" or custom
+translate_provider: ""            # reserved hook label; no bundled provider
 
 # ── Validation ─────────────────────────────────────────
 confidence_threshold: 0.40

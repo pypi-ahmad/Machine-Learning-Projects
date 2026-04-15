@@ -69,6 +69,11 @@ class FieldExtractor:
         self._route_set = {k.lower() for k in cfg.route_keywords}
         self._dur_set = {k.lower() for k in cfg.duration_keywords}
         self._instr_set = {k.lower() for k in cfg.instruction_keywords}
+        self._non_medicine_terms = {
+            "for", "day", "days", "week", "weeks", "month", "months",
+            "informational sample only", "verify with", "a licensed clinician",
+            "licensed clinician", "sample only",
+        }
 
     # ------------------------------------------------------------------
     # Public API
@@ -160,9 +165,15 @@ class FieldExtractor:
     ) -> list[MedicineEntry]:
         """Identify medicine lines and group dosage/frequency/instructions."""
         candidates: list[tuple[int, OCRBlock, str]] = []
+        max_y = max((blk.y_max for blk in blocks), default=0)
 
         for i, blk in enumerate(blocks):
             role = self._classify_line(blk.text)
+            if role == "medicine":
+                if blk.y_min < 220:
+                    role = "header"
+                elif blk.y_max > max_y - 140:
+                    role = "instruction"
             candidates.append((i, blk, role))
 
         medicines: list[MedicineEntry] = []
@@ -190,12 +201,23 @@ class FieldExtractor:
         """Classify an OCR line as medicine, dosage, frequency, etc."""
         t = text.lower().strip()
 
+        if not t:
+            return "unknown"
+
+        if t in self._non_medicine_terms:
+            return "instruction"
+
+        if "licensed" in t or "informational" in t or "verify" in t or "finish" in t:
+            return "instruction"
+
         # Check dosage pattern first (e.g. "500mg", "2 tablets")
         if self._dosage_re.search(t):
             return "dosage"
 
         # Duration (e.g. "for 5 days", "x 7 days")
         if self._has_keyword(t, self._dur_set) and re.search(r"\d", t):
+            return "duration"
+        if t in self._dur_set:
             return "duration"
 
         # Frequency
@@ -218,7 +240,8 @@ class FieldExtractor:
         # If it looks like a drug name (mostly alpha, possibly with
         # numbers for strength like "Amoxicillin 500")
         alpha_ratio = sum(1 for c in t if c.isalpha()) / max(len(t), 1)
-        if alpha_ratio >= 0.5 and len(t) >= 3:
+        word_count = len([part for part in t.split() if part])
+        if alpha_ratio >= 0.5 and len(t) >= 4 and word_count <= 4:
             return "medicine"
 
         return "unknown"

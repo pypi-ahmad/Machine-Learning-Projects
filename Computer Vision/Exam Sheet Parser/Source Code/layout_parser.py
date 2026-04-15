@@ -138,7 +138,12 @@ class LayoutParser:
                 elif elem.role == ROLE_MARKS and elem.marks_value is not None:
                     current.marks = elem.marks_value
                 elif elem.role == ROLE_BODY:
-                    current.body_lines.append(elem.text)
+                    if self._is_question_stub(current.text):
+                        current.text = self._merge_question_text(current.text, elem.text)
+                    else:
+                        current.body_lines.append(elem.text)
+                    if current.marks is None and elem.marks_value is not None:
+                        current.marks = elem.marks_value
 
                 # Update confidence to minimum
                 current.confidence = min(current.confidence, elem.confidence)
@@ -163,8 +168,13 @@ class LayoutParser:
         marks_match = self._marks_re.search(text)
         marks_val = int(marks_match.group(1)) if marks_match else None
 
+        if marks_val is not None and self._is_standalone_marks_text(text):
+            return ROLE_MARKS, None, None, marks_val
+
         # 2. Question number (e.g. "Q1.", "3)", "Q. 12:")
         q_match = self._q_re.match(text)
+        if q_match is None:
+            q_match = re.match(r"^\s*Q\.?\s*(\d{1,3})[_\-\.]?\s*$", text, re.IGNORECASE)
         if q_match:
             q_num = int(q_match.group(1))
             return ROLE_QUESTION, q_num, None, marks_val
@@ -205,6 +215,20 @@ class LayoutParser:
             if text_lower.startswith(kw):
                 return True
         return False
+
+    def _is_standalone_marks_text(self, text: str) -> bool:
+        stripped = self._marks_re.sub("", text)
+        stripped = re.sub(r"[\d\s\[\]\(\)\.:;,+\-]+", "", stripped)
+        return len(stripped) <= 1
+
+    @staticmethod
+    def _is_question_stub(text: str) -> bool:
+        return bool(re.match(r"^\s*Q\.?\s*\d{1,3}[_\-\.]?\s*$", text, re.IGNORECASE))
+
+    @staticmethod
+    def _merge_question_text(stub: str, body_text: str) -> str:
+        clean_stub = re.sub(r"[_\-\.]?\s*$", "", stub.strip())
+        return f"{clean_stub}. {body_text}".strip()
 
     @staticmethod
     def _median_height(blocks: list[OCRBlock]) -> float:

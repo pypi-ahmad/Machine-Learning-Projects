@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — inference CLI.
+"""Ecommerce Item Attribute Tagger — inference CLI.
 
 Supports single-image and folder batch inference with optional
 catalog export (JSON / CSV).
@@ -9,6 +10,7 @@ Usage::
     python infer.py --source products_folder/ --export catalog.json
     python infer.py --source img.jpg --weights best_model.pt --overlay
     python infer.py --source folder/ --export catalog.csv --no-display
+"""
 """
 
 from __future__ import annotations
@@ -58,8 +60,10 @@ def run_inference(
     overlay: bool = False,
 ) -> list[dict]:
     """Run attribute prediction on one or more images.
+    """Run attribute prediction on one or more images.
 
     Returns list of result dicts.
+    """
     """
     # Load models
     detector = ItemDetector(cfg)
@@ -98,7 +102,7 @@ def run_inference(
         print(f"{'='*60}")
         for attr, info in prediction.items():
             conf = info["confidence"]
-            marker = " ⚠" if conf < cfg.confidence_threshold else ""
+            marker = " " if conf < cfg.confidence_threshold else ""
             print(f"  {attr:20s}  {info['label']:20s}  {conf:.1%}{marker}")
 
         # Visualisation
@@ -112,7 +116,7 @@ def run_inference(
                 save_dir.mkdir(parents=True, exist_ok=True)
                 out_path = save_dir / f"tagged_{img_path.name}"
                 cv2.imwrite(str(out_path), vis)
-                log.info("Saved → %s", out_path)
+                log.info("Saved -> %s", out_path)
 
             if show:
                 cv2.imshow("Attribute Tagger", vis)
@@ -130,7 +134,7 @@ def run_inference(
             export_csv(results, export_path)
         else:
             export_catalog(results, export_path)
-        print(f"\nExported {len(results)} items → {export_path}")
+        print(f"\nExported {len(results)} items -> {export_path}")
 
     # Print JSON summary
     summary = json.dumps(
@@ -148,7 +152,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
-        description="Ecommerce Item Attribute Tagger — inference",
+        description="Ecommerce Item Attribute Tagger -- inference",
     )
     parser.add_argument("--source", type=str, required=True,
                         help="Image path or directory")

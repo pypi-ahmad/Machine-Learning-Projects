@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Food Object Detection.
+"""Modern v2 pipeline — Food Object Detection.
 
 Replaces: InceptionV3 Keras model (Streamlit app)
 Uses:     YOLO26m detect filtered to food-related COCO classes
@@ -12,6 +13,7 @@ Note: For fine-grained food recognition (200+ categories), train on
 Food-101 or UECFood-256.  COCO covers only 10 food item classes.
 
 The original Streamlit implementation is preserved in food_app.py / run.py.
+"""
 """
 
 import sys
@@ -31,7 +33,7 @@ _FOOD_CLASSES = list(range(39, 56))
 @register("food_object_detection")
 class FoodObjectModern(CVProject):
     project_type = "detection"
-    description = "Food object detection — COCO food class filter"
+    description = "Food object detection -- COCO food class filter"
     legacy_tech = "InceptionV3 (Keras) + Streamlit"
     modern_tech = "YOLO26m detect (COCO food classes; train on Food-101 for 200+ categories)"
 
@@ -40,7 +42,7 @@ class FoodObjectModern(CVProject):
     def load(self):
         weights, ver, fallback = resolve("food_object_detection", "detect")
         if fallback:
-            print("  [food] Using pretrained COCO — filtered to food classes (46-55)")
+            print("  [food] Using pretrained COCO -- filtered to food classes (46-55)")
             print("  [food] For 200+ food categories, train on Food-101 or UECFood-256")
         self.model = load_yolo(weights)
 

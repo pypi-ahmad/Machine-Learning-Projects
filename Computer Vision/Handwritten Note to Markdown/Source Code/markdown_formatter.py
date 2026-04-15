@@ -70,7 +70,7 @@ class MarkdownFormatter:
             if i > 0 and median_gap > 0:
                 gap = line.y_start - lines[i - 1].y_end
                 if gap >= median_gap * self.cfg.paragraph_gap_ratio:
-                    md_parts.append("")  # blank line → new paragraph
+                    md_parts.append("")  # blank line -> new paragraph
 
             md_parts.append(text)
 

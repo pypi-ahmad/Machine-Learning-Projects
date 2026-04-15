@@ -1,15 +1,6 @@
 """Export utilities for Face Verification Attendance System.
 
-Supports:
-- JSON: structured attendance records with session info.
-- CSV: one row per attendance entry.
-
-Usage::
-
-    from export import AttendanceExporter
-
-    with AttendanceExporter(cfg) as exporter:
-        exporter.write(result, source="frame_001")
+Supports JSON and CSV export of attendance results.
 """
 
 from __future__ import annotations
@@ -59,7 +50,7 @@ class AttendanceExporter:
                 self._csv_fh, fieldnames=_CSV_COLUMNS,
             )
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def __enter__(self) -> AttendanceExporter:
         return self
@@ -115,7 +106,7 @@ class AttendanceExporter:
                 encoding="utf-8",
             )
             log.info(
-                "JSON export → %s (%d records)",
+                "JSON export -> %s (%d records)",
                 out, len(self._json_records),
             )
 

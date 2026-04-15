@@ -74,9 +74,9 @@ def classify_gaze(
     # Horizontal takes priority when both are off-center,
     # since horizontal gaze shifts are more reliable with
     # this iris-ratio method.
-    if h < cfg.horiz_left_threshold:
+    if h > cfg.horiz_left_threshold:
         result.direction = LEFT
-    elif h > cfg.horiz_right_threshold:
+    elif h < cfg.horiz_right_threshold:
         result.direction = RIGHT
     elif v < cfg.vert_up_threshold:
         result.direction = UP

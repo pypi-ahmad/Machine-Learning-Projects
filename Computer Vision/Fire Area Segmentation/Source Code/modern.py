@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — CVProject registry entry."""
+"""Fire Area Segmentation -- CVProject registry entry."""
 
 from __future__ import annotations
 

@@ -1,4 +1,5 @@
 """Plant Disease Severity Estimator — CLI inference.
+"""Plant Disease Severity Estimator — CLI inference.
 
 Usage::
 
@@ -11,6 +12,7 @@ Usage::
     # Save annotated + grid + exports
     python infer.py --source images/ --batch --save --save-grid \\
         --export-json results.json --export-csv results.csv
+"""
 """
 
 from __future__ import annotations
@@ -40,7 +42,7 @@ def _print_result(path: Path | str, r: PredictionResult) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="Plant Disease Severity Estimator — inference"
+        description="Plant Disease Severity Estimator -- inference"
     )
     ap.add_argument("--source", required=True,
                     help="Image path or directory")
@@ -78,12 +80,12 @@ def main() -> None:
     images = [validate_image(p) for p in paths]
     results = clf.classify_batch(images)
 
-    print(f"\n{'─' * 80}")
-    print(f"  Plant Disease Severity Estimator — {len(results)} image(s)")
-    print(f"{'─' * 80}")
+    print(f"\n{'-' * 80}")
+    print(f"  Plant Disease Severity Estimator -- {len(results)} image(s)")
+    print(f"{'-' * 80}")
     for p, r in zip(paths, results):
         _print_result(p, r)
-    print(f"{'─' * 80}\n")
+    print(f"{'-' * 80}\n")
 
     # ── Optional outputs ──────────────────────────────────
     if args.save:

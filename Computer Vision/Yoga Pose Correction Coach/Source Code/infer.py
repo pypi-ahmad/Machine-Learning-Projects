@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — CLI entry point."""
+"""Yoga Pose Correction Coach -- CLI entry point."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Yoga Pose Correction Coach — pose analysis with correction hints",
+        description="Yoga Pose Correction Coach -- pose analysis with correction hints",
     )
     p.add_argument(
         "--source", default="0",

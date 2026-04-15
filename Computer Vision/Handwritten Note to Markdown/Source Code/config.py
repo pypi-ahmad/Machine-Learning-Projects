@@ -36,10 +36,10 @@ class NoteConfig:
 
     # ── Markdown formatting ────────────────────────────────
     detect_headers: bool = True
-    header_height_ratio: float = 1.8   # line ≥ 1.8× median → header
+    header_height_ratio: float = 1.8   # line ≥ 1.8× median -> header
     detect_lists: bool = True
-    list_indent_px: int = 40           # x-offset ≥ this → list item
-    paragraph_gap_ratio: float = 2.0   # vertical gap ≥ 2× median → new paragraph
+    list_indent_px: int = 40           # x-offset ≥ this -> list item
+    paragraph_gap_ratio: float = 2.0   # vertical gap ≥ 2× median -> new paragraph
 
     # ── Language / extensibility ───────────────────────────
     language: str = "en"               # placeholder for future multilingual

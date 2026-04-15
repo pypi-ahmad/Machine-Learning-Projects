@@ -50,7 +50,7 @@ class CardDetector:
         corners = self._find_card_quad(image)
 
         if corners is None:
-            log.info("No card boundary detected — using full image")
+            log.info("No card boundary detected -- using full image")
             return DetectionResult(found=False, rectified=image)
 
         if self.cfg.rectify:

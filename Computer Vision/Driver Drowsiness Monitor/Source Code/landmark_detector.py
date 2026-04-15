@@ -1,13 +1,15 @@
 """Facial landmark detection module for Driver Drowsiness Monitor.
 
-Wraps MediaPipe Face Mesh to extract 468 dense face landmarks
+Wraps MediaPipe Face Landmarker to extract dense face landmarks
 per frame. Provides normalized and pixel-space landmark accessors.
 """
 
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -18,6 +20,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import DrowsinessConfig
 
 log = logging.getLogger("drowsiness.landmark_detector")
+MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/face_landmarker/"
+    "face_landmarker/float16/1/face_landmarker.task"
+)
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "face_landmarker.task"
 
 # ── MediaPipe Face Mesh landmark indices ──────────────────
 # 6-point eye contour for Eye Aspect Ratio (EAR)
@@ -68,21 +75,22 @@ class LandmarkResult:
         return lm.x * self.frame_w, lm.y * self.frame_h
 
     def pixel_coords_3d(self, index: int) -> tuple[float, float, float]:
-        """Get (x, y, z) — z is depth estimate from MediaPipe."""
+        """Get (x, y, z) -- z is depth estimate from MediaPipe."""
         lm = self.landmarks[index]
         return lm.x * self.frame_w, lm.y * self.frame_h, lm.z * self.frame_w
 
 
 class LandmarkDetector:
-    """MediaPipe Face Mesh landmark detector."""
+    """MediaPipe Face Landmarker wrapper."""
 
     def __init__(self, cfg: DrowsinessConfig) -> None:
         self.cfg = cfg
-        self._face_mesh = None
+        self._landmarker = None
+        self._mp = None
         self._ready = False
 
     def load(self) -> bool:
-        """Initialize MediaPipe Face Mesh.
+        """Initialize MediaPipe Face Landmarker.
 
         Returns
         -------
@@ -91,19 +99,26 @@ class LandmarkDetector:
         """
         try:
             import mediapipe as mp
+            from mediapipe.tasks import python as mp_python
+            from mediapipe.tasks.python import vision as mp_vision
 
-            self._face_mesh = mp.solutions.face_mesh.FaceMesh(
-                static_image_mode=False,
-                max_num_faces=self.cfg.max_num_faces,
-                refine_landmarks=self.cfg.refine_landmarks,
-                min_detection_confidence=self.cfg.min_detection_confidence,
+            model_path = _ensure_landmarker_model()
+            options = mp_vision.FaceLandmarkerOptions(
+                base_options=mp_python.BaseOptions(
+                    model_asset_path=str(model_path),
+                ),
+                running_mode=mp_vision.RunningMode.IMAGE,
+                num_faces=self.cfg.max_num_faces,
+                min_face_detection_confidence=self.cfg.min_detection_confidence,
+                min_face_presence_confidence=self.cfg.min_presence_confidence,
                 min_tracking_confidence=self.cfg.min_tracking_confidence,
+                output_face_blendshapes=False,
+                output_facial_transformation_matrixes=False,
             )
-            self._mp_draw = mp.solutions.drawing_utils
-            self._mp_styles = mp.solutions.drawing_styles
-            self._mp_face_mesh = mp.solutions.face_mesh
+            self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
+            self._mp = mp
             self._ready = True
-            log.info("MediaPipe Face Mesh loaded (468 landmarks)")
+            log.info("MediaPipe Face Landmarker loaded: %s", model_path.name)
             return True
         except ImportError:
             log.error("MediaPipe not installed. pip install mediapipe")
@@ -114,18 +129,6 @@ class LandmarkDetector:
     @property
     def ready(self) -> bool:
         return self._ready
-
-    @property
-    def mp_draw(self):
-        return self._mp_draw
-
-    @property
-    def mp_styles(self):
-        return self._mp_styles
-
-    @property
-    def mp_face_mesh(self):
-        return self._mp_face_mesh
 
     def detect(self, frame: np.ndarray) -> LandmarkResult:
         """Detect face landmarks in a BGR frame.
@@ -144,17 +147,33 @@ class LandmarkDetector:
 
         h, w = frame.shape[:2]
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self._face_mesh.process(rgb)
+        mp_image = self._mp.Image(
+            image_format=self._mp.ImageFormat.SRGB,
+            data=rgb,
+        )
+        results = self._landmarker.detect(mp_image)
 
-        if not results.multi_face_landmarks:
+        if not results.face_landmarks:
             return LandmarkResult(frame_h=h, frame_w=w)
 
         # Use first face (driver)
-        face_lms = results.multi_face_landmarks[0]
+        face_lms = results.face_landmarks[0]
 
         return LandmarkResult(
             detected=True,
-            landmarks=face_lms.landmark,
+            landmarks=list(face_lms),
             frame_h=h,
             frame_w=w,
         )
+
+
+def _ensure_landmarker_model() -> Path:
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = MODEL_PATH.with_suffix(".download")
+    with urllib.request.urlopen(MODEL_URL) as response, open(tmp_path, "wb") as out_file:
+        shutil.copyfileobj(response, out_file)
+    tmp_path.replace(MODEL_PATH)
+    return MODEL_PATH

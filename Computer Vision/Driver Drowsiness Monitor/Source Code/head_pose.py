@@ -108,13 +108,8 @@ class HeadPoseEstimator:
         if not success:
             return state
 
-        # Convert rotation vector to Euler angles
+        # Convert rotation vector to Euler angles.
         rotation_mat, _ = cv2.Rodrigues(rotation_vec)
-        pose_mat = cv2.hconcat([rotation_mat, translation_vec])
-        _, _, _, _, _, _, euler = cv2.decomposeProjectionMatrix(
-            cv2.hconcat([pose_mat, np.array([[0, 0, 0, 1]], dtype=np.float64).T]),
-        )
-        # Fallback: manual Euler extraction from rotation matrix
         yaw, pitch, roll = _rotation_matrix_to_euler(rotation_mat)
 
         state.yaw = yaw

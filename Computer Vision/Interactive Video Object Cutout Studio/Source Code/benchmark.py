@@ -1,4 +1,5 @@
 """Interactive Video Object Cutout Studio — benchmark on DAVIS 2017.
+"""Interactive Video Object Cutout Studio — benchmark on DAVIS 2017.
 
 Evaluates SAM 2 segmentation quality on DAVIS sequences by comparing
 predicted masks (from first-frame GT prompt) against ground-truth
@@ -9,6 +10,7 @@ Usage::
     python benchmark.py --eval
     python benchmark.py --eval --max-sequences 5
     python benchmark.py --eval --force-download
+"""
 """
 
 from __future__ import annotations
@@ -116,7 +118,7 @@ def _evaluate(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Interactive Video Object Cutout Studio — benchmark",
+        description="Interactive Video Object Cutout Studio -- benchmark",
     )
     parser.add_argument("--eval", action="store_true",
                         help="Run DAVIS benchmark evaluation")

@@ -1,6 +1,8 @@
 """Similar Image Finder — high-level controller.
+"""Similar Image Finder — high-level controller.
 
 Orchestrates embedding, indexing, retrieval, visualisation and export.
+"""
 """
 
 from __future__ import annotations
@@ -69,7 +71,7 @@ class SimilarityController:
 
         index_path = Path(self.cfg.index_path)
         if index_path.exists() and not force:
-            logger.info("Index already exists at %s — use force=True to rebuild", index_path)
+            logger.info("Index already exists at %s -- use force=True to rebuild", index_path)
             if self._index and len(self._index) > 0:
                 return self._index
 
@@ -78,7 +80,7 @@ class SimilarityController:
         if not images:
             raise FileNotFoundError(f"No images found in {root}")
 
-        logger.info("Building index from %d images in %s …", len(images), root)
+        logger.info("Building index from %d images in %s ...", len(images), root)
 
         self._index = ImageIndex(metric=self.cfg.similarity_metric)
 
@@ -107,7 +109,7 @@ class SimilarityController:
         # Save index
         index_path.parent.mkdir(parents=True, exist_ok=True)
         self._index.save(str(index_path))
-        logger.info("Index saved → %s  (%s)", index_path, self._index.summary())
+        logger.info("Index saved -> %s  (%s)", index_path, self._index.summary())
 
         # Update retriever
         self._retriever = ImageRetriever(self._embedder, self._index, cfg=self.cfg)
@@ -148,7 +150,7 @@ class SimilarityController:
             p = Path(save_path)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), grid)
-            logger.info("Result grid saved → %s", p)
+            logger.info("Result grid saved -> %s", p)
 
         if show:
             cv2.imshow("Similar Images", grid)
@@ -172,7 +174,7 @@ class SimilarityController:
                 result.query_path, result.hits, json_path,
                 category_votes=result.category_votes,
             )
-            logger.info("JSON exported → %s", json_path)
+            logger.info("JSON exported -> %s", json_path)
         if csv_path:
             export_csv(result.query_path, result.hits, csv_path)
-            logger.info("CSV exported → %s", csv_path)
+            logger.info("CSV exported -> %s", csv_path)

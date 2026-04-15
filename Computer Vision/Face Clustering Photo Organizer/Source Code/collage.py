@@ -120,7 +120,7 @@ def save_collages(
         cv2.imwrite(str(out_path), img)
         paths.append(out_path)
 
-    log.info("Saved %d collages → %s", len(paths), collage_dir)
+    log.info("Saved %d collages -> %s", len(paths), collage_dir)
     return paths
 
 

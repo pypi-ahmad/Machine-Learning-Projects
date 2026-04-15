@@ -1,4 +1,5 @@
 """Wound Area Measurement — CLI entry point.
+"""Wound Area Measurement — CLI entry point.
 
 Usage::
 
@@ -21,6 +22,7 @@ Usage::
 DISCLAIMER: This tool produces relative pixel-based estimates only.
 It is NOT a medical device and must NOT be used for clinical diagnosis.
 """
+"""
 
 from __future__ import annotations
 
@@ -31,7 +33,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Wound Area Measurement — wound segmentation and relative area estimation",
+        description="Wound Area Measurement -- wound segmentation and relative area estimation",
         epilog="DISCLAIMER: Informational only. NOT for clinical diagnosis.",
     )
     p.add_argument(
@@ -201,7 +203,7 @@ def _run_directory(ctrl, dir_path, cfg, args, out_dir, csv_exp,
         if csv_exp:
             csv_exp.write_row(_csv_row(result, str(img_path), frame_idx=idx))
 
-    print(f"\nDone — processed {len(images)} image(s)")
+    print(f"\nDone -- processed {len(images)} image(s)")
 
     if track:
         summary = ctrl.change_summary()
@@ -275,7 +277,7 @@ def _run_video(ctrl, source, cfg, args, out_dir, csv_exp,
             source=str(source), frame_idx=idx - 1,
         )
 
-    print(f"\nDone — processed {idx} frame(s)")
+    print(f"\nDone -- processed {idx} frame(s)")
 
 
 # ── helpers ────────────────────────────────────────────────

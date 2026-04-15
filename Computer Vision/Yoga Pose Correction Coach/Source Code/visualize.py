@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — overlay renderer."""
+"""Yoga Pose Correction Coach -- overlay renderer."""
 
 from __future__ import annotations
 

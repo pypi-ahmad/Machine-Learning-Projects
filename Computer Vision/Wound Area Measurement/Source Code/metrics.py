@@ -1,4 +1,4 @@
-"""Wound Area Measurement — per-image wound metrics."""
+"""Wound Area Measurement -- per-image wound metrics."""
 
 from __future__ import annotations
 

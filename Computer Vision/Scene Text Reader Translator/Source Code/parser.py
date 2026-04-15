@@ -51,7 +51,7 @@ class SceneTextResult:
 
 
 class SceneTextPipeline:
-    """Full scene text pipeline: OCR → translate → structure."""
+    """Full scene text pipeline: OCR -> translate -> structure."""
 
     def __init__(self, cfg: SceneTextConfig) -> None:
         self.cfg = cfg

@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — CLI entry point."""
+"""Exercise Rep Counter -- CLI entry point."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Exercise Rep Counter — pose-based rep counting",
+        description="Exercise Rep Counter -- pose-based rep counting",
     )
     p.add_argument(
         "--source", default="0",

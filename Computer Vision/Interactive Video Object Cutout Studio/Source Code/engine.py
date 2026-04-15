@@ -1,8 +1,10 @@
 """Interactive Video Object Cutout Studio — SAM 2 segmentation engine.
+"""Interactive Video Object Cutout Studio — SAM 2 segmentation engine.
 
 Wraps SAM2ImagePredictor for single-image promptable segmentation.
 This module knows nothing about UI — it only accepts numpy arrays
 of prompts and returns structured mask results.
+"""
 """
 
 from __future__ import annotations
@@ -20,9 +22,9 @@ if TYPE_CHECKING:
 class MaskResult:
     """Result of a single SAM 2 prediction."""
 
-    masks: np.ndarray       # (N, H, W) bool — candidate masks
-    scores: np.ndarray      # (N,)        float — quality scores
-    logits: np.ndarray      # (N, H, W)  float — raw logits
+    masks: np.ndarray       # (N, H, W) bool -- candidate masks
+    scores: np.ndarray      # (N,)        float -- quality scores
+    logits: np.ndarray      # (N, H, W)  float -- raw logits
 
     @property
     def best_idx(self) -> int:
@@ -87,12 +89,14 @@ class SAM2Engine:
         box: np.ndarray | None = None,
     ) -> MaskResult:
         """Run SAM 2 prediction with point and/or box prompts.
+        """Run SAM 2 prediction with point and/or box prompts.
 
         Parameters
         ----------
         points : (N, 2) float — pixel coordinates (x, y)
         labels : (N,)   int   — 1 = foreground, 0 = background
         box    : (4,)   float — [x1, y1, x2, y2]
+        """
         """
         import torch
 

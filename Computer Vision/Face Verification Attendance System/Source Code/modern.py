@@ -3,7 +3,7 @@
 Registers the project with the repo's ``core/registry.py`` decorator
 so it can be discovered and launched via the unified CLI.
 
-Pipeline: YOLO face detect → InsightFace embedding → cosine match → attendance log.
+Pipeline: YOLO face detect -> InsightFace embedding -> cosine match -> attendance log.
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ from core.registry import register
 
 @register("face_verification_attendance")
 class FaceVerificationAttendanceModern(CVProject):
-    """Face verification attendance — enrollment + verification pipeline."""
+    """Face verification attendance -- enrollment + verification pipeline."""
 
     project_type = "detection"
     description = (

@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — configuration and attribute schema.
+"""Ecommerce Item Attribute Tagger — configuration and attribute schema.
 
 Defines attribute fields, label vocabularies, and all pipeline tunables.
 
@@ -19,6 +20,7 @@ Usage::
 
     cfg = load_config("tagger.yaml")
     cfg = TaggerConfig()
+"""
 """
 
 from __future__ import annotations
@@ -52,7 +54,7 @@ class TaggerConfig:
     # ── Model ─────────────────────────────────────────────
     backbone: str = "resnet18"       # resnet18 | resnet50 | mobilenet_v2
     imgsz: int = 224
-    device: str | None = None        # None → auto
+    device: str | None = None        # None -> auto
 
     # ── Training ──────────────────────────────────────────
     epochs: int = 15

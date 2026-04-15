@@ -34,7 +34,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Face Clustering Photo Organizer — Inference",
+        description="Face Clustering Photo Organizer -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="Directory of photos or single image")
@@ -164,7 +164,7 @@ def run(argv: list[str] | None = None) -> None:
     if cfg.show_display and result.num_clusters > 0:
         show_collages(result, cfg)
 
-    log.info("Done — %d identity clusters found", result.num_clusters)
+    log.info("Done -- %d identity clusters found", result.num_clusters)
 
 
 if __name__ == "__main__":

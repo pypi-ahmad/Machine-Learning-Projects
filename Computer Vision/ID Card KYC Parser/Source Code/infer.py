@@ -35,7 +35,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="ID Card KYC Parser — Inference")
+    p = argparse.ArgumentParser(description="ID Card KYC Parser -- Inference")
     p.add_argument("--source", required=True, help="Image path or directory")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--template", default=None,
@@ -123,7 +123,7 @@ def run(argv: list[str] | None = None) -> None:
                 validator, exporter, cfg,
             )
 
-    log.info("Done — processed %d card(s)", len(sources))
+    log.info("Done -- processed %d card(s)", len(sources))
 
 
 def _process_image(
@@ -168,7 +168,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         rect_path = out_dir / f"rectified_{label}"
         cv2.imwrite(str(rect_path), det.rectified)
-        log.info("  Rectified → %s", rect_path)
+        log.info("  Rectified -> %s", rect_path)
 
     # Visualize (on original image for boundary overlay)
     vis = draw_overlay(image, result, cfg, ocr_blocks=blocks, detection=det)
@@ -178,7 +178,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"ID Card: {label}", vis)

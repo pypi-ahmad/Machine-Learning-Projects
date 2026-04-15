@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — configuration dataclass."""
+"""Exercise Rep Counter -- configuration dataclass."""
 
 from __future__ import annotations
 
@@ -23,16 +23,16 @@ class ExerciseConfig:
 
     # --- Stage detection thresholds (degrees) ---
     # Squat: hip-knee-ankle angle
-    squat_down_angle: float = 90.0    # below → "down"
-    squat_up_angle: float = 160.0     # above → "up"
+    squat_down_angle: float = 90.0    # below -> "down"
+    squat_up_angle: float = 160.0     # above -> "up"
 
     # Push-up: shoulder-elbow-wrist angle
     pushup_down_angle: float = 90.0
     pushup_up_angle: float = 160.0
 
     # Bicep curl: shoulder-elbow-wrist angle
-    curl_down_angle: float = 160.0    # arm extended → "down"
-    curl_up_angle: float = 40.0       # arm curled → "up"
+    curl_down_angle: float = 160.0    # arm extended -> "down"
+    curl_up_angle: float = 40.0       # arm curled -> "up"
 
     # --- Smoothing ---
     enable_smoothing: bool = True

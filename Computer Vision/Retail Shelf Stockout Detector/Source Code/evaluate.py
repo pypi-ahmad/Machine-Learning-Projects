@@ -51,7 +51,7 @@ def main() -> None:
             alt = data_root / "processed" / "data.yaml"
             if alt.exists():
                 data_yaml = str(alt)
-        print(f"[INFO] data.yaml → {data_yaml}")
+        print(f"[INFO] data.yaml -> {data_yaml}")
 
     # Resolve weights
     if args.weights:

@@ -99,7 +99,7 @@ def _draw_text_regions(
 
             # Translated text (below original)
             if result.translation_enabled and read.translated_text != read.text:
-                t_label = f"→ {read.translated_text[:40]}"
+                t_label = f"-> {read.translated_text[:40]}"
                 t_y = anchor_y + th + baseline + 14
                 (tw2, th2), _ = cv2.getTextSize(t_label, FONT, 0.34, 1)
                 cv2.rectangle(
@@ -141,7 +141,7 @@ def _draw_panel(
         txt = read.text[:30]
         lines.append((f"  {txt}", BOX_COLOUR))
         if result.translation_enabled and read.translated_text != read.text:
-            lines.append((f"  → {read.translated_text[:30]}", TRANSLATED_COLOUR))
+            lines.append((f"  -> {read.translated_text[:30]}", TRANSLATED_COLOUR))
 
     if result.num_blocks > 8:
         lines.append((f"  ... +{result.num_blocks - 8} more", (140, 140, 140)))

@@ -14,6 +14,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import sys
 from pathlib import Path
@@ -21,10 +22,41 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_gaze_dataset
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv"}
+
+
+def _collect_media_files(data_dir: Path) -> tuple[list[Path], list[Path]]:
+    media_dir = data_dir / "processed" / "media"
+    search_root = media_dir if media_dir.exists() else data_dir
+    images = sorted(
+        f for f in search_root.rglob("*")
+        if f.suffix.lower() in IMAGE_EXTS
+    )
+    videos = sorted(
+        f for f in search_root.rglob("*")
+        if f.suffix.lower() in VIDEO_EXTS
+    )
+    return images, videos
+
+
+def _load_manifest_labels(data_dir: Path) -> dict[Path, str]:
+    manifest_path = data_dir / "processed" / "manifest.csv"
+    if not manifest_path.exists():
+        return {}
+
+    labels: dict[Path, str] = {}
+    with open(manifest_path, "r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for row in reader:
+            image_rel = row.get("image_path", "")
+            label = row.get("coarse_label", "")
+            if not image_rel or not label:
+                continue
+            labels[data_dir / image_rel] = label
+    return labels
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -40,11 +72,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "gaze_direction_estimator", force=args.force_download,
-        )
+        data_path = ensure_gaze_dataset(force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -62,15 +92,8 @@ def main(argv: list[str] | None = None) -> None:
         pipeline.load()
 
         data_root = Path(data_dir)
-
-        images = sorted(
-            f for f in data_root.rglob("*")
-            if f.suffix.lower() in IMAGE_EXTS
-        )
-        videos = sorted(
-            f for f in data_root.rglob("*")
-            if f.suffix.lower() in VIDEO_EXTS
-        )
+        images, videos = _collect_media_files(data_root)
+        manifest_labels = _load_manifest_labels(data_root)
 
         print(f"[INFO] Found {len(images)} images, {len(videos)} videos")
 
@@ -79,6 +102,9 @@ def main(argv: list[str] | None = None) -> None:
         direction_counts: dict[str, int] = {}
         h_ratios: list[float] = []
         v_ratios: list[float] = []
+        labeled_frames = 0
+        labeled_correct = 0
+        label_counts: dict[str, int] = {}
 
         # Process images
         for img_path in images:
@@ -93,6 +119,12 @@ def main(argv: list[str] | None = None) -> None:
                 direction_counts[d] = direction_counts.get(d, 0) + 1
                 h_ratios.append(result.raw_gaze.h_ratio)
                 v_ratios.append(result.raw_gaze.v_ratio)
+                expected = manifest_labels.get(img_path)
+                if expected:
+                    labeled_frames += 1
+                    label_counts[expected] = label_counts.get(expected, 0) + 1
+                    if d == expected:
+                        labeled_correct += 1
 
         # Process videos
         for vid_path in videos:
@@ -130,6 +162,9 @@ def main(argv: list[str] | None = None) -> None:
         print(f"  Faces w/ iris:     {faces_detected}")
         print(f"  Avg H ratio:       {avg_h:.3f}")
         print(f"  Avg V ratio:       {avg_v:.3f}")
+        if labeled_frames:
+            accuracy = labeled_correct / labeled_frames
+            print(f"  Coarse label acc:  {accuracy:.3f} ({labeled_correct}/{labeled_frames})")
         print(f"  Direction distribution:")
         for d in ["CENTER", "LEFT", "RIGHT", "UP", "DOWN"]:
             cnt = direction_counts.get(d, 0)
@@ -145,10 +180,14 @@ def main(argv: list[str] | None = None) -> None:
                 "avg_h_ratio": round(avg_h, 4),
                 "avg_v_ratio": round(avg_v, 4),
                 "direction_counts": direction_counts,
+                "label_counts": label_counts,
+                "labeled_frames": labeled_frames,
+                "labeled_correct": labeled_correct,
+                "coarse_label_accuracy": round(labeled_correct / labeled_frames, 4) if labeled_frames else None,
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")

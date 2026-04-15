@@ -1,8 +1,8 @@
 """Configuration dataclass for Gaze Direction Estimator.
 
-Provides :class:`GazeConfig` with tunables for MediaPipe Face Mesh,
-iris-based gaze classification, calibration, smoothing, export, and
-display settings.
+Provides :class:`GazeConfig` with tunables for MediaPipe face
+landmarks, iris-based gaze classification, calibration, smoothing,
+export, and display settings.
 """
 
 from __future__ import annotations
@@ -21,16 +21,17 @@ sys.path.insert(0, str(REPO_ROOT))
 class GazeConfig:
     """Top-level project configuration."""
 
-    # ── MediaPipe Face Mesh ────────────────────────────────
+    # ── MediaPipe face landmarks ───────────────────────────
     max_num_faces: int = 1
-    refine_landmarks: bool = True       # required for iris landmarks
+    refine_landmarks: bool = True       # kept for backwards-compatible configs
     min_detection_confidence: float = 0.5
+    min_presence_confidence: float = 0.5
     min_tracking_confidence: float = 0.5
 
     # ── Gaze classification thresholds ─────────────────────
-    # Iris horizontal ratio: 0.0 = fully left, 1.0 = fully right
-    horiz_left_threshold: float = 0.38
-    horiz_right_threshold: float = 0.62
+    # Iris horizontal ratio: low = RIGHT, high = LEFT
+    horiz_left_threshold: float = 0.52
+    horiz_right_threshold: float = 0.48
     # Iris vertical ratio: 0.0 = fully up, 1.0 = fully down
     vert_up_threshold: float = 0.38
     vert_down_threshold: float = 0.62

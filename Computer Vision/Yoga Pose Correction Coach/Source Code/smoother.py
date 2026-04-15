@@ -1,4 +1,4 @@
-"""Yoga Pose Correction Coach — temporal smoothing for pose label."""
+"""Yoga Pose Correction Coach -- temporal smoothing for pose label."""
 
 from __future__ import annotations
 

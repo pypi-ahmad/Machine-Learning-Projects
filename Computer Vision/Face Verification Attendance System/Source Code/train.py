@@ -1,8 +1,8 @@
 """Train / Evaluate Face Verification Attendance System.
 
-InsightFace models are pre-trained — this script downloads the
+InsightFace models are pre-trained. This script prepares the
 dataset and evaluates the enrollment + verification pipeline
-on a multi-identity face dataset (LFW).
+on a multi-identity face dataset.
 
 Usage::
 
@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from utils.datasets import DatasetResolver
+from data_bootstrap import ensure_face_attendance_dataset
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -40,11 +40,9 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
 
     if args.data is None:
-        data_path = DatasetResolver().resolve(
-            "face_verification_attendance", force=args.force_download,
-        )
-        data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        data_path = ensure_face_attendance_dataset(force=args.force_download)
+        data_dir = str(data_path / "processed" / "identities")
+        print(f"[INFO] Prepared dataset -> {data_path}")
     else:
         data_dir = args.data
 
@@ -62,7 +60,7 @@ def main(argv: list[str] | None = None) -> None:
         pipeline.load()
 
         if not pipeline.embedder.ready:
-            print("[ERROR] InsightFace not available — cannot evaluate")
+            print("[ERROR] InsightFace not available -- cannot evaluate")
             return
 
         data_root = Path(data_dir)
@@ -76,22 +74,24 @@ def main(argv: list[str] | None = None) -> None:
         print(f"[INFO] Found {len(identity_dirs)} identities")
 
         # Filter to identities with at least 2 images
+        # Select identities that have enough images and can actually enroll.
         usable = []
         for id_dir in identity_dirs:
-            imgs = list(id_dir.glob("*.jpg")) + list(id_dir.glob("*.png"))
-            if len(imgs) >= 2:
-                usable.append((id_dir, imgs))
-        usable = usable[: args.max_identities]
+            imgs = _find_image_files(id_dir)
+            if len(imgs) < 2:
+                continue
+            if not pipeline.enroll_single(id_dir.name, str(imgs[0])):
+                print(f"[WARN] Skipping '{id_dir.name}' -- enrollment failed")
+                continue
+            usable.append((id_dir, imgs))
+            if len(usable) >= args.max_identities:
+                break
 
         if not usable:
             print("[WARN] No identities with >= 2 images found")
             return
 
         print(f"[INFO] Evaluating {len(usable)} identities with >= 2 images")
-
-        # Enroll first image per identity
-        for id_dir, imgs in usable:
-            pipeline.enroll_single(id_dir.name, str(imgs[0]))
 
         # Verify on remaining images
         correct = 0
@@ -137,11 +137,11 @@ def main(argv: list[str] | None = None) -> None:
             }, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
-        print(f"  Results → {out_path}")
+        print(f"  Results -> {out_path}")
 
     except ImportError as exc:
         print(f"[WARN] Could not run evaluation: {exc}")
-        print("[INFO] Install: pip install insightface onnxruntime-gpu")
+        print("[INFO] Install: pip install insightface onnxruntime")
     except Exception as exc:
         print(f"[ERROR] Evaluation failed: {exc}")
         raise
@@ -153,7 +153,7 @@ def _find_identity_dirs(data_root: Path) -> list[Path]:
     if dirs:
         # Check if these are identity dirs (contain images)
         for d in dirs:
-            imgs = list(d.glob("*.jpg")) + list(d.glob("*.png"))
+            imgs = _find_image_files(d)
             if imgs:
                 return dirs
     # Try one level deeper
@@ -163,6 +163,14 @@ def _find_identity_dirs(data_root: Path) -> list[Path]:
             if deeper:
                 return deeper
     return []
+
+
+def _find_image_files(identity_dir: Path) -> list[Path]:
+    files = []
+    for child in sorted(identity_dir.iterdir()):
+        if child.is_file() and child.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}:
+            files.append(child)
+    return files
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — lightweight sklearn classifier."""
+"""Sign Language Alphabet Recognizer -- lightweight sklearn classifier."""
 
 from __future__ import annotations
 
@@ -10,10 +10,12 @@ import numpy as np
 
 class SignClassifier:
     """Thin wrapper around a trained sklearn classifier.
+    """Thin wrapper around a trained sklearn classifier.
 
     The classifier is stored as a pickle file containing a dict::
 
         {"model": <sklearn estimator>, "labels": ["A", "B", ...]}
+    """
     """
 
     def __init__(self) -> None:
@@ -59,12 +61,14 @@ class SignClassifier:
         hidden_layer_sizes: tuple[int, ...] = (128, 64),
     ) -> dict[str, float]:
         """Train an MLP classifier and return training metrics.
+        """Train an MLP classifier and return training metrics.
 
         Parameters
         ----------
         X : array of shape (n_samples, 42)
         y : integer labels of shape (n_samples,)
         labels : ordered list of class names
+        """
         """
         from sklearn.neural_network import MLPClassifier
 
@@ -84,11 +88,13 @@ class SignClassifier:
 
     def predict(self, features: np.ndarray) -> tuple[str, float]:
         """Classify a single (42,) feature vector.
+        """Classify a single (42,) feature vector.
 
         Returns (label, confidence).
         """
+        """
         if not self.ready:
-            raise RuntimeError("Model not loaded — call load() or train() first")
+            raise RuntimeError("Model not loaded -- call load() or train() first")
         probs = self._model.predict_proba(features.reshape(1, -1))[0]
         idx = int(np.argmax(probs))
         return self._labels[idx], float(probs[idx])

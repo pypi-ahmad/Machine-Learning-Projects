@@ -1,4 +1,5 @@
 """Wildlife Species Retrieval — index builder CLI.
+"""Wildlife Species Retrieval — index builder CLI.
 
 Build or rebuild the embedding index from a wildlife image directory.
 
@@ -6,6 +7,7 @@ Usage::
 
     python index_builder.py --image-dir data/animals
     python index_builder.py --image-dir data/animals --force --batch-size 64
+"""
 """
 
 from __future__ import annotations
@@ -70,7 +72,7 @@ def main() -> None:
     )
     elapsed = time.perf_counter() - t0
 
-    logger.info("Done in %.1fs  —  %s", elapsed, idx.summary())
+    logger.info("Done in %.1fs  --  %s", elapsed, idx.summary())
     ctrl.close()
 
 

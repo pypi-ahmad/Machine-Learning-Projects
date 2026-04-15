@@ -1,12 +1,7 @@
 {
-  "DINOv2": {
-    "val_accuracy": 0.818,
-    "epochs": 3,
-    "time_s": 128.1
+  "SimpleCNN": {
+    "Accuracy": 0.784,
+    "F1": 0.7856
   },
-  "ConvNeXtV2": {
-    "val_accuracy": 0.566,
-    "epochs": 2,
-    "time_s": 87.9
-  }
+  "best_model": "SimpleCNN"
 }

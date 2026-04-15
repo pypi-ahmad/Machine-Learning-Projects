@@ -1,4 +1,5 @@
 """Wildlife Species Retrieval — evaluation.
+"""Wildlife Species Retrieval — evaluation.
 
 Performs leave-one-out retrieval evaluation: for each image in the
 validation set, query the index (excluding itself) and check whether
@@ -7,6 +8,7 @@ the top-k results contain the correct species.
 Usage::
 
     python evaluate.py --index-path index/wildlife_index.npz --val-dir data/val
+"""
 """
 
 from __future__ import annotations
@@ -41,11 +43,13 @@ def evaluate(
     top_k: int = 5,
 ) -> dict:
     """Run leave-one-out retrieval evaluation.
+    """Run leave-one-out retrieval evaluation.
 
     For each validation image, embed it, search the index (excluding
     itself), and check whether the correct species appears in top-k.
 
     Returns dict with accuracy metrics.
+    """
     """
     images = collect_images(val_dir, recursive=True)
     if not images:
@@ -126,9 +130,9 @@ def main() -> None:
 
     metrics = evaluate(index, embedder, Path(args.val_dir), top_k=args.top_k)
 
-    print(f"\n{'═' * 65}")
-    print(f"  Wildlife Species Retrieval — Evaluation")
-    print(f"{'═' * 65}")
+    print(f"\n{'=' * 65}")
+    print(f"  Wildlife Species Retrieval -- Evaluation")
+    print(f"{'=' * 65}")
     print(f"  Total images:    {metrics['total']}")
     print(f"  Top-1 accuracy:  {metrics['top1_accuracy']:.2%} "
           f"({metrics['top1_correct']}/{metrics['total']})")
@@ -140,7 +144,7 @@ def main() -> None:
     print(f"\n  Per-species top-1 accuracy:")
     for sp, acc in metrics["per_species_accuracy"].items():
         print(f"    {sp:25s}  {acc:.2%}")
-    print(f"{'═' * 65}\n")
+    print(f"{'=' * 65}\n")
 
     embedder.close()
 

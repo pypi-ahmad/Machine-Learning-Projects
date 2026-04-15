@@ -33,7 +33,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Invoice Field Extractor — Inference")
+    p = argparse.ArgumentParser(description="Invoice Field Extractor -- Inference")
     p.add_argument("--source", required=True, help="Image/PDF path or directory")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--lang", default=None, help="OCR language (default: en)")
@@ -187,7 +187,7 @@ def _process_image(
         safe_name = label.replace("[", "_").replace("]", "")
         out_path = out_dir / f"annotated_{safe_name}.jpg"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Saved → %s", out_path)
+        log.info("  Saved -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"Invoice: {label}", vis)

@@ -97,7 +97,7 @@ class ExamSheetValidator:
         if result.num_questions == 0 and result.num_blocks > 0:
             report.warnings.append(ValidationWarning(
                 field_name="questions",
-                message="No numbered questions detected — "
+                message="No numbered questions detected -- "
                         "document may not be an exam sheet",
                 severity="warning",
             ))

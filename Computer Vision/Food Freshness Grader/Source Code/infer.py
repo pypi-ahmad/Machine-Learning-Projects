@@ -1,4 +1,5 @@
 """Food Freshness Grader — CLI entry point.
+"""Food Freshness Grader — CLI entry point.
 
 Grade food images for freshness (single or batch).
 
@@ -7,6 +8,7 @@ Usage:
     python infer.py --source photos/ --batch
     python infer.py --source apple.jpg --save output/graded.jpg
     python infer.py --source photos/ --batch --export-json output/results.json
+"""
 """
 
 from __future__ import annotations
@@ -91,7 +93,7 @@ def main() -> None:
             print(f"{i:<4} {g.freshness:<8} {g.produce:<15} "
                   f"{g.confidence:<8.1%} {path}")
         if len(results) > 20:
-            print(f"  … and {len(results) - 20} more")
+            print(f"  ... and {len(results) - 20} more")
 
         # Export
         ctrl.export_results(

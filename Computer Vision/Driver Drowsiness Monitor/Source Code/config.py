@@ -2,7 +2,7 @@
 
 Provides :class:`DrowsinessConfig` with all tunables for the
 MediaPipe landmark + rule-based drowsiness detection pipeline:
-face mesh, EAR blink detection, yawn (MAR) detection, head-pose
+face landmarker, EAR blink detection, yawn (MAR) detection, head-pose
 distraction, alert cooldowns, export, and display settings.
 """
 
@@ -22,28 +22,28 @@ sys.path.insert(0, str(REPO_ROOT))
 class DrowsinessConfig:
     """Top-level project configuration."""
 
-    # ── MediaPipe Face Mesh ────────────────────────────────
+    # ── MediaPipe Face Landmarker ─────────────────────────
     max_num_faces: int = 1
-    refine_landmarks: bool = True
     min_detection_confidence: float = 0.5
+    min_presence_confidence: float = 0.5
     min_tracking_confidence: float = 0.5
 
     # ── Blink / EAR ───────────────────────────────────────
-    ear_threshold: float = 0.21         # EAR below this → eyes closed
-    blink_consec_frames: int = 2        # frames below threshold → 1 blink
-    drowsy_eye_frames: int = 15         # prolonged closure → drowsiness alert
+    ear_threshold: float = 0.21         # EAR below this -> eyes closed
+    blink_consec_frames: int = 2        # frames below threshold -> 1 blink
+    drowsy_eye_frames: int = 15         # prolonged closure -> drowsiness alert
     perclos_window_sec: float = 60.0    # PERCLOS calculation window
-    perclos_threshold: float = 0.40     # fraction closed → drowsiness
+    perclos_threshold: float = 0.40     # fraction closed -> drowsiness
 
     # ── Yawn / MAR (Mouth Aspect Ratio) ────────────────────
-    mar_threshold: float = 0.55         # MAR above this → mouth open
-    yawn_consec_frames: int = 10        # sustained opening → yawn
+    mar_threshold: float = 0.55         # MAR above this -> mouth open
+    yawn_consec_frames: int = 10        # sustained opening -> yawn
     yawn_cooldown_sec: float = 5.0      # min gap between yawn events
 
     # ── Head pose / distraction ────────────────────────────
-    yaw_threshold: float = 30.0         # degrees off-center → distraction
-    pitch_threshold: float = 25.0       # looking down/up → distraction
-    distraction_consec_frames: int = 15 # sustained deviation → alert
+    yaw_threshold: float = 30.0         # degrees off-center -> distraction
+    pitch_threshold: float = 25.0       # looking down/up -> distraction
+    distraction_consec_frames: int = 15 # sustained deviation -> alert
 
     # ── Alert management ──────────────────────────────────
     alert_cooldown_sec: float = 10.0    # global cooldown between alerts

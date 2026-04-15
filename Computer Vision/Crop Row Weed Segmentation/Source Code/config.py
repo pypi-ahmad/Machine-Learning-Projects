@@ -1,4 +1,4 @@
-"""Crop Row & Weed Segmentation — configuration."""
+"""Crop Row & Weed Segmentation -- configuration."""
 
 from __future__ import annotations
 

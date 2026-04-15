@@ -1,4 +1,5 @@
 """Plant Disease Severity Estimator — model evaluation.
+"""Plant Disease Severity Estimator — model evaluation.
 
 Computes overall, per-class, and per-severity accuracy on a validation
 set organised in ImageFolder format.
@@ -7,6 +8,7 @@ Usage::
 
     python evaluate.py --data path/to/val
     python evaluate.py --data path/to/val --weights runs/plant_disease_cls/best_model.pt
+"""
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ def evaluate(
     clf: PlantDiseaseClassifier,
 ) -> dict:
     """Run evaluation over an ImageFolder validation set.
+    """Run evaluation over an ImageFolder validation set.
 
     Parameters
     ----------
@@ -43,6 +46,7 @@ def evaluate(
     dict
         Metrics including overall accuracy, per-class accuracy,
         and per-severity accuracy.
+    """
     """
     val_path = Path(val_dir)
 
@@ -120,9 +124,9 @@ def main() -> None:
 
     metrics = evaluate(args.data, clf)
 
-    print(f"\n{'═' * 70}")
-    print(f"  Plant Disease Severity Estimator — Evaluation")
-    print(f"{'═' * 70}")
+    print(f"\n{'=' * 70}")
+    print(f"  Plant Disease Severity Estimator -- Evaluation")
+    print(f"{'=' * 70}")
     print(f"  Overall accuracy: {metrics['overall_accuracy']:.2%} "
           f"({metrics['total_correct']}/{metrics['total_images']})")
 
@@ -135,7 +139,7 @@ def main() -> None:
     for cls, acc in metrics["per_class_accuracy"].items():
         total = class_count if (class_count := int(acc * 100)) else ""
         print(f"    {cls:55s}  {acc:.2%}")
-    print(f"{'═' * 70}\n")
+    print(f"{'=' * 70}\n")
 
     clf.close()
 

@@ -1,4 +1,5 @@
 """Interactive Video Object Cutout Studio — CLI entry point.
+"""Interactive Video Object Cutout Studio — CLI entry point.
 
 Batch (non-interactive) inference.  For interactive prompt collection,
 use ``demo.py`` instead.
@@ -19,6 +20,7 @@ Usage::
 
     # Webcam (opens interactive prompt on first frame)
     python infer.py --source 0
+"""
 """
 
 from __future__ import annotations
@@ -58,7 +60,7 @@ def _parse_box(raw: str | None) -> tuple[int, int, int, int] | None:
         return None
     parts = [int(x) for x in raw.split(",")]
     if len(parts) != 4:
-        raise ValueError(f"Box must be x1,y1,x2,y2 — got: {raw}")
+        raise ValueError(f"Box must be x1,y1,x2,y2 -- got: {raw}")
     return tuple(parts)
 
 
@@ -242,7 +244,7 @@ def _run_video(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Interactive Video Object Cutout Studio — batch inference",
+        description="Interactive Video Object Cutout Studio -- batch inference",
     )
     parser.add_argument("--source", type=str, default="0",
                         help="Image, directory, video path, or webcam index")

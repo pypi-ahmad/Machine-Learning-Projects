@@ -1,7 +1,9 @@
 """Wound Area Measurement — YOLO26m-seg wound region extraction.
+"""Wound Area Measurement — YOLO26m-seg wound region extraction.
 
 Wraps Ultralytics YOLO26m-seg to produce per-instance wound masks
 from a single image.
+"""
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ if str(_REPO) not in sys.path:
 class WoundInstance:
     """One detected wound region."""
 
-    mask: np.ndarray                # binary uint8 (H, W) — 255 = wound
+    mask: np.ndarray                # binary uint8 (H, W) -- 255 = wound
     confidence: float
     bbox: tuple[int, int, int, int]  # (x1, y1, x2, y2)
     area_px: int
@@ -63,7 +65,7 @@ class WoundSegmenter:
         self._model = None
 
     def load(self) -> None:
-        """Load model weights (via resolve → load_yolo)."""
+        """Load model weights (via resolve -> load_yolo)."""
         from models.registry import resolve
         from utils.yolo import load_yolo
 

@@ -1,9 +1,9 @@
-"""MediaPipe Face Mesh landmark detection engine.
+"""MediaPipe face landmark detection engine.
 
-Wraps MediaPipe to extract 478 face landmarks (468 base + 10 iris)
-per frame.  ``refine_landmarks=True`` is required for iris indices.
+Wraps MediaPipe Face Landmarker to extract dense face landmarks
+per frame, including the iris indices used by the gaze heuristics.
 
-Iris landmark indices (MediaPipe with refinement):
+Iris landmark indices:
     - Left iris:  468 (center), 469, 470, 471, 472
     - Right iris: 473 (center), 474, 475, 476, 477
 """
@@ -11,7 +11,9 @@ Iris landmark indices (MediaPipe with refinement):
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -22,6 +24,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import GazeConfig
 
 log = logging.getLogger("gaze.landmark_engine")
+MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/face_landmarker/"
+    "face_landmarker/float16/1/face_landmarker.task"
+)
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "face_landmarker.task"
 
 
 @dataclass
@@ -39,28 +46,37 @@ class LandmarkResult:
 
 
 class LandmarkEngine:
-    """MediaPipe Face Mesh detector with iris refinement."""
+    """MediaPipe Face Landmarker wrapper with iris landmarks."""
 
     def __init__(self, cfg: GazeConfig) -> None:
         self.cfg = cfg
-        self._face_mesh = None
+        self._landmarker = None
+        self._mp = None
         self._ready = False
 
     def load(self) -> bool:
         try:
             import mediapipe as mp
+            from mediapipe.tasks import python as mp_python
+            from mediapipe.tasks.python import vision as mp_vision
 
-            self._face_mesh = mp.solutions.face_mesh.FaceMesh(
-                static_image_mode=False,
-                max_num_faces=self.cfg.max_num_faces,
-                refine_landmarks=self.cfg.refine_landmarks,
-                min_detection_confidence=self.cfg.min_detection_confidence,
+            model_path = _ensure_landmarker_model()
+            options = mp_vision.FaceLandmarkerOptions(
+                base_options=mp_python.BaseOptions(
+                    model_asset_path=str(model_path),
+                ),
+                running_mode=mp_vision.RunningMode.IMAGE,
+                num_faces=self.cfg.max_num_faces,
+                min_face_detection_confidence=self.cfg.min_detection_confidence,
+                min_face_presence_confidence=self.cfg.min_presence_confidence,
                 min_tracking_confidence=self.cfg.min_tracking_confidence,
+                output_face_blendshapes=False,
+                output_facial_transformation_matrixes=False,
             )
-            self._mp_draw = mp.solutions.drawing_utils
-            self._mp_face_mesh = mp.solutions.face_mesh
+            self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
+            self._mp = mp
             self._ready = True
-            log.info("MediaPipe Face Mesh loaded (478 landmarks with iris)")
+            log.info("MediaPipe Face Landmarker loaded: %s", model_path.name)
             return True
         except ImportError:
             log.error("MediaPipe not installed. pip install mediapipe")
@@ -79,15 +95,31 @@ class LandmarkEngine:
 
         h, w = frame.shape[:2]
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self._face_mesh.process(rgb)
+        mp_image = self._mp.Image(
+            image_format=self._mp.ImageFormat.SRGB,
+            data=rgb,
+        )
+        results = self._landmarker.detect(mp_image)
 
-        if not results.multi_face_landmarks:
+        if not results.face_landmarks:
             return LandmarkResult(frame_h=h, frame_w=w)
 
-        face_lms = results.multi_face_landmarks[0]
+        face_lms = results.face_landmarks[0]
         return LandmarkResult(
             detected=True,
-            landmarks=face_lms.landmark,
+            landmarks=list(face_lms),
             frame_h=h,
             frame_w=w,
         )
+
+
+def _ensure_landmarker_model() -> Path:
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = MODEL_PATH.with_suffix(".download")
+    with urllib.request.urlopen(MODEL_URL) as response, open(tmp_path, "wb") as out_file:
+        shutil.copyfileobj(response, out_file)
+    tmp_path.replace(MODEL_PATH)
+    return MODEL_PATH

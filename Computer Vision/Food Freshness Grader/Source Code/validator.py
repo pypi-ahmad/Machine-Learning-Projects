@@ -1,4 +1,4 @@
-"""Food Freshness Grader — input validation."""
+"""Food Freshness Grader -- input validation."""
 
 from __future__ import annotations
 

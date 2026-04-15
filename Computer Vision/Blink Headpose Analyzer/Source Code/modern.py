@@ -26,11 +26,11 @@ class BlinkHeadposeModern(CVProject):
 
     project_type = "detection"
     description = (
-        "MediaPipe Face Mesh landmark analysis for blink counting "
+        "MediaPipe Face Landmarker analysis for blink counting "
         "and head-pose estimation with reusable utilities"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "MediaPipe Face Mesh + shared EAR/headpose utilities"
+    modern_tech = "MediaPipe Face Landmarker + shared EAR/headpose utilities"
 
     def __init__(self) -> None:
         super().__init__()

@@ -1,7 +1,7 @@
 """Configuration dataclasses for Scene Text Reader Translator.
 
 Provides :class:`SceneTextConfig` with all tunables for the
-PaddleOCR scene-text reading pipeline: OCR settings, translation
+scene-text reading pipeline: OCR settings, translation
 hook, validation, export, and display.
 """
 
@@ -22,6 +22,7 @@ class SceneTextConfig:
     """Top-level project configuration."""
 
     # ── PaddleOCR ──────────────────────────────────────────
+    ocr_backend: str = "auto"
     ocr_lang: str = "en"
     use_gpu: bool = False
     det_db_thresh: float = 0.3
@@ -31,7 +32,7 @@ class SceneTextConfig:
     # ── Translation hook ───────────────────────────────────
     translate_enabled: bool = False
     translate_target_lang: str = "en"
-    translate_provider: str = ""       # e.g. "googletrans", custom class
+    translate_provider: str = ""       # reserved hook label; no bundled provider
 
     # ── Validation ─────────────────────────────────────────
     confidence_threshold: float = 0.40

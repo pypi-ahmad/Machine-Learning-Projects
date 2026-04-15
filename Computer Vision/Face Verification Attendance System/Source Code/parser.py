@@ -55,7 +55,11 @@ class FaceAttendancePipeline:
         self.cfg = cfg
         self.embedder = FaceEmbedder(cfg)
         self.detector = FaceDetector(cfg)
-        self.enrollment = EnrollmentManager(cfg)
+        self.enrollment = EnrollmentManager(
+            cfg,
+            embedder=self.embedder,
+            detector=self.detector,
+        )
         self.matcher = FaceMatcher(cfg)
         self.logger = AttendanceLogger(cfg)
         self._loaded = False
@@ -67,9 +71,6 @@ class FaceAttendancePipeline:
 
         # Load detector (can share InsightFace app)
         det_backend = self.detector.load(insightface_app=insightface_app)
-
-        # Set embedder reference for enrollment
-        self.enrollment._embedder = self.embedder
 
         self._loaded = True
         log.info(
@@ -117,8 +118,24 @@ class FaceAttendancePipeline:
         if not self.embedder.ready:
             return AttendanceResult(backend="none")
 
-        # 1. Detect + embed (use embedder's full-frame method)
-        face_data = self.embedder.extract_from_frame(frame)
+        # 1. Detect faces, then embed each detected crop.
+        detected_faces = self.detector.detect(frame)
+        face_data: list[dict] = []
+
+        for face in detected_faces:
+            embedding = self.embedder.extract_single(face.crop)
+            if embedding is None:
+                continue
+            face_data.append(
+                {
+                    "box": face.box,
+                    "confidence": face.confidence,
+                    "embedding": embedding,
+                }
+            )
+
+        if not face_data and self.detector.backend == "insightface":
+            face_data = self.embedder.extract_from_frame(frame)
 
         # 2. Match each face
         matches = self.matcher.match_batch(face_data)

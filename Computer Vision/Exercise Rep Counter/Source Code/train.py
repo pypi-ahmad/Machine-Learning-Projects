@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — dataset download + evaluation."""
+"""Exercise Rep Counter -- dataset download + evaluation."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ def main(force_download: bool = False) -> None:
 
     media_dir = data_dir / "processed" / "media"
     if not media_dir.exists():
-        print("No processed media found — skipping evaluation.")
+        print("No processed media found -- skipping evaluation.")
         return
 
     exts = {".jpg", ".jpeg", ".png", ".bmp"}

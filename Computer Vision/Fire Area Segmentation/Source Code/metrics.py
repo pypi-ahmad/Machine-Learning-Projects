@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — per-frame region metrics."""
+"""Fire Area Segmentation -- per-frame region metrics."""
 
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 # Waste Sorting Detector — Sample Configuration
 # Copy this file and adjust for your deployment.
 
-model: "yolo11n.pt"          # YOLO model weights (or path to custom-trained .pt)
+model: "yolo26m.pt"          # YOLO model weights (or path to custom-trained .pt)
 conf_threshold: 0.35
 iou_threshold: 0.45
 imgsz: 640

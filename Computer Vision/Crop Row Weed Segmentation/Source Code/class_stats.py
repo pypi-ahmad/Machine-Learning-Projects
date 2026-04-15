@@ -1,7 +1,9 @@
 """Crop Row & Weed Segmentation — per-class area statistics.
+"""Crop Row & Weed Segmentation — per-class area statistics.
 
 Computes per-class pixel coverage, instance counts, and overall
 class distribution from a :class:`SegmentationResult`.
+"""
 """
 
 from __future__ import annotations
@@ -42,6 +44,7 @@ def compute_area_stats(
     class_names: list[str] | None = None,
 ) -> AreaReport:
     """Compute per-class area statistics from segmentation results.
+    """Compute per-class area statistics from segmentation results.
 
     Parameters
     ----------
@@ -55,11 +58,12 @@ def compute_area_stats(
     -------
     AreaReport
     """
+    """
     h, w = seg.image_hw
     total_px = h * w if h > 0 and w > 0 else 1
 
     # Accumulate per class
-    accum: dict[str, list[tuple[int, float]]] = {}  # name → [(area, conf), …]
+    accum: dict[str, list[tuple[int, float]]] = {}  # name -> [(area, conf), ...]
     for inst in seg.instances:
         accum.setdefault(inst.class_name, []).append(
             (inst.area_px, inst.confidence),

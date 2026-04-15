@@ -1,0 +1,38 @@
+[
+  {
+    "url": "/pricing",
+    "title": "Pricing",
+    "category": "billing",
+    "content": "Our Pricing Plans:\n- Starter: $9/mo \u2014 1 user, 5GB storage, email support\n- Professional: $29/mo \u2014 5 users, 50GB storage, priority support, API access\n- Enterprise: $99/mo \u2014 Unlimited users, 500GB, dedicated support, SSO, audit logs\n\nAll plans include a 14-day free trial. Annual billing saves 20%.\nStudents and non-profits get a 50% discount on all plans.\nCustom plans are available for teams larger than 100 users."
+  },
+  {
+    "url": "/features",
+    "title": "Features",
+    "category": "product",
+    "content": "Key Features:\n- Real-time Collaboration: Edit documents simultaneously with your team.\n- AI-Powered Search: Find any document in seconds with semantic search.\n- Version History: Track all changes with unlimited version history.\n- Integrations: Connect with Slack, Jira, GitHub, Google Drive, and 50+ other tools.\n- Security: SOC 2 Type II certified, end-to-end encryption at rest and in transit.\n- API Access: RESTful API with comprehensive documentation and SDKs in Python, JS, and Go.\n- Offline Mode: Work without internet and sync changes when reconnected.\n- Mobile Apps: Native iOS and Android apps with full editing capability."
+  },
+  {
+    "url": "/faq",
+    "title": "FAQ",
+    "category": "support",
+    "content": "Frequently Asked Questions:\n\nQ: Can I cancel anytime?\nA: Yes, you can cancel your subscription at any time. No cancellation fees.\n\nQ: Do you offer refunds?\nA: We offer a full refund within the first 30 days of any paid plan.\n\nQ: Is my data secure?\nA: Yes. We use AES-256 encryption and are SOC 2 Type II certified.\n\nQ: Can I export my data?\nA: Yes, you can export all your data in standard formats (CSV, JSON, PDF).\n\nQ: Do you support single sign-on (SSO)?\nA: SSO is available on the Enterprise plan via SAML 2.0 and OpenID Connect.\n\nQ: Is there a free plan?\nA: We don't have a permanent free plan, but all paid plans include a 14-day free trial."
+  },
+  {
+    "url": "/about",
+    "title": "About Us",
+    "category": "company",
+    "content": "About TechDocs Inc.\n\nFounded in 2020, TechDocs helps teams organize and search their documentation efficiently. Our platform serves over 10,000 companies worldwide, from startups to Fortune 500 enterprises. Headquartered in San Francisco with remote teams across 15 countries.\n\nOur mission is to make knowledge accessible to every team member, everywhere.\n\nLeadership:\n- CEO: Sarah Chen \u2014 previously VP Engineering at Dropbox\n- CTO: James Park \u2014 co-founder of three YC startups\n- VP Product: Maria Rodriguez \u2014 12 years at Google Docs team"
+  },
+  {
+    "url": "/security",
+    "title": "Security",
+    "category": "product",
+    "content": "Security & Compliance:\n\nData Encryption: AES-256 at rest, TLS 1.3 in transit.\nCertifications: SOC 2 Type II, ISO 27001, GDPR compliant, HIPAA ready (Enterprise).\nAccess Controls: Role-based access (RBAC), multi-factor authentication (MFA), SSO.\nAudit Logging: Full audit trail of all user actions, available on Enterprise plan.\nData Residency: Choose data storage region (US, EU, Asia-Pacific).\nPenetration Testing: Annual third-party pen tests, bug bounty program.\nBackup: Daily automated backups with 30-day retention. Point-in-time recovery available."
+  },
+  {
+    "url": "/getting-started",
+    "title": "Getting Started",
+    "category": "support",
+    "content": "Getting Started Guide:\n\nStep 1: Sign up at techdocs.com/signup \u2014 takes under 2 minutes.\nStep 2: Create your first workspace and invite team members.\nStep 3: Import existing docs from Google Drive, Notion, or Confluence.\nStep 4: Organize with folders and tags for easy navigation.\nStep 5: Enable integrations with your existing tools.\n\nNeed help? Our onboarding team offers free 30-minute setup calls.\nContact: onboarding@techdocs.com or use the in-app chat widget."
+  }
+]

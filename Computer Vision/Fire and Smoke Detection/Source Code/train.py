@@ -1,9 +1,11 @@
 """Train fire & smoke detector — YOLO detection.
+"""Train fire & smoke detector — YOLO detection.
 
 Usage::
 
     python train.py
     python train.py --data path/to/data.yaml --epochs 100
+"""
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ def main() -> None:
     if args.data is None:
         data_path = DatasetResolver().resolve("fire_smoke_detection", force=args.force_download)
         data_yaml = str(data_path / "data.yaml")
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
         print("[INFO] Ensure data.yaml exists with YOLO-format annotations.")
     else:
         data_yaml = args.data

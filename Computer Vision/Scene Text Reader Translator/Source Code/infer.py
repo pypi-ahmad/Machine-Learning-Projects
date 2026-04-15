@@ -37,7 +37,7 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Scene Text Reader Translator — Inference",
+        description="Scene Text Reader Translator -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="Image path, directory, video file, or webcam index (integer)")
@@ -53,11 +53,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                    help="Save annotated images/frames")
     p.add_argument("--output-dir", default="output", help="Output directory")
     p.add_argument("--translate", action="store_true",
-                   help="Enable translation")
+                   help="Enable translation hook")
     p.add_argument("--target-lang", default=None,
                    help="Translation target language (e.g. es, fr, de)")
     p.add_argument("--translate-provider", default=None,
-                   help="Translation provider (e.g. googletrans)")
+                   help="Optional provider label for a custom translation hook")
     p.add_argument("--force-download", action="store_true",
                    help="Force dataset re-download")
     return p.parse_args(argv)
@@ -174,7 +174,7 @@ def _run_images(
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
-    log.info("Done — processed %d image(s)", len(images))
+    log.info("Done -- processed %d image(s)", len(images))
 
 
 # ------------------------------------------------------------------
@@ -224,7 +224,7 @@ def _run_video(
     cap.release()
     if cfg.show_display:
         cv2.destroyAllWindows()
-    log.info("Done — processed %d frames from %s", frame_idx, src_label)
+    log.info("Done -- processed %d frames from %s", frame_idx, src_label)
 
 
 # ------------------------------------------------------------------
@@ -235,7 +235,7 @@ def _run_video(
 def _log_result(label: str, result, report) -> None:
     texts = [r.text[:25] for r in result.reads[:5]]
     log.info(
-        "%s: %d blocks, conf=%.2f — %s",
+        "%s: %d blocks, conf=%.2f -- %s",
         label, result.num_blocks, result.mean_confidence,
         texts or "(no text)",
     )
@@ -257,7 +257,7 @@ def _save_outputs(
         vis = draw_overlay(image, result, cfg, ocr_blocks=blocks)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ class NoteExporter:
                 encoding="utf-8",
             )
             log.info(
-                "JSON export → %s (%d records)", out, len(self._json_records),
+                "JSON export -> %s (%d records)", out, len(self._json_records),
             )
 
     # -- internal ------------------------------------------------------
@@ -101,7 +101,7 @@ class NoteExporter:
                 f.write(f"\n<!-- source: {source} -->\n\n")
             f.write(result.confidence_markdown if self.cfg.show_confidence else result.markdown)
             f.write("\n---\n")
-        log.info("Markdown export → %s", out)
+        log.info("Markdown export -> %s", out)
 
     def _write_txt(self, result: NoteParseResult, source: str) -> None:
         out = Path(self.cfg.export_txt)
@@ -112,7 +112,7 @@ class NoteExporter:
                 f.write(f"# {source}\n")
             f.write(result.plain_text)
             f.write("\n")
-        log.info("Text export → %s", out)
+        log.info("Text export -> %s", out)
 
     def _to_json_record(
         self,

@@ -127,7 +127,7 @@ def _draw_panel(vis: np.ndarray, result: ParseResult) -> None:
 
     lines: list[tuple[str, tuple[int, int, int]]] = [
         ("Extracted Fields", FIELD_TEXT_COLOUR),
-        ("─" * 20, (120, 120, 120)),
+        ("-" * 20, (120, 120, 120)),
     ]
     for name, ef in result.fields.items():
         colour = (0, 200, 255) if ef.confidence >= 0.7 else (0, 140, 255)
@@ -138,7 +138,7 @@ def _draw_panel(vis: np.ndarray, result: ParseResult) -> None:
         lines.append(("", FIELD_TEXT_COLOUR))
         lines.append((f"Line Items ({len(result.line_items)})", FIELD_TEXT_COLOUR))
         for li in result.line_items[:8]:
-            lines.append((f"  {li.description[:30]} — {li.amount}", (180, 200, 180)))
+            lines.append((f"  {li.description[:30]} - {li.amount}", (180, 200, 180)))
 
     panel_h = line_h * len(lines) + margin * 2
     panel_w = 340

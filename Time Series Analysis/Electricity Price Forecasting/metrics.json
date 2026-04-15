@@ -1,0 +1,51 @@
+{
+  "project": "Electricity Price Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 3.7347775081789725,
+  "best_RMSE": 4.314208169135771,
+  "best_MAPE": 8.83801277740133,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 3.7347775081789725,
+      "RMSE": 4.314208169135771,
+      "MAPE": 8.83801277740133
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 10.120212243516205,
+      "RMSE": 21.314581290730203,
+      "MAPE": 12.859457945444458
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 11.771806731181588,
+      "RMSE": 22.479335774828588,
+      "MAPE": 15.864013698071686
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 12.352202600990667,
+      "RMSE": 24.960796969584635,
+      "MAPE": 16.08498208768863
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 12.411428571428571,
+      "RMSE": 23.95007426173992,
+      "MAPE": 16.881778309792512
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 12.451428571428568,
+      "RMSE": 25.290883168220347,
+      "MAPE": 16.50866787438629
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 20.34857142857143,
+      "RMSE": 28.087603010174124,
+      "MAPE": 32.905760904234896
+    }
+  ]
+}

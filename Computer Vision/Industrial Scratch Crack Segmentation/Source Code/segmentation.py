@@ -1,7 +1,9 @@
 """Industrial Scratch / Crack Segmentation — YOLO26m-seg defect extraction.
+"""Industrial Scratch / Crack Segmentation — YOLO26m-seg defect extraction.
 
 Wraps Ultralytics YOLO26m-seg to produce per-instance defect masks
 from a single surface-inspection image.
+"""
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ if str(_REPO) not in sys.path:
 class DefectInstance:
     """One detected surface defect."""
 
-    mask: np.ndarray                # binary uint8 (H, W) — 255 = defect
+    mask: np.ndarray                # binary uint8 (H, W) -- 255 = defect
     confidence: float
     bbox: tuple[int, int, int, int]  # (x1, y1, x2, y2)
     area_px: int
@@ -65,7 +67,7 @@ class DefectSegmenter:
         self._model = None
 
     def load(self) -> None:
-        """Load model weights (via resolve → load_yolo)."""
+        """Load model weights (via resolve -> load_yolo)."""
         from models.registry import resolve
         from utils.yolo import load_yolo
 
@@ -147,9 +149,11 @@ class DefectSegmenter:
 
 def _shape_metrics(mask: np.ndarray) -> tuple[float, float]:
     """Compute major-axis length and aspect ratio from a binary mask.
+    """Compute major-axis length and aspect ratio from a binary mask.
 
     Uses ``cv2.fitEllipse`` on contour points when possible, otherwise
     falls back to ``cv2.minAreaRect``.
+    """
     """
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:

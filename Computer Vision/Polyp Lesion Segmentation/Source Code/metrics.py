@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — per-image polyp metrics."""
+"""Polyp Lesion Segmentation -- per-image polyp metrics."""
 
 from __future__ import annotations
 
@@ -30,6 +30,7 @@ def compute_polyp_metrics(
     gt_mask: np.ndarray | None = None,
 ) -> PolypMetrics:
     """Derive polyp metrics from a segmentation result.
+    """Derive polyp metrics from a segmentation result.
 
     Parameters
     ----------
@@ -38,6 +39,7 @@ def compute_polyp_metrics(
     gt_mask : np.ndarray | None
         Optional ground-truth binary mask (H, W; 0/255).
         When provided, Dice and IoU are computed.
+    """
     """
     h, w = seg.image_hw
     total = h * w if h > 0 and w > 0 else 1

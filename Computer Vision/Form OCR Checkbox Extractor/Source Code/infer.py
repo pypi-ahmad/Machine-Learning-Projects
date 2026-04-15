@@ -32,7 +32,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Form OCR Checkbox Extractor — Inference")
+    p = argparse.ArgumentParser(description="Form OCR Checkbox Extractor -- Inference")
     p.add_argument("--source", required=True, help="Image path or directory")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--lang", default=None, help="OCR language (default: en)")
@@ -113,7 +113,7 @@ def run(argv: list[str] | None = None) -> None:
                 continue
             _process_image(img, src_path.name, parser, validator, exporter, cfg)
 
-    log.info("Done — processed %d form(s)", len(sources))
+    log.info("Done -- processed %d form(s)", len(sources))
 
 
 def _process_image(
@@ -160,7 +160,7 @@ def _process_image(
         out_dir.mkdir(parents=True, exist_ok=True)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
     if cfg.show_display:
         cv2.imshow(f"Form: {label}", vis)

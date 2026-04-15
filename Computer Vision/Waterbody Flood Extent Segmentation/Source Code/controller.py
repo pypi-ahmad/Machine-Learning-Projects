@@ -1,4 +1,4 @@
-"""Waterbody & Flood Extent Segmentation — main controller."""
+"""Waterbody & Flood Extent Segmentation -- main controller."""
 
 from __future__ import annotations
 

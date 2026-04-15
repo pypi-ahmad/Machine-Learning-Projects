@@ -36,11 +36,12 @@ VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv", ".wmv", ".flv", ".webm"}
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Number Plate Reader Pro — Inference",
+        description="Number Plate Reader Pro -- Inference",
     )
     p.add_argument("--source", required=True,
                    help="Image path, directory, video file, or webcam index (integer)")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
+    p.add_argument("--model", default=None, help="Optional detector weights override")
     p.add_argument("--gpu", action="store_true", help="Enable GPU for OCR")
     p.add_argument("--no-display", action="store_true", help="Disable GUI window")
     p.add_argument("--export-json", default=None, help="JSON export path")
@@ -79,6 +80,8 @@ def _is_webcam(source: str) -> bool:
 
 
 def _apply_cli_overrides(cfg: PlateConfig, args: argparse.Namespace) -> None:
+    if args.model:
+        cfg.det_model = args.model
     if args.gpu:
         cfg.use_gpu = True
     if args.no_display:
@@ -162,7 +165,7 @@ def _run_images(
                 cv2.waitKey(0)
                 cv2.destroyAllWindows()
 
-    log.info("Done — processed %d image(s)", len(images))
+    log.info("Done -- processed %d image(s)", len(images))
 
 
 # ------------------------------------------------------------------
@@ -219,7 +222,7 @@ def _run_video(
     cap.release()
     if cfg.show_display:
         cv2.destroyAllWindows()
-    log.info("Done — processed %d frames from %s", frame_idx, src_label)
+    log.info("Done -- processed %d frames from %s", frame_idx, src_label)
 
 
 # ------------------------------------------------------------------
@@ -230,7 +233,7 @@ def _run_video(
 def _log_result(label: str, result, report) -> None:
     plates = [r.plate_text for r in result.reads if r.is_new and r.plate_text]
     log.info(
-        "%s: %d detected, %d valid, %d new — %s",
+        "%s: %d detected, %d valid, %d new -- %s",
         label, result.num_detections, result.num_valid, result.num_new,
         plates or "(none)",
     )
@@ -252,7 +255,7 @@ def _save_outputs(
         vis = draw_overlay(image, result, cfg)
         out_path = out_dir / f"annotated_{label}"
         cv2.imwrite(str(out_path), vis)
-        log.info("  Annotated → %s", out_path)
+        log.info("  Annotated -> %s", out_path)
 
     if cfg.save_crops:
         _save_crops(result, out_dir, result.frame_index)

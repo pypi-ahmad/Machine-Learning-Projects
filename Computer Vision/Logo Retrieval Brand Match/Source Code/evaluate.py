@@ -1,4 +1,5 @@
 """Logo Retrieval Brand Match — evaluate retrieval quality.
+"""Logo Retrieval Brand Match — evaluate retrieval quality.
 
 Runs leave-one-out or held-out query evaluation on the indexed dataset
 to measure top-1 and top-5 brand accuracy.
@@ -8,6 +9,7 @@ Usage::
     python evaluate.py --eval
     python evaluate.py --eval --max-queries 100
     python evaluate.py --eval --force-download
+"""
 """
 
 from __future__ import annotations
@@ -95,7 +97,7 @@ def _evaluate(args: argparse.Namespace) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Logo Retrieval Brand Match — evaluation",
+        description="Logo Retrieval Brand Match -- evaluation",
     )
     parser.add_argument("--eval", action="store_true",
                         help="Run retrieval evaluation")

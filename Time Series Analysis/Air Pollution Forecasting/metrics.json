@@ -1,0 +1,51 @@
+{
+  "project": "Air Pollution Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 8.460581317210853,
+  "best_RMSE": 9.442538646389952,
+  "best_MAPE": 9.38822891095263,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 8.460581317210853,
+      "RMSE": 9.442538646389952,
+      "MAPE": 9.38822891095263
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 19.64808473609282,
+      "RMSE": 35.08017501795844,
+      "MAPE": 14.036507399114953
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 20.31425666809082,
+      "RMSE": 36.44025202675522,
+      "MAPE": 14.487526042994217
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 22.64499855041504,
+      "RMSE": 38.03914352912914,
+      "MAPE": 17.148409302478978
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 23.214285714285715,
+      "RMSE": 38.26691969387062,
+      "MAPE": 17.67395412068183
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 24.571428298950195,
+      "RMSE": 40.22259536298441,
+      "MAPE": 18.80875135158731
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 36.57142857142857,
+      "RMSE": 49.44983027560069,
+      "MAPE": 30.208059172564283
+    }
+  ]
+}

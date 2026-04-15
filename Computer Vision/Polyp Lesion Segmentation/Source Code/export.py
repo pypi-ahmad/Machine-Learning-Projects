@@ -1,4 +1,4 @@
-"""Polyp Lesion Segmentation — structured output export."""
+"""Polyp Lesion Segmentation -- structured output export."""
 
 from __future__ import annotations
 

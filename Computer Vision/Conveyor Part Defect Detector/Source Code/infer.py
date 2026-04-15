@@ -120,7 +120,7 @@ def _run_image(
     annotated = renderer.draw(frame, result)
     exporter.log_frame(0, result, frame)
 
-    log.info("Image: %s → %s (%d defects)", path, result.verdict, result.defect_count)
+    log.info("Image: %s -> %s (%d defects)", path, result.verdict, result.defect_count)
 
     if cfg.show_display:
         cv2.imshow("Conveyor Part Defect Detector", annotated)
@@ -130,7 +130,7 @@ def _run_image(
         out = Path(cfg.export_dir) / "result.jpg"
         out.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(out), annotated)
-        log.info("Saved → %s", out)
+        log.info("Saved -> %s", out)
 
 
 def _run_video(

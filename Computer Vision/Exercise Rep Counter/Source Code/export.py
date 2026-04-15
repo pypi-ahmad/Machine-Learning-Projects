@@ -1,4 +1,4 @@
-"""Exercise Rep Counter — per-frame metrics export (CSV / JSON)."""
+"""Exercise Rep Counter -- per-frame metrics export (CSV / JSON)."""
 
 from __future__ import annotations
 

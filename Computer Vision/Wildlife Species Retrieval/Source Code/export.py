@@ -1,4 +1,4 @@
-"""Wildlife Species Retrieval — structured export (JSON / CSV)."""
+"""Wildlife Species Retrieval -- structured export (JSON / CSV)."""
 
 from __future__ import annotations
 

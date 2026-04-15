@@ -1,0 +1,32 @@
+{
+  "Naive (last value)": {
+    "mae": 225.2,
+    "rmse": 295.4,
+    "mape": 14.34
+  },
+  "Seasonal Naive (weekly)": {
+    "mae": 256.9,
+    "rmse": 341.0,
+    "mape": 17.45
+  },
+  "FLAML (lgbm)": {
+    "mae": 127.6,
+    "rmse": 161.0,
+    "mape": 8.08
+  },
+  "SF AutoARIMA": {
+    "mae": 216.3,
+    "rmse": 289.7,
+    "mape": 13.44
+  },
+  "SF AutoETS": {
+    "mae": 223.2,
+    "rmse": 323.0,
+    "mape": 13.04
+  },
+  "SF SeasonalNaive": {
+    "mae": 241.4,
+    "rmse": 289.2,
+    "mape": 15.2
+  }
+}

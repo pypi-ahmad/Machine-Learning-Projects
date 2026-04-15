@@ -1,4 +1,5 @@
 """Train Logo Detection & Brand Recognition — preferred detection trainer.
+"""Train Logo Detection & Brand Recognition — preferred detection trainer.
 
 This project's modern default is in-scene logo localization with YOLO
 detection, optionally followed by brand recognition. If you only have cropped
@@ -9,6 +10,7 @@ Usage::
 
     python train.py --data path/to/data.yaml
     python train.py --data path/to/data.yaml --epochs 50 --model yolo26m.pt
+"""
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from train.train_detection import train_detection
 def _resolve_data_yaml(data_arg: str | None, force_download: bool) -> Path:
     if data_arg is None:
         data_path = Path(DatasetResolver().resolve("logo_detection", force=force_download))
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
     else:
         data_path = Path(data_arg)
 

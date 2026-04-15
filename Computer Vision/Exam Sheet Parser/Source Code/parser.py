@@ -1,7 +1,7 @@
 """High-level pipeline for Exam Sheet Parser.
 
-Orchestrates PaddleOCR → layout classification → question extraction
-into a single :class:`ExamSheetResult`.
+Orchestrates OCR, layout classification, and question extraction into a
+single :class:`ExamSheetResult`.
 
 Usage::
 
@@ -48,7 +48,7 @@ class ExamSheetResult:
 
 
 class ExamSheetPipeline:
-    """Full exam sheet pipeline: OCR → layout → questions."""
+    """Full exam sheet pipeline: OCR -> layout -> questions."""
 
     def __init__(self, cfg: ExamSheetConfig) -> None:
         self.cfg = cfg

@@ -64,7 +64,7 @@ class InvoiceExporter:
             self._csv_fh = open(out, "w", newline="", encoding="utf-8")
             self._csv_writer = csv.DictWriter(self._csv_fh, fieldnames=_CSV_COLUMNS)
             self._csv_writer.writeheader()
-            log.info("CSV export → %s", out)
+            log.info("CSV export -> %s", out)
 
     def write(
         self,
@@ -103,7 +103,7 @@ class InvoiceExporter:
                 json.dumps(payload, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            log.info("JSON export → %s (%d invoices)", out, len(self._json_records))
+            log.info("JSON export -> %s (%d invoices)", out, len(self._json_records))
 
     def __enter__(self) -> InvoiceExporter:
         return self

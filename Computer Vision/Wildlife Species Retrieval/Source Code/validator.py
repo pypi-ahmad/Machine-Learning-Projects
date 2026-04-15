@@ -1,4 +1,4 @@
-"""Wildlife Species Retrieval — input validation & helpers."""
+"""Wildlife Species Retrieval -- input validation & helpers."""
 
 from __future__ import annotations
 

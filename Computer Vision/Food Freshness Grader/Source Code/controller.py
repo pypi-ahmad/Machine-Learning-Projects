@@ -1,6 +1,8 @@
 """Food Freshness Grader — high-level controller.
+"""Food Freshness Grader — high-level controller.
 
 Orchestrates grading, visualisation, export, and batch inference.
+"""
 """
 
 from __future__ import annotations
@@ -68,7 +70,7 @@ class FreshnessController:
             p = Path(save_path)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), annotated)
-            logger.info("Annotated image saved → %s", p)
+            logger.info("Annotated image saved -> %s", p)
 
         if show:
             cv2.imshow("Freshness Grade", annotated)
@@ -88,15 +90,17 @@ class FreshnessController:
         save_summary: str | Path | None = None,
     ) -> list[tuple[str, GradeResult]]:
         """Grade all images in a directory.
+        """Grade all images in a directory.
 
         Returns list of (image_path, GradeResult) tuples.
+        """
         """
         assert self._grader is not None, "Call load() first"
         images_paths = collect_images(source)
         if not images_paths:
             raise FileNotFoundError(f"No images found in {source}")
 
-        logger.info("Grading %d images from %s …", len(images_paths), source)
+        logger.info("Grading %d images from %s ...", len(images_paths), source)
 
         all_results: list[tuple[str, GradeResult]] = []
         all_images: list[np.ndarray] = []
@@ -143,7 +147,7 @@ class FreshnessController:
             p = Path(save_grid)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), grid)
-            logger.info("Batch grid saved → %s", p)
+            logger.info("Batch grid saved -> %s", p)
 
         # Summary bar
         if save_summary and all_grades:
@@ -151,7 +155,7 @@ class FreshnessController:
             p = Path(save_summary)
             p.parent.mkdir(parents=True, exist_ok=True)
             cv2.imwrite(str(p), bar)
-            logger.info("Summary bar saved → %s", p)
+            logger.info("Summary bar saved -> %s", p)
 
         return all_results
 
@@ -167,7 +171,7 @@ class FreshnessController:
         dicts = [result_to_dict(g, path=p) for p, g in results]
         if json_path:
             export_json(dicts, json_path)
-            logger.info("JSON exported → %s", json_path)
+            logger.info("JSON exported -> %s", json_path)
         if csv_path:
             export_csv(dicts, csv_path)
-            logger.info("CSV exported → %s", csv_path)
+            logger.info("CSV exported -> %s", csv_path)

@@ -127,6 +127,12 @@ Detections inside a zone whose class is **not** in `accepted_classes` are flagge
 
 The training dataset is auto-downloaded from Roboflow via the shared dataset infrastructure.  See `configs/datasets/waste_sorting_detector.yaml` for source details.
 
+If the real dataset cannot be downloaded (no Roboflow SDK, network issues),
+`data_bootstrap.py` automatically generates a **synthetic YOLO-format
+dataset** with waste item images (6 classes: plastic, paper, cardboard,
+metal, glass, trash) so that training, evaluation, and inference can
+still run out of the box.
+
 To force a re-download:
 
 ```bash

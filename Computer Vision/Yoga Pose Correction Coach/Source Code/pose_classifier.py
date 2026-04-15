@@ -1,4 +1,5 @@
 """Yoga Pose Correction Coach — heuristic pose classifier.
+"""Yoga Pose Correction Coach — heuristic pose classifier.
 
 Classifies a detected body pose into one of the supported yoga poses
 based on joint-angle signatures.  Each pose has a template of expected
@@ -8,6 +9,7 @@ and picks the best match.
 This is a **heuristic** classifier — it uses hard-coded angle ranges
 rather than a trained model.  Accuracy is limited to canonical poses
 captured from roughly frontal or side views.
+"""
 """
 
 from __future__ import annotations
@@ -119,8 +121,10 @@ def classify_pose(
     confidence_threshold: float = 0.4,
 ) -> ClassificationResult:
     """Classify the detected body into a yoga pose.
+    """Classify the detected body into a yoga pose.
 
     Returns the best-matching pose and per-pose scores.
+    """
     """
     angles = _measure_angles(pose)
     scores: dict[str, float] = {}
@@ -149,13 +153,15 @@ def _score_template(
     template: list[tuple[str, float, float]],
 ) -> float:
     """Score how well measured angles match a template.
+    """Score how well measured angles match a template.
 
     Returns a value in [0, 1] where 1 = perfect match.
     Uses a Gaussian-like decay: score = exp(-diff²/σ²) weighted.
     """
+    """
     import math
 
-    sigma = 30.0  # degrees — controls tolerance width
+    sigma = 30.0  # degrees -- controls tolerance width
     total_weight = 0.0
     weighted_sum = 0.0
 

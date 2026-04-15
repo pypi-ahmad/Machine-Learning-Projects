@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — export utilities.
+"""Ecommerce Item Attribute Tagger — export utilities.
 
 Export predicted attributes to JSON and CSV files suitable for
 catalog enrichment / product information management.
@@ -9,6 +10,7 @@ Usage::
 
     export_catalog(results, "output/catalog.json")
     export_csv(results, "output/catalog.csv")
+"""
 """
 
 from __future__ import annotations
@@ -26,8 +28,10 @@ def export_catalog(
     path: str | Path,
 ) -> Path:
     """Export results to structured JSON for catalog enrichment.
+    """Export results to structured JSON for catalog enrichment.
 
     Each result entry has ``source`` and ``attributes`` (structured dict).
+    """
     """
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -44,7 +48,7 @@ def export_catalog(
         catalog.append(entry)
 
     out.write_text(json.dumps(catalog, indent=2), encoding="utf-8")
-    log.info("Exported %d items → %s", len(catalog), out)
+    log.info("Exported %d items -> %s", len(catalog), out)
     return out
 
 
@@ -81,5 +85,5 @@ def export_csv(
                 row[f"{attr}_conf"] = f"{info.get('confidence', 0.0):.4f}"
             writer.writerow(row)
 
-    log.info("Exported %d items → %s (CSV)", len(results), out)
+    log.info("Exported %d items -> %s (CSV)", len(results), out)
     return out

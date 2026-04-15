@@ -1,4 +1,4 @@
-"""Wound Area Measurement — CVProject registry entry."""
+"""Wound Area Measurement -- CVProject registry entry."""
 
 from __future__ import annotations
 

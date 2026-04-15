@@ -1,7 +1,6 @@
 """Attendance logging module for Face Verification Attendance System.
 
-Records timestamped attendance entries with session-level dedup
-(same person won't be re-logged within a configurable cooldown window).
+Records timestamped attendance entries with session-level dedup.
 """
 
 from __future__ import annotations
@@ -37,7 +36,7 @@ class AttendanceLogger:
     def __init__(self, cfg: FaceAttendanceConfig) -> None:
         self.cfg = cfg
         self._entries: list[AttendanceEntry] = []
-        self._last_logged: dict[str, float] = {}   # identity → epoch
+        self._last_logged: dict[str, float] = {}   # identity -> epoch
         self._session = cfg.session_name or datetime.now(
             timezone.utc,
         ).strftime("session_%Y%m%d_%H%M%S")
@@ -124,7 +123,7 @@ class AttendanceLogger:
                     "session": entry.session,
                 })
 
-        log.info("Attendance CSV → %s (%d entries)", out, len(self._entries))
+        log.info("Attendance CSV -> %s (%d entries)", out, len(self._entries))
         return out
 
     def save_json(self, path: str | Path | None = None) -> Path:
@@ -148,7 +147,7 @@ class AttendanceLogger:
         out.write_text(
             json.dumps(data, indent=2), encoding="utf-8",
         )
-        log.info("Attendance JSON → %s (%d entries)", out, len(self._entries))
+        log.info("Attendance JSON -> %s (%d entries)", out, len(self._entries))
         return out
 
     def reset(self) -> None:

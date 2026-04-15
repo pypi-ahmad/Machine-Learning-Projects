@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Logo Detection and Brand Recognition.
+"""Modern v2 pipeline — Logo Detection and Brand Recognition.
 
 Replaces: Notebook-only MobileNetV2 classifier
 Uses:     YOLO26m detect + optional SIFT template matching for known logos
@@ -13,6 +14,7 @@ detect logos.  Train on FlickrLogos-32, LogoDet-3K, or OpenLogo for
 real logo detection.
 
 The original notebook implementation is preserved in the .ipynb file.
+"""
 """
 
 import sys
@@ -32,7 +34,7 @@ from models.registry import resolve
 @register("logo_detection")
 class LogoDetectionModern(CVProject):
     project_type = "detection"
-    description = "Logo detection — YOLO custom weights or SIFT template matching"
+    description = "Logo detection -- YOLO custom weights or SIFT template matching"
     legacy_tech = "MobileNetV2 (notebook)"
     modern_tech = "YOLO26m detect (needs logo-trained weights) or SIFT matching"
 

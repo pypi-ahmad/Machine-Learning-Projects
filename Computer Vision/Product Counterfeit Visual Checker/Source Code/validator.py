@@ -1,4 +1,4 @@
-"""Product Counterfeit Visual Checker — input validation."""
+"""Product Counterfeit Visual Checker -- input validation."""
 
 from __future__ import annotations
 

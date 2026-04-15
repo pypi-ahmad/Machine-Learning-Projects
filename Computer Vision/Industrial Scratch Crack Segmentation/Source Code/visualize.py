@@ -1,4 +1,4 @@
-"""Industrial Scratch / Crack Segmentation — overlay and visual report."""
+"""Industrial Scratch / Crack Segmentation -- overlay and visual report."""
 
 from __future__ import annotations
 

@@ -73,7 +73,7 @@ class IDCardValidator:
         if not card_detected and self.cfg.detect_card:
             report.warnings.append(ValidationWarning(
                 field_name="card_boundary",
-                message="No card boundary detected — OCR ran on full image",
+                message="No card boundary detected -- OCR ran on full image",
                 severity="warning",
             ))
 

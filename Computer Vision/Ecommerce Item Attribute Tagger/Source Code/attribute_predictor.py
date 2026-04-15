@@ -1,4 +1,5 @@
 """Ecommerce Item Attribute Tagger — multi-head attribute predictor.
+"""Ecommerce Item Attribute Tagger — multi-head attribute predictor.
 
 A shared backbone (ResNet / MobileNet / EfficientNet) feeds into
 independent classification heads for each attribute (category, colour,
@@ -12,6 +13,7 @@ Usage::
     predictor.load("runs/attribute_tagger/best_model.pt")
     attrs = predictor.predict(image)          # → dict[str, str]
     attrs = predictor.predict_proba(image)    # → dict[str, dict]
+"""
 """
 
 from __future__ import annotations
@@ -44,7 +46,7 @@ _BACKBONES = {
 # ---------------------------------------------------------------------------
 
 class MultiHeadAttributeModel(nn.Module):
-    """Shared backbone → per-attribute classification heads."""
+    """Shared backbone -> per-attribute classification heads."""
 
     def __init__(
         self,
@@ -141,11 +143,13 @@ class AttributePredictor:
 
     def predict(self, image: np.ndarray) -> dict[str, str]:
         """Predict top-1 attribute labels for an image.
+        """Predict top-1 attribute labels for an image.
 
         Returns
         -------
         dict[str, str]
             Attribute name → predicted label.
+        """
         """
         proba = self.predict_proba(image)
         return {
@@ -155,12 +159,14 @@ class AttributePredictor:
 
     def predict_proba(self, image: np.ndarray) -> dict[str, dict]:
         """Predict attributes with confidence scores.
+        """Predict attributes with confidence scores.
 
         Returns
         -------
         dict[str, dict]
             Each key is an attribute name, each value has:
             ``label``, ``confidence``, ``top3``.
+        """
         """
         if self._model is None:
             raise RuntimeError("Model not loaded. Call load() first.")

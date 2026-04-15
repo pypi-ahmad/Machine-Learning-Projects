@@ -1,4 +1,4 @@
-"""Industrial Scratch / Crack Segmentation — structured output export."""
+"""Industrial Scratch / Crack Segmentation -- structured output export."""
 
 from __future__ import annotations
 

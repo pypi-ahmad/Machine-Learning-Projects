@@ -3,9 +3,9 @@
 Extracts iris center positions relative to the eye bounding box
 to produce horizontal and vertical gaze ratios.
 
-MediaPipe iris indices (with ``refine_landmarks=True``):
-    - Left iris:  468 (center), 469–472 (contour)
-    - Right iris: 473 (center), 474–477 (contour)
+MediaPipe iris indices:
+    - Subject-left iris:  468 (center), 469–472 (contour)
+    - Subject-right iris: 473 (center), 474–477 (contour)
 
 Eye contour indices used for bounding box:
     - Left eye:  [362, 385, 387, 263, 373, 380]
@@ -30,9 +30,11 @@ from landmark_engine import LandmarkResult
 
 log = logging.getLogger("gaze.iris_locator")
 
-# Iris center landmarks (MediaPipe refined)
-LEFT_IRIS_CENTER = 468
-RIGHT_IRIS_CENTER = 473
+# Iris center landmarks paired to image-space eye contours.
+# MediaPipe's subject-centric iris ordering is the reverse of the
+# viewer-space eye contour arrays used below.
+LEFT_IRIS_CENTER = 473
+RIGHT_IRIS_CENTER = 468
 
 # Eye contour landmarks for bounding-box estimation
 LEFT_EYE_CONTOUR = [362, 385, 387, 263, 373, 380]

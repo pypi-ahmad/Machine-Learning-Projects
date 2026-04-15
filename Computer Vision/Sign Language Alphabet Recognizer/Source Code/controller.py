@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — inference pipeline orchestrator."""
+"""Sign Language Alphabet Recognizer -- inference pipeline orchestrator."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ class PredictionResult:
 
 
 class RecognitionController:
-    """Orchestrates: detect → extract features → classify → smooth."""
+    """Orchestrates: detect -> extract features -> classify -> smooth."""
 
     def __init__(self, config: SignLangConfig | None = None) -> None:
         self.cfg = config or SignLangConfig()
@@ -50,7 +50,7 @@ class RecognitionController:
         if mp.exists():
             self.classifier.load(mp)
         else:
-            print(f"[WARN] Model not found at {mp} — run trainer.py first")
+            print(f"[WARN] Model not found at {mp} -- run trainer.py first")
 
     @property
     def ready(self) -> bool:

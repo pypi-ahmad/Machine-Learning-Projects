@@ -1,0 +1,51 @@
+{
+  "project": "Call Center Volume Forecasting",
+  "best_model": "FLAML (catboost)",
+  "best_MAE": 66.11775189092712,
+  "best_RMSE": 80.18131689707285,
+  "best_MAPE": 6.962884661380196,
+  "all_results": [
+    {
+      "model": "FLAML (catboost)",
+      "MAE": 66.11775189092712,
+      "RMSE": 80.18131689707285,
+      "MAPE": 6.962884661380196
+    },
+    {
+      "model": "FLAML Test (catboost)",
+      "MAE": 140.81671334685797,
+      "RMSE": 186.7770175261513,
+      "MAPE": 37.33758927670273
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 220.21428571428572,
+      "RMSE": 289.5897344273693,
+      "MAPE": 46.17517419405999
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 238.5142364501953,
+      "RMSE": 297.13663471120486,
+      "MAPE": 55.09035591569907
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 264.06304931640625,
+      "RMSE": 330.87043111692526,
+      "MAPE": 60.57442690008452
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 266.71429443359375,
+      "RMSE": 335.11788970450385,
+      "MAPE": 61.68904804508051
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 271.0,
+      "RMSE": 326.5978304538211,
+      "MAPE": 57.54935022458704
+    }
+  ]
+}

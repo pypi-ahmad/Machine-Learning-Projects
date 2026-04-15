@@ -1,0 +1,13 @@
+Remote Work Policy — Effective January 2025
+
+Section 1: Eligibility
+All full-time employees who have completed 90 days of employment are eligible for remote work. Contractors and part-time employees require explicit written approval from their direct manager and HR.
+
+Section 2: Equipment
+The company provides a laptop, external monitor, and a $500 one-time home office stipend for ergonomic equipment. Equipment must be returned within 14 days of separation from the company.
+
+Section 3: Working Hours
+Core hours are 10:00 AM to 3:00 PM in your local timezone. All employees must be available on Slack during core hours. Total weekly hours: 40. Overtime requires pre-approval from your manager.
+
+Section 4: Security Requirements
+All work must be done on company-approved devices only. VPN must be active when accessing any internal systems. Public WiFi is prohibited without VPN. Screen lock must be set to 2 minutes of inactivity.

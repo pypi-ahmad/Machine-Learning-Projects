@@ -33,7 +33,7 @@ IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    p = argparse.ArgumentParser(description="Crowd Zone Counter — Inference")
+    p = argparse.ArgumentParser(description="Crowd Zone Counter -- Inference")
     p.add_argument("--source", default="0", help="Image/video path or camera index")
     p.add_argument("--config", default=None, help="Path to YAML/JSON config")
     p.add_argument("--model", default=None, help="Override model weights")
@@ -113,11 +113,11 @@ def _run_image(path: str, detector: PersonDetector, counter: ZoneCounter,
     if args.save_video:
         out_path = Path(args.save_video).with_suffix(".jpg")
         cv2.imwrite(str(out_path), vis)
-        log.info("Saved annotated image → %s", out_path)
+        log.info("Saved annotated image -> %s", out_path)
 
     for zs in result.zone_states:
         cap = f"/{zs.max_capacity}" if zs.max_capacity > 0 else ""
-        alert = " ⚠ OVERCROWDED" if zs.overcrowded else ""
+        alert = " ! OVERCROWDED" if zs.overcrowded else ""
         log.info("  %s: %d%s%s", zs.name, zs.count, cap, alert)
     log.info("Total: %d  Unzoned: %d", result.total_persons, result.unzoned_count)
 
@@ -138,7 +138,7 @@ def _run_video(source: int | str, detector: PersonDetector, counter: ZoneCounter
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
         Path(cfg.output_path).parent.mkdir(parents=True, exist_ok=True)
         writer = cv2.VideoWriter(cfg.output_path, fourcc, fps, (fw, fh))
-        log.info("Recording → %s", cfg.output_path)
+        log.info("Recording -> %s", cfg.output_path)
 
     exporter = CrowdExporter(cfg)
     frame_idx = 0

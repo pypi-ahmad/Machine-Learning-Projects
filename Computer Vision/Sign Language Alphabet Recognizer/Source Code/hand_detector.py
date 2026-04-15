@@ -1,4 +1,4 @@
-"""Sign Language Alphabet Recognizer — MediaPipe Hands wrapper."""
+"""Sign Language Alphabet Recognizer -- MediaPipe Hands wrapper."""
 
 from __future__ import annotations
 

@@ -1,22 +1,36 @@
 {
+  "CatBoost": {
+    "accuracy": 0.9885,
+    "f1": 0.6021,
+    "recall": 0.8878,
+    "precision": 0.4555,
+    "pr_auc": 0.8724
+  },
   "LightGBM": {
-    "f1": 0.7914,
-    "pr_auc": 0.7753,
-    "roc_auc": 0.9547,
-    "recall": 0.7551,
-    "precision": 0.8315,
-    "accuracy": 0.9993,
-    "threshold": 0.2696,
-    "time_s": 34.6
+    "accuracy": 0.9983,
+    "f1": 0.911,
+    "recall": 0.8878,
+    "precision": 0.9355,
+    "pr_auc": 0.911
+  },
+  "XGBoost": {
+    "accuracy": 0.9985,
+    "f1": 0.9198,
+    "recall": 0.8776,
+    "precision": 0.9663,
+    "pr_auc": 0.9081
+  },
+  "Baseline": {
+    "accuracy": 0.9741,
+    "f1": 0.4127,
+    "recall": 0.9286,
+    "precision": 0.2653,
+    "pr_auc": 0.8843
   },
   "FLAML": {
-    "f1": 0.8677,
-    "pr_auc": 0.8673,
-    "roc_auc": 0.9782,
-    "recall": 0.8367,
-    "precision": 0.9011,
-    "accuracy": 0.9996,
-    "threshold": 0.3422,
-    "time_s": 126.6
+    "accuracy": 0.9741,
+    "f1": 0.4127,
+    "recall": 0.9286,
+    "precision": 0.2653
   }
 }

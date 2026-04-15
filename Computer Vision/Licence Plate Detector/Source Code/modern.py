@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Licence Plate Detector.
+"""Modern v2 pipeline — Licence Plate Detector.
 
 Uses:     Custom YOLO model for plate detection + PaddleOCR for recognition
 
@@ -7,6 +8,7 @@ Fallback: EasyOCR if PaddleOCR not installed
 
 Merged: Absorbs "Project 37 - Number Plate Detection" (same pipeline
 without plate rectification — rectification is now always applied).
+"""
 """
 
 import sys
@@ -91,12 +93,12 @@ class LicencePlateDetectorModern(CVProject):
             import easyocr
             self._reader = easyocr.Reader(["en"], gpu=True)
             self._ocr_backend = "easyocr"
-            print("  [licence_plate] PaddleOCR not installed — using EasyOCR fallback")
+            print("  [licence_plate] PaddleOCR not installed -- using EasyOCR fallback")
             return
         except ImportError:
             pass
 
-        print("  [licence_plate] No OCR engine installed — detection only")
+        print("  [licence_plate] No OCR engine installed -- detection only")
 
     def _ocr_read(self, crop: np.ndarray) -> str:
         """Read text from a plate crop using the available OCR engine."""

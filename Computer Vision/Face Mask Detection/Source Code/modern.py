@@ -1,4 +1,5 @@
 """Modern v2 pipeline — Face Mask Detection.
+"""Modern v2 pipeline — Face Mask Detection.
 
 Replaces: Notebook-only Keras/TF pipeline
 Uses:     Custom YOLO face-mask detector (mask / no_mask / improper classes)
@@ -10,6 +11,7 @@ Training: Train on face-level mask dataset (mask / no_mask / improper_mask)
 Registry: resolve("face_mask_detection", "detect") → weights/face_mask_yolo26m.pt
 
 Merged: Absorbs "Project 47 - Face Mask Detection" (identical pipeline).
+"""
 """
 
 import sys
@@ -41,7 +43,7 @@ class FaceMaskDetectionModern(CVProject):
         w_path = Path(weights) if Path(weights).is_absolute() else Path(__file__).resolve().parents[2] / weights
         self.model = load_yolo(str(w_path) if w_path.exists() else weights)
         if fallback and not w_path.exists():
-            print(f"  [face_mask] Using COCO pretrained ({weights}) — train custom mask weights:")
+            print(f"  [face_mask] Using COCO pretrained ({weights}) -- train custom mask weights:")
             print("  [face_mask]   python train_detection.py --data face_mask.yaml --weights yolo26m.pt")
         else:
             print(f"  [face_mask] Custom face-mask detector: {weights}")

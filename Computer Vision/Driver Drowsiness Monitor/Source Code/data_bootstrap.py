@@ -13,6 +13,7 @@ Usage::
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import shutil
@@ -27,6 +28,7 @@ log = logging.getLogger("drowsiness.data_bootstrap")
 
 PROJECT_KEY = "driver_drowsiness_monitor"
 DATA_ROOT = REPO_ROOT / "data" / PROJECT_KEY
+DATASET_ID = "ckcl/driver-safety-dataset"
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 VIDEO_EXTS = {".mp4", ".avi", ".mov", ".mkv"}
@@ -48,19 +50,35 @@ def ensure_drowsiness_dataset(*, force: bool = False) -> Path:
     ready_marker = DATA_ROOT / "processed" / ".ready"
     if ready_marker.exists() and not force:
         log.info(
-            "[%s] Dataset already prepared at %s — skipping",
+            "[%s] Dataset already prepared at %s -- skipping",
             PROJECT_KEY, DATA_ROOT,
         )
         return DATA_ROOT
 
-    from scripts.download_data import ensure_dataset as _ensure
+    if force and DATA_ROOT.exists():
+        shutil.rmtree(DATA_ROOT)
 
-    data_path = _ensure(PROJECT_KEY, force=force)
-
-    raw_dir = data_path / "raw"
-    processed_dir = data_path / "processed"
+    raw_dir = DATA_ROOT / "raw"
+    processed_dir = DATA_ROOT / "processed"
     raw_dir.mkdir(parents=True, exist_ok=True)
     processed_dir.mkdir(parents=True, exist_ok=True)
+
+    data_path = DATA_ROOT
+    try:
+        from scripts.download_data import ensure_dataset as _ensure
+
+        data_path = _ensure(PROJECT_KEY, force=force)
+        raw_dir = data_path / "raw"
+        processed_dir = data_path / "processed"
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        processed_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:
+        log.warning(
+            "[%s] Shared downloader unavailable; falling back to Hugging Face: %s",
+            PROJECT_KEY,
+            exc,
+        )
+        _download_huggingface_dataset(raw_dir)
 
     _collect_media(data_path, processed_dir)
     _write_info(data_path)
@@ -80,7 +98,7 @@ def _collect_media(data_path: Path, processed_dir: Path) -> None:
     img_count = 0
     vid_count = 0
     for f in data_path.rglob("*"):
-        if "processed" in f.parts:
+        if processed_dir in f.parents:
             continue
         if f.suffix.lower() in IMAGE_EXTS:
             dst = media_dir / f.name
@@ -105,15 +123,46 @@ def _write_info(data_path: Path) -> None:
     if info_path.exists():
         return
 
-    from utils.datasets import DatasetResolver
-
-    resolver = DatasetResolver()
-    entry = resolver.registry.get(PROJECT_KEY, {})
-
     info = {
         "dataset_key": PROJECT_KEY,
-        "source_type": entry.get("type", "unknown"),
-        "description": entry.get("description", ""),
+        "source_type": "huggingface",
+        "dataset_id": DATASET_ID,
+        "description": "Driver safety images with normal and drowsy driving conditions.",
         "prepared_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
     }
     info_path.write_text(json.dumps(info, indent=2), encoding="utf-8")
+
+
+def _download_huggingface_dataset(raw_dir: Path) -> None:
+    from huggingface_hub import snapshot_download
+
+    snapshot_download(
+        repo_id=DATASET_ID,
+        repo_type="dataset",
+        local_dir=str(raw_dir),
+        allow_patterns=[
+            "processed/frames/*",
+            "dataset.csv",
+            "dataset_summary.json",
+            "README.md",
+        ],
+    )
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description="Prepare the driver drowsiness evaluation dataset",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Rebuild the dataset even if it already exists",
+    )
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s | %(message)s")
+    args = parser.parse_args(argv)
+    data_root = ensure_drowsiness_dataset(force=args.force)
+    print(data_root)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,51 @@
+{
+  "project": "Bike Rental Forecasting",
+  "best_model": "SF AutoARIMA",
+  "best_MAE": 259.5141296386719,
+  "best_RMSE": 343.6888809301226,
+  "best_MAPE": 7.7671499390295935,
+  "all_results": [
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 259.5141296386719,
+      "RMSE": 343.6888809301226,
+      "MAPE": 7.7671499390295935
+    },
+    {
+      "model": "FLAML Test (extra_tree)",
+      "MAE": 287.1894564734374,
+      "RMSE": 394.99568740506464,
+      "MAPE": 8.710580707712191
+    },
+    {
+      "model": "FLAML (extra_tree)",
+      "MAE": 309.5001942973984,
+      "RMSE": 376.77244758081025,
+      "MAPE": 8.789442531902896
+    },
+    {
+      "model": "SF AutoETS",
+      "MAE": 322.96441650390625,
+      "RMSE": 374.6692916760059,
+      "MAPE": 9.2273450297388
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 326.78570556640625,
+      "RMSE": 439.1204632558132,
+      "MAPE": 9.923747130392025
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 404.35714285714283,
+      "RMSE": 497.4917802623189,
+      "MAPE": 11.855490593266728
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 798.3571428571429,
+      "RMSE": 871.7056760824066,
+      "MAPE": 21.071238827315085
+    }
+  ]
+}

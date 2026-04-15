@@ -1,4 +1,4 @@
-"""Fire Area Segmentation — main controller."""
+"""Fire Area Segmentation -- main controller."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ class FrameResult:
 
 
 class FireController:
-    """High-level controller: segmentation → metrics → trend → alert."""
+    """High-level controller: segmentation -> metrics -> trend -> alert."""
 
     def __init__(self, config: FireConfig | None = None) -> None:
         self.cfg = config or FireConfig()

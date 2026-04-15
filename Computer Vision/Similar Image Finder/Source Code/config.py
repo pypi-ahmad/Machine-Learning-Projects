@@ -1,4 +1,4 @@
-"""Similar Image Finder — configuration."""
+"""Similar Image Finder -- configuration."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ class SimilarityConfig:
     backbone: str = "efficientnet_b0"
     embedding_dim: int = 1280
     imgsz: int = 224
-    device: str | None = None           # None → auto
+    device: str | None = None           # None -> auto
 
     # ── Index ─────────────────────────────────────────────
     index_path: str = "index/image_index.npz"

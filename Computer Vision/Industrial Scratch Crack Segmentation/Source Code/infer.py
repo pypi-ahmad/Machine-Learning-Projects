@@ -1,4 +1,5 @@
 """Industrial Scratch / Crack Segmentation — CLI entry point.
+"""Industrial Scratch / Crack Segmentation — CLI entry point.
 
 Usage::
 
@@ -17,6 +18,7 @@ Usage::
         --export-json report.json --export-csv stats.csv \\
         --save-annotated --save-masks
 """
+"""
 
 from __future__ import annotations
 
@@ -27,7 +29,7 @@ from pathlib import Path
 
 def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Industrial Scratch / Crack Segmentation — surface defect detection",
+        description="Industrial Scratch / Crack Segmentation -- surface defect detection",
     )
     p.add_argument(
         "--source", default="0",
@@ -187,7 +189,7 @@ def _run_directory(ctrl, dir_path, cfg, args, out_dir, csv_exp,
         if csv_exp:
             csv_exp.write_row(_csv_row(result, str(img_path)))
 
-    print(f"\nDone — processed {len(images)} image(s)")
+    print(f"\nDone -- processed {len(images)} image(s)")
     print(f"Severity distribution: {severity_counts}")
 
 
@@ -254,7 +256,7 @@ def _run_video(ctrl, source, cfg, args, out_dir, csv_exp,
             source=str(source), frame_idx=idx - 1,
         )
 
-    print(f"\nDone — processed {idx} frame(s)")
+    print(f"\nDone -- processed {idx} frame(s)")
 
 
 # ── helpers ────────────────────────────────────────────────

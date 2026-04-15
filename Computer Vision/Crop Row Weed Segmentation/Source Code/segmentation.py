@@ -1,7 +1,9 @@
 """Crop Row & Weed Segmentation — YOLO26m-seg multi-class extraction.
+"""Crop Row & Weed Segmentation — YOLO26m-seg multi-class extraction.
 
 Wraps Ultralytics YOLO26m-seg to produce per-instance masks with class
 labels, confidences, and bounding boxes.
+"""
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ if str(_REPO) not in sys.path:
 class InstanceMask:
     """One detected instance (crop, weed, etc.)."""
 
-    mask: np.ndarray                # binary uint8 (H, W) — 255 = instance
+    mask: np.ndarray                # binary uint8 (H, W) -- 255 = instance
     confidence: float
     class_id: int
     class_name: str
@@ -62,7 +64,7 @@ class CropWeedSegmenter:
         self._model = None
 
     def load(self) -> None:
-        """Load model weights (via resolve → load_yolo)."""
+        """Load model weights (via resolve -> load_yolo)."""
         from models.registry import resolve
         from utils.yolo import load_yolo
 

@@ -33,7 +33,7 @@ def main() -> None:
     if args.data is None:
         data_path = DatasetResolver().resolve("age_gender_recognition", force=args.force_download)
         data_dir = str(data_path)
-        print(f"[INFO] Resolved dataset → {data_path}")
+        print(f"[INFO] Resolved dataset -> {data_path}")
         print("[INFO] Place age/gender images in ImageFolder layout (subfolders per class).")
     else:
         data_dir = args.data
