@@ -1,19 +1,19 @@
 # Business Card Reader
 
-> **Task:** OCR + Contact Extraction &nbsp;|&nbsp; **Key:** `business_card_reader` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** OCR + Contact Extraction &nbsp;|&nbsp; **Key:** `business_card_reader` &nbsp;|&nbsp; **Framework:** EasyOCR
 
 ---
 
 ## Overview
 
-Extracts structured contact information from business card images using PaddleOCR for text detection/recognition and rule-based field classification with confidence scores. Supports single-image and batch-folder modes with JSON/CSV export.
+Extracts structured contact information from business card images using EasyOCR for text detection/recognition and rule-based field classification with confidence scores. Supports single-image and batch-folder modes with JSON/CSV export.
 
 ## Technology
 
 | Aspect | Details |
 |--------|---------|
 | **Task Type** | OCR + Document AI |
-| **Modern Stack** | PaddleOCR (detection + recognition) + regex/heuristic field parsing |
+| **Modern Stack** | EasyOCR (detection + recognition) + regex/heuristic field parsing |
 | **Dataset** | Business card images (RVL-CDIP subset from Hugging Face) |
 | **Key Metrics** | Field extraction accuracy, OCR recall |
 
@@ -30,7 +30,7 @@ Extracts structured contact information from business card images using PaddleOC
 Business Card Reader/
 └── Source Code/
     ├── config.py            # CardConfig dataclass + YAML/JSON loader
-    ├── ocr_engine.py        # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py        # EasyOCR wrapper -> OCRBlock dataclass
     ├── parser.py            # Contact field extraction → ParseResult
     ├── validator.py         # Validation rules + missing-field warnings
     ├── visualize.py         # Colour-coded overlay renderer
@@ -107,5 +107,5 @@ python train.py --max-samples 50   # evaluate on more samples
 ## Dependencies
 
 ```
-pip install paddleocr paddlepaddle opencv-python numpy pyyaml
+pip install easyocr opencv-python numpy pyyaml
 ```

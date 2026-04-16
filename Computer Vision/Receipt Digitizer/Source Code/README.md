@@ -1,19 +1,19 @@
 # Receipt Digitizer
 
-> **Task:** OCR + Field Extraction &nbsp;|&nbsp; **Key:** `receipt_digitizer` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** OCR + Field Extraction &nbsp;|&nbsp; **Key:** `receipt_digitizer` &nbsp;|&nbsp; **Framework:** EasyOCR
 
 ---
 
 ## Overview
 
-Digitises receipts into structured, expense-ready data using PaddleOCR for text detection/recognition, image preprocessing for noisy receipts, rule-based field parsing with confidence scores, validation rules, and JSON/CSV export. Supports batch inference over folders.
+Digitises receipts into structured, expense-ready data using EasyOCR for text detection/recognition, image preprocessing for noisy receipts, rule-based field parsing with confidence scores, validation rules, and JSON/CSV export. Supports batch inference over folders.
 
 ## Technology
 
 | Aspect | Details |
 |--------|---------|
 | **Task Type** | OCR + Document AI |
-| **Modern Stack** | PaddleOCR (detection + recognition) + preprocessing + regex field parsing |
+| **Modern Stack** | EasyOCR (detection + recognition) + preprocessing + regex field parsing |
 | **Dataset** | Receipt images ([jinhybr/OCR-receipt](https://huggingface.co/datasets/jinhybr/OCR-receipt) on Hugging Face) |
 | **Key Metrics** | Field extraction accuracy, OCR recall |
 
@@ -31,7 +31,7 @@ Receipt Digitizer/
 └── Source Code/
     ├── config.py            # ReceiptConfig dataclass + YAML/JSON loader
     ├── preprocess.py        # Image cleanup: denoise, deskew, sharpen, binarize
-    ├── ocr_engine.py        # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py        # EasyOCR wrapper → OCRBlock dataclass
     ├── parser.py            # Regex + heuristic field extraction → ParseResult
     ├── validator.py         # Validation rules + missing-field warnings
     ├── visualize.py         # Image overlay renderer
@@ -119,5 +119,5 @@ Each step is togglable in `receipt_config.yaml`.
 ## Dependencies
 
 ```
-pip install paddleocr paddlepaddle opencv-python numpy pyyaml
+pip install easyocr opencv-python numpy pyyaml
 ```

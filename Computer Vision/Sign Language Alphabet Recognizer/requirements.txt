@@ -3,3 +3,4 @@ mediapipe>=0.10.14
 opencv-python>=4.10.0,<5
 numpy>=1.26.0
 scikit-learn>=1.4.0
+matplotlib>=3.8.0

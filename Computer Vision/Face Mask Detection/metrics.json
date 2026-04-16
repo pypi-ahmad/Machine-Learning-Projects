@@ -1,0 +1,18 @@
+{
+  "dataset": "Face Mask Detection dataset",
+  "task_framing": "classification",
+  "baseline_model": "resnet18",
+  "strong_model": "efficientnet_b0",
+  "baseline_test_accuracy": 0.6666666666666666,
+  "baseline_test_precision": 0.72,
+  "baseline_test_recall": 0.5806451612903226,
+  "baseline_test_f1": 0.6428571428571429,
+  "strong_test_accuracy": 0.675,
+  "strong_test_precision": 0.7017543859649122,
+  "strong_test_recall": 0.6451612903225806,
+  "strong_test_f1": 0.6722689075630253,
+  "false_positives_strong": 17,
+  "false_negatives_strong": 22,
+  "device": "cuda",
+  "synthetic_mode": false
+}

@@ -1,12 +1,12 @@
 # Scene Text Reader Translator
 
-> **Task:** OCR + Translation &nbsp;|&nbsp; **Key:** `scene_text_reader_translator` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** OCR + Translation Hook &nbsp;|&nbsp; **Key:** `scene_text_reader_translator` &nbsp;|&nbsp; **Framework:** PaddleOCR-first OCR
 
 ---
 
 ## Overview
 
-Scene-text OCR pipeline that detects and recognises text from natural scene images (signs, billboards, menus, etc.) using PaddleOCR, renders readable overlays, and exports structured JSON/CSV results. Includes an optional translation hook that can be activated with any provider — OCR and translation are cleanly separated.
+Scene-text OCR pipeline that detects and recognises text from natural scene images (signs, billboards, menus, etc.) using PaddleOCR first, renders readable overlays, and exports structured JSON/CSV results with coordinates. The translation layer is an optional hook/stub and remains cleanly separated from OCR. On local runtimes where PaddleOCR fails during inference, the OCR layer falls back to EasyOCR so the pipeline stays usable.
 
 ## Pipeline
 
@@ -16,7 +16,7 @@ Scene image → PaddleOCR detect + recognise → (optional) translate → valida
 
 1. **Detection** — PaddleOCR text detection locates text regions in the scene.
 2. **Recognition** — PaddleOCR reads text from each detected region with confidence scores.
-3. **Translation** *(optional)* — Pluggable translation hook (`TranslationProvider` ABC). Built-in `googletrans` provider available; disabled by default.
+3. **Translation** *(optional)* — Pluggable translation hook (`TranslationProvider` ABC). No provider is bundled by default.
 4. **Validation** — Quality checks: confidence floor, minimum text length.
 5. **Overlay** — Colour-coded bounding polygons, text labels, confidence, translated text, and summary panel.
 6. **Export** — JSON (full block records with coordinates) and/or CSV (one row per text region).
@@ -26,18 +26,19 @@ Scene image → PaddleOCR detect + recognise → (optional) translate → valida
 | Aspect | Details |
 |--------|---------|
 | **Task Type** | Scene Text OCR + Translation |
-| **Modern Stack** | PaddleOCR (detection + recognition) |
+| **Modern Stack** | PaddleOCR-first OCR (detection + recognition) |
 | **Translation** | Optional — pluggable provider hook |
-| **Dataset** | COCO-Text (Hugging Face) |
+| **Dataset** | Public scene-text images when available, otherwise synthetic scene-text fallback |
 | **Key Metrics** | OCR accuracy, detection coverage |
 
 ## Dataset
 
-- **Source:** Hugging Face — scene text images
-- **License:** See dataset page for licence terms
-- **Download:** Automatic on first `python train.py` run via `DatasetResolver`
+- **Primary source:** Public scene-text dataset via the repo downloader when available.
+- **License:** See the upstream dataset page for current licence terms.
+- **Fallback:** If the public download path is unavailable, bootstrap generates synthetic scene-text images plus `ocr_labels.json` metadata.
+- **Download:** Automatic on first `python train.py` run.
 - **Force re-download:** `python train.py --force-download`
-- **Bootstrap:** `python data_bootstrap.py` (idempotent, uses `.ready` marker)
+- **Bootstrap:** `python data_bootstrap.py` (idempotent, writes `.ready`, `dataset_info.json`, and `ocr_labels.json`)
 
 ## Project Structure
 
@@ -45,7 +46,7 @@ Scene image → PaddleOCR detect + recognise → (optional) translate → valida
 Scene Text Reader Translator/
 └── Source Code/
     ├── config.py                # SceneTextConfig dataclass — all tunables
-    ├── ocr_engine.py            # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py            # PaddleOCR-first wrapper → OCRBlock dataclass
     ├── translator.py            # Translation hook — TranslationProvider ABC
     ├── parser.py                # SceneTextPipeline — OCR → translate → result
     ├── validator.py             # Quality checks + ValidationReport
@@ -54,7 +55,7 @@ Scene Text Reader Translator/
     ├── infer.py                 # CLI — image / video / webcam inference
     ├── modern.py                # CVProject subclass — @register("scene_text_reader_translator")
     ├── train.py                 # Evaluation entry point (PaddleOCR is pre-trained)
-    ├── data_bootstrap.py        # Idempotent dataset download + preparation
+    ├── data_bootstrap.py        # Idempotent dataset download + synthetic fallback
     ├── scene_text_config.yaml   # Sample YAML configuration
     ├── requirements.txt         # Project dependencies
     └── README.md                # This file
@@ -112,9 +113,9 @@ python train.py --max-samples 50   # evaluate more samples
 | `--config` | Path to YAML/JSON config file |
 | `--lang` | OCR language (default: `en`) |
 | `--gpu` | Enable GPU for PaddleOCR |
-| `--translate` | Enable translation |
+| `--translate` | Enable the translation hook |
 | `--target-lang` | Translation target language (e.g. `es`, `fr`, `de`) |
-| `--translate-provider` | Translation provider (e.g. `googletrans`) |
+| `--translate-provider` | Optional provider label for a custom hook |
 | `--export-json` | JSON export path |
 | `--export-csv` | CSV export path |
 | `--save-annotated` | Save annotated images/frames |
@@ -127,7 +128,6 @@ python train.py --max-samples 50   # evaluate more samples
 Translation is **cleanly separated** from OCR. The `translator.py` module provides:
 
 - `TranslationProvider` — Abstract base class for any translation backend
-- `GoogleTransProvider` — Built-in provider using `googletrans` (install: `pip install googletrans==4.0.0-rc1`)
 - `NoOpProvider` — Default passthrough when translation is disabled
 - `Translator` — Facade that selects provider based on config
 
@@ -150,7 +150,7 @@ cfg = SceneTextConfig(translate_enabled=True)
 translator = Translator(cfg, provider=MyProvider())
 ```
 
-No fake integrations — the `googletrans` provider requires the actual package and will gracefully fall back to `NoOpProvider` if unavailable.
+No provider ships enabled by default. The project exposes a hook/stub only; real provider integrations should be added explicitly by the user or by a future scoped extension.
 
 ## Configuration
 
@@ -162,7 +162,7 @@ All tunables are defined in `SceneTextConfig` (see [config.py](config.py)). Over
 
 ## Features
 
-- PaddleOCR scene text detection and recognition with angle classification
+- PaddleOCR-first scene text detection and recognition with runtime fallback
 - Optional translation hook with pluggable provider architecture
 - Colour-coded overlay with bounding polygons, text labels, and confidence
 - Translated text rendered below original in overlay
@@ -171,13 +171,15 @@ All tunables are defined in `SceneTextConfig` (see [config.py](config.py)). Over
 - Image, video, and live webcam support
 - Configurable confidence threshold and validation rules
 - Sample YAML configuration file
-- Idempotent dataset bootstrap with `.ready` marker
+- Idempotent dataset bootstrap with `.ready`, `dataset_info.json`, and `ocr_labels.json`
 
 ## Dependencies
 
 ```bash
 pip install -r requirements.txt
-
-# Optional: for translation
-pip install googletrans==4.0.0-rc1
 ```
+
+## Runtime Notes
+
+- On this Windows environment, PaddleOCR can initialise successfully but fail during inference with a oneDNN runtime error.
+- The project keeps PaddleOCR as the primary OCR engine and automatically falls back to EasyOCR only when that runtime failure occurs.

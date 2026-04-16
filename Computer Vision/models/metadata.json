@@ -1,2 +1,214 @@
 {
+  "retail_shelf_stockout": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "retail_shelf_stockout\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.1866,
+          "mAP50-95": 0.1632
+        },
+        "date": "2026-04-14T23:31:16"
+      },
+      "v2": {
+        "path": "retail_shelf_stockout\\v2\\best.pt",
+        "metrics": {
+          "mAP50": 0.1866,
+          "mAP50-95": 0.1632
+        },
+        "date": "2026-04-14T23:32:17"
+      }
+    }
+  },
+  "ppe_compliance_monitor": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "ppe_compliance_monitor\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.2986,
+          "mAP50-95": 0.2644
+        },
+        "date": "2026-04-14T23:41:45"
+      }
+    }
+  },
+  "parking_occupancy_monitor": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "parking_occupancy_monitor\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.2342,
+          "mAP50-95": 0.2193
+        },
+        "date": "2026-04-14T23:48:22"
+      }
+    }
+  },
+  "traffic_violation_analyzer": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "traffic_violation_analyzer\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.0858,
+          "mAP50-95": 0.0792
+        },
+        "date": "2026-04-14T23:55:53"
+      }
+    }
+  },
+  "conveyor_part_defect_detector": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "conveyor_part_defect_detector\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.0099,
+          "mAP50-95": 0.0025
+        },
+        "date": "2026-04-15T00:05:24"
+      }
+    }
+  },
+  "waste_sorting_detector": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "waste_sorting_detector\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.1467,
+          "mAP50-95": 0.1228
+        },
+        "date": "2026-04-15T10:57:13"
+      }
+    }
+  },
+  "drone_ship_obb_detector": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "drone_ship_obb_detector\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.0575,
+          "mAP50-95": 0.0403
+        },
+        "date": "2026-04-15T14:36:23"
+      }
+    }
+  },
+  "document_layout_block_detector": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "document_layout_block_detector\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.1197,
+          "mAP50-95": 0.1046
+        },
+        "date": "2026-04-15T14:46:11"
+      }
+    }
+  },
+  "sports_ball_possession_tracker": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "sports_ball_possession_tracker\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.385,
+          "mAP50-95": 0.3361
+        },
+        "date": "2026-04-15T14:56:03"
+      }
+    }
+  },
+  "crowd_zone_counter": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "crowd_zone_counter\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.9686,
+          "mAP50-95": 0.8736
+        },
+        "date": "2026-04-15T15:05:46"
+      }
+    }
+  },
+  "document_type_classifier_router": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "document_type_classifier_router\\v1\\best.pt",
+        "metrics": {
+          "val_acc": 0.4865
+        },
+        "date": "2026-04-15T15:31:11"
+      },
+      "v2": {
+        "path": "document_type_classifier_router\\v2\\best.pt",
+        "metrics": {
+          "val_acc": 0.425
+        },
+        "date": "2026-04-15T15:32:57"
+      }
+    }
+  },
+  "aerial_cactus": {
+    "active": "v1",
+    "versions": {
+      "v1": {
+        "path": "aerial_cactus\\v1\\best.pt",
+        "metrics": {
+          "val_acc": 1.0
+        },
+        "date": "2026-04-15T15:36:32"
+      },
+      "v2": {
+        "path": "aerial_cactus\\v2\\best.pt",
+        "metrics": {
+          "val_acc": 1.0
+        },
+        "date": "2026-04-15T15:37:55"
+      },
+      "v3": {
+        "path": "aerial_cactus\\v3\\best.pt",
+        "metrics": {
+          "val_acc": 1.0
+        },
+        "date": "2026-04-15T15:39:10"
+      }
+    }
+  },
+  "number_plate_reader_pro": {
+    "active": "v3",
+    "versions": {
+      "v1": {
+        "path": "number_plate_reader_pro\\v1\\best.pt",
+        "metrics": {
+          "mAP50": 0.0,
+          "mAP50-95": 0.0
+        },
+        "date": "2026-04-15T16:52:15"
+      },
+      "v2": {
+        "path": "number_plate_reader_pro\\v2\\best.pt",
+        "metrics": {
+          "mAP50": 0.0005,
+          "mAP50-95": 0.0001
+        },
+        "date": "2026-04-15T16:56:58"
+      },
+      "v3": {
+        "path": "number_plate_reader_pro\\v3\\best.pt",
+        "metrics": {
+          "mAP50": 0.0227,
+          "mAP50-95": 0.0177
+        },
+        "date": "2026-04-15T16:59:36"
+      }
+    }
+  }
 }

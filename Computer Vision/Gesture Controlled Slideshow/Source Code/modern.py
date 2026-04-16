@@ -22,7 +22,7 @@ from core.registry import register
 
 @register("gesture_controlled_slideshow")
 class GestureSlideshowModern(CVProject):
-    """Hand-gesture controlled slideshow via MediaPipe Hands."""
+    """Hand-gesture controlled slideshow via MediaPipe Hand Landmarker."""
 
     project_type = "detection"
     description = (
@@ -30,7 +30,7 @@ class GestureSlideshowModern(CVProject):
         "control with debouncing and keyboard fallback"
     )
     legacy_tech = "N/A (new project)"
-    modern_tech = "MediaPipe Hands + finger-state gesture classifier"
+    modern_tech = "MediaPipe Hand Landmarker + finger-state gesture classifier"
 
     def __init__(self) -> None:
         super().__init__()

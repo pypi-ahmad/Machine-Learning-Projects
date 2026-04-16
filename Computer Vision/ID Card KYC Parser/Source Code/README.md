@@ -1,12 +1,12 @@
 # ID Card KYC Parser
 
-> **Task:** Card Detection + OCR + KYC Field Extraction &nbsp;|&nbsp; **Key:** `id_card_kyc_parser` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** Card Detection + OCR + KYC Field Extraction &nbsp;|&nbsp; **Key:** `id_card_kyc_parser` &nbsp;|&nbsp; **Framework:** EasyOCR
 
 ---
 
 ## Overview
 
-KYC-style parser that detects an ID card boundary in a photo, applies perspective correction to produce a front-facing crop, runs PaddleOCR, and extracts structured identity fields using template-based parsing. Supports multiple document types (generic ID, US driver licence, EU national ID, passport MRZ) with JSON/CSV export.
+KYC-style parser that detects an ID card boundary in a photo, applies perspective correction to produce a front-facing crop, runs EasyOCR, and extracts structured identity fields using template-based parsing. Supports multiple document types (generic ID, US driver licence, EU national ID, passport MRZ) with JSON/CSV export.
 
 ## Technology
 
@@ -14,7 +14,7 @@ KYC-style parser that detects an ID card boundary in a photo, applies perspectiv
 |--------|---------|
 | **Task Type** | Card Detection + OCR + Document AI |
 | **Card Detection** | Contour-based quadrilateral detection + four-point perspective transform |
-| **OCR** | PaddleOCR (detection + recognition + angle classification) |
+| **OCR** | EasyOCR (detection + recognition) |
 | **Field Parsing** | Template-based label-value matching with multi-language support |
 | **Templates** | `generic`, `us_dl`, `eu_id`, `passport` (MRZ) |
 | **Dataset** | FUNSD form/document images from Hugging Face |
@@ -33,7 +33,7 @@ ID Card KYC Parser/
 └── Source Code/
     ├── config.py            # IDCardConfig dataclass + YAML/JSON loader
     ├── card_detector.py     # Card boundary detection + perspective rectification
-    ├── ocr_engine.py        # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py        # EasyOCR wrapper -> OCRBlock dataclass
     ├── templates.py         # Isolated template definitions (generic, us_dl, eu_id, passport)
     ├── parser.py            # Template-agnostic parser orchestrator → ParseResult
     ├── validator.py         # Validation rules + missing-field warnings
@@ -98,7 +98,7 @@ python train.py --max-samples 50         # evaluate on more samples
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌───────────┐    ┌──────────┐    ┌──────────┐
-│  Input Image │───▶│  Card       │───▶│ PaddleOCR │───▶│ Template │───▶│ Validate │
+│  Input Image │───▶│  Card       │───▶│ EasyOCR   │───▶│ Template │───▶│ Validate │
 │              │    │  Detector   │    │           │    │ Parser   │    │ + Export  │
 │              │    │ (contour +  │    │ (text det │    │ (field   │    │          │
 │              │    │  rectify)   │    │  + recog) │    │  extract)│    │          │
@@ -137,5 +137,5 @@ If no card boundary is found, the pipeline falls back to processing the full ima
 ## Dependencies
 
 ```
-pip install paddleocr paddlepaddle opencv-python numpy pyyaml
+pip install easyocr opencv-python numpy pyyaml
 ```

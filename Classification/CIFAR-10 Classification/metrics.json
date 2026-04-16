@@ -1,7 +1,14 @@
 {
-  "SimpleCNN": {
-    "Accuracy": 0.784,
-    "F1": 0.7856
+  "baseline": {
+    "accuracy": 0.6745,
+    "precision_macro": 0.6730357031611087,
+    "recall_macro": 0.6745,
+    "f1_macro": 0.6719655458851698
   },
-  "best_model": "SimpleCNN"
+  "timm": {
+    "accuracy": 0.8798,
+    "precision_macro": 0.8813026827615174,
+    "recall_macro": 0.8798,
+    "f1_macro": 0.8792870213809817
+  }
 }

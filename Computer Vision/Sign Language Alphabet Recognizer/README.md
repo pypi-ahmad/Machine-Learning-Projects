@@ -1,224 +1,202 @@
 # Sign Language Alphabet Recognizer
 
-Static **ASL alphabet recognition** from hand landmarks using
-MediaPipe Hands and a lightweight MLP classifier.  Supports 24
-static letters (A–Y, excluding J and Z which require motion).
+Static ASL alphabet recognition from hand landmarks using MediaPipe Hand Landmarker and a lightweight sklearn MLP. The project supports training, evaluation, webcam inference, and artifact export for the 24 static fingerspelling letters:
 
----
+`A B C D E F G H I K L M N O P Q R S T U V W X Y`
 
-## Scope & Limitations
+`J` and `Z` are excluded because they require motion.
 
-> **This project recognises only static ASL fingerspelling signs.**
->
-> - **24 letters only.**  J and Z require motion and are excluded.
-> - **Landmark-based classifier.**  Hand-landmark coordinates (not
->   raw pixels) are fed to an MLP.  Accuracy depends on MediaPipe's
->   ability to detect the hand in the image.
-> - **Single hand.**  Only the first detected hand is classified.
-> - **Not a full sign-language interpreter.**  This covers individual
->   letters, not words, phrases, or non-manual markers.
-> - **Background and lighting matter.**  Complex backgrounds or poor
->   lighting degrade hand detection.
-> - **Dataset-dependent.**  Accuracy is bounded by the training
->   dataset's diversity (skin tones, angles, backgrounds).
+## What This Project Does
 
----
+- Detects a single hand with MediaPipe Hand Landmarker.
+- Converts 21 landmarks into a compact engineered feature vector.
+- Trains a lightweight classifier on static ASL alphabet poses.
+- Evaluates with JSON metrics and a confusion-matrix heatmap.
+- Runs live webcam, image, or video inference with overlays.
+- Exports per-frame predictions to CSV or JSON.
 
-## Features
+## Scope and Limits
 
-| Capability | Module | Detail |
-|------------|--------|--------|
-| Hand detection | `hand_detector.py` | MediaPipe Hands (21 landmarks) |
-| Feature extraction | `feature_extractor.py` | Wrist-normalised, scale-invariant (42-D) |
-| Classification | `classifier.py` | sklearn MLP (128→64 hidden layers) |
-| Training pipeline | `trainer.py` | End-to-end: download → extract → train → evaluate |
-| Confusion matrix | `evaluator.py` | Per-class precision/recall/F1 + heatmap |
-| Inference | `controller.py` | Detect → extract → classify → smooth |
-| Webcam support | `infer.py` | Real-time recognition with overlays |
+- This is a static alphabet recognizer, not a full sign-language interpreter.
+- It predicts only the 24 static letters listed above.
+- It assumes one visible hand per frame.
+- Performance depends on successful landmark detection; difficult poses, occlusion, motion blur, or poor lighting can still cause skips.
+- The bundled training flow uses a bounded subset of a public dataset so the first run stays practical.
+
+## Dataset Bootstrap
+
+The training pipeline auto-downloads a public ASL image dataset from `EricMartinezIllamola/asl-alphabet` on first run.
+
+- Download is automatic and idempotent.
+- `--force-download` rebuilds the local dataset subset from scratch.
+- The bootstrap keeps a small but useful subset by default:
+  - `30` training images per class
+  - `10` test images per class
+- Files are stored under `Computer Vision/data/sign_language_alphabet_recognizer`.
+
+This project trains only on images where hand landmarks can actually be extracted, so the effective sample count can be smaller than the raw downloaded count.
 
 ## Quick Start
 
 ```bash
-# Install
 pip install -r requirements.txt
 
-# 1. Train the classifier (auto-downloads dataset on first run)
 cd "Sign Language Alphabet Recognizer/Source Code"
+
+# Train and evaluate (downloads dataset on first run)
 python train.py
 
-# 2. Run webcam inference (press 'q' to quit)
+# Force a fresh dataset rebuild
+python train.py --force-download
+
+# Webcam inference
 python infer.py --source 0
 
 # Single image
-python infer.py --source hand_sign.jpg
+python infer.py --source path/to/image.jpg
 
 # Video file
-python infer.py --source recording.mp4
+python infer.py --source path/to/video.mp4
 ```
 
-## Training
+## Training Pipeline
 
-The training pipeline:
-1. Downloads the ASL alphabet dataset (idempotent, auto on first run)
-2. Runs MediaPipe Hands on each image to extract 21 landmarks
-3. Converts landmarks to 42-D normalised feature vectors
-4. Trains a 2-layer MLP classifier (sklearn)
-5. Evaluates on a held-out test split
-6. Saves model + evaluation report
+`train.py` delegates to `trainer.py` and runs this flow end to end:
 
-```bash
-# Full training with defaults
-python train.py
-
-# Limit images per class (faster experiments)
-python train.py --max-images-per-class 200
-
-# Custom model path
-python train.py --model-out model/my_model.pkl
-
-# Re-download dataset
-python train.py --force-download
-```
+1. Ensure the public dataset subset is present locally.
+2. Detect 21 hand landmarks for each image.
+3. Convert landmarks to a scale-normalized feature vector.
+4. Train a scaled MLP classifier.
+5. Evaluate on the prepared test split.
+6. Save the trained model and evaluation artifacts.
 
 ### Training CLI
 
-```
+```text
 python train.py [options]
 
-  --force-download         Re-download dataset
+  --force-download         Re-download and rebuild the dataset subset
   --model-out PATH         Model save path (default: model/sign_lang_clf.pkl)
-  --test-size FLOAT        Test split ratio (default: 0.2)
+  --test-size FLOAT        Fallback split ratio if no prepared test split exists
   --max-iter INT           MLP max iterations (default: 500)
-  --max-images-per-class N Limit images per class (0 = all)
+  --max-images-per-class N Limit images per class during extraction (0 = all prepared)
 ```
 
-## Inference CLI
+## Evaluation Outputs
 
-```
+Training writes the following artifacts into `Source Code/`:
+
+- `model/sign_lang_clf.pkl` - trained classifier bundle
+- `eval_report.json` - accuracy, per-class metrics, confusion matrix, and sample counts
+- `confusion_matrix.png` - confusion-matrix heatmap image
+
+The evaluation report includes:
+
+- overall accuracy
+- per-class precision, recall, F1, and support
+- the full confusion matrix
+- train/test sample counts
+- skipped-image counts during landmark extraction
+
+## Inference
+
+`infer.py` supports webcam, still images, and video files.
+
+### Inference CLI
+
+```text
 python infer.py --source SOURCE [options]
 
 Required:
-  --source            '0' for webcam, or path to video/image
+  --source            0 for webcam, or a path to an image/video file
 
 Optional:
   --model             Path to trained model pickle
   --config            YAML/JSON config path
-  --no-smoothing      Disable majority-vote smoothing
+  --no-smoothing      Disable vote smoothing
   --no-display        Headless mode
   --export-csv        CSV export path
   --export-json       JSON export path
   --save-annotated    Save annotated frames
-  --output-dir        Output directory (default: output/)
-  --force-download    Re-download dataset
+  --output-dir        Output directory for annotated frames
+  --force-download    Rebuild the dataset subset before inference
 ```
 
-## Keyboard Controls
+### Keyboard Controls
 
-| Key | Action |
-|-----|--------|
-| `q` | Quit |
-| `r` | Reset smoothing buffer |
+- `q` quits
+- `r` clears the smoothing buffer
 
-## Evaluation
+## Model Design
 
-After training, the following are generated:
+### Hand Detection
 
-- **`eval_report.json`** — accuracy, per-class precision/recall/F1, confusion matrix
-- **Console output** — test accuracy, class-level metrics
+`hand_detector.py` wraps MediaPipe Hand Landmarker and auto-downloads the `hand_landmarker.task` model on first use.
 
-The evaluator supports:
-- Per-class precision, recall, F1-score, and support
-- Full confusion matrix (2-D array and optional heatmap image)
-- Overall accuracy
+### Feature Extraction
+
+`feature_extractor.py` converts landmarks into a 77-dimensional feature vector:
+
+- `63` normalized landmark coordinates: `(x, y, z)` for all 21 points
+- `5` fingertip-to-wrist distances
+- `5` fingertip-to-joint distances
+- `4` adjacent fingertip spread distances
+
+This keeps the classifier lightweight while giving it more shape information than raw 2D coordinates alone.
+
+### Classifier
+
+`classifier.py` uses a `StandardScaler` followed by an `MLPClassifier` with hidden layers `(128, 64)` and early stopping.
+
+### Smoothing
+
+During inference, the controller applies majority-vote smoothing over the recent predictions to reduce frame-to-frame flicker.
 
 ## Configuration
 
+Default values live in `config.py`. The main knobs are:
+
 ```yaml
-# MediaPipe
 max_num_hands: 1
-model_complexity: 1
 min_detection_confidence: 0.6
+min_presence_confidence: 0.5
 min_tracking_confidence: 0.5
-
-# Feature extraction
-normalise_to_wrist: true
-scale_invariant: true
-
-# Classifier
 model_path: model/sign_lang_clf.pkl
-
-# Smoothing
 enable_smoothing: true
 vote_window: 5
-
-# Display
 show_landmarks: true
 show_prediction: true
 show_confidence: true
 ```
 
-## How It Works
-
-### Feature Extraction
-
-Each hand's 21 landmarks are converted to a 42-dimensional vector:
-
-1. Collect $(x, y)$ for all 21 landmarks
-2. Translate so wrist = $(0, 0)$
-3. Scale so $\max \| \mathbf{p}_i \| = 1$
-4. Flatten to a 1-D vector of length 42
-
-This makes features **translation-invariant** (wrist centring) and
-**scale-invariant** (distance normalisation), so the same sign at
-different positions and distances produces similar features.
-
-### Classification
-
-A 2-layer MLP with architecture $42 \to 128 \to 64 \to 24$ is
-trained on the normalised feature vectors using sklearn's
-`MLPClassifier` with early stopping.
-
-### Smoothing
-
-During inference, a **majority vote** over the last $N$ predictions
-(default $N=5$) stabilises the output label, reducing frame-to-frame
-flicker.
-
 ## Project Structure
 
-```
+```text
 Sign Language Alphabet Recognizer/
 ├── Source Code/
-│   ├── config.py              # SignLangConfig dataclass
-│   ├── hand_detector.py       # MediaPipe Hands wrapper
-│   ├── feature_extractor.py   # Landmark → 42-D feature vector
-│   ├── classifier.py          # sklearn MLP classifier
-│   ├── trainer.py             # Training pipeline
-│   ├── evaluator.py           # Confusion matrix + metrics
-│   ├── controller.py          # Inference pipeline orchestrator
-│   ├── validator.py           # Quality-check validator
-│   ├── visualize.py           # Overlay renderer
-│   ├── export.py              # Per-frame CSV/JSON export
-│   ├── infer.py               # CLI inference entry point
-│   ├── train.py               # CLI training entry point
-│   ├── modern.py              # CVProject registry entry
-│   └── data_bootstrap.py      # Idempotent dataset download
+│   ├── config.py
+│   ├── hand_detector.py
+│   ├── feature_extractor.py
+│   ├── classifier.py
+│   ├── trainer.py
+│   ├── evaluator.py
+│   ├── controller.py
+│   ├── validator.py
+│   ├── visualize.py
+│   ├── export.py
+│   ├── infer.py
+│   ├── train.py
+│   ├── modern.py
+│   └── data_bootstrap.py
 ├── requirements.txt
 └── README.md
 ```
 
-## Supported Alphabet
-
-```
-A B C D E F G H I K L M N O P Q R S T U V W X Y
-```
-
-**Excluded:** J (requires wrist motion), Z (requires drawing motion)
-
 ## Requirements
 
 - Python 3.10+
-- MediaPipe ≥ 0.10.14
-- OpenCV ≥ 4.10
-- NumPy ≥ 1.26
-- scikit-learn ≥ 1.4
+- MediaPipe >= 0.10.14
+- OpenCV >= 4.10
+- NumPy >= 1.26
+- scikit-learn >= 1.4
+- matplotlib >= 3.8

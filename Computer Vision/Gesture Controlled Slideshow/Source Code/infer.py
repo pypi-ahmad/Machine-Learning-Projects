@@ -1,5 +1,4 @@
 """CLI and demo app for Gesture Controlled Slideshow.
-"""CLI and demo app for Gesture Controlled Slideshow.
 
 Supports two display modes:
     - **cam-only**: webcam with gesture overlay (no slides needed)
@@ -12,7 +11,6 @@ Usage::
     python infer.py --source 0 --cam-only              # camera only
     python infer.py --source video.mp4 --cam-only      # from video
     python infer.py --source 0 --export-csv gestures.csv
-"""
 """
 
 from __future__ import annotations
@@ -182,7 +180,8 @@ def _run_stream(
             frame_idx += 1
 
     cap.release()
-    cv2.destroyAllWindows()
+    if cfg.show_display:
+        cv2.destroyAllWindows()
     log.info("Done -- %d frames processed", frame_idx)
 
 

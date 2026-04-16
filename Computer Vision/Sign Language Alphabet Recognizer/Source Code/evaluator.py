@@ -14,16 +14,14 @@ def evaluate_model(
     labels: list[str],
 ) -> dict[str, Any]:
     """Run evaluation and return a structured report.
-    """Run evaluation and return a structured report.
 
     Returns
     -------
     dict with keys:
-        accuracy        – overall accuracy (float)
-        per_class       – list of {label, precision, recall, f1, support}
-        confusion_matrix – 2-D list (true × predicted)
-        labels          – ordered label list
-    """
+        accuracy         - overall accuracy (float)
+        per_class        - list of {label, precision, recall, f1, support}
+        confusion_matrix - 2-D list (true x predicted)
+        labels           - ordered label list
     """
     from sklearn.metrics import (
         accuracy_score,

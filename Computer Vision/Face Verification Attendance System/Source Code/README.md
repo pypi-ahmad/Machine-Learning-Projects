@@ -16,15 +16,16 @@ Enrollment-based face verification system for automated attendance tracking. Use
 | **Detection** | YOLO face detector (primary) / InsightFace RetinaFace (fallback) |
 | **Embeddings** | InsightFace ArcFace (buffalo_l, 512-d) |
 | **Matching** | Cosine similarity with configurable threshold (default: 0.45) |
-| **Dataset** | LFW multi-identity face images (Hugging Face) |
+| **Dataset** | LFW multi-identity face images (automatic local bootstrap) |
 | **Key Metrics** | Verification accuracy, FAR, FRR |
 
 ## Dataset
 
-- **Source:** Hugging Face Datasets — `vishalmor/lfw-dataset`
+- **Source:** `sklearn.datasets.fetch_lfw_people` (LFW). If that path is unavailable, the bootstrap falls back to the repo's shared dataset helper.
 - **Layout:** ImageFolder — `identity_name/img1.jpg, img2.jpg, ...`
-- **Download:** Automatic on first `python train.py` run via `DatasetResolver`
-- **Force re-download:** `python train.py --force-download`
+- **Prepared Path:** `data/face_verification_attendance/processed/identities/`
+- **Download:** Automatic on first `python train.py` or `python data_bootstrap.py` run
+- **Force re-download:** `python train.py --force-download` or `python data_bootstrap.py --force`
 
 ## Project Structure
 
@@ -56,6 +57,9 @@ Face Verification Attendance System/
 ```bash
 # Single image enrollment
 python infer.py --mode enroll --identity "Alice" --source alice.jpg
+
+# Directory of images for one identity
+python infer.py --mode enroll --identity "Alice" --source alice_images/
 
 # Directory of identities (ImageFolder layout)
 python infer.py --mode enroll --source faces/
@@ -108,6 +112,7 @@ proj.export_attendance_csv("attendance.csv")
 
 ```bash
 cd "Face Verification Attendance System/Source Code"
+python data_bootstrap.py                     # prepare LFW locally
 python train.py                              # download + evaluate
 python train.py --force-download             # re-download dataset
 python train.py --max-identities 100         # more identities
@@ -176,6 +181,12 @@ python infer.py --mode verify --source 0 --config face_attendance_config.yaml
 
 ## Dependencies
 
+```bash
+pip install -r requirements.txt
 ```
-pip install insightface onnxruntime-gpu opencv-python numpy
+
+Optional GPU runtime:
+
+```bash
+pip install onnxruntime-gpu
 ```

@@ -1,0 +1,33 @@
+{
+  "project": "Multi-Document Policy Assistant",
+  "corpus": {
+    "documents": 5,
+    "total_chunks": 29,
+    "departments": [
+      "Finance",
+      "Legal",
+      "Human Resources",
+      "IT Security"
+    ],
+    "categories": [
+      "expense_management",
+      "remote_work",
+      "data_privacy",
+      "employee_benefits",
+      "access_control"
+    ]
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "total_queries": 8,
+    "baseline_accuracy": 0.875,
+    "semantic_accuracy": 1.0,
+    "filtered_accuracy": 1.0
+  },
+  "config": {
+    "chunk_size": 500,
+    "chunk_overlap": 100,
+    "top_k": 5,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

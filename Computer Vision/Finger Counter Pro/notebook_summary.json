@@ -3,7 +3,7 @@
   "key": "finger_counter_pro",
   "category": "Detection",
   "type": "detection",
-  "tech": "",
+  "tech": "MediaPipe Hand Landmarker + heuristic finger-state counting",
   "model_family": [
     "Custom"
   ],

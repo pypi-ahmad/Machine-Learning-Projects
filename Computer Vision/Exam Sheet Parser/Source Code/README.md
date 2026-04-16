@@ -1,20 +1,20 @@
 # Exam Sheet Parser
 
-> **Task:** OCR + Layout Parsing &nbsp;|&nbsp; **Key:** `exam_sheet_parser` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** OCR + Layout Parsing &nbsp;|&nbsp; **Key:** `exam_sheet_parser` &nbsp;|&nbsp; **Framework:** PaddleOCR-first with EasyOCR fallback
 
 ---
 
 ## Overview
 
-Document parser that identifies and extracts exam sheet structure from scanned images: headings, numbered questions, MCQ option blocks, marks annotations, and section headers. Uses PaddleOCR for text detection/recognition and rule-based layout analysis for structural classification. Outputs annotated previews and structured JSON/CSV.
+Document parser that identifies and extracts exam sheet structure from scanned images: headings, numbered questions, MCQ option blocks, marks annotations, and section headers. The runtime prefers PaddleOCR when its Paddle backend is available, and falls back to EasyOCR on unsupported environments. Layout analysis stays rule-based and transparent. Outputs annotated previews and structured JSON/CSV.
 
 ## Pipeline
 
 ```
-Exam image → PaddleOCR detect + recognise → layout classify → question grouping → validate → overlay → export
+Exam image → OCR detect + recognise → layout classify → question grouping → validate → overlay → export
 ```
 
-1. **OCR** — PaddleOCR detects and recognises all text blocks with bounding polygons and confidence scores.
+1. **OCR** — PaddleOCR is attempted first; if the local runtime cannot load Paddle, the pipeline switches to EasyOCR automatically and still returns polygon-like OCR blocks with confidence scores.
 2. **Layout Classification** — Each block is classified as `heading`, `section`, `question`, `mcq_option`, `marks`, or `body` using spatial heuristics (font height ratio, position) and regex patterns (question numbers, option letters, marks annotations).
 3. **Question Grouping** — Sequential layout elements are grouped into structured `QuestionBlock` objects with number, text, marks, MCQ options, and body lines.
 4. **Validation** — Quality checks: no text detected, no questions found, low confidence, missing marks.
@@ -26,15 +26,15 @@ Exam image → PaddleOCR detect + recognise → layout classify → question gro
 | Aspect | Details |
 |--------|---------|
 | **Task Type** | OCR + Layout Parsing |
-| **Modern Stack** | PaddleOCR + rule-based layout classification |
-| **Dataset** | FUNSD (Hugging Face) — form/document layout |
+| **Modern Stack** | PaddleOCR or EasyOCR + rule-based layout classification |
+| **Dataset** | Public dataset when available, otherwise synthetic exam sheets generated locally |
 | **Key Metrics** | Question detection rate, OCR accuracy |
 
 ## Dataset
 
-- **Source:** Hugging Face — `nielsr/funsd` (Form Understanding in Noisy Scanned Documents)
-- **License:** See dataset page for licence terms
-- **Download:** Automatic on first `python train.py` run via `DatasetResolver`
+- **Source:** The bootstrap first tries the registered public dataset path for `exam_sheet_parser`. If that helper is unavailable, it generates a small synthetic exam-sheet corpus locally.
+- **Synthetic fallback:** Includes headings, section lines, numbered questions, MCQ options, and marks annotations to exercise the parser end to end.
+- **Download:** Automatic on first `python train.py` or `python infer.py --force-download` run via `ensure_exam_sheet_dataset()`
 - **Force re-download:** `python train.py --force-download`
 - **Bootstrap:** `python data_bootstrap.py` (idempotent, uses `.ready` marker)
 
@@ -44,7 +44,7 @@ Exam image → PaddleOCR detect + recognise → layout classify → question gro
 Exam Sheet Parser/
 └── Source Code/
     ├── config.py              # ExamSheetConfig dataclass — all tunables
-    ├── ocr_engine.py          # PaddleOCR wrapper → OCRBlock with polygon bboxes
+    ├── ocr_engine.py          # PaddleOCR-first OCR wrapper with EasyOCR fallback
     ├── layout_parser.py       # Rule-based structural classification
     ├── parser.py              # ExamSheetPipeline — OCR → layout → questions
     ├── validator.py           # Quality checks + ValidationReport
@@ -52,8 +52,8 @@ Exam Sheet Parser/
     ├── export.py              # JSON / CSV exporter (context manager)
     ├── infer.py               # CLI — image / directory inference
     ├── modern.py              # CVProject subclass — @register("exam_sheet_parser")
-    ├── train.py               # Evaluation entry point (PaddleOCR is pre-trained)
-    ├── data_bootstrap.py      # Idempotent dataset download + preparation
+    ├── train.py               # Evaluation entry point (OCR is pre-trained)
+    ├── data_bootstrap.py      # Idempotent dataset prep + synthetic fallback
     ├── exam_config.yaml       # Sample YAML configuration
     ├── requirements.txt       # Project dependencies
     └── README.md              # This file
@@ -109,7 +109,7 @@ python train.py --max-samples 50   # evaluate more samples
 | `--source` | Image path or directory of exam sheet scans |
 | `--config` | Path to YAML/JSON config file |
 | `--lang` | OCR language (default: `en`) |
-| `--gpu` | Enable GPU for PaddleOCR |
+| `--gpu` | Enable GPU for OCR when the selected backend supports it |
 | `--export-json` | JSON export path |
 | `--export-csv` | CSV export path |
 | `--save-annotated` | Save annotated images |
@@ -166,7 +166,7 @@ All tunables are defined in `ExamSheetConfig` (see [config.py](config.py)). Over
 
 ## Features
 
-- PaddleOCR text detection and recognition with angle classification
+- PaddleOCR-first OCR with automatic EasyOCR fallback on unsupported runtimes
 - Rule-based layout classification (heading, question, MCQ, marks, section, body)
 - Question grouping with marks and MCQ option extraction
 - Colour-coded overlay with structural role labels
@@ -175,10 +175,12 @@ All tunables are defined in `ExamSheetConfig` (see [config.py](config.py)). Over
 - Configurable regex patterns for question/option/marks detection
 - Quality validation with configurable rules
 - Sample YAML configuration file
-- Idempotent dataset bootstrap with `.ready` marker
+- Idempotent dataset bootstrap with `.ready` marker and synthetic fallback
 
 ## Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
+
+If PaddleOCR is installed without a matching Paddle runtime on your platform, the project still runs by falling back to EasyOCR automatically.

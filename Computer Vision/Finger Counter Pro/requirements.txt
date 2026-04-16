@@ -2,3 +2,4 @@
 mediapipe>=0.10.14
 opencv-python>=4.10.0,<5
 numpy>=1.26.0
+huggingface_hub>=0.30.0

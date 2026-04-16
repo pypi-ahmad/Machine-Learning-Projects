@@ -1,0 +1,20 @@
+{
+  "dataset": "RSNA/Kaggle Chest X-ray Pneumonia",
+  "baseline_model": "resnet18",
+  "strong_model": "efficientnet_b0",
+  "baseline_test_accuracy": 0.6075,
+  "baseline_test_precision": 0.0,
+  "baseline_test_recall": 0.0,
+  "baseline_test_f1": 0.0,
+  "baseline_test_auroc": 0.5083287462976069,
+  "strong_test_accuracy": 0.52125,
+  "strong_test_precision": 0.36981132075471695,
+  "strong_test_recall": 0.31210191082802546,
+  "strong_test_f1": 0.3385146804835924,
+  "strong_test_auroc": 0.5002490105108648,
+  "false_negatives_strong": 216,
+  "false_positives_strong": 167,
+  "device": "cuda",
+  "synthetic_mode": true,
+  "monai_available": false
+}

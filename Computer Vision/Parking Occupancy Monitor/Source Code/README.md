@@ -136,3 +136,14 @@ print(list_projects())  # includes "parking_occupancy_monitor"
 
 Uses the **Parking Lot Detection** dataset from Roboflow Universe,
 auto-downloaded via `configs/datasets/parking_occupancy_monitor.yaml`.
+
+If the Roboflow SDK is not installed (`pip install roboflow`), the system
+automatically generates a synthetic demo dataset with overhead parking-lot
+images containing vehicle rectangles in labelled slots. This allows the
+full pipeline to work out of the box for testing and development.
+
+Dataset is stored in `data/parking_occupancy_monitor/` with `raw/` and
+`processed/` subdirectories plus `dataset_info.json`. Use `--force-download`
+to re-download.
+
+Classes: `car`, `truck`, `bus`, `motorcycle`, `bicycle`.

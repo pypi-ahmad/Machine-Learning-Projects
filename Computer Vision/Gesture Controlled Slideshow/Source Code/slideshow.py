@@ -1,9 +1,7 @@
 """Slideshow state machine for Gesture Controlled Slideshow.
-"""Slideshow state machine for Gesture Controlled Slideshow.
 
 Manages an ordered collection of slide images with next/previous
 navigation, pause/resume, and pointer-mode state.
-"""
 """
 
 from __future__ import annotations
@@ -49,7 +47,6 @@ class Slideshow:
 
     def load_slides(self, directory: str | Path | None = None) -> int:
         """Load slide images from a directory.
-        """Load slide images from a directory.
 
         Parameters
         ----------
@@ -61,7 +58,6 @@ class Slideshow:
         -------
         int
             Number of slides loaded.
-        """
         """
         slide_dir = Path(directory) if directory else Path(self.cfg.slide_dir)
 
@@ -129,14 +125,12 @@ class Slideshow:
 
     def execute(self, action: str) -> None:
         """Execute a slideshow action.
-        """Execute a slideshow action.
 
         Parameters
         ----------
         action : str
             One of: "next", "previous", "pause", "resume",
             "pointer", "first", "last".
-        """
         """
         self._last_action = action
 
@@ -175,13 +169,11 @@ class Slideshow:
 
     def current_slide(self) -> np.ndarray:
         """Get the current slide image.
-        """Get the current slide image.
 
         Returns
         -------
         np.ndarray
             BGR image.
-        """
         """
         if not self._slides:
             return self._blank.copy()

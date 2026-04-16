@@ -1,0 +1,25 @@
+{
+  "dataset": "iNaturalist subset / Wildlife dataset",
+  "num_classes": 8,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_accuracy": 0.028846153846153848,
+  "baseline_test_macro_f1": 0.014305232676699703,
+  "baseline_test_macro_recall": 0.12946428571428573,
+  "strong_test_accuracy": 0.027472527472527472,
+  "strong_test_macro_f1": 0.0066844919786096255,
+  "strong_test_macro_recall": 0.125,
+  "class_wise_recall_strong": {
+    "elephant": 0.0,
+    "lion": 0.0,
+    "zebra": 0.0,
+    "giraffe": 0.0,
+    "leopard": 0.0,
+    "buffalo": 0.0,
+    "rhino": 1.0,
+    "hyena": 0.0
+  },
+  "imbalance_ratio_train_max_min": 9.385416666666666,
+  "device": "cuda",
+  "synthetic_mode": true
+}

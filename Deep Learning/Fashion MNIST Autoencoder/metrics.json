@@ -1,0 +1,10 @@
+{
+  "dataset": "FashionMNIST",
+  "dataset_source": "https://github.com/zalandoresearch/fashion-mnist",
+  "device": "cuda",
+  "epochs": 5,
+  "bottleneck_dim": 32,
+  "test_mse_mean": 0.011220330372452736,
+  "test_mse_std": 0.007513230200856924,
+  "best_val_loss": 0.011204861025226878
+}

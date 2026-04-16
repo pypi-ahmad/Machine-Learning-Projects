@@ -1,0 +1,13 @@
+{
+  "dataset": "Kaggle Aerial Cactus Identification",
+  "baseline_model": "resnet18",
+  "strong_model": "efficientnet_b0",
+  "baseline_test_accuracy": 0.6595,
+  "baseline_test_f1": 0.7948177161795722,
+  "strong_test_accuracy": 0.53,
+  "strong_test_f1": 0.6356589147286822,
+  "strong_test_precision": 0.6502775574940524,
+  "strong_test_recall": 0.621683093252464,
+  "device": "cuda",
+  "synthetic_mode": true
+}

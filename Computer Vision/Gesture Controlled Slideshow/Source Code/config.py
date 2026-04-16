@@ -21,11 +21,12 @@ sys.path.insert(0, str(REPO_ROOT))
 class GestureConfig:
     """Top-level project configuration."""
 
-    # ── MediaPipe Hands ────────────────────────────────────
+    # ── MediaPipe Hand Landmarker ──────────────────────────
     max_num_hands: int = 1
     min_detection_confidence: float = 0.6
+    min_presence_confidence: float = 0.5
     min_tracking_confidence: float = 0.5
-    model_complexity: int = 1           # 0 = lite, 1 = full
+    model_complexity: int = 1           # kept for backwards-compatible configs
 
     # ── Gesture recognition ────────────────────────────────
     # Finger-up detection: tip must be above PIP by this pixel

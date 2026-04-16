@@ -1,0 +1,10 @@
+{
+  "dataset": "oxford_flowers102",
+  "classes": 102,
+  "image_size": 224,
+  "baseline": "resnet50",
+  "advanced": "vit_base_patch16_224",
+  "device": "cuda",
+  "pytorch": "2.11.0+cu128",
+  "timm": "1.0.26"
+}

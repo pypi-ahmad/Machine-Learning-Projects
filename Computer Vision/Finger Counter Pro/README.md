@@ -31,12 +31,18 @@ temporal smoothing for stable output.
 
 | Capability | Module | Detail |
 |------------|--------|--------|
-| Hand detection | `hand_detector.py` | MediaPipe Hands, up to 2 hands |
+| Hand detection | `hand_detector.py` | MediaPipe Hand Landmarker, up to 2 hands |
 | Finger counting | `finger_counter.py` | Per-finger tip vs PIP comparison |
 | Thumb detection | `finger_counter.py` | x-axis, handedness-aware |
 | Smoothing | `smoother.py` | EMA + majority vote per hand |
 | Overlay | `visualize.py` | Skeleton, per-finger state, count |
 | Per-frame export | `export.py` | CSV and JSON metrics |
+
+## Sample Dataset
+
+`train.py` auto-downloads a small public sample test set from
+`cj-mills/pexel-hand-gesture-test-images` using an idempotent bootstrap.
+Run `python train.py --force-download` to refresh the sample set.
 
 ## Quick Start
 
@@ -96,6 +102,7 @@ All tunables via YAML/JSON:
 max_num_hands: 2
 model_complexity: 1
 min_detection_confidence: 0.6
+min_presence_confidence: 0.5
 min_tracking_confidence: 0.5
 
 # Finger detection
@@ -119,7 +126,7 @@ Load a config: `python infer.py --source 0 --config my_config.yaml`
 
 ### Hand Landmark Detection
 
-MediaPipe Hands detects 21 3D landmarks per hand.
+MediaPipe Hand Landmarker detects 21 3D landmarks per hand.
 Key landmarks for finger state:
 
 - **Fingertips:** 8 (index), 12 (middle), 16 (ring), 20 (pinky)
@@ -166,7 +173,7 @@ or integers — no MediaPipe dependency, easy to unit-test.
 Finger Counter Pro/
 ├── Source Code/
 │   ├── config.py           # FingerCounterConfig dataclass
-│   ├── hand_detector.py    # MediaPipe Hands (multi-hand)
+│   ├── hand_detector.py    # MediaPipe Hand Landmarker (multi-hand)
 │   ├── finger_counter.py   # Core finger-state logic (testable)
 │   ├── smoother.py         # EMA + majority-vote smoothing
 │   ├── controller.py       # Pipeline orchestrator
@@ -187,3 +194,4 @@ Finger Counter Pro/
 - MediaPipe ≥ 0.10.14
 - OpenCV ≥ 4.10
 - NumPy ≥ 1.26
+- huggingface_hub ≥ 0.30

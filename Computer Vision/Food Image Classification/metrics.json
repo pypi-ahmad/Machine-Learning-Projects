@@ -1,0 +1,14 @@
+{
+  "dataset": "Food-101",
+  "num_classes": 101,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_top1": 0.010396039603960397,
+  "baseline_test_top5": 0.05742574257425743,
+  "baseline_test_macro_f1": 0.005043172263903938,
+  "strong_test_top1": 0.01089108910891089,
+  "strong_test_top5": 0.04950495049504951,
+  "strong_test_macro_f1": 0.00021334160840178043,
+  "device": "cuda",
+  "synthetic_mode": true
+}

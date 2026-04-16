@@ -1,0 +1,24 @@
+Annual Report 2024 — TechCorp Inc.
+
+Financial Highlights:
+Revenue grew 24% year-over-year to $720M, driven by enterprise SaaS expansion
+and the successful launch of our AI analytics platform. Gross margins improved
+to 62.5% from 62.1% as we optimized cloud infrastructure costs. Net income
+reached $175M, a 37% increase, reflecting strong operating leverage.
+
+Strategic Initiatives:
+- Launched AI-powered analytics platform (Q2 2024), contributing $45M in new ARR
+- Expanded to 3 new international markets (Germany, Japan, Brazil)
+- Acquired DataViz Corp for $50M to enhance visualization capabilities
+- Hired 200 engineers, growing R&D team to 800 people
+
+Risk Factors:
+- Enterprise sales cycles lengthening from 45 to 60 days on average
+- Currency headwinds expected to impact 2025 revenue by 2-3%
+- Key competitor launched similar AI features at a lower price point
+- Increasing regulatory scrutiny around AI data processing in EU
+
+Outlook for 2025:
+We expect revenue of $870-$910M (21-26% growth). Operating margins should
+expand to 30-32% as we achieve scale. We plan to invest $120M in R&D,
+focusing on AI capabilities and international expansion.

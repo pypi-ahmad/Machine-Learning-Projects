@@ -1,8 +1,11 @@
-"""Sign Language Alphabet Recognizer -- MediaPipe Hands wrapper."""
+"""Sign Language Alphabet Recognizer -- MediaPipe Hand Landmarker wrapper."""
 
 from __future__ import annotations
 
 import dataclasses
+import shutil
+import urllib.request
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,6 +13,21 @@ if TYPE_CHECKING:
 
 WRIST = 0
 NUM_LANDMARKS = 21
+
+MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+    "hand_landmarker/float16/1/hand_landmarker.task"
+)
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "hand_landmarker.task"
+
+HAND_CONNECTIONS = [
+    (0, 1), (1, 2), (2, 3), (3, 4),
+    (0, 5), (5, 6), (6, 7), (7, 8),
+    (5, 9), (9, 10), (10, 11), (11, 12),
+    (9, 13), (13, 14), (14, 15), (15, 16),
+    (13, 17), (17, 18), (18, 19), (19, 20),
+    (0, 17),
+]
 
 
 @dataclasses.dataclass
@@ -33,89 +51,77 @@ class HandResult:
 
 
 class HandDetector:
-    """Lazy-loading MediaPipe Hands wrapper."""
+    """Lazy-loading MediaPipe Hand Landmarker wrapper."""
 
     def __init__(
         self,
         max_num_hands: int = 1,
         model_complexity: int = 1,
         min_detection_confidence: float = 0.6,
+        min_presence_confidence: float = 0.5,
         min_tracking_confidence: float = 0.5,
         static_image_mode: bool = False,
     ) -> None:
         self._max = max_num_hands
         self._complexity = model_complexity
         self._det_conf = min_detection_confidence
+        self._presence_conf = min_presence_confidence
         self._trk_conf = min_tracking_confidence
         self._static = static_image_mode
-        self._hands = None
-        self._mp_hands = None
-        self._mp_draw = None
+        self._landmarker = None
+        self._mp = None
 
     def load(self) -> None:
         import mediapipe as mp
 
-        self._mp_hands = mp.solutions.hands
-        self._mp_draw = mp.solutions.drawing_utils
-        self._hands = self._mp_hands.Hands(
-            static_image_mode=self._static,
-            max_num_hands=self._max,
-            model_complexity=self._complexity,
-            min_detection_confidence=self._det_conf,
+        from mediapipe.tasks import python as mp_python
+        from mediapipe.tasks.python import vision as mp_vision
+
+        model_path = _ensure_landmarker_model()
+        options = mp_vision.HandLandmarkerOptions(
+            base_options=mp_python.BaseOptions(model_asset_path=str(model_path)),
+            running_mode=mp_vision.RunningMode.IMAGE,
+            num_hands=self._max,
+            min_hand_detection_confidence=self._det_conf,
+            min_hand_presence_confidence=self._presence_conf,
             min_tracking_confidence=self._trk_conf,
         )
+        self._landmarker = mp_vision.HandLandmarker.create_from_options(options)
+        self._mp = mp
 
     @property
     def ready(self) -> bool:
-        return self._hands is not None
+        return self._landmarker is not None
 
     def detect(self, frame: np.ndarray) -> HandResult | None:
         """Return the first detected hand, or *None*."""
+        return self._detect_impl(frame)
+
+    def detect_for_image(self, frame: np.ndarray) -> HandResult | None:
+        """Return the first detected hand in a static image."""
+        return self._detect_impl(frame)
+
+    def _detect_impl(self, frame: np.ndarray) -> HandResult | None:
         import cv2
 
         if not self.ready:
             self.load()
         h, w = frame.shape[:2]
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        res = self._hands.process(rgb)
-
-        if res.multi_hand_landmarks and res.multi_handedness:
-            lm = res.multi_hand_landmarks[0]
-            hd = res.multi_handedness[0]
-            return HandResult(
-                detected=True,
-                landmarks=lm.landmark,
-                handedness=hd.classification[0].label,
-                score=hd.classification[0].score,
-                frame_h=h,
-                frame_w=w,
-            )
-        return None
-
-    def detect_for_image(self, frame: np.ndarray) -> HandResult | None:
-        """Detect in a static image (creates an ad-hoc static-mode Hands)."""
-        import cv2
-        import mediapipe as mp
-
-        hands = mp.solutions.hands.Hands(
-            static_image_mode=True,
-            max_num_hands=1,
-            model_complexity=self._complexity,
-            min_detection_confidence=self._det_conf,
+        mp_image = self._mp.Image(
+            image_format=self._mp.ImageFormat.SRGB,
+            data=rgb,
         )
-        h, w = frame.shape[:2]
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        res = hands.process(rgb)
-        hands.close()
+        res = self._landmarker.detect(mp_image)
 
-        if res.multi_hand_landmarks and res.multi_handedness:
-            lm = res.multi_hand_landmarks[0]
-            hd = res.multi_handedness[0]
+        if res.hand_landmarks and res.handedness:
+            lm = res.hand_landmarks[0]
+            hd = res.handedness[0][0]
             return HandResult(
                 detected=True,
-                landmarks=lm.landmark,
-                handedness=hd.classification[0].label,
-                score=hd.classification[0].score,
+                landmarks=list(lm),
+                handedness=hd.category_name,
+                score=hd.score,
                 frame_h=h,
                 frame_w=w,
             )
@@ -123,24 +129,28 @@ class HandDetector:
 
     def draw_landmarks(self, frame: np.ndarray, hand: HandResult) -> np.ndarray:
         """Draw hand skeleton on *frame* (in-place)."""
-        import mediapipe as mp
+        import cv2
 
         if hand.landmarks is None:
             return frame
-        lm_proto = mp.framework.formats.landmark_pb2.NormalizedLandmarkList()
-        for pt in hand.landmarks:
-            lm = lm_proto.landmark.add()
-            lm.x, lm.y, lm.z = pt.x, pt.y, pt.z
-        self._mp_draw.draw_landmarks(
-            frame,
-            lm_proto,
-            self._mp_hands.HAND_CONNECTIONS,
-            self._mp_draw.DrawingSpec(color=(0, 255, 0), thickness=2, circle_radius=3),
-            self._mp_draw.DrawingSpec(color=(255, 255, 255), thickness=1),
-        )
+        for start_idx, end_idx in HAND_CONNECTIONS:
+            cv2.line(frame, hand.pixel(start_idx), hand.pixel(end_idx), (0, 255, 0), 2)
+        for idx in range(len(hand.landmarks)):
+            cv2.circle(frame, hand.pixel(idx), 3, (255, 255, 255), -1)
         return frame
 
     def close(self) -> None:
-        if self._hands is not None:
-            self._hands.close()
-            self._hands = None
+        if self._landmarker is not None:
+            self._landmarker.close()
+            self._landmarker = None
+
+
+def _ensure_landmarker_model() -> Path:
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = MODEL_PATH.with_suffix(".download")
+    with urllib.request.urlopen(MODEL_URL) as response, open(tmp_path, "wb") as out_file:
+        shutil.copyfileobj(response, out_file)
+    tmp_path.replace(MODEL_PATH)
+    return MODEL_PATH

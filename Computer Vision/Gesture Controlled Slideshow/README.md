@@ -1,7 +1,7 @@
 # Gesture Controlled Slideshow
 
 Control a slide presentation with **hand gestures** using MediaPipe
-Hands.  Recognises five gestures from finger state and maps each to
+Hand Landmarker. Recognises five gestures from finger state and maps each to
 a slideshow action — no special hardware required, just a webcam.
 
 ---
@@ -28,7 +28,7 @@ a slideshow action — no special hardware required, just a webcam.
 
 | Gesture | Fingers | Default Action |
 |---------|---------|----------------|
-| OPEN_PALM | All 5 extended | Next slide |
+| OPEN_PALM | 4 or 5 extended | Next slide |
 | FIST | 0 fingers extended | Previous slide |
 | PEACE | Index + middle | Pause / toggle |
 | POINTING | Index only | Pointer mode |
@@ -57,6 +57,9 @@ python infer.py --source gestures.mp4
 
 # Single image
 python infer.py --source photo.jpg
+
+# Prepare and inspect the bundled public smoke-test dataset
+python train.py --force-download --max-frames 10
 ```
 
 ## CLI Reference
@@ -100,6 +103,7 @@ All tunables are configurable via YAML/JSON:
 max_num_hands: 1
 model_complexity: 1
 min_detection_confidence: 0.6
+min_presence_confidence: 0.5
 min_tracking_confidence: 0.5
 
 # Debouncing
@@ -128,11 +132,21 @@ key_pointer: t
 
 Load a config: `python infer.py --source 0 --config my_config.yaml`
 
+## Sample Dataset
+
+The project auto-downloads a **small curated public image subset** from
+`cj-mills/pexel-hand-gesture-test-images` for smoke testing and demo
+validation. The bootstrap is idempotent and supports `--force-download`
+through `train.py`.
+
+The bundled sample set is intentionally lightweight, so it is useful for
+pipeline verification rather than benchmark-quality evaluation.
+
 ## How It Works
 
 ### Hand Landmark Detection
 
-MediaPipe Hands produces 21 3D landmarks per detected hand.
+MediaPipe Hand Landmarker produces 21 3D landmarks per detected hand.
 Key landmarks used for finger-state detection:
 
 - **Fingertips:** landmarks 8, 12, 16, 20
@@ -160,7 +174,7 @@ The gesture is determined by the pattern of extended fingers:
 
 | Finger Count | Pattern | Gesture |
 |:---:|---------|---------|
-| 5 | All extended | OPEN_PALM |
+| 4-5 | Index, middle, ring, pinky extended | OPEN_PALM |
 | 0 | All curled | FIST |
 | 2 | Index + middle | PEACE |
 | 1 | Index only | POINTING |
@@ -188,7 +202,7 @@ Two mechanisms prevent spurious triggers:
 Gesture Controlled Slideshow/
 ├── Source Code/
 │   ├── config.py              # GestureConfig dataclass
-│   ├── hand_detector.py       # MediaPipe Hands wrapper
+│   ├── hand_detector.py       # MediaPipe Hand Landmarker wrapper
 │   ├── gesture_recognizer.py  # Finger state → gesture classifier
 │   ├── debouncer.py           # Temporal debouncing + action mapping
 │   ├── slideshow.py           # Slideshow state machine
@@ -210,3 +224,4 @@ Gesture Controlled Slideshow/
 - MediaPipe ≥ 0.10.14
 - OpenCV ≥ 4.10
 - NumPy ≥ 1.26
+- huggingface_hub ≥ 0.30

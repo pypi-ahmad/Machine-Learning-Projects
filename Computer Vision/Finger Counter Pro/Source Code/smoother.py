@@ -9,12 +9,10 @@ from finger_counter import FrameCount
 
 class CountSmoother:
     """Smooth per-hand and total finger counts over time.
-    """Smooth per-hand and total finger counts over time.
 
     Two layers:
     1. **EMA** (exponential moving average) per hand slot (left / right).
     2. **Majority vote** over a sliding window on the rounded EMA value.
-    """
     """
 
     def __init__(
@@ -34,13 +32,11 @@ class CountSmoother:
 
     def update(self, frame: FrameCount) -> tuple[dict[str, int], int]:
         """Consume a :class:`FrameCount` and return smoothed results.
-        """Consume a :class:`FrameCount` and return smoothed results.
 
         Returns
         -------
-        per_hand : dict mapping ``"Left"``/``"Right"`` → smoothed count
+        per_hand : dict mapping ``"Left"``/``"Right"`` -> smoothed count
         total    : smoothed total across all hands
-        """
         """
         per_hand: dict[str, int] = {}
 

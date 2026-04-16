@@ -3,6 +3,18 @@
 ## Testing rule
 - No pytest testing will be used from now. Validate by running the target file directly (e.g., `python pipeline.py`).
 
+## Strict rule
+- Do not use globbing, loops, generators, or repo-wide scripts.
+
+## Coding behavior principles
+
+These principles reduce common LLM coding mistakes. They bias toward caution over speed — for trivial tasks, use judgment.
+
+- **Think before coding**: State assumptions explicitly. If multiple interpretations exist, present them — don't pick silently. If a simpler approach exists, say so. Push back when warranted. If something is unclear, stop and ask.
+- **Simplicity first**: Write the minimum code that solves the problem. No speculative features, no abstractions for single-use code, no "flexibility" that wasn't requested, no error handling for impossible scenarios. If you write 200 lines and it could be 50, rewrite it.
+- **Surgical changes**: Touch only what the task requires. Don't improve adjacent code, comments, or formatting. Match existing style, even if you'd do it differently. Remove only orphans your own changes created — not pre-existing dead code. Every changed line should trace directly to the user's request.
+- **Goal-driven execution**: Transform tasks into verifiable goals with clear success criteria. For multi-step tasks, state a brief plan with verification checks before starting. Loop until verified.
+
 ## Architecture
 
 This is a **315-project ML monorepo** organized into 23 problem families (Classification, Regression, NLP, Computer Vision, etc.). Each family folder contains self-contained project subdirectories with a `pipeline.py` entrypoint.
@@ -218,6 +230,10 @@ Beyond the 315 generated pipelines, these folders contain independent projects w
 - Do not hallucinate datasets, file paths, columns, APIs, outputs, metrics, or features.
 - If something is unclear, inspect first and choose the safest grounded implementation.
 - Reuse correct existing work instead of recreating it unnecessarily.
+- State assumptions explicitly before implementing. If uncertain, ask.
+- If multiple valid interpretations exist, present them — do not pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- Every changed line should trace directly to the user's request.
 
 ## Scope discipline
 - Use notebook rules only for `.ipynb` projects.
@@ -231,6 +247,14 @@ Beyond the 315 generated pipelines, these folders contain independent projects w
 - If it exists but is incomplete, incorrect, not as instructed, or has errors, fix it.
 - After creating or fixing anything, run it and validate it.
 - If errors remain, continue fixing and rerunning until there are zero errors.
+- Transform vague tasks into verifiable goals before implementing.
+- For multi-step tasks, state a brief plan with verification checks before starting:
+  ```
+  1. [Step] → verify: [check]
+  2. [Step] → verify: [check]
+  3. [Step] → verify: [check]
+  ```
+- Strong success criteria let you loop independently. Weak criteria require clarification — ask first.
 
 ---
 
@@ -250,13 +274,130 @@ Apply these rules only when working on notebook-based projects.
 - Do not touch unrelated notebooks or projects.
 - Keep the notebook runnable top-to-bottom.
 - Do not hallucinate datasets, columns, targets, or metrics.
-- If a dataset is public, download it inside the notebook when practical.
-- If a dataset cannot be auto-downloaded, explain the fallback path clearly in markdown.
+- Every notebook must mention the dataset source link in markdown.
+- The dataset must be downloaded inside the notebook itself during notebook execution; do not rely on preexisting local copies.
+- The download step must actually run as part of the notebook workflow; do not replace the dataset with synthetic, mock, toy, or fallback data just to keep the notebook runnable.
+- If a dataset cannot be downloaded programmatically inside the notebook, stop and ask the user instead of inventing a fallback path or substitute dataset.
+- All notebooks must run real end-to-end on the real downloaded data with zero errors.
 - Do not break anything already in the repo.
 
 ## Notebook purpose
 The notebook must teach, not just run.
 It should feel like a guided lab or learning project.
+
+## Deep Learning Notebook Policy (April 2026)
+
+Apply this policy for deep learning projects. It is notebook-specific and learning-focused.
+
+### Hard rules
+- Output must be `.ipynb` only.
+- Do not create any `.py` files.
+- Do not move logic into helper scripts.
+- Do not add Streamlit, Gradio, Flask, or FastAPI.
+- Do not build an app or dashboard.
+- Keep everything notebook-first and learning-focused.
+- Work only on this notebook and strictly necessary local data/artifact folders.
+- Keep the notebook runnable top-to-bottom.
+- Do not hallucinate dataset columns, labels, metrics, APIs, outputs, or files.
+- If anything is unclear, inspect first and make the safest grounded choice.
+
+### Tech stacks (April 2026)
+- PyTorch as main DL framework; Lightning only when it clearly improves training-loop clarity.
+- `timm` for modern vision backbones and pretrained CV models.
+- `albumentations` for image augmentation.
+- Hugging Face Transformers + Datasets for NLP and multimodal text workflows.
+- `MONAI` for medical imaging and medical segmentation/classification.
+- `torchaudio` for audio pipelines.
+- `NeuralForecast` for deep-learning time-series projects.
+
+### Dataset rules
+- Mention the dataset source link explicitly in markdown before the download step.
+- Download the dataset inside the notebook itself as part of the executed workflow.
+- Prefer official public datasets or Kaggle/Hugging Face datasets.
+- Add a setup cell for dataset download/auth when needed.
+- The download must actually happen when the notebook runs; synthetic, mock, toy, or silent fallback datasets are forbidden.
+- If programmatic in-notebook download is not possible, stop and ask the user instead of fabricating a workaround dataset.
+- Explain source, license/use note, labels, splits, and known limitations in markdown.
+- Add validation checks for missing files, bad labels, empty records, class imbalance, corrupted images/audio/text, and leakage risks.
+- Make loading idempotent and easy to rerun.
+- Validate the notebook on the real downloaded dataset end-to-end with zero errors.
+
+### Required deep learning notebook structure (27 sections)
+1. Title
+2. Project overview
+3. Learning objectives
+4. Problem statement
+5. Why this project matters
+6. Dataset overview
+7. Dataset source and license notes
+8. Environment setup
+9. Imports
+10. Configuration / constants
+11. Dataset download and loading
+12. Data validation checks
+13. Exploratory data analysis
+14. Train/validation/test split strategy
+15. Preprocessing and augmentation strategy
+16. Baseline approach
+17. Main model/workflow
+18. Training loop or fine-tuning pipeline
+19. Inference examples
+20. Evaluation
+21. Error analysis
+22. Limitations
+23. How to improve this project
+24. Production considerations
+25. Common mistakes
+26. Mini challenge / exercises
+27. Final summary / key takeaways
+
+### Deep learning engineering rules
+- Prefer PyTorch-first.
+- Use Lightning only if it simplifies the notebook without hiding learning value.
+- For CV, prefer `timm` + `albumentations` unless the task clearly needs another library.
+- For NLP, prefer Hugging Face Transformers + Datasets.
+- For medical imaging, prefer MONAI.
+- For audio, prefer torchaudio.
+- For deep time series, prefer NeuralForecast.
+- Keep model names configurable in one setup cell.
+- Use GPU/CUDA automatically if available.
+- Set seeds and explain reproducibility limits.
+- Add checkpoint saving only if genuinely useful for learning.
+- Keep code clean, explicit, and easy to study.
+
+### Evaluation rules
+- Choose task-appropriate metrics only.
+- Explain what each metric means.
+- Compare baseline vs main model honestly.
+- Include qualitative examples when appropriate.
+- Do not fake benchmark scores.
+- Do not overclaim production-readiness.
+
+### Task-specific evaluation
+- Classification: accuracy, precision, recall, F1, confusion matrix, ROC-AUC when relevant.
+- Segmentation: IoU / Dice.
+- Detection: mAP if supported; otherwise honest proxy metrics + qualitative review.
+- NLP generation: qualitative comparison, example outputs, failure analysis.
+- Audio: accuracy/F1 or WER/CER depending on task.
+- Time series: MAE, RMSE, MAPE/sMAPE with proper temporal splits.
+- Recommenders: ranking metrics if available; otherwise honest offline proxy.
+- RL: reward curves, stability, sample efficiency, failure cases.
+
+### Mandatory educational sections
+- Common mistakes.
+- Mini challenge.
+- How to improve this project further.
+- Production considerations.
+- Key takeaways.
+
+### Before finalizing
+- Verify `.ipynb` only.
+- Verify dataset handling is inside the notebook.
+- Verify all required notebook sections exist.
+- Verify evaluation matches the task type.
+- Verify no hallucinated claims.
+- Verify notebook runs logically top-to-bottom.
+- Then implement the notebook directly.
 
 ## Required notebook structure (31 sections)
 1. Title
@@ -300,10 +441,13 @@ It should feel like a guided lab or learning project.
 - Use a professional but beginner-friendly tone.
 
 ## Dataset rules (notebooks)
-- Handle dataset download or loading inside the notebook.
+- Mention the dataset source link explicitly in markdown.
+- Handle dataset download inside the notebook itself as part of the executed notebook.
 - Prefer public download inside the notebook when practical.
 - If Kaggle is used, include credential setup and a safe fallback explanation.
 - Never assume the dataset is already present locally.
+- The download step must actually execute; do not swap in synthetic, mock, toy, sampled substitute, or placeholder data to simulate success.
+- If the notebook cannot perform a real dataset download, stop and ask the user instead of inventing a fallback dataset path.
 - Make loading idempotent.
 - Validate:
   - missing files
@@ -312,6 +456,7 @@ It should feel like a guided lab or learning project.
   - duplicates
   - target leakage risks
 - Explain dataset source, target, key columns, and limitations in markdown.
+- Run the notebook real end-to-end on the downloaded dataset with zero errors.
 
 ## Kaggle download rules (notebooks)
 - Use Kaggle API or `kagglehub` inside the notebook when practical.
@@ -466,6 +611,10 @@ Before finishing:
 - verify the output is `.ipynb` only
 - verify no `.py` files were created
 - verify the notebook runs logically top-to-bottom
+- verify the dataset source link is clearly mentioned in markdown
+- verify the dataset is downloaded inside the notebook during execution
+- verify the download actually happened and real data, not synthetic fallback data, was used
+- verify the notebook runs real end-to-end on the downloaded dataset with zero errors
 - verify all required sections exist
 - verify evaluation matches the task
 - verify explanations are strong and grounded
@@ -728,7 +877,11 @@ Then:
 - no hidden assumptions
 - no silent failures
 - no unrelated edits
+- no features beyond what was asked — nothing speculative
+- no abstractions for single-use code
+- no error handling for impossible scenarios
 - keep implementations reproducible where practical
+- Remove imports, variables, or functions that your changes made unused — but do not remove pre-existing dead code unless asked.
 - For multi-file tasks, file-by-file direct implementation is mandatory; generator scripts and bulk file automation are forbidden unless explicitly requested by the user.
 
 ## Final completion rule
@@ -755,6 +908,8 @@ A task is complete only when:
 - Avoid unnecessary abstractions.
 - Remove duplication only when it is clearly safe.
 - Keep naming, structure, and flow consistent with the surrounding project.
+- Match existing style, even if you would do it differently.
+- If you notice unrelated issues, mention them — don't silently fix them.
 
 ---
 

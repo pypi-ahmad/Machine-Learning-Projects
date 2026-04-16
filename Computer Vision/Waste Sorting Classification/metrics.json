@@ -1,0 +1,75 @@
+{
+  "dataset": "TrashNet",
+  "dataset_source": "https://github.com/garythung/trashnet",
+  "model_name": "resnet18",
+  "device": "cuda",
+  "num_epochs": 3,
+  "class_names": [
+    "cardboard",
+    "glass",
+    "metal",
+    "paper",
+    "plastic",
+    "trash"
+  ],
+  "train_size": 1768,
+  "val_size": 379,
+  "test_size": 380,
+  "baseline_accuracy": 0.23421052631578948,
+  "baseline_macro_f1": 0.06325515280739162,
+  "test_accuracy": 0.8131578947368421,
+  "test_balanced_accuracy": 0.7686223441480995,
+  "test_macro_f1": 0.7869497831731,
+  "classification_report": {
+    "cardboard": {
+      "precision": 0.9649122807017544,
+      "recall": 0.9166666666666666,
+      "f1-score": 0.9401709401709402,
+      "support": 60.0
+    },
+    "glass": {
+      "precision": 0.8125,
+      "recall": 0.6842105263157895,
+      "f1-score": 0.7428571428571429,
+      "support": 76.0
+    },
+    "metal": {
+      "precision": 0.726027397260274,
+      "recall": 0.8548387096774194,
+      "f1-score": 0.7851851851851852,
+      "support": 62.0
+    },
+    "paper": {
+      "precision": 0.8037383177570093,
+      "recall": 0.9662921348314607,
+      "f1-score": 0.8775510204081632,
+      "support": 89.0
+    },
+    "plastic": {
+      "precision": 0.7714285714285715,
+      "recall": 0.7397260273972602,
+      "f1-score": 0.7552447552447552,
+      "support": 73.0
+    },
+    "trash": {
+      "precision": 1.0,
+      "recall": 0.45,
+      "f1-score": 0.6206896551724138,
+      "support": 20.0
+    },
+    "accuracy": 0.8131578947368421,
+    "macro avg": {
+      "precision": 0.8464344278579348,
+      "recall": 0.7686223441480995,
+      "f1-score": 0.7869497831731,
+      "support": 380.0
+    },
+    "weighted avg": {
+      "precision": 0.8223827143865836,
+      "recall": 0.8131578947368421,
+      "f1-score": 0.8084146889513755,
+      "support": 380.0
+    }
+  },
+  "dataset_noise_note": "TrashNet contains ambiguity from mixed materials, contamination, background clutter, and visually overlapping classes."
+}

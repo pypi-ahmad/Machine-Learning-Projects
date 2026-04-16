@@ -3,7 +3,7 @@
   "key": "gesture_controlled_slideshow",
   "category": "Detection",
   "type": "detection",
-  "tech": "MediaPipe Hands + finger-state gesture classifier",
+  "tech": "MediaPipe Hand Landmarker + finger-state gesture classifier",
   "model_family": [
     "MediaPipe"
   ],

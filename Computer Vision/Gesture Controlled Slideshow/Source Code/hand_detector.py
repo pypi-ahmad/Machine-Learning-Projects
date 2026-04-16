@@ -1,6 +1,6 @@
 """MediaPipe Hand Landmarker wrapper for Gesture Controlled Slideshow.
 
-Detects hand landmarks (21 per hand) via MediaPipe Hands.
+Detects hand landmarks (21 per hand) via MediaPipe Hand Landmarker.
 
 Landmark indices (per hand):
     0  WRIST
@@ -17,7 +17,9 @@ Landmark indices (per hand):
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
+import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -28,6 +30,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from config import GestureConfig
 
 log = logging.getLogger("gesture.hand_detector")
+MODEL_URL = (
+    "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+    "hand_landmarker/float16/1/hand_landmarker.task"
+)
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "hand_landmarker.task"
+
+HAND_CONNECTIONS = [
+    (0, 1), (1, 2), (2, 3), (3, 4),
+    (0, 5), (5, 6), (6, 7), (7, 8),
+    (5, 9), (9, 10), (10, 11), (11, 12),
+    (9, 13), (13, 14), (14, 15), (15, 16),
+    (13, 17), (17, 18), (18, 19), (19, 20),
+    (0, 17),
+]
 
 # Finger tip and PIP joint indices for finger-up detection
 FINGER_TIPS = [8, 12, 16, 20]      # index, middle, ring, pinky
@@ -59,29 +75,35 @@ class HandResult:
 
 
 class HandDetector:
-    """MediaPipe Hands detector."""
+    """MediaPipe Hand Landmarker wrapper."""
 
     def __init__(self, cfg: GestureConfig) -> None:
         self.cfg = cfg
-        self._hands = None
+        self._landmarker = None
+        self._mp = None
         self._ready = False
 
     def load(self) -> bool:
         try:
             import mediapipe as mp
+            from mediapipe.tasks import python as mp_python
+            from mediapipe.tasks.python import vision as mp_vision
 
-            self._hands = mp.solutions.hands.Hands(
-                static_image_mode=False,
-                max_num_hands=self.cfg.max_num_hands,
-                model_complexity=self.cfg.model_complexity,
-                min_detection_confidence=self.cfg.min_detection_confidence,
+            model_path = _ensure_landmarker_model()
+            options = mp_vision.HandLandmarkerOptions(
+                base_options=mp_python.BaseOptions(
+                    model_asset_path=str(model_path),
+                ),
+                running_mode=mp_vision.RunningMode.IMAGE,
+                num_hands=self.cfg.max_num_hands,
+                min_hand_detection_confidence=self.cfg.min_detection_confidence,
+                min_hand_presence_confidence=self.cfg.min_presence_confidence,
                 min_tracking_confidence=self.cfg.min_tracking_confidence,
             )
-            self._mp_hands = mp.solutions.hands
-            self._mp_draw = mp.solutions.drawing_utils
-            self._mp_styles = mp.solutions.drawing_styles
+            self._landmarker = mp_vision.HandLandmarker.create_from_options(options)
+            self._mp = mp
             self._ready = True
-            log.info("MediaPipe Hands loaded (21 landmarks)")
+            log.info("MediaPipe Hand Landmarker loaded: %s", model_path.name)
             return True
         except ImportError:
             log.error("MediaPipe not installed. pip install mediapipe")
@@ -93,18 +115,6 @@ class HandDetector:
     def ready(self) -> bool:
         return self._ready
 
-    @property
-    def mp_hands(self):
-        return self._mp_hands
-
-    @property
-    def mp_draw(self):
-        return self._mp_draw
-
-    @property
-    def mp_styles(self):
-        return self._mp_styles
-
     def detect(self, frame: np.ndarray) -> HandResult:
         """Detect hand landmarks in a BGR frame.
 
@@ -115,24 +125,28 @@ class HandDetector:
 
         h, w = frame.shape[:2]
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self._hands.process(rgb)
+        mp_image = self._mp.Image(
+            image_format=self._mp.ImageFormat.SRGB,
+            data=rgb,
+        )
+        results = self._landmarker.detect(mp_image)
 
-        if not results.multi_hand_landmarks:
+        if not results.hand_landmarks:
             return HandResult(frame_h=h, frame_w=w)
 
-        hand_lms = results.multi_hand_landmarks[0]
+        hand_lms = results.hand_landmarks[0]
 
         # Handedness
         handedness = ""
         score = 0.0
-        if results.multi_handedness:
-            cls = results.multi_handedness[0].classification[0]
-            handedness = cls.label
+        if results.handedness:
+            cls = results.handedness[0][0]
+            handedness = cls.category_name
             score = cls.score
 
         return HandResult(
             detected=True,
-            landmarks=hand_lms.landmark,
+            landmarks=list(hand_lms),
             handedness=handedness,
             score=score,
             frame_h=h,
@@ -143,17 +157,29 @@ class HandDetector:
         """Draw hand landmarks on frame (in-place)."""
         if not hand.detected or not self._ready:
             return
-        import mediapipe as mp
+        for start_idx, end_idx in HAND_CONNECTIONS:
+            start = hand.pixel_coords(start_idx)
+            end = hand.pixel_coords(end_idx)
+            cv2.line(
+                frame,
+                (int(start[0]), int(start[1])),
+                (int(end[0]), int(end[1])),
+                (0, 255, 255),
+                2,
+            )
 
-        hand_lms = mp.solutions.hands.HandLandmark
-        # Reconstruct NormalizedLandmarkList for draw utility
-        landmark_list = type(
-            "Obj", (), {"landmark": hand.landmarks},
-        )()
-        self._mp_draw.draw_landmarks(
-            frame,
-            landmark_list,
-            self._mp_hands.HAND_CONNECTIONS,
-            self._mp_styles.get_default_hand_landmarks_style(),
-            self._mp_styles.get_default_hand_connections_style(),
-        )
+        for idx in range(len(hand.landmarks)):
+            px, py = hand.pixel_coords(idx)
+            cv2.circle(frame, (int(px), int(py)), 3, (255, 100, 0), -1)
+
+
+def _ensure_landmarker_model() -> Path:
+    if MODEL_PATH.exists():
+        return MODEL_PATH
+
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = MODEL_PATH.with_suffix(".download")
+    with urllib.request.urlopen(MODEL_URL) as response, open(tmp_path, "wb") as out_file:
+        shutil.copyfileobj(response, out_file)
+    tmp_path.replace(MODEL_PATH)
+    return MODEL_PATH

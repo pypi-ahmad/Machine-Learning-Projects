@@ -1,0 +1,71 @@
+Fixed project 41
+Project 48 - code cell 2 (nb cell 5): unterminated string literal (detected at line 6) (<cell_2>, line 6)
+    0: 'from crewai import Agent\n'
+    1: '\n'
+    2: 'complaint_analyst = Agent(\n'
+    3: "    role='Complaint Analyst',\n"
+    4: "    goal='Analyze the customer complaint',\n"
+    5: "    backstory='Analyze the customer complaint. Classify severity, identify root cause, and determine if it's a systemic issue.',\n"
+    6: '    verbose=True,\n'
+    7: '    allow_delegation=False,\n'
+    8: '    llm=llm,\n'
+    9: ')\n'
+   10: '\n'
+   11: 'churn_risk_assessor = Agent(\n'
+   12: "    role='Churn Risk Assessor',\n"
+   13: "    goal='Evaluate churn risk based on the complaint, account history, and revenue importance',\n"
+   14: "    backstory='Evaluate churn risk based on the complaint, account history, and revenue importance. Score 1-10.',\n"
+   15: '    verbose=True,\n'
+   16: '    allow_delegation=False,\n'
+   17: '    llm=llm,\n'
+   18: ')\n'
+   19: '\n'
+   20: 'response_writer = Agent(\n'
+   21: "    role='Response Writer',\n"
+   22: "    goal='Draft a personalized response to the customer',\n"
+   23: "    backstory='Draft a personalized response to the customer. Acknowledge the issue, provide timeline, offer compensation if appropriate.',\n"
+   24: '    verbose=True,\n'
+   25: '    allow_delegation=False,\n'
+   26: '    llm=llm,\n'
+   27: ')\n'
+   28: '\n'
+   29: 'action_planner = Agent(\n'
+   30: "    role='Action Planner',\n"
+   31: "    goal='Create an internal action plan to resolve the issue and prevent recurrence',\n"
+   32: "    backstory='Create an internal action plan to resolve the issue and prevent recurrence. Include owners and deadlines.',\n"
+   33: '    verbose=True,\n'
+   34: '    allow_delegation=False,\n'
+   35: '    llm=llm,\n'
+   36: ')\n'
+   37: '\n'
+   38: 'print("Agents defined: Complaint Analyst, Churn Risk Assessor, Response Writer, Action Planner")'
+Project 48 - code cell 3 (nb cell 7): unterminated string literal (detected at line 4) (<cell_3>, line 4)
+    0: 'from crewai import Task\n'
+    1: '\n'
+    2: 'complaint_analysis_task = Task(\n'
+    3: "    description='Analyze the customer complaint. Classify severity, identify root cause, and determine if it's a systemic issue.',\n"
+    4: "    expected_output='Detailed complaint analysis',\n"
+    5: '    agent=complaint_analyst,\n'
+    6: ')\n'
+    7: '\n'
+    8: 'churn_assessment_task = Task(\n'
+    9: "    description='Evaluate churn risk based on the complaint, account history, and revenue importance. Score 1-10.',\n"
+   10: "    expected_output='Detailed churn assessment',\n"
+   11: '    agent=churn_risk_assessor,\n'
+   12: ')\n'
+   13: '\n'
+   14: 'customer_response_task = Task(\n'
+   15: "    description='Draft a personalized response to the customer. Acknowledge the issue, provide timeline, offer compensation if appropriate.',\n"
+   16: "    expected_output='Detailed customer response',\n"
+   17: '    agent=response_writer,\n'
+   18: ')\n'
+   19: '\n'
+   20: 'action_plan_task = Task(\n'
+   21: "    description='Create an internal action plan to resolve the issue and prevent recurrence. Include owners and deadlines.',\n"
+   22: "    expected_output='Detailed action plan',\n"
+   23: '    agent=action_planner,\n'
+   24: ')\n'
+   25: '\n'
+   26: 'tasks = [complaint_analysis_task, churn_assessment_task, customer_response_task, action_plan_task]\n'
+   27: 'print(f"{len(tasks)} tasks defined")'
+Inspected project 48

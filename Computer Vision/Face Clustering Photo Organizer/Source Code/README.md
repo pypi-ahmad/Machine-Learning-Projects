@@ -16,15 +16,16 @@ Unsupervised face clustering pipeline that scans a collection of photos, detects
 | **Detection** | YOLO face detector (primary) / InsightFace RetinaFace (fallback) |
 | **Embeddings** | InsightFace ArcFace (buffalo_l, 512-d) |
 | **Clustering** | Agglomerative (default) or DBSCAN on cosine distance |
-| **Dataset** | LFW multi-identity face images (Hugging Face) |
+| **Dataset** | LFW multi-identity face images (automatic local bootstrap) |
 | **Key Metrics** | Cluster purity, cluster count |
 
 ## Dataset
 
-- **Source:** Hugging Face — `vishalmor/lfw-dataset`
+- **Source:** `sklearn.datasets.fetch_lfw_people` (LFW). If that path is unavailable, the bootstrap falls back to the repo's shared dataset helper.
 - **Layout:** ImageFolder — `identity_name/img1.jpg, img2.jpg, ...`
-- **Download:** Automatic on first `python train.py` run via `DatasetResolver`
-- **Force re-download:** `python train.py --force-download`
+- **Prepared Path:** `data/face_clustering_photo_organizer/processed/identities/`
+- **Download:** Automatic on first `python train.py` or `python data_bootstrap.py` run
+- **Force re-download:** `python train.py --force-download` or `python data_bootstrap.py --force`
 
 ## Project Structure
 
@@ -92,6 +93,7 @@ collage = proj.visualize("path/to/photos/", result)
 
 ```bash
 cd "Face Clustering Photo Organizer/Source Code"
+python data_bootstrap.py                     # prepare LFW locally
 python train.py                              # download + evaluate
 python train.py --force-download             # re-download dataset
 python train.py --max-identities 100         # more identities
@@ -175,6 +177,12 @@ python infer.py --source photos/ --config face_cluster_config.yaml
 
 ## Dependencies
 
+```bash
+pip install -r requirements.txt
 ```
-pip install insightface onnxruntime-gpu scikit-learn opencv-python numpy
+
+Optional GPU runtime:
+
+```bash
+pip install onnxruntime-gpu
 ```

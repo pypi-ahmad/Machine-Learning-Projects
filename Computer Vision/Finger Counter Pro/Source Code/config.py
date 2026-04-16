@@ -16,6 +16,7 @@ class FingerCounterConfig:
     max_num_hands: int = 2
     model_complexity: int = 1
     min_detection_confidence: float = 0.6
+    min_presence_confidence: float = 0.5
     min_tracking_confidence: float = 0.5
 
     # --- Finger detection ---

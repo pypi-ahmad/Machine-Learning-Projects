@@ -35,6 +35,7 @@ class CountingController:
             max_num_hands=self.cfg.max_num_hands,
             model_complexity=self.cfg.model_complexity,
             min_detection_confidence=self.cfg.min_detection_confidence,
+            min_presence_confidence=self.cfg.min_presence_confidence,
             min_tracking_confidence=self.cfg.min_tracking_confidence,
         )
         self.counter = FingerCounter(self.cfg.finger_up_margin)

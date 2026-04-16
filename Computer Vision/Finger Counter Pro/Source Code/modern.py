@@ -21,7 +21,7 @@ if str(_src) not in sys.path:
 
 @register("finger_counter_pro")
 class FingerCounterModern(CVProject):
-    """Robust multi-hand finger counting with MediaPipe Hands."""
+    """Robust multi-hand finger counting with MediaPipe Hand Landmarker."""
 
     project_type = "detection"
 

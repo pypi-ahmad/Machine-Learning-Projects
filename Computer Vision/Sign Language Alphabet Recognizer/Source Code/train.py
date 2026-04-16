@@ -14,7 +14,12 @@ def main() -> None:
     p = argparse.ArgumentParser(description="Train the sign-language classifier")
     p.add_argument("--force-download", action="store_true", help="Re-download dataset")
     p.add_argument("--model-out", default="model/sign_lang_clf.pkl", help="Model save path")
-    p.add_argument("--test-size", type=float, default=0.2, help="Test split ratio")
+    p.add_argument(
+        "--test-size",
+        type=float,
+        default=0.2,
+        help="Fallback test split ratio when a prepared test split is unavailable",
+    )
     p.add_argument("--max-iter", type=int, default=500, help="MLP max iterations")
     p.add_argument(
         "--max-images-per-class", type=int, default=0,

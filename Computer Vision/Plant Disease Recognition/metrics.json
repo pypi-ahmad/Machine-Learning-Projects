@@ -1,0 +1,12 @@
+{
+  "dataset": "PlantVillage",
+  "num_classes": 15,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_accuracy": 0.11848958333333333,
+  "baseline_test_macro_f1": 0.03445050983623442,
+  "strong_test_accuracy": 0.109375,
+  "strong_test_macro_f1": 0.013145539906103286,
+  "device": "cuda",
+  "imbalance_ratio_train_max_min": 3.4347826086956523
+}

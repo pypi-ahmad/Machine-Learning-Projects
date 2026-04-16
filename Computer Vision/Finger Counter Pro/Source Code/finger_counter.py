@@ -1,10 +1,8 @@
 """Finger Counter Pro — core finger-state detection and counting.
-"""Finger Counter Pro — core finger-state detection and counting.
 
 This module is intentionally self-contained and testable:
 all public functions take plain data (coordinates, handedness)
 and return plain results (bools, ints, dataclass).
-"""
 """
 
 from __future__ import annotations
@@ -62,10 +60,8 @@ def is_finger_extended(
     margin: float = 0.02,
 ) -> bool:
     """Return True if a non-thumb finger's tip is above its PIP joint.
-    """Return True if a non-thumb finger's tip is above its PIP joint.
 
     All values are normalised y-coordinates (0 = top, 1 = bottom).
-    """
     """
     return tip_y < pip_y - margin
 
@@ -76,15 +72,13 @@ def is_thumb_extended(
     handedness: str,
 ) -> bool:
     """Return True if the thumb tip has moved outward past the IP joint.
-    """Return True if the thumb tip has moved outward past the IP joint.
 
     MediaPipe mirrors handedness labels (the label describes the hand
     as seen from the camera's perspective), so:
-    - "Right" label → user's right hand → thumb extends to the LEFT
+    - "Right" label -> user's right hand -> thumb extends to the left
       (tip.x < ip.x)
-    - "Left"  label → user's left hand  → thumb extends to the RIGHT
+    - "Left" label -> user's left hand -> thumb extends to the right
       (tip.x > ip.x)
-    """
     """
     if handedness == "Right":
         return tip_x < ip_x

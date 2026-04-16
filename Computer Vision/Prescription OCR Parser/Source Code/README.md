@@ -1,6 +1,6 @@
 # Prescription OCR Parser
 
-> **Task:** Medical Prescription OCR + Structured Extraction &nbsp;|&nbsp; **Key:** `prescription_ocr_parser` &nbsp;|&nbsp; **Framework:** PaddleOCR
+> **Task:** Medical Prescription OCR + Structured Extraction &nbsp;|&nbsp; **Key:** `prescription_ocr_parser` &nbsp;|&nbsp; **Framework:** PaddleOCR-first OCR
 
 ---
 
@@ -23,26 +23,27 @@
 
 ## Overview
 
-A medical-document OCR parser that reads prescription images and extracts medicine-related text into structured output. Uses PaddleOCR for text detection/recognition and pattern-based extraction for medicine names, dosages, frequencies, routes, durations, and instructions. Outputs structured JSON/CSV with per-field confidence scores and low-confidence warnings.
+A medical-document OCR parser that reads prescription images and extracts medicine-related text into structured output. The pipeline prefers PaddleOCR for text detection and recognition, then falls back to EasyOCR on local runtimes where PaddleOCR fails during inference. Pattern-based extraction turns OCR lines into medicine names, dosages, frequencies, routes, durations, and instruction-like notes. Outputs structured JSON/CSV with per-field confidence scores, low-confidence warnings, and annotated images.
 
 ## Technology
 
 | Aspect | Details |
 |--------|---------|
 | **Task Type** | Medical Document OCR + Structured Extraction |
-| **OCR Engine** | PaddleOCR (detection + recognition + angle classification) |
+| **OCR Engine** | PaddleOCR first, with automatic EasyOCR fallback on unsupported local runtimes |
 | **Field Extraction** | Pattern-based: regex for dosages, keyword matching for frequency/route/duration |
 | **Medicine Grouping** | Sequential line classification → medicine entry grouping |
 | **Validation** | Missing dosage/frequency warnings, low-confidence alerts |
-| **Dataset** | FUNSD document images from Hugging Face (proxy for medical documents) |
+| **Dataset** | FUNSD document images from Hugging Face when available, otherwise synthetic prescription sheets generated locally |
 
 ## Dataset
 
-- **Source:** Hugging Face — `nielsr/funsd` (FUNSD — Form Understanding in Noisy Scanned Documents)
-- **License:** See dataset page for license terms
-- **Note:** Used as a proxy dataset for v1. The pipeline is designed for real prescription images; swap the dataset config to point at actual prescription data when available.
-- **Download:** Automatic on first `python train.py` run via `DatasetResolver`
+- **Primary source:** Hugging Face — `nielsr/funsd` (FUNSD — Form Understanding in Noisy Scanned Documents)
+- **License:** See the dataset page for the current upstream license terms.
+- **Fallback:** If the public source is unavailable or does not yield usable images, the bootstrap code generates synthetic prescription samples locally for v1 validation.
+- **Download:** Automatic on first `python train.py` or `python infer.py --force-download` run via `data_bootstrap.py`
 - **Force re-download:** `python train.py --force-download`
+- **Provenance file:** bootstrap writes `data/prescription_ocr_parser/dataset_info.json` with source and fallback metadata.
 
 ## Project Structure
 
@@ -50,7 +51,7 @@ A medical-document OCR parser that reads prescription images and extracts medici
 Prescription OCR Parser/
 └── Source Code/
     ├── config.py              # PrescriptionConfig dataclass + YAML/JSON loader
-    ├── ocr_engine.py          # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py          # PaddleOCR-first wrapper → OCRBlock dataclass
     ├── field_extractor.py     # Pattern-based medicine + header field extraction
     ├── parser.py              # Pipeline orchestrator (OCR → extract → structure)
     ├── validator.py           # Missing-field + low-confidence validation
@@ -59,7 +60,7 @@ Prescription OCR Parser/
     ├── infer.py               # CLI pipeline (single image / batch directory)
     ├── modern.py              # CVProject subclass — @register("prescription_ocr_parser")
     ├── train.py               # Dataset download + pipeline evaluation
-    ├── data_bootstrap.py      # Dataset bootstrap via scripts/download_data.py
+    ├── data_bootstrap.py      # Dataset bootstrap with synthetic fallback
     ├── rx_config.yaml         # Sample inference configuration
     ├── requirements.txt       # Project-level dependencies
     └── README.md              # This file
@@ -116,8 +117,8 @@ python train.py --max-samples 50             # evaluate on more samples
 ```
 ┌─────────────┐    ┌───────────┐    ┌───────────────┐    ┌──────────┐    ┌──────────┐
 │  Prescription│───▶│ PaddleOCR │───▶│  Field        │───▶│ Medicine │───▶│ Validate │
-│  Image       │    │ (text det │    │  Extractor    │    │ Grouping │    │ + Export  │
-│              │    │  + recog) │    │ (dosage/freq/ │    │          │    │          │
+│  Image       │    │ / EasyOCR │    │  Extractor    │    │ Grouping │    │ + Export  │
+│              │    │  fallback │    │ (dosage/freq/ │    │          │    │          │
 │              │    │           │    │  route/instr) │    │          │    │          │
 └─────────────┘    └───────────┘    └───────────────┘    └──────────┘    └──────────┘
 ```
@@ -208,11 +209,12 @@ One row per medicine entry with columns: `source`, `medicine_name`, `dosage`, `f
 
 - **Pattern-based extraction** — relies on common English medical abbreviations and keywords. May miss non-standard or handwritten prescriptions with unusual formatting.
 - **No drug database lookup** — does not validate medicine names against a pharmacological database.
-- **No handwriting model** — uses PaddleOCR (printed/typed text). For handwritten prescriptions, pair with a specialised handwriting recognition model.
+- **No handwriting model** — this v1 targets printed or clearly scanned prescription-style documents. For handwritten prescriptions, pair with a specialised handwriting recogniser.
 - **Proxy dataset** — v1 uses FUNSD document images. Accuracy will improve with a dedicated prescription dataset.
+- **Runtime note** — this Windows environment can trigger a PaddleOCR oneDNN runtime error during inference; the project automatically falls back to EasyOCR so the pipeline remains usable.
 
 ## Dependencies
 
-```
-pip install paddleocr paddlepaddle opencv-python numpy pyyaml
+```bash
+pip install paddleocr paddlepaddle easyocr opencv-python numpy pyyaml
 ```

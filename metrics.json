@@ -1,22 +1,51 @@
 {
-  "LightGBM": {
-    "f1": 0.7333,
-    "pr_auc": 0.6076,
-    "roc_auc": 0.8931,
-    "recall": 0.6471,
-    "precision": 0.8462,
-    "accuracy": 0.9992,
-    "threshold": 0.1997,
-    "time_s": 338.6
-  },
-  "FLAML": {
-    "f1": 0.8125,
-    "pr_auc": 0.7066,
-    "roc_auc": 0.8803,
-    "recall": 0.7647,
-    "precision": 0.8667,
-    "accuracy": 0.9994,
-    "threshold": 0.2955,
-    "time_s": 123.9
-  }
+  "project": "Student Enrollment Forecasting",
+  "best_model": "SF AutoETS",
+  "best_MAE": 2.716493844985962,
+  "best_RMSE": 3.728588649060635,
+  "best_MAPE": 5.757622408869785,
+  "all_results": [
+    {
+      "model": "SF AutoETS",
+      "MAE": 2.716493844985962,
+      "RMSE": 3.728588649060635,
+      "MAPE": 5.757622408869785
+    },
+    {
+      "model": "Seasonal Naive (7)",
+      "MAE": 2.7857142857142856,
+      "RMSE": 4.0970372570571385,
+      "MAPE": 5.909421749842398
+    },
+    {
+      "model": "FLAML Test (lgbm)",
+      "MAE": 2.873160641718761,
+      "RMSE": 3.726766381591323,
+      "MAPE": 5.494980666640341
+    },
+    {
+      "model": "SF SeasonalNaive",
+      "MAE": 2.9285714626312256,
+      "RMSE": 4.284523707729905,
+      "MAPE": 6.325980985501357
+    },
+    {
+      "model": "SF AutoARIMA",
+      "MAE": 2.998695135116577,
+      "RMSE": 4.120941940331838,
+      "MAPE": 6.315000656333865
+    },
+    {
+      "model": "FLAML (lgbm)",
+      "MAE": 4.867214814716438,
+      "RMSE": 6.079266638351622,
+      "MAPE": 9.320919628543816
+    },
+    {
+      "model": "Naive (Last Value)",
+      "MAE": 18.928571428571427,
+      "RMSE": 20.851515875008086,
+      "MAPE": 29.132936858186444
+    }
+  ]
 }

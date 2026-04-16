@@ -1,0 +1,16 @@
+[
+  {
+    "file": "scene_text_0000.png",
+    "num_blocks": 3,
+    "mean_confidence": 0.96,
+    "valid": true,
+    "text_preview": "CITY CAFE\nOPEN 24 HOURS\nESPRESSO 3.50"
+  },
+  {
+    "file": "scene_text_0001.png",
+    "num_blocks": 5,
+    "mean_confidence": 0.998,
+    "valid": true,
+    "text_preview": "BOOK SHOP\nSALE TODAY\nBUY\n2 GET\n1"
+  }
+]

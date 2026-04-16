@@ -20,15 +20,13 @@ class RepState:
 
 class RepCounter:
     """Counts reps by detecting stage transitions.
-    """Counts reps by detecting stage transitions.
 
-    A rep is counted on a *down → up* transition (the completion
+    A rep is counted on a *down -> up* transition (the completion
     of the concentric phase).
 
     The optional *stable_frames* parameter requires the same stage
     to persist for N consecutive frames before confirming a
     transition, filtering out single-frame noise.
-    """
     """
 
     def __init__(self, stable_frames: int = 2) -> None:
@@ -58,7 +56,7 @@ class RepCounter:
             self._prev_stage = self._stage
             self._stage = self._pending_stage
 
-            # Count rep on down → up transition
+            # Count rep on down -> up transition
             if self._prev_stage == "down" and self._stage == "up":
                 self._reps += 1
 

@@ -19,7 +19,7 @@ if str(_src) not in sys.path:
 
 @register("sign_language_alphabet_recognizer")
 class SignLangModern(CVProject):
-    """Static ASL alphabet recognition from hand landmarks."""
+    """Static ASL alphabet recognition from Hand Landmarker features."""
 
     project_type = "classification"
 

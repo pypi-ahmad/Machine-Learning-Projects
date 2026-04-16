@@ -1,0 +1,19 @@
+OXFORD FLOWERS 102 CLASSIFICATION
+======================================================================
+
+Dataset: oxford_flowers102 (102 classes)
+Framework: PyTorch 2.11.0+cu128
+Device: cuda
+
+MODELS
+----------------------------------------------------------------------
+Baseline: resnet50
+Advanced: vit_base_patch16_224
+
+FEATURES
+----------------------------------------------------------------------
+✓ Transfer learning
+✓ Strong Albumentations augmentation
+✓ Class-wise evaluation metrics
+✓ Confusion matrix analysis
+✓ CUDA support

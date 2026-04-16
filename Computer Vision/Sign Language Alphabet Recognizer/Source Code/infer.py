@@ -57,7 +57,7 @@ def main(argv: list[str] | None = None) -> None:
     if not ctrl.classifier.ready:
         print(
             "No trained model found. Run trainer.py first:\n"
-            "  python trainer.py\n"
+            "  python train.py\n"
             "Then re-run infer.py.",
             file=sys.stderr,
         )

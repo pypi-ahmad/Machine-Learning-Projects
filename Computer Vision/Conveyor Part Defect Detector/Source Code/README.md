@@ -122,13 +122,18 @@ print(list_projects())  # includes "conveyor_part_defect_detector"
 Uses the **PCB Defect Detection** dataset from Roboflow Universe,
 auto-downloaded via `configs/datasets/conveyor_part_defect_detector.yaml`.
 
+If the real dataset cannot be downloaded (no Roboflow SDK, network issues),
+`data_bootstrap.py` automatically generates a **synthetic YOLO-format
+dataset** with PCB-like board images and random defect marks so that
+training, evaluation, and inference can still run out of the box.
+
 Contains annotated defect classes on PCB / industrial part images in
-YOLO format. Classes include scratch, dent, missing_hole, mouse_bite,
-open_circuit, short, spur, spurious_copper.
+YOLO format. Classes include scratch, dent, crack, missing_part,
+missing_hole, mouse_bite, open_circuit, short, spur, spurious_copper.
 
 ### Dataset bootstrap behaviour
 
 - **Idempotent** — skips download if `.ready` marker exists
 - **`--force-download`** — forces re-download and re-preparation
-- Layout: `data/conveyor_part_defect_detector/raw/` + `data/conveyor_part_defect_detector/processed/`
-- Provenance: `data/conveyor_part_defect_detector/dataset_info.json`
+- **Synthetic fallback** — generates 90 images (60 train / 15 valid / 15 test) if download fails
+- Layout: `data/conveyor_part_defect_detector/`

@@ -3,7 +3,7 @@
   "key": "sign_language_alphabet_recognizer",
   "category": "Classification",
   "type": "classification",
-  "tech": "",
+  "tech": "MediaPipe Hand Landmarker + sklearn MLP on engineered landmark features",
   "model_family": [
     "Custom"
   ],

@@ -37,6 +37,7 @@ class RecognitionController:
             max_num_hands=self.cfg.max_num_hands,
             model_complexity=self.cfg.model_complexity,
             min_detection_confidence=self.cfg.min_detection_confidence,
+            min_presence_confidence=self.cfg.min_presence_confidence,
             min_tracking_confidence=self.cfg.min_tracking_confidence,
             static_image_mode=self.cfg.static_image_mode,
         )
@@ -50,7 +51,7 @@ class RecognitionController:
         if mp.exists():
             self.classifier.load(mp)
         else:
-            print(f"[WARN] Model not found at {mp} -- run trainer.py first")
+            print(f"[WARN] Model not found at {mp} -- run train.py first")
 
     @property
     def ready(self) -> bool:

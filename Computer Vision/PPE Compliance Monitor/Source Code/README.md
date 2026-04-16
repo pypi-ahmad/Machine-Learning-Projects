@@ -57,7 +57,7 @@ python infer.py --source frame.jpg --config zones.yaml --no-display
 ### 4. Evaluate
 
 ```bash
-python evaluate.py --model runs/ppe_compliance_monitor/train/weights/best.pt
+python evaluate.py --model runs/ppe_detect/weights/best.pt
 ```
 
 ## Configuration
@@ -124,3 +124,12 @@ Uses the **Construction Site Safety** dataset from Roboflow Universe,
 auto-downloaded via `configs/datasets/ppe_compliance_monitor.yaml`.
 
 Classes: `person`, `helmet`, `safety_vest`, `gloves`, `goggles`, `boots`.
+
+If the Roboflow SDK is not installed (`pip install roboflow`), the system
+automatically generates a synthetic demo dataset with simplified person
+silhouettes and PPE item rectangles. This allows the full pipeline to work
+out of the box for testing and development.
+
+Dataset is stored in `data/ppe_compliance_monitor/` with `raw/` and
+`processed/` subdirectories plus `dataset_info.json` provenance metadata.
+Use `--force-download` to re-download.

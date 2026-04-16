@@ -1,122 +1,171 @@
-"""Sign Language Alphabet Recognizer — idempotent dataset bootstrap.
+"""Sign Language Alphabet Recognizer -- idempotent dataset bootstrap.
 
-Expected dataset structure after download (HuggingFace):
-  <raw>/<split>/<letter>/<image>.jpg
-
-The bootstrap copies images into:
-  <raw>/processed/by_letter/<A|B|...>/<image>.jpg
-for easy consumption by the trainer.
+Downloads a bounded public subset of a GitHub-hosted ASL alphabet dataset,
+keeping the source train/test split so the project can train quickly on first run
+without pulling the entire archive.
 """
 
 from __future__ import annotations
 
 import json
 import shutil
-import sys
+import urllib.request
 from pathlib import Path
 
-PROJECT_KEY = "sign_language_alphabet_recognizer"
+from config import ASL_STATIC_LABELS
 
-_REPO = Path(__file__).resolve().parents[2]
-if str(_REPO) not in sys.path:
-    sys.path.insert(0, str(_REPO))
+PROJECT_KEY = "sign_language_alphabet_recognizer"
+DATA_ROOT = Path(__file__).resolve().parents[2] / "data" / PROJECT_KEY
+
+DATASET_OWNER = "EricMartinezIllamola"
+DATASET_REPO = "asl-alphabet"
+DATASET_REF = "main"
+TRAIN_IMAGES_PER_CLASS = 30
+TEST_IMAGES_PER_CLASS = 10
+
+_USER_AGENT = "sign-language-alphabet-recognizer/1.0"
+_RAW_ROOT = (
+    f"https://raw.githubusercontent.com/{DATASET_OWNER}/{DATASET_REPO}/"
+    f"{DATASET_REF}/asl-alphabet"
+)
 
 
 def ensure_sign_lang_dataset(force: bool = False) -> Path:
-    """Download and prepare the ASL alphabet dataset (idempotent).
+    """Download and prepare the public ASL alphabet subset."""
+    if force and DATA_ROOT.exists():
+        shutil.rmtree(DATA_ROOT)
 
-    Parameters
-    ----------
-    force : bool
-        Delete existing data and re-download.
-
-    Returns
-    -------
-    Path
-        Root of the prepared dataset directory.
-    """
-    from scripts.download_data import ensure_dataset
-
-    raw_dir = ensure_dataset(PROJECT_KEY, force=force)
-
-    processed = raw_dir / "processed"
+    processed = DATA_ROOT / "processed"
     ready_marker = processed / ".ready"
 
     if ready_marker.exists() and not force:
-        return raw_dir
+        return DATA_ROOT
 
-    by_letter = processed / "by_letter"
-    if by_letter.exists() and force:
-        shutil.rmtree(by_letter)
-    by_letter.mkdir(parents=True, exist_ok=True)
+    manifest: list[dict[str, str]] = []
+    for label in ASL_STATIC_LABELS:
+        for split, limit in (("train", TRAIN_IMAGES_PER_CLASS), ("test", TEST_IMAGES_PER_CLASS)):
+            split_root = processed / split / label
+            split_root.mkdir(parents=True, exist_ok=True)
+            manifest.extend(_download_split(label, split, limit, split_root))
 
-    _organise_by_letter(raw_dir, by_letter)
-    _write_info(raw_dir, by_letter)
+    _write_info(DATA_ROOT, processed, manifest)
     ready_marker.touch()
+    return DATA_ROOT
 
-    return raw_dir
+
+def _download_split(
+    label: str,
+    split: str,
+    limit: int,
+    split_root: Path,
+) -> list[dict[str, str]]:
+    manifest_entries: list[dict[str, str]] = []
+    downloaded = 0
+    candidate_indices = _candidate_indices(split)
+
+    for index in candidate_indices:
+        file_name = _build_file_name(label, split, index)
+        url = f"{_RAW_ROOT}/{label}/{file_name}"
+        dst = split_root / file_name
+        try:
+            if not dst.exists():
+                _download_file(url, dst)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                continue
+            raise
+
+        manifest_entries.append(
+            {
+                "split": split,
+                "label": label,
+                "file_name": file_name,
+                "download_url": url,
+                "local_path": str(dst),
+            }
+        )
+        downloaded += 1
+
+        if downloaded >= limit:
+            break
+
+    if downloaded < limit:
+        raise RuntimeError(
+            f"Only found {downloaded} files for {label}/{split}; expected {limit}."
+        )
+
+    return manifest_entries
 
 
-def _organise_by_letter(raw_dir: Path, by_letter: Path) -> None:
-    """Walk raw download and copy images into per-letter directories.
+def _build_file_name(label: str, split: str, index: int) -> str:
+    if split == "test":
+        return f"{label}{index:04d}_test.jpg"
+    return f"{label}{index}.jpg"
 
-    Handles common dataset layouts:
-    - <raw>/<split>/<LETTER>/images...
-    - <raw>/<LETTER>/images...
-    """
-    exts = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
-    counters: dict[str, int] = {}
 
-    for f in sorted(raw_dir.rglob("*")):
-        if f.suffix.lower() not in exts:
+def _candidate_indices(split: str) -> list[int]:
+    if split == "test":
+        return list(range(1, 101))
+
+    primary = list(range(1, 1501, 50))
+    primary.extend(range(2, 1501, 50))
+    primary.extend(range(3, 1501, 50))
+    fallback = list(range(1, 3001))
+
+    seen: set[int] = set()
+    ordered: list[int] = []
+    for index in primary + fallback:
+        if index not in seen:
+            seen.add(index)
+            ordered.append(index)
+    return ordered
+
+
+def _download_file(url: str, destination: Path) -> None:
+    tmp_path = destination.with_suffix(destination.suffix + ".download")
+    req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+    with urllib.request.urlopen(req) as response, open(tmp_path, "wb") as out_file:
+        shutil.copyfileobj(response, out_file)
+    tmp_path.replace(destination)
+
+
+def _write_info(data_root: Path, processed: Path, manifest: list[dict[str, str]]) -> None:
+    counts: dict[str, dict[str, int]] = {}
+    for split in ("train", "test"):
+        counts[split] = {}
+        split_root = processed / split
+        if not split_root.exists():
             continue
-        if "processed" in f.parts:
-            continue
+        for label_dir in sorted(split_root.iterdir()):
+            if label_dir.is_dir():
+                counts[split][label_dir.name] = len(list(label_dir.iterdir()))
 
-        # Try to infer label from nearest parent directory name
-        label = _infer_label(f)
-        if label is None:
-            continue
-
-        counters.setdefault(label, 0)
-        dst_dir = by_letter / label
-        dst_dir.mkdir(exist_ok=True)
-        dst = dst_dir / f"{counters[label]:05d}{f.suffix.lower()}"
-        if not dst.exists():
-            shutil.copy2(f, dst)
-        counters[label] += 1
-
-
-def _infer_label(path: Path) -> str | None:
-    """Infer the letter label from *path*'s parent directory."""
-    from config import ASL_STATIC_LABELS
-
-    valid = set(ASL_STATIC_LABELS)
-    # Walk up from parent to grandparent
-    for parent in (path.parent, path.parent.parent):
-        name = parent.name.upper()
-        if name in valid:
-            return name
-    return None
-
-
-def _write_info(raw_dir: Path, by_letter: Path) -> None:
-    counts = {}
-    for d in sorted(by_letter.iterdir()):
-        if d.is_dir():
-            counts[d.name] = len(list(d.iterdir()))
     info = {
         "project": PROJECT_KEY,
-        "source_dir": str(raw_dir),
-        "classes": len(counts),
-        "per_class": counts,
-        "total_images": sum(counts.values()),
+        "source": {
+            "type": "github_raw_subset",
+            "repo": f"{DATASET_OWNER}/{DATASET_REPO}",
+            "ref": DATASET_REF,
+            "dataset_path": "asl-alphabet/{label}",
+            "split_rule": "train uses <label><n>.jpg; test uses <label><000n>_test.jpg",
+        },
+        "supported_labels": list(ASL_STATIC_LABELS),
+        "downloaded_per_class": {
+            "train": TRAIN_IMAGES_PER_CLASS,
+            "test": TEST_IMAGES_PER_CLASS,
+        },
+        "per_split_counts": counts,
+        "total_images": len(manifest),
     }
-    info_path = raw_dir / "processed" / "dataset_info.json"
+    info_path = processed / "dataset_info.json"
     info_path.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    manifest_path = processed / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
+    import sys
+
     force = "--force-download" in sys.argv
     path = ensure_sign_lang_dataset(force=force)
     print(f"Dataset ready at: {path}")

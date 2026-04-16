@@ -1,0 +1,24 @@
+[
+  {
+    "file": "exam_sheet_01.png",
+    "num_blocks": 24,
+    "num_questions": 5,
+    "total_marks": 25,
+    "mean_confidence": 0.896,
+    "valid": true,
+    "headings": [
+      "MIDTERM EXAMINATION"
+    ]
+  },
+  {
+    "file": "exam_sheet_02.png",
+    "num_blocks": 20,
+    "num_questions": 5,
+    "total_marks": 15,
+    "mean_confidence": 0.897,
+    "valid": true,
+    "headings": [
+      "SCIENCE FINAL PAPER"
+    ]
+  }
+]

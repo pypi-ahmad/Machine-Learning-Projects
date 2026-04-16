@@ -1,8 +1,6 @@
 """Per-frame metric export for Gesture Controlled Slideshow.
-"""Per-frame metric export for Gesture Controlled Slideshow.
 
 Logs gesture, action, slide state per frame to CSV/JSON.
-"""
 """
 
 from __future__ import annotations

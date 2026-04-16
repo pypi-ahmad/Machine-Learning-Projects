@@ -1,0 +1,24 @@
+{
+  "dataset": "HAM10000",
+  "num_classes": 7,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_accuracy": 0.020338983050847456,
+  "baseline_test_macro_f1": 0.0056990881458966565,
+  "baseline_test_macro_recall": 0.14285714285714285,
+  "strong_test_accuracy": 0.020338983050847456,
+  "strong_test_macro_f1": 0.005695301376364499,
+  "strong_test_macro_recall": 0.14285714285714285,
+  "class_wise_recall_strong": {
+    "akiec": 0.0,
+    "bcc": 0.0,
+    "bkl": 0.0,
+    "df": 1.0,
+    "mel": 0.0,
+    "nv": 0.0,
+    "vasc": 0.0
+  },
+  "imbalance_ratio_train_max_min": 41.59405940594059,
+  "device": "cuda",
+  "synthetic_mode": true
+}

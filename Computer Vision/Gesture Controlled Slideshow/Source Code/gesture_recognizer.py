@@ -88,7 +88,7 @@ class GestureRecognizer:
         # Classify gesture
         thumb, index, middle, ring, pinky = fingers
 
-        if all(fingers):
+        if index and middle and ring and pinky:
             state.gesture = OPEN_PALM
         elif not any(fingers):
             state.gesture = FIST

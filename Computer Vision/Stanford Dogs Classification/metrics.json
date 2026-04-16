@@ -1,0 +1,11 @@
+{
+  "dataset": "Stanford Dogs",
+  "num_classes": 120,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_acc": 0.0,
+  "baseline_test_macro_f1": 0.0,
+  "strong_test_acc": 0.015,
+  "strong_test_macro_f1": 0.00025479870901987426,
+  "device": "cuda"
+}

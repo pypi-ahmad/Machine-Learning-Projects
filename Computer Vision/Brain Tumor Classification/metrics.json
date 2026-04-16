@@ -1,0 +1,22 @@
+{
+  "dataset": "Brain Tumor MRI dataset",
+  "num_classes": 4,
+  "baseline_model": "resnet18",
+  "strong_model": "convnext_tiny",
+  "baseline_test_accuracy": 0.1703125,
+  "baseline_test_macro_f1": 0.07295850066934405,
+  "baseline_test_macro_recall": 0.24772727272727274,
+  "strong_test_accuracy": 0.171875,
+  "strong_test_macro_f1": 0.07333333333333333,
+  "strong_test_macro_recall": 0.25,
+  "class_wise_recall_strong": {
+    "glioma": 0.0,
+    "meningioma": 0.0,
+    "pituitary": 1.0,
+    "no_tumor": 0.0
+  },
+  "imbalance_ratio_train_max_min": 1.8133086876155269,
+  "device": "cuda",
+  "synthetic_mode": true,
+  "monai_available": false
+}

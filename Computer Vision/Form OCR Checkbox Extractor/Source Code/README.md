@@ -1,12 +1,12 @@
 # Form OCR Checkbox Extractor
 
-> **Task:** Checkbox Detection + OCR + Form Field Extraction &nbsp;|&nbsp; **Key:** `form_ocr_checkbox_extractor` &nbsp;|&nbsp; **Framework:** PaddleOCR + OpenCV
+> **Task:** Checkbox Detection + OCR + Form Field Extraction &nbsp;|&nbsp; **Key:** `form_ocr_checkbox_extractor` &nbsp;|&nbsp; **Framework:** EasyOCR + OpenCV
 
 ---
 
 ## Overview
 
-A form-understanding project that extracts typed/printed text and detects checkbox/radio-button states from scanned or photographed forms. Uses PaddleOCR for text recognition and OpenCV morphological operations for checkbox/radio detection, then associates each control with its nearest text label and exports structured results to JSON/CSV.
+A form-understanding project that extracts typed/printed text and detects checkbox/radio-button states from scanned or photographed forms. Uses EasyOCR for text recognition and OpenCV morphological operations for checkbox/radio detection, then associates each control with its nearest text label and exports structured results to JSON/CSV.
 
 ## Technology
 
@@ -16,7 +16,7 @@ A form-understanding project that extracts typed/printed text and detects checkb
 | **Checkbox Detection** | OpenCV adaptive threshold + morphology + contour analysis |
 | **Radio Detection** | Circularity-based contour classification |
 | **State Classification** | Interior pixel-fill ratio (Otsu threshold inside ROI) |
-| **OCR** | PaddleOCR (detection + recognition + angle classification) |
+| **OCR** | EasyOCR (detection + recognition) |
 | **Label Association** | Direction-weighted nearest-neighbour matching |
 | **Dataset** | FUNSD — Form Understanding in Noisy Scanned Documents (Hugging Face) |
 
@@ -34,7 +34,7 @@ Form OCR Checkbox Extractor/
 └── Source Code/
     ├── config.py              # FormCheckboxConfig dataclass + YAML/JSON loader
     ├── checkbox_detector.py   # OpenCV checkbox/radio detection + state classification
-    ├── ocr_engine.py          # PaddleOCR wrapper → OCRBlock dataclass
+    ├── ocr_engine.py          # EasyOCR wrapper -> OCRBlock dataclass
     ├── parser.py              # Form parser: OCR + checkbox + label association
     ├── validator.py           # Missing-field warnings + confidence checks
     ├── visualize.py           # Annotated overlay with checkbox outlines + panel
@@ -100,7 +100,7 @@ python train.py --fill-threshold 0.30        # tune checkbox sensitivity
 
 ```
 ┌─────────────┐    ┌─────────────────┐    ┌───────────┐    ┌────────────┐    ┌──────────┐
-│  Input Image │───▶│  Checkbox       │───▶│ PaddleOCR │───▶│ Label      │───▶│ Validate │
+│  Input Image │───▶│  Checkbox       │───▶│ EasyOCR   │───▶│ Label      │───▶│ Validate │
 │              │    │  Detector       │    │           │    │ Association│    │ + Export  │
 │              │    │ (morphology +   │    │ (text det │    │ (nearest   │    │          │
 │              │    │  contour)       │    │  + recog) │    │  neighbour)│    │          │
@@ -182,5 +182,5 @@ Each detected checkbox/radio is matched to its nearest OCR text block using a di
 ## Dependencies
 
 ```
-pip install paddleocr paddlepaddle opencv-python numpy pyyaml
+pip install easyocr opencv-python numpy pyyaml
 ```

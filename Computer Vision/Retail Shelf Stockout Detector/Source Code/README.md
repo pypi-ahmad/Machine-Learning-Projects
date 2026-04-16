@@ -59,10 +59,13 @@ Retail Shelf Stockout Detector/
 | **Type** | YOLO-format object detection (bounding boxes) |
 | **License** | See [dataset page](https://universe.roboflow.com/) for terms |
 | **Download** | Automatic via `DatasetResolver` on first run |
+| **Fallback** | Synthetic demo dataset generated if Roboflow SDK is unavailable |
 | **Structure** | `data/retail_shelf_stockout/raw/` (original) + `processed/` (ready) |
 | **Metadata** | `data/retail_shelf_stockout/dataset_info.json` |
 
 The dataset downloads automatically when you run `train.py` or `infer.py` for the first time. No manual placement required. Use `--force-download` to re-download.
+
+If the Roboflow SDK is not installed (`pip install roboflow`), the system automatically generates a synthetic demo dataset with coloured rectangles on shelf-like backgrounds. This allows the full pipeline to work out of the box for testing and development.
 
 ## Quick Start
 

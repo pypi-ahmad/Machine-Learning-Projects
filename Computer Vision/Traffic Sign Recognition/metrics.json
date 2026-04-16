@@ -1,0 +1,14 @@
+{
+  "dataset": "GTSRB",
+  "num_classes": 43,
+  "baseline_model": "resnet18",
+  "strong_model": "efficientnet_b0",
+  "baseline_test_accuracy": 0.03776256785461411,
+  "baseline_test_macro_f1": 0.014719310875834092,
+  "strong_test_accuracy": 0.03280623082369601,
+  "strong_test_macro_f1": 0.021621829488459535,
+  "mean_per_class_recall_strong": 0.02411729105271079,
+  "worst_class_recall_strong": 0.0,
+  "imbalance_ratio_train_max_min": 6.300884955752212,
+  "device": "cuda"
+}
