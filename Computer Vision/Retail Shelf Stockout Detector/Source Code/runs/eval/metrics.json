@@ -1,0 +1,32 @@
+{
+  "mAP50": 0.057,
+  "mAP50-95": 0.0567,
+  "precision": 0.49,
+  "recall": 0.0834,
+  "conf_threshold": 0.25,
+  "iou_threshold": 0.45,
+  "weights": "E:\\Github\\Machine-Learning-Projects\\Computer Vision\\Retail Shelf Stockout Detector\\Source Code\\runs\\retail_shelf_detect\\weights\\best.pt",
+  "data": "E:\\Github\\Machine-Learning-Projects\\Computer Vision\\data\\retail_shelf_stockout\\data.yaml",
+  "per_class": {
+    "product": {
+      "AP50": 0.0,
+      "AP50-95": 0.0
+    },
+    "bottle": {
+      "AP50": 0.1218,
+      "AP50-95": 0.1218
+    },
+    "can": {
+      "AP50": 0.0,
+      "AP50-95": 0.0
+    },
+    "box": {
+      "AP50": 0.0,
+      "AP50-95": 0.0
+    },
+    "bag": {
+      "AP50": 0.1633,
+      "AP50-95": 0.1617
+    }
+  }
+}

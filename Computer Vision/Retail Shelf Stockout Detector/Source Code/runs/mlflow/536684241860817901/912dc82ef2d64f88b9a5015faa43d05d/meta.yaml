@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Retail Shelf
+  Stockout Detector/Source Code/runs/mlflow/536684241860817901/912dc82ef2d64f88b9a5015faa43d05d/artifacts
+end_time: 1776189736710
+entry_point_name: ''
+experiment_id: '536684241860817901'
+lifecycle_stage: active
+run_id: 912dc82ef2d64f88b9a5015faa43d05d
+run_name: retail_shelf_detect
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776189699339
+status: 3
+tags: []
+user_id: ahmad

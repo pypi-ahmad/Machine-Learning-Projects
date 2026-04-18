@@ -1,0 +1,42 @@
+{
+  "project": "Product Documentation Copilot",
+  "corpus": {
+    "pages": 6,
+    "sections": 22,
+    "chunks": 45,
+    "code_chunks": 17,
+    "table_chunks": 10,
+    "doc_types": {
+      "guide": 4,
+      "api_reference": 4,
+      "tutorial": 4,
+      "concept": 3,
+      "troubleshooting": 4,
+      "configuration": 3
+    }
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "eval_queries": 12,
+    "baseline": {
+      "MRR": 0.486111111111111,
+      "Recall@1": 0.25,
+      "Recall@3": 0.8333333333333334,
+      "Recall@5": 0.8333333333333334,
+      "Precision@3": 0.3055555555555556
+    },
+    "semantic": {
+      "MRR": 0.7916666666666666,
+      "Recall@1": 0.6666666666666666,
+      "Recall@3": 0.9166666666666666,
+      "Recall@5": 0.9166666666666666,
+      "Precision@3": 0.38888888888888884
+    }
+  },
+  "config": {
+    "chunk_size": 500,
+    "chunk_overlap": 80,
+    "top_k": 5,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

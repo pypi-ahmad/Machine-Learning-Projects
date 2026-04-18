@@ -1,0 +1,82 @@
+{
+  "dataset": "Massachusetts Buildings",
+  "dataset_id": "balraj98/massachusetts-buildings-dataset",
+  "dataset_root": "C:\\Users\\ahmad\\.cache\\kagglehub\\datasets\\balraj98\\massachusetts-buildings-dataset\\versions\\2",
+  "split_counts": {
+    "train": 137,
+    "val": 4,
+    "test": 10
+  },
+  "image_size": 256,
+  "epochs": 3,
+  "device": "cuda",
+  "model": "smp.Unet(mobilenet_v2)",
+  "baseline_val": {
+    "iou": 0.0724466441404419,
+    "dice": 0.1348259743121047,
+    "boundary_f1": 0.5593810138186406
+  },
+  "baseline_test": {
+    "iou": 0.10071213244906503,
+    "dice": 0.18105365468649512,
+    "boundary_f1": 0.5371650467412669
+  },
+  "best_val_iou": 0.2295495448821944,
+  "test": {
+    "iou": 0.29496369499999664,
+    "dice": 0.4511053071116041,
+    "boundary_f1": 0.8686472576987502
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.2553480250494822,
+      "val_loss": 1.5531147718429565,
+      "val_iou": 0.10643180988323386,
+      "val_dice": 0.18836409848227603,
+      "val_boundary_f1": 0.4803660293115687
+    },
+    {
+      "epoch": 2,
+      "train_loss": 1.0812203424317497,
+      "val_loss": 1.0701148509979248,
+      "val_iou": 0.2295495448821944,
+      "val_dice": 0.3706883696540707,
+      "val_boundary_f1": 0.7918370933998193
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.0340639659336635,
+      "val_loss": 0.9801000952720642,
+      "val_iou": 0.20328178623300847,
+      "val_dice": 0.3325237469034762,
+      "val_boundary_f1": 0.7860253424335546
+    }
+  ],
+  "worst_boundary_cases": [
+    {
+      "name": "23429080_15.png",
+      "iou": 0.23181232061894264,
+      "dice": 0.37637603836023503,
+      "boundary_f1": 0.7112265413957182
+    },
+    {
+      "name": "23729035_15.png",
+      "iou": 0.3221377598510704,
+      "dice": 0.48729832795541217,
+      "boundary_f1": 0.7888093014118881
+    },
+    {
+      "name": "24179065_15.png",
+      "iou": 0.251297257227576,
+      "dice": 0.40165876777251186,
+      "boundary_f1": 0.811261163682655
+    },
+    {
+      "name": "23429020_15.png",
+      "iou": 0.3948690104520157,
+      "dice": 0.5661736084079408,
+      "boundary_f1": 0.8509616130234671
+    }
+  ]
+}

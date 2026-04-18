@@ -1,0 +1,78 @@
+{
+  "exported_at": "2026-04-15T12:45:00.618789+00:00",
+  "results": [
+    {
+      "timestamp": "2026-04-15T12:45:00.616447+00:00",
+      "total_images": 6,
+      "total_faces": 5,
+      "num_clusters": 2,
+      "backend": "insightface",
+      "clusters": [
+        {
+          "cluster_id": 0,
+          "label": "person_000",
+          "num_faces": 3,
+          "faces": [
+            {
+              "source_photo": "runs\\cli_input\\aaron_001.jpg",
+              "box": [
+                1,
+                0,
+                94,
+                119
+              ],
+              "det_confidence": 0.7674
+            },
+            {
+              "source_photo": "runs\\cli_input\\aaron_002.jpg",
+              "box": [
+                1,
+                0,
+                92,
+                122
+              ],
+              "det_confidence": 0.7675
+            },
+            {
+              "source_photo": "runs\\cli_input\\aaron_003.jpg",
+              "box": [
+                0,
+                1,
+                91,
+                121
+              ],
+              "det_confidence": 0.7949
+            }
+          ]
+        },
+        {
+          "cluster_id": 1,
+          "label": "person_001",
+          "num_faces": 2,
+          "faces": [
+            {
+              "source_photo": "runs\\cli_input\\wade_002.jpg",
+              "box": [
+                0,
+                0,
+                94,
+                125
+              ],
+              "det_confidence": 0.5388
+            },
+            {
+              "source_photo": "runs\\cli_input\\wade_003.jpg",
+              "box": [
+                0,
+                0,
+                92,
+                121
+              ],
+              "det_confidence": 0.5592
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

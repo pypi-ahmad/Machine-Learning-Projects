@@ -1,0 +1,27 @@
+{
+  "project": "Financial Report Analyst",
+  "corpus": {
+    "documents": 3,
+    "sections": 15,
+    "chunks": 26,
+    "table_chunks": 6,
+    "narrative_chunks": 20,
+    "periods": [
+      "FY2023",
+      "FY2024",
+      "Q4-2024"
+    ]
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "total_queries": 10,
+    "baseline_accuracy": 0.8,
+    "semantic_accuracy": 0.7
+  },
+  "config": {
+    "chunk_size": 600,
+    "chunk_overlap": 100,
+    "top_k": 5,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

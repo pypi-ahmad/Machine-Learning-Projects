@@ -970,3 +970,252 @@ A multi-file task is complete only when:
 - every file has been validated individually
 - no bulk-generation method was used
 - no unrelated files were modified
+
+---
+
+# User-Specified Computer Vision Project Rules (April 2026)
+
+These rules are mandatory for future computer vision work in this repository unless the user explicitly overrides them.
+
+## Primary objective
+
+For each computer vision project, produce a professional, production-grade, recruiter-impressive notebook-first plan and/or notebook that:
+
+1. uses the correct CV method for the actual problem statement
+2. uses an April 2026 best-fit tech stack
+3. downloads the dataset in real notebook code cells
+4. verifies downloaded files before continuing
+5. runs end-to-end with real outputs
+6. debugs failures instead of pretending success
+7. avoids hallucinated datasets, metrics, paths, screenshots, or results
+8. chooses the right model family for the task
+9. is optimized for practical local execution where possible
+10. is clear, educational, and reproducible
+
+## Non-negotiable global rules
+
+- Do not fake any run, output, metric, image, chart, artifact, or saved model.
+- Do not claim a dataset was downloaded unless the notebook actually downloads it.
+- Do not invent file paths, class names, split sizes, sample counts, or label maps.
+- Do not use placeholder metrics like "~95% accuracy expected".
+- Do not skip failed cells; fix them.
+- If a command fails, debug and replace it with a working command.
+- If a dataset source is broken, switch to another real public source and explain the change.
+- If GPU memory is limited, reduce batch size, image size, precision, workers, or model size instead of faking completion.
+- Never mismatch the problem and the model head.
+- Prefer notebook cells that can be executed top-to-bottom without hidden manual steps.
+- Use only real publicly accessible datasets unless the user explicitly provides a private one.
+- Every notebook must be self-verifying and fail loudly on missing data or broken downloads.
+- Every important choice must be grounded in the actual task, dataset, and hardware limits.
+- No silent assumptions.
+- No hallucinations.
+- No "should work" wording without verification.
+- No fake comments like "output omitted for brevity" unless output genuinely exists and is intentionally not shown.
+
+## Required prompt/spec output sections (exact order)
+
+1. Project Title
+2. Problem Type
+3. Why this method is correct
+4. April 2026 Best-Fit Tech Stack
+5. Dataset Options (real, downloadable)
+6. Final Dataset Choice + Why
+7. Exact Notebook Sections
+8. Real Download Rules
+9. Training / Inference Rules
+10. Evaluation Rules
+11. Error Analysis Rules
+12. Artifact Saving Rules
+13. Non-Regression / No-Fake Rules
+14. Final Deliverables
+
+## Task-to-method mapping rules
+
+Choose method by task, never force one model everywhere.
+
+- Object detection: YOLO26m default; YOLO26s/n for low VRAM/latency; RF-DETR for flagship accuracy-focused detection.
+- Instance/semantic segmentation: YOLO26m-seg default; SAM 2 for promptable segmentation; MedSAM for medical segmentation.
+- Classification: YOLO26m-cls default; torchvision/timm only when justified; DINOv3 or SigLIP2 embeddings when retrieval/transfer is needed.
+- Pose/keypoints: YOLO26m-pose for body pose; MediaPipe Face Landmarker for face mesh/blink; MediaPipe Hand Landmarker for finger/gesture/hand tracking.
+- OCR/text: PaddleOCR or PaddleOCR-VL-1.5; GLM-OCR for complex docs; TrOCR for handwriting.
+- Open-vocabulary grounding: Grounding DINO 1.5; Grounded SAM or SAM 2 for segmentation with prompts.
+- Depth estimation: Depth Anything V2.
+- Face analysis: face detector first, then DeepFace/custom classifiers for attributes, InsightFace for recognition, dedicated anti-spoofing for liveness.
+
+## Model selection rules
+
+- Use YOLO26m by default for trainable detection, segmentation, classification, and body-pose.
+- Downgrade to YOLO26s/YOLO26n only when hardware/latency/memory requires.
+- Use RF-DETR when accuracy is prioritized over lightweight deployment.
+- Use SAM 2/MedSAM only when promptable or medical segmentation is truly needed.
+- Use MediaPipe (not YOLO pose) for face/hand landmarks, blink, finger count, gesture control.
+- Use OCR models for text recognition, not classification.
+- Use face-analysis stacks for face attributes/recognition, not person-only detectors.
+- If project wording and method mismatch (for example detection vs classification), correct the method.
+
+## Dataset rules
+
+Datasets must be real and downloaded in notebook code cells.
+
+Priority:
+1. Kaggle API / kagglehub
+2. Hugging Face Datasets
+3. Roboflow export
+4. torchvision / MedMNIST / official loaders
+5. Direct public URL only if stable/verifiable
+
+Per project:
+- list 2 to 5 real dataset options
+- choose one final dataset and explain why
+- include exact download approach in cells
+- verify files after download before training
+
+If source is gated/broken/deleted/unusable:
+- do not fake
+- switch to a working public alternative
+- explain the switch
+
+## Mandatory real data download cell rules
+
+Every notebook must include executable cells for:
+- dependency install
+- auth/setup when needed
+- dataset download
+- unzip/extract when needed
+- verification checks:
+  - dataset root exists
+  - expected files exist
+  - sample count > 0
+  - class folders or annotation files exist
+  - train/val/test structure valid
+- sample visualization from real data
+
+Source-specific:
+- Kaggle: use kaggle/kagglehub correctly; never pretend data already exists.
+- Hugging Face: use datasets.load_dataset or ImageFolder correctly; verify splits/schema.
+- Roboflow: use real export/download flow; verify image/annotation paths.
+- MedMNIST: use real package loader; inspect labels.
+
+## Mandatory notebook structure (default flow)
+
+1. Title and project overview
+2. Problem statement
+3. Why chosen method is correct
+4. Hardware / environment check
+5. Dependency installation
+6. Imports and configuration
+7. Dataset source explanation
+8. Real dataset download cells
+9. Dataset verification cells
+10. Data integrity audit
+11. Label/schema inspection
+12. Sample visualization
+13. Preprocessing / augmentation strategy
+14. Train/validation/test split verification
+15. Baseline or sanity-check pipeline
+16. Main model setup
+17. Training loop / trainer setup
+18. Validation and core metrics
+19. Error analysis
+20. Inference on holdout examples
+21. Save model/artifacts
+22. Reproducibility notes
+23. Conclusion and limitations
+
+## Task-specific evaluation rules
+
+- Detection: mAP50, mAP50-95, precision, recall, per-class AP
+- Segmentation: mAP and/or mIoU and/or Dice (task-appropriate)
+- Classification: accuracy, macro F1, confusion matrix, per-class report
+- Pose: PCK / OKS / keypoint metrics where applicable
+- OCR: CER, WER, exact match, qualitative read examples
+- Tracking: IDF1, HOTA, MOTA where applicable
+- Medical: task-appropriate metrics (for example Dice/IoU/AUROC)
+
+Never report only one metric if task needs more.
+
+## Real-run / error-free execution rules
+
+- Do not stop at notebook drafting; implement as if immediate execution will occur.
+- Keep imports aligned with installed packages.
+- Prefer stable APIs and avoid deprecated usage when possible.
+- Keep paths consistent and create directories before saving artifacts.
+- Check missing dependencies and include CPU fallback for GPU-specific paths.
+- Set seeds and use practical defaults for batch size, workers, image size, precision.
+- If mixed precision is unsupported, degrade gracefully.
+- Never reference weights/datasets that are not downloaded/created.
+- If uncertain, choose simpler proven runnable code.
+
+## Anti-fake / anti-hallucination rules
+
+Never fabricate:
+- Kaggle IDs
+- Hugging Face dataset names
+- Roboflow workspace/project/version IDs
+- sample images
+- evaluation charts
+- model filenames
+- confusion matrices
+- benchmark claims
+- success statements
+
+Always use:
+- real public dataset identifiers
+- real libraries/install commands
+- real train/eval code
+- honest limitation notes
+
+## Tech stack section rules
+
+Every project prompt must include a section titled:
+
+"April 2026 Best-Fit Tech Stack"
+
+This section must explicitly name:
+- core framework
+- model family
+- dataset source
+- augmentation library
+- visualization library
+- evaluation stack
+- deployment/export option where relevant
+
+## Per-project prompt writing rules
+
+- State exact task family: detection, classification, segmentation, pose, OCR, tracking, or OpenCV-only.
+- Explain why selected method is correct.
+- Include 2 to 5 real dataset options and one final choice.
+- Include exact notebook sections and real-download requirements.
+- Include model fallback logic for limited hardware.
+- Avoid unnecessarily heavy stacks when simpler correct stacks exist.
+- Prefer YOLO26m only when task-family alignment is correct.
+- Do not force YOLO26m onto OCR, face analysis, hand landmarks, or medical-specialized segmentation.
+- For pure OpenCV projects, do not force deep learning unless explicitly requested.
+
+## Deliverable rules
+
+For each project prompt, deliver:
+1. final project title
+2. one-paragraph summary
+3. exact task family
+4. April 2026 best-fit stack
+5. dataset options
+6. final dataset choice
+7. exact notebook section breakdown
+8. real download instructions
+9. model/training/eval rules
+10. no-fake execution guardrails
+
+## Final quality bar
+
+Output must be:
+- technically correct
+- task-aligned
+- dataset-real
+- notebook-first
+- runnable in principle with real public assets
+- honest about limitations
+- free from fake claims
+- modern as of April 2026
+- strong enough for implementation by Copilot/Claude/GPT
+

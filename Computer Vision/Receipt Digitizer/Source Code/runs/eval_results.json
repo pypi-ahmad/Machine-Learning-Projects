@@ -1,0 +1,26 @@
+[
+  {
+    "file": "receipt_0000.png",
+    "num_blocks": 25,
+    "fields_found": 6,
+    "line_items": 0,
+    "valid": true,
+    "warnings": 3
+  },
+  {
+    "file": "receipt_0001.png",
+    "num_blocks": 31,
+    "fields_found": 5,
+    "line_items": 3,
+    "valid": true,
+    "warnings": 1
+  },
+  {
+    "file": "receipt_0002.png",
+    "num_blocks": 28,
+    "fields_found": 4,
+    "line_items": 3,
+    "valid": false,
+    "warnings": 2
+  }
+]

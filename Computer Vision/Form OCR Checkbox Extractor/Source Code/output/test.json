@@ -1,0 +1,193 @@
+{
+  "total_forms": 1,
+  "exported_at": "2026-04-15T10:52:09.141991+00:00",
+  "records": [
+    {
+      "source": "form_0002.png",
+      "ocr_blocks": 27,
+      "text_fields": {
+        "email": {
+          "value": "maria@example.com",
+          "confidence": 0.996
+        },
+        "date": {
+          "value": "06/20/2025",
+          "confidence": 0.999
+        }
+      },
+      "checkboxes": [
+        {
+          "label": "REGISTRATION",
+          "state": "checked",
+          "type": "checkbox",
+          "confidence": 0.722,
+          "fill_ratio": 0.426,
+          "bbox": [
+            68,
+            30,
+            16,
+            22
+          ]
+        },
+        {
+          "label": "FORM",
+          "state": "checked",
+          "type": "checkbox",
+          "confidence": 1.0,
+          "fill_ratio": 0.361,
+          "bbox": [
+            159,
+            30,
+            21,
+            22
+          ]
+        },
+        {
+          "label": "Maria Garcia",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 0.636,
+          "fill_ratio": 0.42,
+          "bbox": [
+            183,
+            30,
+            17,
+            22
+          ]
+        },
+        {
+          "label": "",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 0.0,
+          "fill_ratio": 0.441,
+          "bbox": [
+            253,
+            30,
+            17,
+            22
+          ]
+        },
+        {
+          "label": "",
+          "state": "checked",
+          "type": "checkbox",
+          "confidence": 0.0,
+          "fill_ratio": 0.548,
+          "bbox": [
+            293,
+            30,
+            17,
+            22
+          ]
+        },
+        {
+          "label": "agree",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 1.0,
+          "fill_ratio": 0.755,
+          "bbox": [
+            39,
+            295,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "Opt-in",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 0.996,
+          "fill_ratio": 0.755,
+          "bbox": [
+            39,
+            330,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "am",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 1.0,
+          "fill_ratio": 0.481,
+          "bbox": [
+            39,
+            365,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "Beginner",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 1.0,
+          "fill_ratio": 0.381,
+          "bbox": [
+            40,
+            445,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "Intermediate",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 0.984,
+          "fill_ratio": 0.381,
+          "bbox": [
+            40,
+            475,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "Advanced",
+          "state": "checked",
+          "type": "radio",
+          "confidence": 0.975,
+          "fill_ratio": 0.565,
+          "bbox": [
+            40,
+            505,
+            21,
+            21
+          ]
+        },
+        {
+          "label": "Signature:",
+          "state": "unchecked",
+          "type": "checkbox",
+          "confidence": 0.999,
+          "fill_ratio": 0.257,
+          "bbox": [
+            32,
+            559,
+            12,
+            12
+          ]
+        }
+      ],
+      "num_checkboxes": 12,
+      "num_checked": 11,
+      "valid": false,
+      "warnings": [
+        {
+          "field": "name",
+          "message": "Required field 'name' not found",
+          "severity": "error"
+        },
+        {
+          "field": "checkboxes",
+          "message": "2 checkbox(es) have no associated text label",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}

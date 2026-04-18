@@ -1,0 +1,101 @@
+{
+  "total_images": 1,
+  "exported_at": "2026-04-15T11:37:34.614923+00:00",
+  "records": [
+    {
+      "timestamp": "2026-04-15T11:37:34.573009+00:00",
+      "source": "scene_text_0000.png",
+      "frame_index": 1,
+      "num_blocks": 3,
+      "mean_confidence": 0.9604,
+      "raw_text": "CITY CAFE\nOPEN 24 HOURS\nESPRESSO 3.50",
+      "translation_enabled": true,
+      "translation_provider": "noop",
+      "blocks": [
+        {
+          "text": "CITY CAFE",
+          "translated_text": "CITY CAFE",
+          "confidence": 0.9582,
+          "bbox": [
+            [
+              145,
+              155
+            ],
+            [
+              347,
+              155
+            ],
+            [
+              347,
+              199
+            ],
+            [
+              145,
+              199
+            ]
+          ],
+          "centre": [
+            246,
+            177
+          ]
+        },
+        {
+          "text": "OPEN 24 HOURS",
+          "translated_text": "OPEN 24 HOURS",
+          "confidence": 0.9236,
+          "bbox": [
+            [
+              144,
+              212
+            ],
+            [
+              484,
+              212
+            ],
+            [
+              484,
+              260
+            ],
+            [
+              144,
+              260
+            ]
+          ],
+          "centre": [
+            314,
+            236
+          ]
+        },
+        {
+          "text": "ESPRESSO 3.50",
+          "translated_text": "ESPRESSO 3.50",
+          "confidence": 0.9993,
+          "bbox": [
+            [
+              144,
+              270
+            ],
+            [
+              463,
+              270
+            ],
+            [
+              463,
+              315
+            ],
+            [
+              144,
+              315
+            ]
+          ],
+          "centre": [
+            303,
+            292
+          ]
+        }
+      ],
+      "validation_valid": true,
+      "validation_summary": "Text blocks: 3"
+    }
+  ]
+}

@@ -1,0 +1,460 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - navigation [ref=e6]:
+      - link [ref=e8] [cursor=pointer]:
+        - /url: /
+        - img [ref=e9]
+      - search [ref=e13]:
+        - generic [ref=e14]:
+          - button "Videos" [ref=e16] [cursor=pointer]:
+            - generic [ref=e17]:
+              - img [ref=e18]
+              - generic [ref=e21]: Videos
+              - img [ref=e22]
+          - searchbox "Search for free videos" [ref=e24]: football dribble
+          - button [ref=e26] [cursor=pointer]:
+            - img [ref=e28]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - link "Explore" [ref=e32] [cursor=pointer]:
+            - /url: /discover/
+            - generic [ref=e33]: Explore
+          - img [ref=e34]
+        - link "License" [ref=e36] [cursor=pointer]:
+          - /url: /license/
+          - generic [ref=e37]: License
+        - button [ref=e39] [cursor=pointer]:
+          - img [ref=e40]
+        - button "Join" [ref=e42] [cursor=pointer]:
+          - generic [ref=e44]: Join
+    - main [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e50]:
+          - paragraph [ref=e52] [cursor=pointer]: Any
+          - generic [ref=e53] [cursor=pointer]:
+            - img [ref=e55]
+            - paragraph [ref=e57]: Horizontal
+          - generic [ref=e58] [cursor=pointer]:
+            - img [ref=e60]
+            - paragraph [ref=e62]: Vertical
+          - generic [ref=e63] [cursor=pointer]:
+            - img [ref=e65]
+            - paragraph [ref=e67]: Square
+        - generic [ref=e71]:
+          - paragraph [ref=e73] [cursor=pointer]: Any
+          - paragraph [ref=e75] [cursor=pointer]: "0"
+          - generic [ref=e76] [cursor=pointer]:
+            - img [ref=e78]
+            - paragraph [ref=e80]: "1"
+          - generic [ref=e81] [cursor=pointer]:
+            - img [ref=e83]
+            - paragraph [ref=e85]: "2"
+          - generic [ref=e86] [cursor=pointer]:
+            - img [ref=e88]
+            - paragraph [ref=e90]: 3+
+        - generic [ref=e94]:
+          - paragraph [ref=e96] [cursor=pointer]: Any
+          - generic [ref=e97] [cursor=pointer]:
+            - img [ref=e99]
+            - paragraph [ref=e101]: Baby
+          - generic [ref=e102] [cursor=pointer]:
+            - img [ref=e104]
+            - paragraph [ref=e106]: Child
+          - generic [ref=e107] [cursor=pointer]:
+            - img [ref=e109]
+            - paragraph [ref=e111]: Teenager
+          - generic [ref=e112] [cursor=pointer]:
+            - img [ref=e114]
+            - paragraph [ref=e116]: Adult
+          - generic [ref=e117] [cursor=pointer]:
+            - img [ref=e119]
+            - paragraph [ref=e121]: Senior adult
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - slider [ref=e128] [cursor=pointer]
+            - slider [ref=e129] [cursor=pointer]
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - paragraph [ref=e132]: Minimum
+              - paragraph [ref=e133]: 5s
+            - generic [ref=e134]:
+              - paragraph [ref=e135]: Maximum
+              - paragraph [ref=e136]: 2m+
+        - generic [ref=e140]:
+          - paragraph [ref=e142] [cursor=pointer]: Any
+          - generic [ref=e143] [cursor=pointer]:
+            - img [ref=e145]
+            - paragraph [ref=e147]: "24"
+          - generic [ref=e148] [cursor=pointer]:
+            - img [ref=e150]
+            - paragraph [ref=e152]: "25"
+          - generic [ref=e153] [cursor=pointer]:
+            - img [ref=e155]
+            - paragraph [ref=e157]: "30"
+          - generic [ref=e158] [cursor=pointer]:
+            - img [ref=e160]
+            - paragraph [ref=e162]: "50"
+          - generic [ref=e163] [cursor=pointer]:
+            - img [ref=e165]
+            - paragraph [ref=e167]: 60+
+        - generic [ref=e171]:
+          - paragraph [ref=e173] [cursor=pointer]: Any
+          - generic [ref=e174] [cursor=pointer]:
+            - img [ref=e176]
+            - paragraph [ref=e178]: 1080p
+          - generic [ref=e179] [cursor=pointer]:
+            - img [ref=e181]
+            - paragraph [ref=e183]: 4K
+          - generic [ref=e184] [cursor=pointer]:
+            - img [ref=e186]
+            - paragraph [ref=e188]: 8K
+        - generic [ref=e192]:
+          - paragraph [ref=e194] [cursor=pointer]: Any
+          - generic [ref=e195] [cursor=pointer]:
+            - img [ref=e197]
+            - paragraph [ref=e199]: Last 24 hours
+          - generic [ref=e200] [cursor=pointer]:
+            - img [ref=e202]
+            - paragraph [ref=e204]: Last week
+          - generic [ref=e205] [cursor=pointer]:
+            - img [ref=e207]
+            - paragraph [ref=e209]: Last month
+          - generic [ref=e210] [cursor=pointer]:
+            - img [ref=e212]
+            - paragraph [ref=e214]: Last year
+        - main "main-content" [ref=e215]:
+          - generic [ref=e216]:
+            - heading "Free Football Dribble Videos" [level=1] [ref=e219]
+            - generic [ref=e222]:
+              - generic:
+                - img
+              - link "Photos 10.7K" [ref=e224] [cursor=pointer]:
+                - /url: /search/football%20dribble/
+                - text: Photos
+                - generic [ref=e225]: 10.7K
+              - link "Videos 7.4K" [ref=e226] [cursor=pointer]:
+                - /url: /search/videos/football%20dribble/
+                - text: Videos
+                - generic [ref=e227]: 7.4K
+              - link "Users 1.8K" [ref=e228] [cursor=pointer]:
+                - /url: /search/users/football%20dribble/
+                - text: Users
+                - generic [ref=e229]: 1.8K
+              - generic:
+                - img
+            - button "Filters" [ref=e233] [cursor=pointer]:
+              - generic [ref=e239]: Filters
+            - generic [ref=e240]:
+              - generic [ref=e242]:
+                - generic [ref=e243]:
+                  - article [ref=e246]:
+                    - link [ref=e247] [cursor=pointer]:
+                      - /url: /video/man-training-soccer-on-a-soccer-field-7187049/
+                      - img [ref=e248]
+                    - img [ref=e253]
+                  - article [ref=e258]:
+                    - link [ref=e259] [cursor=pointer]:
+                      - /url: /video/woman-kicking-a-soccer-ball-9441224/
+                      - img [ref=e260]
+                    - img [ref=e265]
+                  - article [ref=e270]:
+                    - link [ref=e271] [cursor=pointer]:
+                      - /url: /video/close-up-of-soccer-player-kicking-ball-30147551/
+                      - img [ref=e272]
+                    - img [ref=e277]
+                  - article [ref=e282]:
+                    - link [ref=e283] [cursor=pointer]:
+                      - /url: /video/film-of-friends-playing-football-10329079/
+                      - img [ref=e284]
+                    - img [ref=e289]
+                  - article [ref=e294]:
+                    - link [ref=e295] [cursor=pointer]:
+                      - /url: /video/man-with-football-showing-his-skills-5449931/
+                      - img [ref=e296]
+                    - img [ref=e301]
+                  - article [ref=e306]:
+                    - link [ref=e307] [cursor=pointer]:
+                      - /url: /video/a-boy-is-running-across-a-field-15905220/
+                      - img [ref=e308]
+                    - img [ref=e313]
+                  - article [ref=e318]:
+                    - link [ref=e319] [cursor=pointer]:
+                      - /url: /video/youth-soccer-practice-on-green-field-33145637/
+                      - img [ref=e320]
+                    - img [ref=e325]
+                - generic [ref=e328]:
+                  - article [ref=e331]:
+                    - link [ref=e332] [cursor=pointer]:
+                      - /url: /video/woman-kicking-a-soccer-ball-9440064/
+                      - img [ref=e333]
+                    - img [ref=e338]
+                  - article [ref=e343]:
+                    - link [ref=e344] [cursor=pointer]:
+                      - /url: /video/female-soccer-player-practicing-in-stadium-30112411/
+                      - img [ref=e345]
+                    - img [ref=e350]
+                  - article [ref=e355]:
+                    - link [ref=e356] [cursor=pointer]:
+                      - /url: /video/man-playing-with-a-soccer-ball-while-holding-a-drink-7187084/
+                      - img [ref=e357]
+                    - img [ref=e362]
+                  - article [ref=e367]:
+                    - link [ref=e368] [cursor=pointer]:
+                      - /url: /video/juggling-football-27353726/
+                      - img [ref=e369]
+                    - img [ref=e374]
+                  - article [ref=e379]:
+                    - link [ref=e380] [cursor=pointer]:
+                      - /url: /video/football-players-practicing-6077696/
+                      - img [ref=e381]
+                    - img [ref=e386]
+                - generic [ref=e389]:
+                  - generic [ref=e391]:
+                    - generic [ref=e393]:
+                      - link "Create your own football dribble content with Canva" [ref=e394] [cursor=pointer]:
+                        - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                        - generic "Create your own football dribble content with Canva" [ref=e395]
+                      - link "Create your own football dribble content with Canva" [ref=e396] [cursor=pointer]:
+                        - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                        - generic "Create your own football dribble content with Canva" [ref=e397]
+                      - link "Create your own football dribble content with Canva" [ref=e398] [cursor=pointer]:
+                        - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                        - generic "Create your own football dribble content with Canva" [ref=e399]
+                      - link "Create your own football dribble content with Canva" [ref=e400] [cursor=pointer]:
+                        - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                        - generic "Create your own football dribble content with Canva" [ref=e401]
+                    - link "Bring your ideas to life with Canva AI" [ref=e402] [cursor=pointer]:
+                      - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                      - img [ref=e403]
+                      - paragraph [ref=e405]: Bring your ideas to life with Canva AI
+                    - link "Get started for free" [ref=e406] [cursor=pointer]:
+                      - /url: https://www.canva.com/features/ai-video-generator/?utm_source=pexels&utm_campaign=aigc_pexelscampaign&utm_medium=partner
+                      - generic [ref=e408]: Get started for free
+                  - article [ref=e411]:
+                    - link [ref=e412] [cursor=pointer]:
+                      - /url: /video/players-practicing-in-a-football-field-9517745/
+                      - img [ref=e413]
+                    - img [ref=e418]
+                  - article [ref=e423]:
+                    - link [ref=e424] [cursor=pointer]:
+                      - /url: /video/woman-juggling-a-football-9517738/
+                      - img [ref=e425]
+                    - img [ref=e430]
+                  - article [ref=e435]:
+                    - link [ref=e436] [cursor=pointer]:
+                      - /url: /video/view-on-men-playing-football-11271471/
+                      - img [ref=e437]
+                    - img [ref=e442]
+                  - article [ref=e447]:
+                    - link [ref=e448] [cursor=pointer]:
+                      - /url: /video/people-playing-soccer-6077691/
+                      - img [ref=e449]
+                    - img [ref=e454]
+                  - article [ref=e459]:
+                    - link [ref=e460] [cursor=pointer]:
+                      - /url: /video/soccer-players-training-6084027/
+                      - img [ref=e461]
+                    - img [ref=e466]
+                  - article [ref=e471]:
+                    - link [ref=e472] [cursor=pointer]:
+                      - /url: /video/kids-playing-soccer-on-outdoor-field-33071976/
+                      - img [ref=e473]
+                    - img [ref=e478]
+                  - article [ref=e483]:
+                    - link [ref=e484] [cursor=pointer]:
+                      - /url: /video/faceless-soccer-player-kicking-ball-6084023/
+                      - img [ref=e485]
+                    - img [ref=e490]
+                - generic [ref=e493]:
+                  - article [ref=e496]:
+                    - link [ref=e497] [cursor=pointer]:
+                      - /url: /video/boy-playing-soccer-7878022/
+                      - img [ref=e498]
+                    - img [ref=e503]
+                  - article [ref=e508]:
+                    - link [ref=e509] [cursor=pointer]:
+                      - /url: /video/football-player-throwing-ball-from-outside-6078274/
+                      - img [ref=e510]
+                    - img [ref=e515]
+                  - article [ref=e520]:
+                    - link [ref=e521] [cursor=pointer]:
+                      - /url: /video/women-playing-football-9517709/
+                      - img [ref=e522]
+                    - img [ref=e527]
+                  - article [ref=e532]:
+                    - link [ref=e533] [cursor=pointer]:
+                      - /url: /video/man-training-on-a-soccer-field-7187047/
+                      - img [ref=e534]
+                    - img [ref=e539]
+                  - article [ref=e544]:
+                    - link [ref=e545] [cursor=pointer]:
+                      - /url: /video/a-man-kicking-a-soccer-ball-10349008/
+                      - img [ref=e546]
+                    - img [ref=e551]
+              - button "Load More" [ref=e555] [cursor=pointer]:
+                - generic [ref=e557]: Load More
+            - navigation [ref=e558]:
+              - generic [ref=e560]:
+                - link "Previous" [ref=e562]:
+                  - /url: /search/videos/football%20dribble/#
+                  - generic [ref=e564]: Previous
+                - link "1" [ref=e565]:
+                  - /url: /search/videos/football%20dribble/
+                  - generic [ref=e567]: "1"
+                - link "2" [ref=e568] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=2
+                  - generic [ref=e570]: "2"
+                - link "3" [ref=e571] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=3
+                  - generic [ref=e573]: "3"
+                - link "4" [ref=e574] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=4
+                  - generic [ref=e576]: "4"
+                - link "5" [ref=e577] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=5
+                  - generic [ref=e579]: "5"
+                - link "6" [ref=e580] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=6
+                  - generic [ref=e582]: "6"
+                - link "Next" [ref=e583] [cursor=pointer]:
+                  - /url: /search/videos/football%20dribble/?page=2
+                  - generic [ref=e585]: Next
+    - contentinfo [ref=e587]:
+      - separator [ref=e588]
+      - generic [ref=e589]:
+        - generic [ref=e590]:
+          - heading "Where stories come together." [level=2] [ref=e591]
+          - generic [ref=e592]:
+            - link "Download on iOS" [ref=e593] [cursor=pointer]:
+              - /url: https://itunes.apple.com/us/app/pexels/id1434330413/
+              - generic [ref=e595]: Download on iOS
+            - link "Download on Android" [ref=e596] [cursor=pointer]:
+              - /url: https://play.google.com/store/apps/details?id=com.pexels.app
+              - generic [ref=e598]: Download on Android
+          - list [ref=e599]:
+            - listitem [ref=e600]:
+              - link "Instagram" [ref=e601] [cursor=pointer]:
+                - /url: https://www.instagram.com/pexels/
+                - img [ref=e602]
+            - listitem [ref=e604]:
+              - link "Threads" [ref=e605] [cursor=pointer]:
+                - /url: https://www.threads.net/@pexels/
+                - img [ref=e606]
+            - listitem [ref=e608]:
+              - link "YouTube" [ref=e609] [cursor=pointer]:
+                - /url: https://www.youtube.com/pexelsphotos/
+                - img [ref=e610]
+            - listitem [ref=e612]:
+              - link "TikTok" [ref=e613] [cursor=pointer]:
+                - /url: https://www.tiktok.com/@pexels/
+                - img [ref=e614]
+            - listitem [ref=e616]:
+              - link "LinkedIn" [ref=e617] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/pexels/
+                - img [ref=e618]
+            - listitem [ref=e620]:
+              - link "X" [ref=e621] [cursor=pointer]:
+                - /url: https://x.com/pexels/
+                - img [ref=e622]
+        - generic [ref=e624]:
+          - list [ref=e625]:
+            - heading "Pexels" [level=3] [ref=e626]
+            - listitem [ref=e627]:
+              - link "Free Stock Photos" [ref=e628] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e629]:
+              - link "Free Videos" [ref=e630] [cursor=pointer]:
+                - /url: /videos/
+            - listitem [ref=e631]:
+              - link "Popular searches" [ref=e632] [cursor=pointer]:
+                - /url: /popular-searches/
+            - listitem [ref=e633]:
+              - link "Collections" [ref=e634] [cursor=pointer]:
+                - /url: /discover/
+            - listitem [ref=e635]:
+              - link "Challenges" [ref=e636] [cursor=pointer]:
+                - /url: /challenges/
+            - listitem [ref=e637]:
+              - link "Leaderboard" [ref=e638] [cursor=pointer]:
+                - /url: /leaderboard/
+            - listitem [ref=e639]:
+              - link "Other plugins & apps" [ref=e640] [cursor=pointer]:
+                - /url: /pro/
+          - list [ref=e641]:
+            - heading "Company" [level=3] [ref=e642]
+            - listitem [ref=e643]:
+              - link "About" [ref=e644] [cursor=pointer]:
+                - /url: /about/
+            - listitem [ref=e645]:
+              - link "Blog" [ref=e646] [cursor=pointer]:
+                - /url: /blog/
+            - listitem [ref=e647]:
+              - link "Help Center" [ref=e648] [cursor=pointer]:
+                - /url: https://help.pexels.com/hc/en-us/
+            - listitem [ref=e649]:
+              - link "Report content" [ref=e650] [cursor=pointer]:
+                - /url: /report/
+            - listitem [ref=e651]:
+              - link "Become a Hero" [ref=e652] [cursor=pointer]:
+                - /url: /hero/
+            - listitem [ref=e653]:
+              - link "Partner with Pexels" [ref=e654] [cursor=pointer]:
+                - /url: /become-a-partner/
+            - listitem [ref=e655]:
+              - link "Image & Video API" [ref=e656] [cursor=pointer]:
+                - /url: /api/
+            - listitem [ref=e657]: Sign Up
+        - list [ref=e658]:
+          - listitem [ref=e659]:
+            - heading "Free Stock Photos" [level=3] [ref=e660]
+          - listitem [ref=e661]:
+            - generic [ref=e663]:
+              - link "Black and white photography" [ref=e665] [cursor=pointer]:
+                - /url: /search/black%20and%20white/
+              - link "Happy birthday images" [ref=e666] [cursor=pointer]:
+                - /url: /search/happy%20birthday/
+              - link "Free business videos" [ref=e667] [cursor=pointer]:
+                - /url: /search/videos/business/
+              - link "Happy new year images" [ref=e668] [cursor=pointer]:
+                - /url: /search/happy%20new%20year/
+              - link "Cool wallpapers" [ref=e669] [cursor=pointer]:
+                - /url: /search/cool%20wallpaper/
+              - link "Best HD wallpapers" [ref=e670] [cursor=pointer]:
+                - /url: /search/HD%20wallpaper/
+              - link "Galaxy wallpaper" [ref=e671] [cursor=pointer]:
+                - /url: /search/galaxy%20wallpaper/
+              - link "Lock screen wallpaper" [ref=e672] [cursor=pointer]:
+                - /url: /search/lock%20screen%20wallpaper/
+              - link "iPhone wallpaper" [ref=e673] [cursor=pointer]:
+                - /url: /search/iphone%20wallpaper/
+              - link "4K wallpaper" [ref=e674] [cursor=pointer]:
+                - /url: /search/4k%20wallpaper/
+              - link "Samsung wallpaper" [ref=e675] [cursor=pointer]:
+                - /url: /search/samsung%20wallpaper/
+              - link "Love wallpaper" [ref=e676] [cursor=pointer]:
+                - /url: /search/love%20wallpaper/
+              - link "Mobile wallpaper" [ref=e677] [cursor=pointer]:
+                - /url: /search/mobile%20wallpaper/
+      - generic [ref=e679]:
+        - generic [ref=e680]: © 2026 Pexels
+        - generic [ref=e682]:
+          - generic:
+            - img
+          - link "Terms of Use" [ref=e684] [cursor=pointer]:
+            - /url: /terms-of-service/
+          - link "Privacy Policy" [ref=e685] [cursor=pointer]:
+            - /url: /privacy-policy/
+          - link "License" [ref=e686] [cursor=pointer]:
+            - /url: /license/
+          - link "Imprint" [ref=e687] [cursor=pointer]:
+            - /url: /imprint/
+          - link "Cookies Policy" [ref=e688] [cursor=pointer]:
+            - /url: /cookies/
+          - generic:
+            - img
+        - button "English" [ref=e691] [cursor=pointer]:
+          - generic [ref=e692]:
+            - img [ref=e693]
+            - generic [ref=e695]: English
+      - separator [ref=e696]
+  - alert [ref=e697]

@@ -1,0 +1,72 @@
+{
+  "total_cards": 1,
+  "exported_at": "2026-04-15T16:16:33.015159",
+  "cards": [
+    {
+      "source": "idcard_0001.png",
+      "template": "generic",
+      "card_detected": false,
+      "fields": {
+        "full_name": {
+          "value": "17/10/1974",
+          "confidence": 0.8807,
+          "source_text": "17/10/1974"
+        },
+        "gender": {
+          "value": "PHOTO",
+          "confidence": 0.9929,
+          "source_text": "PHOTO"
+        },
+        "expiry_date": {
+          "value": "Date",
+          "confidence": 0.4925,
+          "source_text": "Expiry Date:"
+        },
+        "document_type": {
+          "value": "NATIONAL ID",
+          "confidence": 0.8679,
+          "source_text": "NATIONAL ID"
+        },
+        "date_of_birth": {
+          "value": "18/04/2020",
+          "confidence": 0.6989,
+          "source_text": "18/04/2020"
+        },
+        "id_number": {
+          "value": "NATIONAL",
+          "confidence": 0.5207,
+          "source_text": "NATIONAL ID"
+        }
+      },
+      "num_ocr_blocks": 19,
+      "extracted_at": "2026-04-15T16:16:33.007943",
+      "validation": {
+        "valid": true,
+        "fields_found": 6,
+        "fields_missing": [],
+        "warnings": [
+          {
+            "field": "card_boundary",
+            "message": "No card boundary detected -- OCR ran on full image",
+            "severity": "warning"
+          },
+          {
+            "field": "expiry_date",
+            "message": "Low OCR confidence (0.49)",
+            "severity": "warning"
+          },
+          {
+            "field": "id_number",
+            "message": "Low OCR confidence (0.52)",
+            "severity": "warning"
+          },
+          {
+            "field": "expiry_date",
+            "message": "Unusual date format: 'Date'",
+            "severity": "warning"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "note_0000.png",
+    "num_lines": 1,
+    "mean_confidence": 0.373,
+    "valid": true,
+    "warnings": 1,
+    "preview": "30- "
+  },
+  {
+    "file": "note_0001.png",
+    "num_lines": 1,
+    "mean_confidence": 0.48,
+    "valid": true,
+    "warnings": 0,
+    "preview": "10 1 "
+  },
+  {
+    "file": "note_0002.png",
+    "num_lines": 1,
+    "mean_confidence": 0.58,
+    "valid": true,
+    "warnings": 0,
+    "preview": "0, "
+  },
+  {
+    "file": "note_0003.png",
+    "num_lines": 1,
+    "mean_confidence": 0.545,
+    "valid": true,
+    "warnings": 0,
+    "preview": "1 1 "
+  },
+  {
+    "file": "note_0004.png",
+    "num_lines": 1,
+    "mean_confidence": 0.605,
+    "valid": true,
+    "warnings": 0,
+    "preview": "1 1 "
+  }
+]

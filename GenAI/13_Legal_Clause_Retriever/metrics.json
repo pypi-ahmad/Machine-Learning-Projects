@@ -1,0 +1,34 @@
+{
+  "project": "Legal Clause Retriever",
+  "corpus": {
+    "contracts": 3,
+    "total_clauses": 25,
+    "categories": [
+      "data",
+      "liability",
+      "scope",
+      "indemnification",
+      "confidentiality",
+      "governing_law",
+      "payment",
+      "ip",
+      "non_compete",
+      "warranty",
+      "termination",
+      "term"
+    ]
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "total_queries": 8,
+    "baseline_accuracy": 0.375,
+    "semantic_accuracy": 0.875
+  },
+  "risk_analysis": {
+    "patterns_defined": 8,
+    "total_risks_found": 6,
+    "high_severity": 1,
+    "medium_severity": 4,
+    "low_severity": 1
+  }
+}

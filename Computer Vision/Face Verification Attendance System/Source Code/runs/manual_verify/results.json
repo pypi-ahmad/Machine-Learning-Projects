@@ -1,0 +1,28 @@
+{
+  "total_frames": 1,
+  "exported_at": "2026-04-15T12:30:00.676064+00:00",
+  "records": [
+    {
+      "timestamp": "2026-04-15T12:30:00.656348+00:00",
+      "source": "002.jpg",
+      "num_faces": 1,
+      "num_matched": 1,
+      "num_unknown": 0,
+      "backend": "insightface",
+      "faces": [
+        {
+          "identity": "Aaron_Peirsol",
+          "similarity": 0.9097,
+          "matched": true,
+          "det_confidence": 0.7675,
+          "box": [
+            1,
+            0,
+            92,
+            122
+          ]
+        }
+      ]
+    }
+  ]
+}

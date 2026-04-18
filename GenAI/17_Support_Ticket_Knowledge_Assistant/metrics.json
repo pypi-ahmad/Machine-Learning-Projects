@@ -1,0 +1,40 @@
+{
+  "project": "Support Ticket Knowledge Assistant",
+  "knowledge_base": {
+    "total_tickets": 30,
+    "categories": {
+      "Authentication": 6,
+      "Billing": 6,
+      "Performance": 6,
+      "Integration": 6,
+      "Data": 6
+    },
+    "priorities": {
+      "high": 13,
+      "critical": 5,
+      "medium": 9,
+      "low": 3
+    },
+    "avg_resolution_hours": 2.6333333333333333
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "eval_queries": 10,
+    "keyword": {
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "mrr": 1.0
+    },
+    "semantic": {
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "mrr": 1.0
+    },
+    "category_prediction_accuracy": 1.0
+  },
+  "config": {
+    "top_k": 5,
+    "similarity_threshold": 0.3,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "total_frames": 1,
+  "zones": [],
+  "alerts": [],
+  "timeline": [
+    {
+      "frame_idx": 0,
+      "total_persons": 6,
+      "unzoned": 6,
+      "zone_counts": {},
+      "overcrowded_zones": []
+    }
+  ]
+}

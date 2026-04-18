@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Waste Sorting
+  Detector/Source Code/runs/mlflow/517355852750539655/9e49a9e7a776423381ee84641406a73e/artifacts
+end_time: 1776230832060
+entry_point_name: ''
+experiment_id: '517355852750539655'
+lifecycle_stage: active
+run_id: 9e49a9e7a776423381ee84641406a73e
+run_name: train
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776230765509
+status: 3
+tags: []
+user_id: ahmad

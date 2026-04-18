@@ -1,0 +1,37 @@
+{
+  "project": "MNIST Variational Autoencoder",
+  "dataset": {
+    "name": "MNIST",
+    "source": "http://yann.lecun.com/exdb/mnist/",
+    "train_size": 50000,
+    "val_size": 10000,
+    "test_size": 10000
+  },
+  "model": {
+    "architecture": "VAE",
+    "latent_dim": 20,
+    "device": "cuda"
+  },
+  "training": {
+    "epochs": 20,
+    "batch_size": 128,
+    "learning_rate": 0.001
+  },
+  "test_results": {
+    "test_elbo": 100.97485859375,
+    "test_reconstruction_bce": 80.96082896728515,
+    "test_kld": 20.01402964477539
+  },
+  "per_class_mse": {
+    "0": 0.013943431030825845,
+    "1": 0.005234439770325953,
+    "2": 0.017802991032557086,
+    "3": 0.015728970913972594,
+    "4": 0.014033593386772056,
+    "5": 0.016829825198014722,
+    "6": 0.013718213625485564,
+    "7": 0.01048960349049622,
+    "8": 0.019074150208609458,
+    "9": 0.011805987014869972
+  }
+}

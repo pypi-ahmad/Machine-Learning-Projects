@@ -1,0 +1,58 @@
+{
+  "disclaimer": "This output is for informational purposes only. It does not constitute medical advice. Always consult a licensed healthcare professional.",
+  "total_prescriptions": 1,
+  "exported_at": "2026-04-15T11:14:18.747294+00:00",
+  "records": [
+    {
+      "source": "prescription_0000.png",
+      "num_blocks": 30,
+      "mean_confidence": 0.905,
+      "header_fields": {
+        "prescriber": {
+          "value": "Meera Shah",
+          "confidence": 0.999
+        },
+        "date": {
+          "value": "24/05/2026",
+          "confidence": 0.951
+        },
+        "patient_name": {
+          "value": "Riya Sharma",
+          "confidence": 0.868
+        }
+      },
+      "medicines": [
+        {
+          "medicine_name": "Paracetamol",
+          "dosage": "650 mg",
+          "frequency": "hours",
+          "duration": "",
+          "route": "Oral",
+          "instructions": "For; Take if fever persists; days",
+          "confidence": 0.619
+        },
+        {
+          "medicine_name": "Pantoprazole",
+          "dosage": "40 mg",
+          "frequency": "Once daily",
+          "duration": "For 10 days",
+          "route": "Oral",
+          "instructions": "Take before breakfast",
+          "confidence": 0.613
+        },
+        {
+          "medicine_name": "Ibuprofen",
+          "dosage": "400 mg",
+          "frequency": "Thrice daily",
+          "duration": "",
+          "route": "Oral",
+          "instructions": "For; days; a licensed clinician:; verify with; Informational sample only",
+          "confidence": 0.54
+        }
+      ],
+      "num_medicines": 3,
+      "valid": true,
+      "warnings": []
+    }
+  ]
+}

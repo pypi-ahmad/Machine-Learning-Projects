@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Traffic Violation
+  Analyzer/Source Code/runs/mlflow/134989453050397025/65195084b1164521b5073ab3ee125d44/artifacts
+end_time: 1776191152875
+entry_point_name: ''
+experiment_id: '134989453050397025'
+lifecycle_stage: active
+run_id: 65195084b1164521b5073ab3ee125d44
+run_name: train
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776191123840
+status: 3
+tags: []
+user_id: ahmad

@@ -1,0 +1,48 @@
+{
+  "project": "Medical Literature Finder",
+  "disclaimer": "Technical demo only. Not medical advice. Studies are synthetic educational examples.",
+  "corpus": {
+    "total_studies": 25,
+    "therapeutic_areas": {
+      "Cardiology": 5,
+      "Oncology": 5,
+      "Neurology": 5,
+      "Endocrinology": 5,
+      "Infectious Disease": 5
+    },
+    "study_types": {
+      "rct": 9,
+      "cohort": 8,
+      "meta-analysis": 4,
+      "case-control": 1,
+      "case-report": 1,
+      "cross-sectional": 2
+    },
+    "outcome_types": {
+      "efficacy": 12,
+      "mortality": 3,
+      "safety": 4,
+      "quality-of-life": 3,
+      "biomarker": 3
+    },
+    "year_range": [
+      2022,
+      2024
+    ]
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "eval_queries": 8,
+    "unfiltered_recall_at_1": 1.0,
+    "filtered_recall_at_1": 1.0,
+    "keyword_recall_at_1": 1.0,
+    "unfiltered_mrr": 1.0,
+    "filtered_mrr": 1.0
+  },
+  "config": {
+    "top_k": 5,
+    "similarity_threshold": 0.25,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "evidence_alpha": 0.3
+  }
+}

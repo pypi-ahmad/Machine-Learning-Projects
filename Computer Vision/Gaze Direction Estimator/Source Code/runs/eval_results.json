@@ -1,0 +1,22 @@
+{
+  "total_frames": 360,
+  "faces_detected": 360,
+  "avg_h_ratio": 0.4986,
+  "avg_v_ratio": 0.4244,
+  "direction_counts": {
+    "CENTER": 122,
+    "RIGHT": 114,
+    "LEFT": 105,
+    "UP": 19
+  },
+  "label_counts": {
+    "DOWN": 31,
+    "RIGHT": 113,
+    "LEFT": 154,
+    "CENTER": 28,
+    "UP": 34
+  },
+  "labeled_frames": 360,
+  "labeled_correct": 203,
+  "coarse_label_accuracy": 0.5639
+}

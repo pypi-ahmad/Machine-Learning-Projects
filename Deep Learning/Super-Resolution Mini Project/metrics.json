@@ -1,0 +1,17 @@
+{
+  "dataset": "DIV2K_valid_subset",
+  "subset_size": 40,
+  "model": "SRCNN_x2",
+  "bicubic": {
+    "psnr_mean": 35.48240147549692,
+    "ssim_mean": 0.9275844097137451
+  },
+  "srcnn": {
+    "psnr_mean": 19.172058189724577,
+    "ssim_mean": 0.5466713060935339
+  },
+  "delta": {
+    "psnr_gain": -16.310343285772344,
+    "ssim_gain": -0.38091310362021125
+  }
+}

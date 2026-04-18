@@ -1,10 +1,66 @@
 {
   "dataset": "FashionMNIST",
   "dataset_source": "https://github.com/zalandoresearch/fashion-mnist",
+  "dataset_license": "MIT",
+  "model_type": "ConvAutoencoder",
   "device": "cuda",
-  "epochs": 5,
+  "num_epochs": 20,
   "bottleneck_dim": 32,
-  "test_mse_mean": 0.011220330372452736,
-  "test_mse_std": 0.007513230200856924,
-  "best_val_loss": 0.011204861025226878
+  "learning_rate": 0.001,
+  "batch_size": 128,
+  "seed": 42,
+  "dataset_split": {
+    "train_size": 48000,
+    "val_size": 12000,
+    "test_size": 10000
+  },
+  "train_metrics": {
+    "mse_mean": 0.008485001511871815,
+    "mse_std": 0.006702319253236055,
+    "ssim_mean": 0.7908125897273143,
+    "ssim_std": 0.11919931013053607
+  },
+  "val_metrics": {
+    "mse_mean": 0.00871921144425869,
+    "mse_std": 0.007034496404230595,
+    "ssim_mean": 0.7879918647883446,
+    "ssim_std": 0.12164257547732504
+  },
+  "test_metrics": {
+    "mse_mean": 0.008704218082129955,
+    "mse_std": 0.006879507098346949,
+    "ssim_mean": 0.7877300809403601,
+    "ssim_std": 0.12144824887734389
+  },
+  "bottleneck_comparison": {
+    "8": {
+      "mse": 0.01699543371796608,
+      "ssim": 0.649617236535226,
+      "compression_ratio": 98.0
+    },
+    "16": {
+      "mse": 0.013080451637506485,
+      "ssim": 0.7049272221836378,
+      "compression_ratio": 49.0
+    },
+    "64": {
+      "mse": 0.007240267936140299,
+      "ssim": 0.8158959670896347,
+      "compression_ratio": 12.25
+    }
+  },
+  "per_class_errors": {
+    "T-shirt": 0.00785481370985508,
+    "Trouser": 0.004137987270951271,
+    "Pullover": 0.008273037150502205,
+    "Dress": 0.008000625297427177,
+    "Coat": 0.0075515559874475,
+    "Sandal": 0.013605838641524315,
+    "Shirt": 0.009036118164658546,
+    "Sneaker": 0.007588711567223072,
+    "Bag": 0.013452449813485146,
+    "Ankle Boot": 0.0075410413555800915
+  },
+  "best_val_loss": 0.008716071559552183,
+  "autoencoder_explanation": "Convolutional autoencoder with encoder (convs + pooling) \u2192 bottleneck (32-dim FC) \u2192 decoder (transpose convs + upsampling)"
 }

@@ -1,0 +1,96 @@
+[
+  {
+    "file": "invoice_0000.png",
+    "num_blocks": 23,
+    "fields_found": 9,
+    "field_names": [
+      "invoice_number",
+      "invoice_date",
+      "due_date",
+      "total",
+      "subtotal",
+      "tax",
+      "currency",
+      "vendor_name",
+      "bill_to"
+    ],
+    "line_items": 0,
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "invoice_0001.png",
+    "num_blocks": 23,
+    "fields_found": 8,
+    "field_names": [
+      "invoice_number",
+      "invoice_date",
+      "due_date",
+      "total",
+      "tax",
+      "currency",
+      "vendor_name",
+      "bill_to"
+    ],
+    "line_items": 0,
+    "valid": true,
+    "warnings": 0
+  },
+  {
+    "file": "invoice_0002.png",
+    "num_blocks": 30,
+    "fields_found": 9,
+    "field_names": [
+      "invoice_number",
+      "invoice_date",
+      "due_date",
+      "total",
+      "subtotal",
+      "tax",
+      "currency",
+      "vendor_name",
+      "bill_to"
+    ],
+    "line_items": 0,
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "invoice_0003.png",
+    "num_blocks": 24,
+    "fields_found": 9,
+    "field_names": [
+      "invoice_number",
+      "invoice_date",
+      "due_date",
+      "total",
+      "subtotal",
+      "tax",
+      "currency",
+      "vendor_name",
+      "bill_to"
+    ],
+    "line_items": 0,
+    "valid": true,
+    "warnings": 1
+  },
+  {
+    "file": "invoice_0004.png",
+    "num_blocks": 28,
+    "fields_found": 9,
+    "field_names": [
+      "invoice_number",
+      "invoice_date",
+      "due_date",
+      "total",
+      "subtotal",
+      "tax",
+      "currency",
+      "vendor_name",
+      "bill_to"
+    ],
+    "line_items": 0,
+    "valid": true,
+    "warnings": 1
+  }
+]

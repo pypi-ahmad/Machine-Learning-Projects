@@ -1,0 +1,37 @@
+{
+  "identities_evaluated": 2,
+  "threshold": 0.45,
+  "correct": 4,
+  "total": 4,
+  "accuracy": 100.0,
+  "per_sample": [
+    {
+      "identity": "Aaron_Peirsol",
+      "predicted": "Aaron_Peirsol",
+      "similarity": 0.6993,
+      "correct": true,
+      "file": "002.jpg"
+    },
+    {
+      "identity": "Aaron_Peirsol",
+      "predicted": "Aaron_Peirsol",
+      "similarity": 0.6404,
+      "correct": true,
+      "file": "003.jpg"
+    },
+    {
+      "identity": "Abdullah",
+      "predicted": "Abdullah",
+      "similarity": 0.6844,
+      "correct": true,
+      "file": "002.jpg"
+    },
+    {
+      "identity": "Abdullah",
+      "predicted": "Abdullah",
+      "similarity": 0.6459,
+      "correct": true,
+      "file": "003.jpg"
+    }
+  ]
+}

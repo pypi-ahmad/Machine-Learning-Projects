@@ -1,0 +1,20 @@
+{
+  "model": "UNet",
+  "dataset": "Kvasir-SEG",
+  "image_size": [
+    352,
+    352
+  ],
+  "batch_size": 16,
+  "num_epochs": 30,
+  "learning_rate": 0.001,
+  "train_size": 700,
+  "val_size": 150,
+  "test_size": 150,
+  "best_epoch": 29,
+  "best_val_dice": 0.7809417302698906,
+  "test_dice_mean": 0.7667162492007307,
+  "test_dice_std": 0.21448196172838493,
+  "test_iou_mean": 0.6635063182584712,
+  "test_iou_std": 0.24349027559567238
+}

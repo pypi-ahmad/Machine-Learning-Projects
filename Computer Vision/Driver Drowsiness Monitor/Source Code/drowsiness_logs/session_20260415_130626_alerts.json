@@ -1,0 +1,25 @@
+{
+  "session": "session_20260415_130626",
+  "total_alerts": 3,
+  "exported_at": "2026-04-15T13:06:28.488051+00:00",
+  "events": [
+    {
+      "timestamp": "2026-04-15T13:06:27.972929+00:00",
+      "alert_type": "perclos",
+      "severity": "critical",
+      "detail": "PERCLOS=100.0% exceeds threshold"
+    },
+    {
+      "timestamp": "2026-04-15T13:06:28.278512+00:00",
+      "alert_type": "prolonged_closure",
+      "severity": "critical",
+      "detail": "Eyes closed for extended period (EAR=0.02)"
+    },
+    {
+      "timestamp": "2026-04-15T13:06:28.278705+00:00",
+      "alert_type": "distraction",
+      "severity": "warning",
+      "detail": "Looking away from road (yaw=54.9\u00b0)"
+    }
+  ]
+}

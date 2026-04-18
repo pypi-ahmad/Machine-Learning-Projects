@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Crowd Zone
+  Counter/Source Code/runs/mlflow/623763548194201489/28992af23ed74606b3b817c8453c5e51/artifacts
+end_time: 1776245745122
+entry_point_name: ''
+experiment_id: '623763548194201489'
+lifecycle_stage: active
+run_id: 28992af23ed74606b3b817c8453c5e51
+run_name: train
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776245666276
+status: 3
+tags: []
+user_id: ahmad

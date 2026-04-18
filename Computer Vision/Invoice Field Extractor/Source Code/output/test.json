@@ -1,0 +1,76 @@
+{
+  "total_invoices": 1,
+  "exported_at": "2026-04-15T15:23:55.216564",
+  "invoices": [
+    {
+      "source": "invoice_0000.png",
+      "fields": {
+        "invoice_number": {
+          "value": "oice",
+          "confidence": 0.9989,
+          "source_text": "Invoice"
+        },
+        "invoice_date": {
+          "value": "01/24/2025",
+          "confidence": 0.8297,
+          "source_text": "Invoice Date: 01/24/2025"
+        },
+        "due_date": {
+          "value": "05/08/2025",
+          "confidence": 0.7571,
+          "source_text": "Due Date: 05/08/2025"
+        },
+        "total": {
+          "value": "1950.00",
+          "confidence": 0.9203,
+          "source_text": "Subtotal: $1950.00"
+        },
+        "subtotal": {
+          "value": "1950.00",
+          "confidence": 0.9203,
+          "source_text": "Subtotal: $1950.00"
+        },
+        "tax": {
+          "value": "156.00",
+          "confidence": 0.9699,
+          "source_text": "Tax: $156.00"
+        },
+        "currency": {
+          "value": "USD",
+          "confidence": 0.1196,
+          "source_text": "$50o.00"
+        },
+        "vendor_name": {
+          "value": "Atlas Industries",
+          "confidence": 0.7939,
+          "source_text": "Atlas Industries"
+        },
+        "bill_to": {
+          "value": "Customer Corp",
+          "confidence": 0.6259,
+          "source_text": "Bill To: Customer Corp"
+        }
+      },
+      "line_items": [],
+      "num_ocr_blocks": 23,
+      "extracted_at": "2026-04-15T15:23:55.202132",
+      "validation": {
+        "valid": true,
+        "fields_found": 9,
+        "fields_missing": [],
+        "warnings": [
+          {
+            "field": "currency",
+            "message": "Low OCR confidence (0.12)",
+            "severity": "warning"
+          },
+          {
+            "field": "total",
+            "message": "Subtotal (1950.00) + Tax (156.00) = 2106.00 but Total is 1950.00",
+            "severity": "warning"
+          }
+        ]
+      }
+    }
+  ]
+}

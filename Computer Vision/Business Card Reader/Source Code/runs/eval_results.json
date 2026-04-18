@@ -1,0 +1,79 @@
+[
+  {
+    "file": "card_0000.png",
+    "num_blocks": 13,
+    "fields_found": 7,
+    "fields": [
+      "email",
+      "phone",
+      "website",
+      "address",
+      "title",
+      "company",
+      "name"
+    ],
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "card_0001.png",
+    "num_blocks": 9,
+    "fields_found": 7,
+    "fields": [
+      "email",
+      "phone",
+      "website",
+      "address",
+      "title",
+      "company",
+      "name"
+    ],
+    "valid": true,
+    "warnings": 1
+  },
+  {
+    "file": "card_0002.png",
+    "num_blocks": 13,
+    "fields_found": 5,
+    "fields": [
+      "email",
+      "phone",
+      "address",
+      "company",
+      "name"
+    ],
+    "valid": true,
+    "warnings": 1
+  },
+  {
+    "file": "card_0003.png",
+    "num_blocks": 12,
+    "fields_found": 7,
+    "fields": [
+      "email",
+      "phone",
+      "website",
+      "address",
+      "title",
+      "company",
+      "name"
+    ],
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "card_0004.png",
+    "num_blocks": 10,
+    "fields_found": 6,
+    "fields": [
+      "email",
+      "website",
+      "address",
+      "title",
+      "company",
+      "name"
+    ],
+    "valid": true,
+    "warnings": 0
+  }
+]

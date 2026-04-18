@@ -1,0 +1,18 @@
+{
+  "project": "Object Detection on COCO Subset",
+  "dataset": "COCO128 (subset of COCO)",
+  "model": "yolov8n",
+  "epochs": 1,
+  "imgsz": 640,
+  "device": "0",
+  "metrics": {
+    "map50": 0.6050049721600859,
+    "map50_95": 0.4477141356594078,
+    "precision": 0.6797428307519295,
+    "recall": 0.5195360722135859
+  },
+  "artifacts": [
+    "e:\\Github\\Machine-Learning-Projects\\Computer Vision\\Object Detection on COCO Subset\\Source Code\\coco_subset_eda_samples.png",
+    "e:\\Github\\Machine-Learning-Projects\\Computer Vision\\Object Detection on COCO Subset\\Source Code\\coco_subset_sample_prediction.png"
+  ]
+}

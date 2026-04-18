@@ -1,0 +1,87 @@
+[
+  {
+    "file": "idcard_0000.png",
+    "card_detected": false,
+    "template": "generic",
+    "num_blocks": 19,
+    "fields_found": 6,
+    "fields": [
+      "full_name",
+      "id_number",
+      "gender",
+      "expiry_date",
+      "document_type",
+      "date_of_birth"
+    ],
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "idcard_0001.png",
+    "card_detected": false,
+    "template": "generic",
+    "num_blocks": 19,
+    "fields_found": 6,
+    "fields": [
+      "full_name",
+      "gender",
+      "expiry_date",
+      "document_type",
+      "date_of_birth",
+      "id_number"
+    ],
+    "valid": true,
+    "warnings": 4
+  },
+  {
+    "file": "idcard_0002.png",
+    "card_detected": false,
+    "template": "generic",
+    "num_blocks": 19,
+    "fields_found": 6,
+    "fields": [
+      "full_name",
+      "id_number",
+      "gender",
+      "expiry_date",
+      "document_type",
+      "date_of_birth"
+    ],
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "idcard_0003.png",
+    "card_detected": false,
+    "template": "generic",
+    "num_blocks": 19,
+    "fields_found": 6,
+    "fields": [
+      "full_name",
+      "gender",
+      "expiry_date",
+      "document_type",
+      "date_of_birth",
+      "id_number"
+    ],
+    "valid": true,
+    "warnings": 2
+  },
+  {
+    "file": "idcard_0004.png",
+    "card_detected": false,
+    "template": "generic",
+    "num_blocks": 19,
+    "fields_found": 6,
+    "fields": [
+      "full_name",
+      "id_number",
+      "gender",
+      "expiry_date",
+      "document_type",
+      "date_of_birth"
+    ],
+    "valid": true,
+    "warnings": 4
+  }
+]

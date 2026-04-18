@@ -1,0 +1,130 @@
+{
+  "summary": {
+    "total_frames": 15,
+    "contested_frames": 15,
+    "contested_pct": 100.0,
+    "player_possession": {}
+  },
+  "timeline": [
+    {
+      "frame_idx": 0,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 1,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 2,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 3,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 4,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 5,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 6,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 7,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 8,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 3
+    },
+    {
+      "frame_idx": 9,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 10,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 11,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 12,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 13,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    },
+    {
+      "frame_idx": 14,
+      "ball_detected": false,
+      "holder_id": null,
+      "holder_name": "",
+      "distance_px": "",
+      "num_players": 4
+    }
+  ]
+}

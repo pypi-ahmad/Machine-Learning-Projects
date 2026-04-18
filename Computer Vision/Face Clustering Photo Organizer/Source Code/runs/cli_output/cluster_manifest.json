@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-04-15T12:45:00.627892+00:00",
+  "total_images": 6,
+  "total_faces": 5,
+  "num_clusters": 2,
+  "clusters": [
+    {
+      "cluster_id": 0,
+      "label": "person_000",
+      "num_faces": 3,
+      "num_photos": 3,
+      "source_photos": [
+        "runs\\cli_input\\aaron_001.jpg",
+        "runs\\cli_input\\aaron_002.jpg",
+        "runs\\cli_input\\aaron_003.jpg"
+      ]
+    },
+    {
+      "cluster_id": 1,
+      "label": "person_001",
+      "num_faces": 2,
+      "num_photos": 2,
+      "source_photos": [
+        "runs\\cli_input\\wade_002.jpg",
+        "runs\\cli_input\\wade_003.jpg"
+      ]
+    }
+  ]
+}

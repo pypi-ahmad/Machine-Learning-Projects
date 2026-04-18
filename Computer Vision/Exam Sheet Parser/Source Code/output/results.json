@@ -1,0 +1,87 @@
+{
+  "total_sheets": 1,
+  "exported_at": "2026-04-15T11:57:34.283599+00:00",
+  "records": [
+    {
+      "timestamp": "2026-04-15T11:57:34.196576+00:00",
+      "source": "exam_sheet_01.png",
+      "headings": [
+        "MIDTERM EXAMINATION"
+      ],
+      "sections": [
+        "Instructions: Answer all questions clearly:",
+        "Section",
+        "Section"
+      ],
+      "num_blocks": 24,
+      "num_questions": 5,
+      "total_marks": 25,
+      "mean_confidence": 0.8964,
+      "questions": [
+        {
+          "number": 1,
+          "text": "Q1. Define algebra. [5 marks]",
+          "marks": 5,
+          "options": [],
+          "option_letters": [],
+          "body_lines": [],
+          "confidence": 0.7128
+        },
+        {
+          "number": 2,
+          "text": "Q2. State one factor of twelve: [4 marks]",
+          "marks": 4,
+          "options": [],
+          "option_letters": [],
+          "body_lines": [],
+          "confidence": 0.6056
+        },
+        {
+          "number": 3,
+          "text": "Q3. Which graph is linear? [2 marks]",
+          "marks": 2,
+          "options": [
+            "A) A straight line",
+            "B) A",
+            "C) A",
+            "D)"
+          ],
+          "option_letters": [
+            "A",
+            "B",
+            "C",
+            "D"
+          ],
+          "body_lines": [
+            "circle",
+            "curve",
+            "A",
+            "spiral",
+            "B"
+          ],
+          "confidence": 0.7855
+        },
+        {
+          "number": 4,
+          "text": "Q4. Explain mean and median. [6 marks]",
+          "marks": 6,
+          "options": [],
+          "option_letters": [],
+          "body_lines": [],
+          "confidence": 0.6864
+        },
+        {
+          "number": 5,
+          "text": "Q5. Describe a square number. [8 marks]",
+          "marks": 8,
+          "options": [],
+          "option_letters": [],
+          "body_lines": [],
+          "confidence": 0.75
+        }
+      ],
+      "validation_valid": true,
+      "validation_summary": "Blocks: 24\nQuestions: 5"
+    }
+  ]
+}

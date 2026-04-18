@@ -1,0 +1,21 @@
+{
+  "project": "Personal Knowledge Base Chat",
+  "knowledge_base": {
+    "total_notes": 10,
+    "total_chunks": 60,
+    "total_words": 2224,
+    "avg_chunk_size_chars": 237
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "total_queries": 10,
+    "baseline_accuracy": 0.7,
+    "semantic_accuracy": 1.0
+  },
+  "config": {
+    "chunk_size": 400,
+    "chunk_overlap": 80,
+    "top_k": 5,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

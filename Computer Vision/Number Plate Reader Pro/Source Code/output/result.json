@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2026-04-15T11:31:02.172171+00:00",
+    "source": "train_0000.jpg",
+    "frame_index": 1,
+    "num_detections": 2,
+    "num_valid": 2,
+    "num_new": 1,
+    "plates": [
+      {
+        "plate_text": "KA01A81234",
+        "raw_text": "KAO1AB1234",
+        "det_confidence": 0.201,
+        "ocr_confidence": 0.3743,
+        "is_new": true,
+        "is_valid": true,
+        "box": [
+          159,
+          154,
+          767,
+          404
+        ]
+      },
+      {
+        "plate_text": "KA01A81234",
+        "raw_text": "KAO1AB1234",
+        "det_confidence": 0.1517,
+        "ocr_confidence": 0.9846,
+        "is_new": false,
+        "is_valid": true,
+        "box": [
+          160,
+          154,
+          777,
+          405
+        ]
+      }
+    ],
+    "validation_valid": true,
+    "validation_summary": "Plates: 2 detected, 2 valid, 1 new\nLow confidence: 1\n[WARNING] KA01A81234: Low OCR confidence (0.37)"
+  }
+]

@@ -1,0 +1,63 @@
+[
+  {
+    "file": "form_0000.png",
+    "ocr_blocks": 25,
+    "checkboxes": 13,
+    "checked": 12,
+    "text_fields": [
+      "email",
+      "date"
+    ],
+    "valid": false,
+    "warnings": 2
+  },
+  {
+    "file": "form_0001.png",
+    "ocr_blocks": 22,
+    "checkboxes": 13,
+    "checked": 11,
+    "text_fields": [
+      "email",
+      "date"
+    ],
+    "valid": false,
+    "warnings": 2
+  },
+  {
+    "file": "form_0002.png",
+    "ocr_blocks": 27,
+    "checkboxes": 12,
+    "checked": 11,
+    "text_fields": [
+      "email",
+      "date"
+    ],
+    "valid": false,
+    "warnings": 2
+  },
+  {
+    "file": "form_0003.png",
+    "ocr_blocks": 26,
+    "checkboxes": 8,
+    "checked": 7,
+    "text_fields": [
+      "email",
+      "date"
+    ],
+    "valid": false,
+    "warnings": 1
+  },
+  {
+    "file": "form_0004.png",
+    "ocr_blocks": 20,
+    "checkboxes": 12,
+    "checked": 10,
+    "text_fields": [
+      "name",
+      "email",
+      "date"
+    ],
+    "valid": true,
+    "warnings": 1
+  }
+]

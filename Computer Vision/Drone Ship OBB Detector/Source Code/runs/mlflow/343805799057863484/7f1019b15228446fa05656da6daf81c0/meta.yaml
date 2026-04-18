@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Drone Ship
+  OBB Detector/Source Code/runs/mlflow/343805799057863484/7f1019b15228446fa05656da6daf81c0/artifacts
+end_time: 1776243980033
+entry_point_name: ''
+experiment_id: '343805799057863484'
+lifecycle_stage: active
+run_id: 7f1019b15228446fa05656da6daf81c0
+run_name: train
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776243926172
+status: 3
+tags: []
+user_id: ahmad

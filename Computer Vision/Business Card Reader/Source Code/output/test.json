@@ -1,0 +1,60 @@
+{
+  "total_cards": 1,
+  "exported_at": "2026-04-15T16:08:44.483357",
+  "cards": [
+    {
+      "source": "card_0001.png",
+      "fields": {
+        "email": {
+          "value": "jomes.wilson@techvision.io",
+          "confidence": 0.5416,
+          "source_text": "jomes.wilson@techvision.io"
+        },
+        "phone": {
+          "value": "+1 (423) 338-9279",
+          "confidence": 0.6159,
+          "source_text": "+1 (423) 338-9279"
+        },
+        "website": {
+          "value": "www.techvisicn.ic",
+          "confidence": 0.6688,
+          "source_text": "www.techvisicn.ic"
+        },
+        "address": {
+          "value": "Market Street",
+          "confidence": 0.9996,
+          "source_text": "Market Street"
+        },
+        "title": {
+          "value": "Software Engineer",
+          "confidence": 0.999,
+          "source_text": "Software Engineer"
+        },
+        "company": {
+          "value": "Acme Corp:",
+          "confidence": 0.8245,
+          "source_text": "Acme Corp:"
+        },
+        "name": {
+          "value": "James Wilson",
+          "confidence": 0.9026,
+          "source_text": "James Wilson"
+        }
+      },
+      "num_ocr_blocks": 9,
+      "extracted_at": "2026-04-15T16:08:44.478271",
+      "validation": {
+        "valid": true,
+        "fields_found": 7,
+        "fields_missing": [],
+        "warnings": [
+          {
+            "field": "email",
+            "message": "Low OCR confidence (0.54)",
+            "severity": "warning"
+          }
+        ]
+      }
+    }
+  ]
+}

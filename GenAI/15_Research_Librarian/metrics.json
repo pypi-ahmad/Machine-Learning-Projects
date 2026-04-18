@@ -1,0 +1,29 @@
+{
+  "project": "Research Librarian",
+  "corpus": {
+    "papers": 5,
+    "sections": 25,
+    "chunks": 59,
+    "chunks_per_paper": {
+      "P1": 10,
+      "P2": 12,
+      "P3": 11,
+      "P4": 14,
+      "P5": 12
+    }
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "total_queries": 8,
+    "baseline_accuracy": 1.0,
+    "semantic_accuracy": 1.0,
+    "multi_hop_paper_recall": 0.8888888888888888
+  },
+  "config": {
+    "chunk_size": 500,
+    "chunk_overlap": 80,
+    "top_k": 5,
+    "multi_hop_per_sub_k": 3,
+    "embedding_model": "all-MiniLM-L6-v2"
+  }
+}

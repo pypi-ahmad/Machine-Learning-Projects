@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Number Plate
+  Reader Pro/Source Code/runs/mlflow/420064647549629186/0a6c8d34b45349dd8c3ace91bc2d98fb/artifacts
+end_time: 1776252134054
+entry_point_name: ''
+experiment_id: '420064647549629186'
+lifecycle_stage: active
+run_id: 0a6c8d34b45349dd8c3ace91bc2d98fb
+run_name: plate_detect
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776252110087
+status: 3
+tags: []
+user_id: ahmad

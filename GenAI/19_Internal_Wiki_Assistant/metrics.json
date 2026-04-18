@@ -1,0 +1,31 @@
+{
+  "project": "Internal Wiki Assistant",
+  "corpus": {
+    "total_pages": 8,
+    "total_sections": 89,
+    "departments": {
+      "Engineering": 5,
+      "HR": 1,
+      "Legal": 1,
+      "Finance": 1
+    },
+    "avg_sections_per_page": 11.125,
+    "avg_section_length_chars": 192.02247191011236
+  },
+  "retrieval_backend": "chroma",
+  "evaluation": {
+    "eval_queries": 10,
+    "page_recall_at_1": 1.0,
+    "section_recall_at_3": 1.0,
+    "mrr": 1.0,
+    "keyword_page_recall_at_1": 0.8
+  },
+  "config": {
+    "top_k": 5,
+    "similarity_threshold": 0.2,
+    "embedding_model": "all-MiniLM-L6-v2",
+    "recency_boost": 0.05,
+    "tag_match_boost": 0.1,
+    "heading_depth_penalty": 0.02
+  }
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "file": "prescription_0000.png",
+    "num_blocks": 30,
+    "num_medicines": 3,
+    "medicines": [
+      "Paracetamol",
+      "Pantoprazole",
+      "Ibuprofen"
+    ],
+    "mean_confidence": 0.905,
+    "valid": true,
+    "warnings": 0
+  },
+  {
+    "file": "prescription_0001.png",
+    "num_blocks": 31,
+    "num_medicines": 3,
+    "medicines": [
+      "Amoxicillin",
+      "Ibuprofen",
+      "Azithromycin"
+    ],
+    "mean_confidence": 0.935,
+    "valid": true,
+    "warnings": 1
+  }
+]

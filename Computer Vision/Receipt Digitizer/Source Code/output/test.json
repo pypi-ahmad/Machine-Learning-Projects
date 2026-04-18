@@ -1,0 +1,66 @@
+{
+  "total_receipts": 1,
+  "exported_at": "2026-04-15T16:03:51.895810",
+  "receipts": [
+    {
+      "source": "receipt_0000.png",
+      "fields": {
+        "merchant_name": {
+          "value": "BAKERY FRESH",
+          "confidence": 0.9452,
+          "source_text": "BAKERY FRESH"
+        },
+        "date": {
+          "value": "02/01/2025",
+          "confidence": 0.8799,
+          "source_text": "02/01/2025"
+        },
+        "total": {
+          "value": "2.64",
+          "confidence": 0.5,
+          "source_text": "total\n$2.64"
+        },
+        "subtotal": {
+          "value": "2.64",
+          "confidence": 0.5,
+          "source_text": "Subtotal\n$2.64"
+        },
+        "currency": {
+          "value": "USD",
+          "confidence": 0.3094,
+          "source_text": "$6.75"
+        },
+        "payment_method": {
+          "value": ":",
+          "confidence": 0.9991,
+          "source_text": "Payment:"
+        }
+      },
+      "line_items": [],
+      "num_ocr_blocks": 25,
+      "extracted_at": "2026-04-15T16:03:51.891681",
+      "validation": {
+        "valid": true,
+        "fields_found": 6,
+        "fields_missing": [],
+        "warnings": [
+          {
+            "field": "total",
+            "message": "Low OCR confidence (0.50)",
+            "severity": "warning"
+          },
+          {
+            "field": "subtotal",
+            "message": "Low OCR confidence (0.50)",
+            "severity": "warning"
+          },
+          {
+            "field": "currency",
+            "message": "Low OCR confidence (0.31)",
+            "severity": "warning"
+          }
+        ]
+      }
+    }
+  ]
+}

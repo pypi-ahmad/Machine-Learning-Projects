@@ -1,0 +1,15 @@
+artifact_uri: file:E:/Github/Machine-Learning-Projects/Computer Vision/Parking Occupancy
+  Monitor/Source Code/runs/mlflow/680422679382074110/a8d8fccee5c046e1bb790667c9e4cab0/artifacts
+end_time: 1776190701327
+entry_point_name: ''
+experiment_id: '680422679382074110'
+lifecycle_stage: active
+run_id: a8d8fccee5c046e1bb790667c9e4cab0
+run_name: parking_detect
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1776190641485
+status: 3
+tags: []
+user_id: ahmad

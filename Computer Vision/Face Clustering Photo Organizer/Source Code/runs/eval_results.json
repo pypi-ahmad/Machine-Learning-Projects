@@ -1,0 +1,12 @@
+{
+  "identities": 2,
+  "images": 8,
+  "faces_detected": 6,
+  "clusters_formed": 2,
+  "avg_purity": 1.0,
+  "algorithm": "agglomerative",
+  "cluster_sizes": [
+    4,
+    2
+  ]
+}
