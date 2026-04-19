@@ -22,60 +22,13 @@ jobs:
           python-version: '3.11'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install nbformat pandas
-
-      - name: Verify committed audit artifacts
-        run: |
-          python -c "
-          import json
-          from pathlib import Path
-
-          reports_dir = Path('reports')
-          summary_path = reports_dir / 'summary.json'
-          leaderboard_path = reports_dir / 'leaderboard.json'
-
-          if not reports_dir.is_dir():
-              raise SystemExit('reports/ directory is missing')
-          if not summary_path.is_file():
-              raise SystemExit('reports/summary.json is missing')
-
-          summary = json.loads(summary_path.read_text(encoding='utf-8'))
-          required = {'total_notebooks', 'passed', 'failed', 'avg_score', 'production_ready', 'ranking_asc'}
-          missing = sorted(required - set(summary))
-          if missing:
-              raise SystemExit(f'reports/summary.json missing keys: {missing}')
-
-          if leaderboard_path.is_file():
-              json.loads(leaderboard_path.read_text(encoding='utf-8'))
-
-          print(f\"Total: {summary['total_notebooks']}  Pass: {summary['passed']}  Fail: {summary['failed']}\")
-          print(f\"Avg score: {summary['avg_score']}  Production-ready: {summary['production_ready']}\")
-          print('Committed audit artifacts are present and readable.')
-          "
+      - name: Run full audit
+        run: python -u master_audit.py
         env:
           PYTHONIOENCODING: utf-8
 
-      - name: Report hard failures
-        run: |
-          python -c "
-          import json, sys
-          s = json.load(open('reports/summary.json'))
-          print(f'Total: {s[\"total_notebooks\"]}  Pass: {s[\"passed\"]}  Fail: {s[\"failed\"]}')
-          print(f'Avg score: {s[\"avg_score\"]}  Production-ready: {s[\"production_ready\"]}')
-          hard_fails = [r for r in s['ranking_asc'] if r.get('score',100) < 70]
-          if hard_fails:
-              print(f'HARD FAILURES ({len(hard_fails)}):')
-              for h in hard_fails[:20]:
-                  print(f'  {h[\"notebook\"]} score={h[\"score\"]}')
-          else:
-              print('ALL NOTEBOOKS PASSED MINIMUM THRESHOLD')
-          "
-
       - name: Upload reports
-        if: always() && hashFiles('reports/**') != ''
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ml-audit-reports
