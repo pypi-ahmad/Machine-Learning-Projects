@@ -1150,3 +1150,5 @@ Dependencies are organized by category in [`requirements.txt`](requirements.txt)
 ## License
 
 This project is licensed under the MIT License.
+
+<p align="center">Made with ❤️ by Ahmad Mujtaba</p>
