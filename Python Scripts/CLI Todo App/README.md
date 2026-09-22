@@ -9,43 +9,42 @@ terminal.  Tasks are stored as JSON in a platform-appropriate data directory.
 
 ## Installation
 
-```bash
-# From the Cli_todo/ directory:
-pip install -e .
+```powershell
+uv sync
 ```
 
-This installs a `cli_todo` console command.
+Run commands with `uv run`; no environment activation is needed.
 
 ## Usage
 
 ```bash
 # Add a task (inline)
-cli_todo add "Buy groceries"
+uv run cli_todo add "Buy groceries"
 
 # Add a task (prompted)
-cli_todo add
+uv run cli_todo add
 
 # List all tasks
-cli_todo list
+uv run cli_todo list
 
 # List as JSON (machine-readable)
-cli_todo list --json
+uv run cli_todo list --json
 
 # Finish / remove a task by ID
-cli_todo done 0
+uv run cli_todo done 0
 
 # Finish a task (prompted for ID)
-cli_todo done
+uv run cli_todo done
 
 # Remove all tasks (with confirmation prompt)
-cli_todo clear
+uv run cli_todo clear
 
 # Remove all tasks (skip prompt)
-cli_todo clear --yes
+uv run cli_todo clear --yes
 
 # Show help
-cli_todo --help
-cli_todo add --help
+uv run cli_todo --help
+uv run cli_todo add --help
 ```
 
 ### Global options
@@ -79,7 +78,7 @@ Tasks are persisted as a JSON file.  The default location is determined by
 Override with `--file`:
 
 ```bash
-cli_todo --file ./my-tasks.json list
+uv run cli_todo --file ./my-tasks.json list
 ```
 
 ### Legacy migration
@@ -89,11 +88,11 @@ the JSON path and `cli-todo` will auto-migrate it on first run.
 
 ## Development
 
-```bash
-pip install -e ".[dev]"   # or: pip install -e . && pip install pytest ruff
-ruff check src/ tests/
-ruff format src/ tests/
-pytest -q
+```powershell
+uv sync
+uv run ruff check src/ tests/
+uv run ruff format --check src/ tests/
+uv run ty check src/
 ```
 
 ## License

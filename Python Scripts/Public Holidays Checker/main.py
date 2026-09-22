@@ -42,12 +42,12 @@ def get_available_countries() -> list[dict]:
 def display_holidays(holidays: list[dict], country: str, year: int) -> None:
     today   = date.today()
     print(f"\n  Public holidays for {country.upper()} in {year}")
-    print(f"  {'─'*52}")
+    print(f"  {'-' * 52}")
     print(f"  {'Date':<14}  {'Day':<10}  Name")
-    print(f"  {'─'*52}")
+    print(f"  {'-' * 52}")
     for h in holidays:
         d      = date.fromisoformat(h["date"])
-        is_now = "◀ TODAY" if d == today else ("⬆ UPCOMING" if d > today else "")
+        is_now = "[TODAY]" if d == today else ("[UPCOMING]" if d > today else "")
         types  = h.get("types", [])
         name   = h["name"][:40]
         local  = h.get("localName", "")

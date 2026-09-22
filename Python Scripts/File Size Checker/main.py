@@ -27,24 +27,46 @@ def file_size(path: Path) -> int:
     return path.stat().st_size if path.is_file() else 0
 
 
+def collect_files(directory: Path, recursive: bool) -> list[Path]:
+    """Return accessible, non-symlink files from an explicitly chosen directory."""
+    files = []
+    if recursive:
+        for root, _, names in os.walk(directory, followlinks=False):
+            for name in names:
+                candidate = Path(root, name)
+                if candidate.is_file() and not candidate.is_symlink():
+                    files.append(candidate)
+    else:
+        for candidate in directory.iterdir():
+            if candidate.is_file() and not candidate.is_symlink():
+                files.append(candidate)
+    return files
+
+
 def dir_size(path: Path) -> int:
-    return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
+    total = 0
+    for file_path in collect_files(path, recursive=True):
+        try:
+            total += file_path.stat().st_size
+        except OSError:
+            continue
+    return total
 
 
 def scan_directory(
     directory: Path,
     recursive: bool = False,
     min_size: int = 0,
-    pattern: str = "*",
 ) -> list[tuple[Path, int]]:
     """Return (path, size_bytes) for all files matching criteria."""
-    glob = directory.rglob if recursive else directory.glob
     results = []
-    for f in glob(pattern):
-        if f.is_file():
-            sz = f.stat().st_size
-            if sz >= min_size:
-                results.append((f, sz))
+    for file_path in collect_files(directory, recursive):
+        try:
+            size = file_path.stat().st_size
+        except OSError:
+            continue
+        if size >= min_size:
+            results.append((file_path, size))
     return sorted(results, key=lambda x: x[1], reverse=True)
 
 
@@ -52,9 +74,11 @@ def size_breakdown(directory: Path) -> list[tuple[str, int]]:
     """Return total size grouped by extension."""
     from collections import defaultdict
     ext_totals: dict[str, int] = defaultdict(int)
-    for f in directory.rglob("*"):
-        if f.is_file():
-            ext_totals[f.suffix.lower() or "(no ext)"] += f.stat().st_size
+    for file_path in collect_files(directory, recursive=True):
+        try:
+            ext_totals[file_path.suffix.lower() or "(no ext)"] += file_path.stat().st_size
+        except OSError:
+            continue
     return sorted(ext_totals.items(), key=lambda x: x[1], reverse=True)
 
 
@@ -95,7 +119,7 @@ def main() -> None:
                 print(f"  Size : {human_size(sz)}  ({sz:,} bytes)")
             else:
                 sz = dir_size(p)
-                count = sum(1 for _ in p.rglob("*") if _.is_file())
+                count = len(collect_files(p, recursive=True))
                 print(f"\n  Dir  : {p.name}")
                 print(f"  Files: {count:,}")
                 print(f"  Size : {human_size(sz)}  ({sz:,} bytes)")
@@ -107,8 +131,7 @@ def main() -> None:
                 print(f"  Not a directory: {path_str}")
                 continue
             rec = input("  Recursive? (y/n, default n): ").strip().lower() == "y"
-            pat = input("  Pattern (default *): ").strip() or "*"
-            results = scan_directory(p, rec, 0, pat)
+            results = scan_directory(p, rec, 0)
             if not results:
                 print("  No files found.")
                 continue
@@ -151,7 +174,7 @@ def main() -> None:
             print(f"  {'-'*12} {'-'*10}  {'-'*6}  {'-'*20}")
             for ext, sz in breakdown[:20]:
                 pct = sz / total * 100 if total else 0
-                bar = "█" * int(pct / 5)
+                bar = "#" * int(pct / 5)
                 print(f"  {ext:<12} {human_size(sz):>10}  {pct:>5.1f}%  {bar}")
 
         else:

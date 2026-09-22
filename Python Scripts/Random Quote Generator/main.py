@@ -11,10 +11,11 @@ Usage:
 
 import argparse
 import json
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
-FAVOURITES_FILE = Path("quote_favourites.json")
+FAVOURITES_FILE = Path(__file__).with_name("quote_favourites.json")
 
 FALLBACK_QUOTES = [
     {"content": "The only way to do great work is to love what you do.", "author": "Steve Jobs", "tags": ["work"]},
@@ -75,7 +76,6 @@ def display_quote(q: dict, num: int | None = None):
 
 
 def main():
-    import urllib.parse
     parser = argparse.ArgumentParser(description="Random Quote Generator")
     parser.add_argument("--author", default="", help="Filter by author name")
     args = parser.parse_args()

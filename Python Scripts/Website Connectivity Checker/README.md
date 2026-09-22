@@ -1,118 +1,54 @@
-# Check Website Connectivity
+# Website Connectivity Checker
 
-A modern CLI tool to check whether websites are reachable.
+A command-line tool that checks whether HTTP(S) URLs are reachable. It supports individual URLs, URL files, table or JSON output, and optional CSV export.
 
-Replaces the legacy `check_connectivity.py` script with a fully-featured,
-tested, and type-safe implementation.
+## Requirements
 
-## What changed from the legacy script
+- Python 3.11 or newer
+- [uv](https://docs.astral.sh/uv/)
 
-| Aspect               | Legacy (`check_connectivity.py`)          | Modern (`check_site`)                          |
-| -------------------- | ----------------------------------------- | ---------------------------------------------- |
-| HTTP library         | `requests`                                | `httpx` (modern, async-ready, timeout support) |
-| Input                | Hardcoded `websites.txt`                  | CLI args, `--file` (txt/csv)                   |
-| Output               | Hardcoded `website_status.csv`            | Table (default), `--json`, `--csv <path>`      |
-| Timeout              | None (hangs indefinitely)                 | 10 s default, configurable `--timeout`         |
-| Retries              | None                                      | 2 retries default, configurable `--retries`    |
-| User-Agent           | Default `python-requests`                 | Custom descriptive UA string                   |
-| Error handling       | Crashes on connection errors              | Catches timeouts, DNS, connection errors       |
-| URL validation       | None                                      | Scheme normalisation + validation              |
-| Logging              | None                                      | `--verbose` enables debug logging              |
-| Exit codes           | Always 0                                  | 0=all ok, 1=any unreachable, 2=input error    |
-| Status granularity   | "working" / "not working"                 | reachable / unreachable / error + HTTP code    |
-| Tests                | None                                      | 40+ pytest tests with respx mocking            |
-| Packaging            | `requirements.txt`                        | `pyproject.toml` (PEP 621) + src layout        |
-| Global state         | Mutable module-level dict                 | No global mutable state                        |
+## Install
 
-## Installation
-
-```bash
-cd Check_website_connectivity
-pip install -e .
+```powershell
+cd "Python Scripts\Website Connectivity Checker"
+uv sync
 ```
 
 ## Usage
 
-### Check a single URL
+Check one URL:
 
-```bash
-check_site https://example.com
+```powershell
+uv run check_site https://example.com
 ```
 
-### Check multiple URLs
+Check several URLs:
 
-```bash
-check_site https://example.com https://github.com https://pypi.org
+```powershell
+uv run check_site https://example.com https://pypi.org --timeout 5 --retries 1
 ```
 
-### Check URLs from a file
+Read URLs from a text or CSV file:
 
-```bash
-# Plain text, one URL per line:
-check_site --file urls.txt
-
-# CSV (reads URLs from first URL-like column, skips headers):
-check_site --file website_status.csv
+```powershell
+uv run check_site --file .\urls.txt
 ```
 
-### JSON output
+Produce JSON or save CSV output:
 
-```bash
-check_site --json https://example.com
+```powershell
+uv run check_site --json https://example.com
+uv run check_site --csv .\results.csv https://example.com
 ```
-
-### CSV output
-
-```bash
-check_site --csv results.csv https://example.com https://github.com
-```
-
-### Combine options
-
-```bash
-check_site --file urls.txt --csv out.csv --timeout 5 --retries 3 --verbose
-```
-
-## Global options
-
-| Option                | Description                    | Default |
-| --------------------- | ------------------------------ | ------- |
-| `--file`, `-f`        | Path to a .txt or .csv file    | -       |
-| `--json`              | Print results as JSON          | off     |
-| `--csv PATH`          | Write results to a CSV file    | -       |
-| `--timeout`, `-t`     | Request timeout in seconds     | 10.0    |
-| `--retries`, `-r`     | Retry count on transient errors| 2       |
-| `--verbose`, `-v`     | Enable debug logging           | off     |
 
 ## Exit codes
 
-| Code | Meaning                                  |
-| ---- | ---------------------------------------- |
-| 0    | All URLs reachable (2xx/3xx)             |
-| 1    | At least one URL unreachable or errored  |
-| 2    | Invalid input (bad URL, missing file)    |
+- `0`: Every checked URL returned a 2xx or 3xx response.
+- `1`: At least one URL was unreachable or returned a non-success status.
+- `2`: Input was missing or invalid.
 
-## Development
+## Notes
 
-```bash
-pip install -e ".[dev]"     # or: pip install -e . && pip install ruff pytest respx
-ruff check src tests
-ruff format --check src tests
-pytest -q
-```
-
-## Project structure
-
-```
-Check_website_connectivity/
-  pyproject.toml
-  README.md
-  src/check_website_connectivity/
-    __init__.py        # version
-    models.py          # CheckResult dataclass + Status enum
-    core.py            # URL parsing, validation, HTTP checks, output formatting
-    cli.py             # Typer CLI entry point
-  tests/
-    test_core.py       # Unit tests: parsing, validation, HTTP mocking, formatting
-    test_cli.py        # CLI integration tests via CliRunner + respx
-```
+- Requests use a 10-second timeout and two retries by default.
+- Run checks only against URLs you are authorized to probe.
+- The project uses uv for dependency resolution and the native `uv_build` backend for packaging.

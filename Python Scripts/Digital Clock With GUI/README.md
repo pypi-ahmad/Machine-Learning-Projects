@@ -1,68 +1,38 @@
 # Digital Clock With GUI
 
-## Overview
+A resizable Tkinter clock that displays local system time in 24-hour `HH:MM:SS` format.
 
-A GUI-based digital clock application built with Python's Tkinter library. Displays the current system time in `HH:MM:SS` format, updated every 200 milliseconds. Features a bold yellow background with a large font display.
+## Requirements
 
-**Type:** GUI Application
+- Python 3.13+ with Tkinter available
+- [uv](https://docs.astral.sh/uv/)
 
-## Features
+## Run
 
-- Real-time digital clock display in `HH:MM:SS` (24-hour format)
-- Large bold "Boulder" font at size 68 for high visibility
-- Yellow background (`#f2e750`) with dark foreground text (`#363529`)
-- Border width of 25 pixels around the clock label
-- Resizable window (default size: 420×150 pixels)
-- Refreshes every 200 milliseconds for smooth time updates
+From this directory:
 
-## Dependencies
-
-- `tkinter` (Python standard library)
-- `time` (Python standard library)
-
-No external packages required.
-
-## How It Works
-
-1. Creates a Tkinter window titled "Digital Clock" with dimensions 420×150 pixels.
-2. A `Label` widget is configured with the Boulder font at size 68, bold, with a yellow background and dark foreground.
-3. The `digital_clock()` function reads the current time using `time.strftime("%H:%M:%S")` and updates the label text.
-4. `label.after(200, digital_clock)` schedules the function to run again after 200 milliseconds, creating a continuous update loop.
-
-## Project Structure
-
-```
-Digital Clock With GUI/
-└── Digital Clock Gui.py   # Main application script
+```powershell
+uv sync
+uv run python "Digital Clock Gui.py"
 ```
 
-## Setup & Installation
+The clock refreshes every 200 milliseconds. Resize the window as needed and close it normally to exit.
 
-1. Ensure Python 3.x is installed on your system.
-2. No additional packages need to be installed.
+## Appearance
 
-## How to Run
+The default UI preserves the original yellow background, dark text, bold `Boulder` font setting, and thick label border. If `Boulder` is unavailable on the system, Tkinter selects a fallback font.
 
-```bash
-python "Digital Clock Gui.py"
+## Project files
+
+```text
+Digital Clock Gui.py  # Tkinter application
+pyproject.toml        # uv project definition
+uv.lock               # Resolved Python environment
 ```
 
-## Configuration
+## Verification
 
-No external configuration. Visual properties can be modified directly in the script:
-
-- `text_font` — Font family, size, and weight (default: `("Boulder", 68, 'bold')`)
-- `background` — Background color (default: `"#f2e750"`)
-- `foreground` — Text color (default: `"#363529"`)
-- `border_width` — Label border width (default: `25`)
-
-## Testing
-
-No formal test suite present.
-
-## Limitations
-
-- Uses 24-hour time format only; no option to switch to 12-hour format.
-- The "Boulder" font may not be available on all systems, which could cause Tkinter to fall back to a default font.
-- No date display, only time.
-- No alarm or timer functionality.
+```powershell
+uv run python -m py_compile "Digital Clock Gui.py"
+uv lock --check
+```

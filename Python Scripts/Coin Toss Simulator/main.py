@@ -1,4 +1,4 @@
-"""Coin Toss Simulator — CLI tool.
+"""Coin Toss Simulator CLI tool.
 
 Simulate fair and weighted coin tosses.
 Track streaks, run tests, and visualize distributions.
@@ -15,12 +15,24 @@ import sys
 from collections import Counter
 
 
-def flip(bias: float = 0.5) -> str:
-    return "H" if random.random() < bias else "T"
+def validate_inputs(n: int, bias: float) -> None:
+    """Validate a positive flip count and an inclusive heads probability."""
+    if n < 1:
+        raise ValueError("The number of flips must be at least 1.")
+    if not 0 <= bias <= 1:
+        raise ValueError("Bias must be between 0 and 1.")
 
 
-def run_simulation(n: int, bias: float = 0.5) -> dict:
-    results = [flip(bias) for _ in range(n)]
+def flip(bias: float = 0.5, rng: random.Random | None = None) -> str:
+    generator = rng or random
+    return "H" if generator.random() < bias else "T"
+
+
+def run_simulation(
+    n: int, bias: float = 0.5, rng: random.Random | None = None
+) -> dict:
+    validate_inputs(n, bias)
+    results = [flip(bias, rng) for _ in range(n)]
     counts  = Counter(results)
     h, t    = counts["H"], counts["T"]
 
@@ -54,15 +66,15 @@ def run_simulation(n: int, bias: float = 0.5) -> dict:
 def display(d: dict, show_seq: bool = True) -> None:
     n    = d["total"]
     h, t = d["heads"], d["tails"]
-    print(f"\n{'─'*40}")
+    print(f"\n{'-' * 40}")
     print(f"  Flips:  {n:,}  |  Bias: {d['bias']:.1%}")
     print(f"  Heads:  {h:,} ({h/n:.2%})")
     print(f"  Tails:  {t:,} ({t/n:.2%})")
-    print(f"  Longest streak: {d['max_streak']} × {d['max_char']}")
+    print(f"  Longest streak: {d['max_streak']} x {d['max_char']}")
     print(f"  Number of runs: {d['runs']}")
 
-    bar_h = "█" * int(h / n * 40)
-    bar_t = "█" * int(t / n * 40)
+    bar_h = "#" * int(h / n * 40)
+    bar_t = "#" * int(t / n * 40)
     print(f"\n  H  {bar_h} {h/n:.1%}")
     print(f"  T  {bar_t} {t/n:.1%}")
 
@@ -71,12 +83,15 @@ def display(d: dict, show_seq: bool = True) -> None:
         print(f"\n  Sequence: {seq}")
 
 
-def streak_analysis(n: int, bias: float = 0.5, trials: int = 1000) -> None:
+def streak_analysis(
+    n: int, bias: float = 0.5, trials: int = 1000, rng: random.Random | None = None
+) -> None:
     """How often does a streak of length k appear in n flips?"""
-    print(f"\n  Streak analysis: {n} flips × {trials:,} trials (bias={bias:.2f})")
+    validate_inputs(n, bias)
+    print(f"\n  Streak analysis: {n} flips x {trials:,} trials (bias={bias:.2f})")
     streak_counts: Counter = Counter()
     for _ in range(trials):
-        results = [flip(bias) for _ in range(n)]
+        results = [flip(bias, rng) for _ in range(n)]
         cur = 1
         for i in range(1, len(results)):
             if results[i] == results[i - 1]:
@@ -107,14 +122,22 @@ def interactive():
         if cmd in ("quit", "q", "exit"):
             break
         elif cmd == "flip":
-            n    = int(line[1]) if len(line) > 1 else 10
-            bias = float(line[2]) if len(line) > 2 else 0.5
-            if not (0 < bias < 1):
-                print("  Bias must be between 0 and 1."); continue
+            try:
+                n = int(line[1]) if len(line) > 1 else 10
+                bias = float(line[2]) if len(line) > 2 else 0.5
+                validate_inputs(n, bias)
+            except ValueError as error:
+                print(f"  {error}")
+                continue
             display(run_simulation(n, bias), show_seq=True)
         elif cmd == "streak":
-            n    = int(line[1]) if len(line) > 1 else 50
-            bias = float(line[2]) if len(line) > 2 else 0.5
+            try:
+                n = int(line[1]) if len(line) > 1 else 50
+                bias = float(line[2]) if len(line) > 2 else 0.5
+                validate_inputs(n, bias)
+            except ValueError as error:
+                print(f"  {error}")
+                continue
             streak_analysis(n, bias)
         else:
             print("  Commands: flip [n] [bias]  |  streak [n] [bias]  |  quit")
@@ -126,19 +149,22 @@ def main():
     parser.add_argument("--flips",  type=int,   default=None, metavar="N",
                         help="Number of flips")
     parser.add_argument("--bias",   type=float, default=0.5,  metavar="P",
-                        help="Probability of heads (0–1, default 0.5)")
+                        help="Probability of heads (0-1, default 0.5)")
     parser.add_argument("--streak", action="store_true",
                         help="Show streak frequency analysis")
+    parser.add_argument("--seed", type=int, help="Seed for reproducible results")
     args = parser.parse_args()
 
-    if args.flips:
-        if not (0 < args.bias < 1):
-            print("Error: bias must be between 0 and 1.", file=sys.stderr)
-            sys.exit(1)
+    if args.flips is not None:
+        try:
+            validate_inputs(args.flips, args.bias)
+        except ValueError as error:
+            parser.error(str(error))
+        rng = random.Random(args.seed) if args.seed is not None else None
         if args.streak:
-            streak_analysis(args.flips, args.bias)
+            streak_analysis(args.flips, args.bias, rng=rng)
         else:
-            display(run_simulation(args.flips, args.bias))
+            display(run_simulation(args.flips, args.bias, rng=rng))
     else:
         interactive()
 

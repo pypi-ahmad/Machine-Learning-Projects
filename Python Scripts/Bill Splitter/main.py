@@ -13,27 +13,28 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Bill Splitter", layout="wide")
-st.title("💸 Bill Splitter")
+st.set_page_config(page_title="Bill splitter", layout="wide")
+st.title(":material/payments: Bill splitter")
 
-DATA_FILE = Path("bills.json")
+DATA_FILE = Path(__file__).with_name("bills.json")
 
 
 def load_data() -> dict:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
+            data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("people"), list) and isinstance(data.get("expenses"), list):
+                return data
+        except (OSError, json.JSONDecodeError):
             pass
     return {"people": [], "expenses": []}
 
 
 def save_data(data: dict):
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
-if "data" not in st.session_state:
-    st.session_state.data = load_data()
+st.session_state.setdefault("data", load_data())
 
 data     = st.session_state.data
 people   = data["people"]
@@ -91,7 +92,7 @@ with tab2:
         rows = [{"Description": e["description"], "Amount": f"${e['amount']:.2f}",
                  "Paid By": e["payer"], "Split Among": ", ".join(e["splits"]),
                  "Share Each": f"${e['share']:.2f}"} for e in expenses]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
         if st.button("Clear All Expenses", type="secondary"):
             data["expenses"] = []
             save_data(data)
@@ -115,7 +116,7 @@ with tab3:
         bal_rows = [{"Person": p, "Balance": f"${v:+.2f}",
                      "Status": "Gets back" if v > 0.01 else ("Owes" if v < -0.01 else "Settled")}
                     for p, v in balance.items()]
-        st.dataframe(pd.DataFrame(bal_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(bal_rows), width="stretch", hide_index=True)
 
         # Settle up: greedy algorithm
         st.subheader("Who Pays Whom")
@@ -137,6 +138,6 @@ with tab3:
             if d_list[di][1] > -0.005: di += 1
 
         if settlements:
-            st.dataframe(pd.DataFrame(settlements), use_container_width=True, hide_index=True)
+            st.dataframe(pd.DataFrame(settlements), width="stretch", hide_index=True)
         else:
             st.success("Everyone is settled up!")

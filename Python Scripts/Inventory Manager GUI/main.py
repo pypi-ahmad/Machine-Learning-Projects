@@ -4,7 +4,7 @@ Track products, stock levels, suppliers, and reorder alerts.
 Full CRUD with search, low-stock alerts, and JSON persistence.
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import json
@@ -19,13 +19,13 @@ CATEGORIES  = ["Electronics", "Clothing", "Food", "Furniture",
 
 def load() -> list[dict]:
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
+        with open(DATA_FILE, encoding="utf-8") as f:
             return json.load(f)
     return []
 
 
 def save(data: list[dict]):
-    with open(DATA_FILE, "w") as f:
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 

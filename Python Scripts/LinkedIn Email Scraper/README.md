@@ -1,95 +1,49 @@
 # LinkedIn Email Scraper
 
-> A Selenium-based scraper that extracts email addresses from comments on a LinkedIn post and saves them to a CSV file.
+This local Selenium utility exports email addresses that people visibly share in comments on one LinkedIn post. Use it only for posts and data you are authorized to access, and follow LinkedIn's terms and applicable privacy law.
 
-## Overview
+## Setup
 
-This script automates a Chrome browser to log into LinkedIn, navigate to a specified post, expand the comments section, and extract email addresses found in comment links. Extracted emails are validated using the `email_validator` library and saved to a CSV file with the commenter's name.
+Requirements: Python 3.13+ and a locally installed Chrome browser.
 
-## Features
-
-- Automated LinkedIn login via Selenium
-- Navigates to a specified LinkedIn post URL
-- Expands the comments section by clicking "load more" (up to 3 iterations)
-- Extracts email addresses from `<a>` tags within comments
-- Validates extracted emails using the `email_validator` library
-- Maps commenter names to their email addresses
-- Exports results to a CSV file (`emails.csv`)
-
-## Project Structure
-
-```
-Linkedin-Email-Scraper/
-├── emails.csv
-├── main.py
-└── requirements.txt
+```powershell
+cd "LinkedIn Email Scraper"
+uv sync
 ```
 
-## Requirements
-
-- Python 3.x
-- `selenium`
-- `email-validator`
-- ChromeDriver installed and available in PATH
-
-## Installation
-
-```bash
-cd "Linkedin-Email-Scraper"
-pip install -r requirements.txt
-```
-
-You also need to download [ChromeDriver](https://chromedriver.chromium.org/downloads) matching your Chrome browser version and ensure it is in your system's PATH.
+Selenium Manager obtains a compatible ChromeDriver automatically. Do not download or configure ChromeDriver manually.
 
 ## Usage
 
-1. Open `main.py` and replace the placeholder values:
-   - Set `url` to the LinkedIn post URL you want to scrape (line with `'[INSERT URL TO LINKEDIN POST]'`).
-   - Set `userEmail` to your LinkedIn email (line with `'[INSERT YOUR EMAIL ADDRESS FOR LINKEDIN ACCOUNT]'`).
-   - Set `userPassword` to your LinkedIn password (line with `'[INSERT YOUR PASSWORD FOR LINKEDIN ACCOUNT'`).
+```powershell
+uv run python main.py "https://www.linkedin.com/posts/example" --output emails.csv
+```
 
-2. Run the script:
-   ```bash
-   python main.py
-   ```
+The script prompts for the LinkedIn account email and password. They are used only in memory for that browser session and are never written to source code or the CSV file.
 
-3. The scraped names and emails will be written to `emails.csv`.
+Options:
 
-## How It Works
+- `--output PATH`: CSV destination. Default: `emails.csv` in the current directory.
+- `--max-load-more N`: Number of earlier-comment batches to request. Default: `3`; use `0` to inspect only comments initially visible.
 
-1. **`LinkedInEmailScraper(userEmail, userPassword)`**:
-   - Opens Chrome via Selenium and navigates to the LinkedIn post URL.
-   - Finds the comment button, follows the login link, and submits credentials.
-   - Clicks "show more comments" up to 3 times to expand the comment section.
-   - Iterates through all `<article>` elements in the comments section.
-   - Extracts the commenter's name (`.hoverable-link-text` class) and email (from `<a>` tag `innerHTML` inside `<p>` tags).
-   - Validates each email with `email_validator.validate_email()`.
-   - Returns a dictionary of `{name: email}`.
+## What it does
 
-2. **`DictToCSV(input_dict)`**:
-   - Writes the name-email dictionary to `emails.csv` with columns `name` and `email`.
+1. Opens LinkedIn's login page with Selenium.
+2. Opens the supplied post after sign-in.
+3. Expands up to the requested number of earlier-comment batches.
+4. Finds valid email-shaped text visibly present in comments and writes name/email pairs to CSV.
 
-## Configuration
+The scraper does not bypass logins, CAPTCHAs, rate limits, or access controls. If LinkedIn changes its page structure, requires extra verification, or does not expose comments to the account, the run can fail or export no records.
 
-- **Post URL:** Hardcoded placeholder `'[INSERT URL TO LINKEDIN POST]'` in the `LinkedInEmailScraper` function.
-- **Credentials:** Hardcoded placeholders in the `__main__` block.
-- **Comment expansion iterations:** The `range(3)` loop controls how many times "load more comments" is clicked.
-- **CSV output path:** Hardcoded as `'./LinkedIn Email Scraper/emails.csv'` in `DictToCSV()`.
+## Project files
 
-## Limitations
+```text
+LinkedIn Email Scraper/
+├── main.py
+├── pyproject.toml
+└── uv.lock
+```
 
-- Uses deprecated Selenium methods (`find_element_by_xpath`, `find_element_by_css_selector`, etc.) — these were removed in Selenium 4.x; the script requires Selenium 3.x or updating to the new `find_element(By.*)` syntax.
-- The comment expansion loop only clicks "load more" 3 times, so posts with many comments won't be fully scraped.
-- Only extracts emails found inside `<a>` tags within comments — plain-text emails are not captured.
-- Bare `except` blocks silently swallow all errors during scraping.
-- The CSV output path `'./LinkedIn Email Scraper/emails.csv'` assumes a specific working directory structure.
-- LinkedIn may block automated access or require CAPTCHA verification.
+## Privacy
 
-## Security Notes
-
-- **Plaintext credentials:** LinkedIn email and password are stored as plaintext strings in the source code. Use environment variables or a secrets manager instead.
-- **Scraping ToS:** Automated scraping of LinkedIn may violate their Terms of Service.
-
-## License
-
-Not specified.
+The CSV can contain personal data. Store it securely, use it only for the purpose you are authorized for, and delete it when no longer needed.

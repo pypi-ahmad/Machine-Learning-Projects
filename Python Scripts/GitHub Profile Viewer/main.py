@@ -1,7 +1,7 @@
-"""GitHub Profile Viewer — CLI tool.
+"""GitHub Profile Viewer CLI tool.
 
 Fetch and display a GitHub user's profile, repos, and activity
-using the public GitHub API (no auth required for basic info).
+using the authenticated GitHub CLI API.
 
 Usage:
     python main.py
@@ -11,82 +11,90 @@ Usage:
 
 import argparse
 import json
+import re
+import subprocess
 import sys
-import urllib.request
-import urllib.error
 from datetime import datetime
 
 
-API = "https://api.github.com"
-HEADERS = {"Accept": "application/vnd.github.v3+json",
-           "User-Agent": "github-profile-viewer-cli"}
+USERNAME = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$")
 
 
 def gh_get(path: str) -> dict | list:
-    url = f"{API}{path}"
-    req = urllib.request.Request(url, headers=HEADERS)
+    """Fetch a GitHub API endpoint through authenticated gh CLI."""
     try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            raise ValueError(f"Not found: {path}")
-        if e.code == 403:
-            raise ValueError("Rate limit exceeded. Wait a minute or add a GitHub token.")
-        raise ValueError(f"HTTP {e.code}: {e.reason}")
-    except Exception as e:
-        raise ValueError(f"Network error: {e}")
+        result = subprocess.run(
+            ["gh", "api", path], capture_output=True, text=True, timeout=15, check=False
+        )
+    except FileNotFoundError as error:
+        raise ValueError("GitHub CLI (gh) is not installed or on PATH.") from error
+    except subprocess.TimeoutExpired as error:
+        raise ValueError("GitHub request timed out.") from error
+    if result.returncode != 0:
+        raise ValueError(result.stderr.strip() or "GitHub request failed.")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise ValueError("GitHub CLI returned invalid JSON.") from error
+
+
+def validate_username(user: str) -> str:
+    if not USERNAME.fullmatch(user):
+        raise ValueError("Enter a valid GitHub username.")
+    return user
 
 
 def fmt_date(s: str) -> str:
     try:
         return datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").strftime("%b %d, %Y")
     except Exception:
-        return s or "—"
+        return s or "-"
 
 
 def fmt_num(n) -> str:
-    if n is None: return "—"
+    if n is None: return "-"
     if n >= 1_000_000: return f"{n/1_000_000:.1f}M"
     if n >= 1_000:     return f"{n/1_000:.1f}K"
     return str(n)
 
 
 def display_profile(user: str) -> None:
+    user = validate_username(user)
     data = gh_get(f"/users/{user}")
 
-    print(f"\n{'═'*50}")
-    print(f"  👤  {data.get('name') or data['login']}  (@{data['login']})")
+    print(f"\n{'=' * 50}")
+    print(f"  {data.get('name') or data['login']}  (@{data['login']})")
     if data.get("bio"):
-        print(f"  📝  {data['bio']}")
-    print(f"{'─'*50}")
-    print(f"  🌍  {data.get('location') or '—'}")
-    print(f"  🏢  {data.get('company') or '—'}")
-    print(f"  🔗  {data.get('blog') or '—'}")
-    print(f"  📧  {data.get('email') or '—'}")
-    print(f"  🐦  {data.get('twitter_username') or '—'}")
-    print(f"{'─'*50}")
-    print(f"  📦  Repos:       {fmt_num(data.get('public_repos'))}")
-    print(f"  👥  Followers:   {fmt_num(data.get('followers'))}")
-    print(f"  👣  Following:   {fmt_num(data.get('following'))}")
-    print(f"  ⭐  Gists:       {fmt_num(data.get('public_gists'))}")
-    print(f"  📅  Joined:      {fmt_date(data.get('created_at',''))}")
-    print(f"  🔄  Updated:     {fmt_date(data.get('updated_at',''))}")
-    print(f"{'═'*50}\n")
+        print(f"  {data['bio']}")
+    print(f"{'-' * 50}")
+    print(f"  Location:  {data.get('location') or '-'}")
+    print(f"  Company:   {data.get('company') or '-'}")
+    print(f"  Website:   {data.get('blog') or '-'}")
+    print(f"  Email:     {data.get('email') or '-'}")
+    print(f"  Twitter:   {data.get('twitter_username') or '-'}")
+    print(f"{'-' * 50}")
+    print(f"  Repos:       {fmt_num(data.get('public_repos'))}")
+    print(f"  Followers:   {fmt_num(data.get('followers'))}")
+    print(f"  Following:   {fmt_num(data.get('following'))}")
+    print(f"  Gists:       {fmt_num(data.get('public_gists'))}")
+    print(f"  Joined:      {fmt_date(data.get('created_at',''))}")
+    print(f"  Updated:     {fmt_date(data.get('updated_at',''))}")
+    print(f"{'=' * 50}\n")
 
 
 def display_repos(user: str, top: int = 10) -> None:
+    user = validate_username(user)
     repos = gh_get(f"/users/{user}/repos?sort=stargazers_count&per_page=30")
     repos = sorted(repos, key=lambda r: r.get("stargazers_count", 0), reverse=True)[:top]
 
     print(f"\n  Top {len(repos)} repositories for @{user}:")
-    print(f"  {'─'*60}")
+    print(f"  {'-' * 60}")
     for r in repos:
-        lang  = r.get("language") or "—"
+        lang  = r.get("language") or "-"
         stars = fmt_num(r.get("stargazers_count", 0))
         forks = fmt_num(r.get("forks_count", 0))
         desc  = (r.get("description") or "")[:50]
-        print(f"  ⭐{stars:>5}  🍴{forks:>5}  [{lang:<12}]  {r['name']}")
+        print(f"  stars={stars:>5}  forks={forks:>5}  [{lang:<12}]  {r['name']}")
         if desc: print(f"            {desc}")
     print()
 
@@ -106,12 +114,15 @@ def interactive() -> None:
         print()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="GitHub Profile Viewer")
     parser.add_argument("--user",  metavar="USER", help="GitHub username")
     parser.add_argument("--repos", action="store_true", help="Show top repositories")
     parser.add_argument("--top",   type=int, default=10, help="Number of repos to show")
     args = parser.parse_args()
+
+    if args.top < 1:
+        parser.error("--top must be at least 1")
 
     if args.user:
         try:

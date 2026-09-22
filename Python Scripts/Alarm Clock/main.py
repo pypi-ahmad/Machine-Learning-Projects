@@ -1,65 +1,78 @@
-"""Alarm Clock — CLI tool.
+"""Set one terminal alarm or manage several alarms interactively."""
 
-Set one or more alarms by time (HH:MM or HH:MM:SS).
-Plays a beep and shows a message when each alarm fires.
-Runs until all alarms trigger or user quits.
+from __future__ import annotations
 
-Usage:
-    python main.py
-    python main.py 07:30 "Wake up!"
-"""
-
-import sys
+import argparse
 import threading
 import time
 from datetime import datetime, timedelta
 
 
-def beep(n: int = 3):
-    for _ in range(n):
+def beep(count: int = 3) -> None:
+    """Play a short system alert, with a terminal-bell fallback."""
+    for _ in range(count):
         try:
             import winsound
+
             winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
-        except Exception:
+        except (ImportError, OSError):
             print("\a", end="", flush=True)
         time.sleep(0.5)
 
 
-def parse_time(s: str) -> datetime:
-    now = datetime.now()
+def parse_time(value: str, now: datetime | None = None) -> datetime:
+    """Return the next occurrence of an HH:MM or HH:MM:SS time."""
+    current_time = now or datetime.now()
     for fmt in ("%H:%M:%S", "%H:%M"):
         try:
-            t = datetime.strptime(s.strip(), fmt)
-            alarm_dt = now.replace(hour=t.hour, minute=t.minute,
-                                   second=t.second, microsecond=0)
-            if alarm_dt <= now:
+            parsed_time = datetime.strptime(value.strip(), fmt)
+            alarm_dt = current_time.replace(
+                hour=parsed_time.hour,
+                minute=parsed_time.minute,
+                second=parsed_time.second,
+                microsecond=0,
+            )
+            if alarm_dt <= current_time:
                 alarm_dt += timedelta(days=1)
             return alarm_dt
         except ValueError:
-            pass
-    raise ValueError(f"Invalid time: '{s}'. Use HH:MM or HH:MM:SS.")
+            continue
+    raise ValueError(f"Invalid time: {value!r}. Use HH:MM or HH:MM:SS.")
 
 
 class Alarm:
-    def __init__(self, alarm_dt: datetime, label: str):
+    """A background alarm that can be cancelled before it rings."""
+
+    def __init__(self, alarm_dt: datetime, label: str) -> None:
         self.alarm_dt = alarm_dt
-        self.label    = label
-        self.fired    = False
-        self._thread  = threading.Thread(target=self._wait, daemon=True)
+        self.label = label
+        self.fired = False
+        self._cancelled = threading.Event()
+        self._thread = threading.Thread(target=self._wait, daemon=True)
         self._thread.start()
 
-    def _wait(self):
-        now = datetime.now()
-        delay = (self.alarm_dt - now).total_seconds()
-        if delay > 0:
-            time.sleep(delay)
+    def cancel(self) -> None:
+        """Prevent this alarm from ringing if it has not already fired."""
+        self._cancelled.set()
+
+    def wait(self) -> None:
+        """Wait until this alarm fires or is cancelled."""
+        self._thread.join()
+
+    def _wait(self) -> None:
+        delay = max((self.alarm_dt - datetime.now()).total_seconds(), 0)
+        if self._cancelled.wait(delay):
+            return
+        if self._cancelled.is_set():
+            return
         self.fired = True
-        print(f"\n\n  🔔  ALARM: {self.label}  [{self.alarm_dt.strftime('%H:%M:%S')}]\n")
+        print(f"\n\n  ALARM: {self.label}  [{self.alarm_dt.strftime('%H:%M:%S')}]\n")
         beep(4)
 
 
-def format_delta(dt: datetime) -> str:
-    diff = (dt - datetime.now()).total_seconds()
+def format_delta(alarm_dt: datetime, now: datetime | None = None) -> str:
+    """Format the remaining time until an alarm."""
+    diff = (alarm_dt - (now or datetime.now())).total_seconds()
     if diff < 0:
         return "fired"
     h = int(diff // 3600)
@@ -67,25 +80,14 @@ def format_delta(dt: datetime) -> str:
     s = int(diff % 60)
     if h:
         return f"in {h}h {m}m"
-    elif m:
+    if m:
         return f"in {m}m {s}s"
     return f"in {s}s"
 
 
-def main():
+def interactive_mode() -> None:
+    """Run the terminal interface for adding, listing, and deleting alarms."""
     alarms: list[Alarm] = []
-
-    # Quick mode: python main.py HH:MM "label"
-    if len(sys.argv) >= 2:
-        try:
-            alarm_dt = parse_time(sys.argv[1])
-            label    = sys.argv[2] if len(sys.argv) > 2 else "Alarm"
-            alarms.append(Alarm(alarm_dt, label))
-            print(f"  Alarm set for {alarm_dt.strftime('%H:%M:%S')} ({format_delta(alarm_dt)})")
-        except ValueError as e:
-            print(f"Error: {e}")
-            sys.exit(1)
-
     print("Alarm Clock  (type 'help' for commands)")
 
     while True:
@@ -98,8 +100,8 @@ def main():
         if not cmd:
             continue
 
-        parts = cmd.split(None, 2)
-        verb  = parts[0].lower()
+        parts = cmd.split(maxsplit=2)
+        verb = parts[0].lower()
 
         if verb in ("q", "quit", "exit"):
             print("Bye!")
@@ -135,6 +137,7 @@ def main():
             try:
                 idx = int(parts[1]) - 1
                 removed = alarms.pop(idx)
+                removed.cancel()
                 print(f"  Deleted: {removed.label}")
             except (IndexError, ValueError):
                 print("  Invalid alarm number.")
@@ -148,6 +151,31 @@ def main():
                 print(f"  Alarm set: {label} @ {alarm_dt.strftime('%H:%M:%S')} ({format_delta(alarm_dt)})")
             except ValueError:
                 print(f"  Unknown command: '{verb}'. Type 'help'.")
+
+
+def main() -> None:
+    """Run one alarm from the command line or start interactive mode."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("time", nargs="?", help="alarm time in HH:MM or HH:MM:SS")
+    parser.add_argument("label", nargs="?", default="Alarm", help="optional alarm message")
+    args = parser.parse_args()
+
+    if args.time is None:
+        interactive_mode()
+        return
+
+    try:
+        alarm_dt = parse_time(args.time)
+    except ValueError as error:
+        raise SystemExit(f"Error: {error}") from error
+
+    alarm = Alarm(alarm_dt, args.label)
+    print(f"Alarm set for {alarm_dt.strftime('%H:%M:%S')} ({format_delta(alarm_dt)})")
+    try:
+        alarm.wait()
+    except KeyboardInterrupt:
+        alarm.cancel()
+        print("\nAlarm cancelled.")
 
 
 if __name__ == "__main__":

@@ -46,31 +46,33 @@ def strength(pwd: str) -> tuple[str, int]:
 
 def generate(length: int = 16, use_upper: bool = True, use_digits: bool = True,
              use_symbols: bool = True, exclude_similar: bool = False) -> str:
-    pool = LOWER
-    required = [secrets.choice(LOWER)]
+    lower = LOWER.translate(str.maketrans("", "", SIMILAR)) if exclude_similar else LOWER
+    pool = lower
+    required = [secrets.choice(lower)]
     if use_upper:
-        pool += UPPER
-        required.append(secrets.choice(UPPER))
+        upper = UPPER.translate(str.maketrans("", "", SIMILAR)) if exclude_similar else UPPER
+        pool += upper
+        required.append(secrets.choice(upper))
     if use_digits:
-        pool += DIGITS
-        required.append(secrets.choice(DIGITS))
+        digits = DIGITS.translate(str.maketrans("", "", SIMILAR)) if exclude_similar else DIGITS
+        pool += digits
+        required.append(secrets.choice(digits))
     if use_symbols:
         pool += SYMBOLS
         required.append(secrets.choice(SYMBOLS))
-    if exclude_similar:
-        pool = "".join(c for c in pool if c not in SIMILAR)
 
-    extra = length - len(required)
-    if extra < 0:
-        extra = 0
-    chars = required + [secrets.choice(pool) for _ in range(extra)]
+    if length < len(required):
+        raise ValueError(f"length must be at least {len(required)} for the selected character sets")
+    chars = required + secrets.SystemRandom().choices(pool, k=length - len(required))
     secrets.SystemRandom().shuffle(chars)
-    return "".join(chars[:length])
+    return "".join(chars)
 
 
 def generate_passphrase(words: int = 4, separator: str = "-") -> str:
-    chosen = [secrets.choice(WORD_LIST) for _ in range(words)]
-    return separator.join(chosen) + separator + str(secrets.randbelow(999))
+    if words < 1:
+        raise ValueError("words must be at least 1")
+    chosen = secrets.SystemRandom().choices(WORD_LIST, k=words)
+    return separator.join(chosen) + separator + f"{secrets.randbelow(1_000):03}"
 
 
 def main():
@@ -80,14 +82,22 @@ def main():
     parser.add_argument("--no-upper",   action="store_true")
     parser.add_argument("--no-digits",  action="store_true")
     parser.add_argument("--passphrase", action="store_true")
+    parser.add_argument("--words",      type=int, default=4, help="Words per passphrase")
     parser.add_argument("--count",      type=int, default=1)
     args = parser.parse_args()
 
-    if args.length is not None:
+    if args.length is not None or args.passphrase:
+        if args.count < 1:
+            parser.error("--count must be at least 1")
+        if args.passphrase and args.words < 1:
+            parser.error("--words must be at least 1")
+        minimum_length = 1 + int(not args.no_upper) + int(not args.no_digits) + int(not args.no_symbols)
+        if args.length is not None and not args.passphrase and args.length < minimum_length:
+            parser.error(f"length must be at least {minimum_length} for the selected character sets")
         # Quick single-shot mode
         for _ in range(args.count):
             if args.passphrase:
-                pwd = generate_passphrase()
+                pwd = generate_passphrase(args.words)
             else:
                 pwd = generate(
                     length=args.length,

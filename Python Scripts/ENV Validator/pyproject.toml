@@ -1,0 +1,10 @@
+[project]
+name = "env-validator"
+version = "0.1.0"
+description = "Validate explicitly named .env files without printing values"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

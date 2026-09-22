@@ -1,0 +1,7 @@
+[project]
+name = "tweet-fetcher-and-store"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "tweepy>=4.16.0",
+]

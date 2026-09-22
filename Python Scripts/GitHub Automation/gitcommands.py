@@ -1,19 +1,14 @@
-from subprocess import call
-from sys import platform as _platform
+from pathlib import Path
+from subprocess import run
 from colors import logcolors
 
 
 def init():
-    call('git init')
+    run(['git', 'init'], check=True)
 
 
 def createReadme():
-    if _platform == "linux" or _platform == "linux2":
-        call('touch README.md')
-    elif _platform == "darwin":
-        call('touch README.md')
-    elif _platform == "win32":
-        call('type nul>README.md')
+    Path('README.md').touch(exist_ok=True)
 
 
 def add(filelist):
@@ -21,7 +16,7 @@ def add(filelist):
         # perform git add on file
         print(f"{logcolors.SUCCESS}Adding{logcolors.ENDC}",
               file.split('\\')[-1])
-        call(('git add ' + file))
+        run(['git', 'add', file], check=True)
 
 
 # git commit -m "passed message"
@@ -43,30 +38,27 @@ def commit(filelist, *args, **kwargs):
             if (diffarr != -1):
                 diffarr.remove(diffarr[filelist.index(file)])
             filelist.remove(file)
-            call('cls', shell=True)
             return False
         # else execute git commit for the file
         # added a comment
         else:
-            call('git commit -m "' + msg + '"')
-            call('cls', shell=True)
+            run(['git', 'commit', '-m', msg], check=True)
             print(
                 f'Commited {logcolors.CYAN}{file}{logcolors.ENDC} with msg: {logcolors.BOLD}{msg}{logcolors.ENDC}'
             )
 
 
 def setremote(url):
-    call('git remote add origin ' + url)
+    run(['git', 'remote', 'add', 'origin', url], check=True)
 
 
 def setBranch(branch):
-    call('git branch -M ' + branch)
+    run(['git', 'branch', '-M', branch], check=True)
 
 
 # git push
 
 
 def push(url, branch):
-    call('git push -u ' + url + ' ' + branch)
-    call('cls', shell=True)
+    run(['git', 'push', '-u', url, branch], check=True)
     print(f'{logcolors.SUCCESS}Successfully Pushed Changes{logcolors.ENDC}')

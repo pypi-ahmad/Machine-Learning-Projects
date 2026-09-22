@@ -4,11 +4,11 @@ Serve a local directory over HTTP with directory listing,
 CORS headers, custom port, and basic authentication support.
 
 Usage:
-    python main.py
-    python main.py --port 3000
-    python main.py --dir ./dist
-    python main.py --port 8080 --cors --no-cache
-    python main.py --auth user:pass
+    uv run --no-config python main.py
+    uv run --no-config python main.py --port 3000
+    uv run --no-config python main.py --dir ./dist
+    uv run --no-config python main.py --port 8080 --cors --no-cache
+    uv run --no-config python main.py --auth user:pass
 """
 
 import argparse
@@ -249,11 +249,11 @@ def run_server(directory: str, port: int, cors: bool, no_cache: bool,
     else:
         handler.auth_cred = None
 
-    server = HTTPServer(("", port), handler)
+    server = HTTPServer(("127.0.0.1", port), handler)
 
     print(c("\n  Local HTTP Server\n", "bold"))
     print(f"  Serving  : {c(directory, 'cyan')}")
-    print(f"  URL      : {c(f'http://localhost:{port}', 'green')}")
+    print(f"  URL      : {c(f'http://127.0.0.1:{port}', 'green')}")
     print(f"  CORS     : {'enabled' if cors else 'disabled'}")
     print(f"  Cache    : {'disabled' if no_cache else 'enabled'}")
     if auth:

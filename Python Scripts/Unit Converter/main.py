@@ -4,7 +4,7 @@ Converts between common units across length, mass, temperature,
 volume, speed, time, area, and digital storage.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 # ---------------------------------------------------------------------------

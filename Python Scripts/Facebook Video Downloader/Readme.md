@@ -20,26 +20,27 @@ This script provides a graphical interface for downloading Facebook videos. It t
 ```
 Facebook_Video_Downloader/
 ├── script.py          # Main GUI application with download logic
-└── requirements.txt   # Python dependencies
+├── pyproject.toml     # Project metadata and dependencies
+└── uv.lock            # Locked dependency versions
 ```
 
 ## Requirements
 
-- Python 3.x
-- `requests==2.25.1`
+- Python 3.13+
+- `requests`, managed by uv in `pyproject.toml`
 - `tkinter` (included with standard Python)
 
 ## Installation
 
 ```bash
 cd "Facebook_Video_Downloader"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
 
 ```bash
-python script.py
+uv run python script.py
 ```
 
 1. A GUI window titled "Facebook Video Downloader" will appear.
@@ -50,24 +51,20 @@ python script.py
 
 ## How It Works
 
-1. **URL Validation**: Checks that the entered URL contains `www.facebook.com`.
-2. **Link Extraction** (`get_downloadlink`): Replaces `www` with `mbasic` in the URL to access the mobile version, then uses regex to find `/video_redirect/` and extracts the direct video URL from the `?src=` parameter.
-3. **Threaded Download** (`VideoDownload` class): Extends `Thread` to download the video in 1KB chunks, updating a shared `Queue` with the download percentage.
-4. **Progress Monitoring** (`monitor`): Polls the queue every 10ms to update the progress bar widget.
+1. **URL validation**: Accepts HTTP(S) URLs only from `facebook.com` or its subdomains.
+2. **Link extraction** (`get_download_link`): Requests the mobile page and extracts its direct video URL.
+3. **Threaded download** (`VideoDownload`): Downloads in 1KB chunks and sends progress updates through a queue.
+4. **Progress monitoring** (`DownloaderApp`): Runs all Tkinter widget updates on the GUI thread.
 
 ## Configuration
 
-No configuration files. The video is always saved as `video.mp4` in the current directory.
+No configuration files. The video is saved as `video.mp4` beside `script.py`.
 
 ## Limitations
 
-- Output filename is hardcoded as `video.mp4` — downloading multiple videos overwrites the previous one
-- Only validates that the URL contains `www.facebook.com` — no deeper URL validation
 - The mobile page scraping approach (`mbasic.facebook.com`) may break if Facebook changes its page structure
-- The `queue` variable name shadows the `queue` module import (uses `queue = queue.Queue()`)
-- `exit(0)` and `exit(1)` calls in `get_downloadlink` will terminate the GUI
-- No error handling or user feedback for network failures during download
-- `file.close()` is redundant inside a `with` block
+- The output filename is still `video.mp4` and overwrites any existing file at that path.
+- The app cannot download private, restricted, or otherwise unavailable videos.
 
 ## Security Notes
 

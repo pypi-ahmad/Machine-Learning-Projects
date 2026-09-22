@@ -1,12 +1,17 @@
+import os
+
 import lyricsgenius as lg
+
+token = os.environ.get("GENIUS_ACCESS_TOKEN")
+if not token:
+    raise SystemExit("Set GENIUS_ACCESS_TOKEN before running this script.")
 
 # File for writing the Lyrics
 filename = input('Enter a filename: ') or 'Lyrics.txt'
 file = open(filename, "w+")
 
-# Acquire a Access Token to connect with Genius API
 genius = lg.Genius(
-    'Client_Access_Token_Goes_Here',
+    token,
     # Skip song listing
     skip_non_songs=True,
     # Terms that are redundant song names with same lyrics, e.g. Old Town Raod and Old Town Road Remix

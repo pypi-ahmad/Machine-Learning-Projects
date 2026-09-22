@@ -13,7 +13,8 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="House Price Estimator", layout="wide")
-st.title("🏠 House Price Estimator")
+st.title("House price estimator demo")
+st.caption("Synthetic training data and illustrative estimates only. Do not use this demo for lending, appraisal, or housing decisions.")
 
 
 # ── Simple multiple linear regression (OLS) ──────────────────────────────────
@@ -137,26 +138,27 @@ with tab1:
 
     # Confidence range ±15%
     low, high = est * 0.85, est * 1.15
-    st.info(f"Estimated range: ${low:,.0f} — ${high:,.0f}")
+    st.info(f"Illustrative range: ${low:,.0f} to ${high:,.0f}")
 
 with tab2:
     st.subheader("Model Performance")
     c1, c2 = st.columns(2)
     c1.metric("R² Score", f"{model_r2:.4f}")
     c2.metric("RMSE", f"${model_rmse:,.0f}")
-    st.caption("Trained on 400 synthetic property records via OLS regression.")
+    st.caption("Trained on 400 synthetic property records via OLS regression. These are not real-world validation metrics.")
 
     st.subheader("Feature Coefficients")
     coef_df = pd.DataFrame({
         "Feature":     feats,
         "Coefficient": [round(model_w[i+1], 2) for i in range(len(feats))],
     }).sort_values("Coefficient", key=abs, ascending=False)
-    st.dataframe(coef_df, use_container_width=True, hide_index=True)
+    st.dataframe(coef_df, hide_index=True)
 
 with tab3:
-    st.dataframe(df_all.head(50), use_container_width=True, hide_index=True)
+    st.dataframe(df_all.head(50), hide_index=True)
     st.subheader("Price Distribution")
     price_bins = pd.cut(df_all["price"], bins=20).value_counts().sort_index()
+    price_bins.index = price_bins.index.astype(str)
     st.bar_chart(price_bins)
     st.metric("Median Price", f"${df_all['price'].median():,.0f}")
     st.metric("Average Price", f"${df_all['price'].mean():,.0f}")

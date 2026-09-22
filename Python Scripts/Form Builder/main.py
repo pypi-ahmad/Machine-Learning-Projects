@@ -10,26 +10,27 @@ Usage:
 
 import csv
 import json
-import os
 import tkinter as tk
 from datetime import datetime
+from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "forms.json")
+DATA_FILE = Path(__file__).with_name("forms.json")
 
 FIELD_TYPES = ["Text", "Number", "Email", "Dropdown", "Checkbox", "Textarea", "Date"]
 
 
 def load() -> dict:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
+    if DATA_FILE.exists():
+        data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or not isinstance(data.get("forms"), dict) or not isinstance(data.get("responses"), dict):
+            raise ValueError("Form data must contain form and response mappings.")
+        return data
     return {"forms": {}, "responses": {}}
 
 
-def save(data: dict):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def save(data: dict) -> None:
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 class FormBuilder(tk.Tk):
@@ -223,6 +224,10 @@ class FormBuilder(tk.Tk):
         if not label:
             messagebox.showerror("Missing", "Enter a field label.")
             return
+        labels = [field["label"] for field in self._forms[self._cur_form]]
+        if label in labels:
+            messagebox.showerror("Duplicate", "Field labels must be unique within a form.")
+            return
         ftype   = self._ft_var.get()
         options = self._fo_entry.get().strip()
         self._forms[self._cur_form].append({
@@ -337,14 +342,19 @@ class FormBuilder(tk.Tk):
             lbl = field["label"]
             w   = self._fill_widgets.get(lbl)
             if w is None:
-                response[lbl] = ""
+                value = ""
             elif isinstance(w, (tk.Entry, tk.StringVar)):
-                val = w.get()
-                response[lbl] = val
+                value = w.get().strip()
             elif isinstance(w, tk.Text):
-                response[lbl] = w.get("1.0", "end-1c").strip()
+                value = w.get("1.0", "end-1c").strip()
             elif isinstance(w, tk.BooleanVar):
-                response[lbl] = str(w.get())
+                value = w.get()
+            else:
+                value = ""
+            if field.get("required") and not value:
+                messagebox.showerror("Required field", f"Complete '{lbl}' before submitting.")
+                return
+            response[lbl] = str(value)
         self._responses.setdefault(form_name, []).append(response)
         self._persist()
         messagebox.showinfo("Submitted", "Response recorded!")
@@ -388,6 +398,10 @@ class FormBuilder(tk.Tk):
         save(self._data)
 
 
-if __name__ == "__main__":
+def main() -> None:
     app = FormBuilder()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()

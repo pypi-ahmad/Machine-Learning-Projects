@@ -1,4 +1,0 @@
-Plyer
-requests
-bs4
-englisttohindi

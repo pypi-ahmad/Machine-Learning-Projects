@@ -1,83 +1,40 @@
 # Random Wikipedia Article
 
-> A Python script that fetches a random Wikipedia article and saves its content to a text file.
+Save the title and readable paragraph text from one random English Wikipedia article.
 
-## Overview
+## Setup
 
-This script uses the `Special:Random` Wikipedia URL to fetch a random article, parses the HTML with BeautifulSoup, and saves the article's heading and paragraph text to a local file called `random_wiki.txt`.
+Requirements: Python 3.13+.
 
-## Features
-
-- Fetches a random Wikipedia article using `Special:Random`
-- Extracts the article heading (`<h1>` tag)
-- Extracts all paragraph text (`<p>` tags)
-- Saves the content to `random_wiki.txt` with UTF-8 encoding
-- Raises an HTTP error if the request fails (`raise_for_status()`)
-
-## Project Structure
-
-```
-Random_Wikipedia_Article/
-├── wiki_random.py       # Main script
-├── requirements.txt     # Dependencies
-└── README.md
-```
-
-## Requirements
-
-- Python 3.x
-- `requests`
-- `beautifulsoup4`
-
-The `requirements.txt` lists `HTMLParser==0.0.2`, but the code actually uses `beautifulsoup4` and `requests` (not the `HTMLParser` package).
-
-## Installation
-
-```bash
-cd "Random_Wikipedia_Article"
-pip install requests beautifulsoup4
+```powershell
+cd "Random Wikipedia Article"
+uv sync
 ```
 
 ## Usage
 
-```bash
-python wiki_random.py
+```powershell
+uv run python wiki_random.py --output random_wiki.txt
 ```
 
-Output:
+Options:
 
+- `--output PATH`: Destination text file. Default: `random_wiki.txt`.
+- `--overwrite`: Replace an existing output file. Without it, the script stops rather than overwriting content.
+
+## Behavior
+
+1. Requests Wikipedia's `Special:Random` page over HTTPS with a 20-second timeout.
+2. Parses the redirected article's title and readable paragraphs.
+3. Writes UTF-8 text to a new file.
+
+Wikipedia can change its page markup or limit requests. This tool does not bypass access controls, rate limits, or CAPTCHA checks. It extracts text only; it does not save images, tables, or references.
+
+## Project files
+
+```text
+Random Wikipedia Article/
+├── wiki_random.py
+├── pyproject.toml
+└── uv.lock
 ```
-File Saved as random_wiki.txt
-```
-
-The file `random_wiki.txt` will be created in the current directory containing the article's heading and paragraph text.
-
-## How It Works
-
-1. Sends a GET request to `https://en.wikipedia.org/wiki/Special:Random`, which redirects to a random article.
-2. Calls `res.raise_for_status()` to ensure the request succeeded.
-3. Parses the response HTML with `BeautifulSoup(res.text, "html.parser")`.
-4. Opens (or creates) `random_wiki.txt` in write mode with UTF-8 encoding.
-5. Writes the `<h1>` heading text as the first line.
-6. Iterates over all `<p>` tags and appends their text to the file.
-
-## Configuration
-
-- Output filename is hardcoded as `"random_wiki.txt"`
-- The parser used is `"html.parser"` (Python's built-in HTML parser)
-
-## Limitations
-
-- Overwrites `random_wiki.txt` on each run (no append or unique naming)
-- Only extracts `<h1>` and `<p>` tags — images, tables, lists, and other content are ignored
-- No command-line arguments for specifying output file or article topic
-- The `requirements.txt` lists `HTMLParser==0.0.2` which doesn't match the actual imports (`beautifulsoup4`, `requests`)
-- No error handling for network timeouts or missing elements
-
-## Security Notes
-
-No security concerns identified.
-
-## License
-
-Not specified.

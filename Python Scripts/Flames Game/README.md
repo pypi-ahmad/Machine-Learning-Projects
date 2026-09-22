@@ -1,10 +1,10 @@
 # FLAMES Game
 
-> A Tkinter GUI implementation of the classic FLAMES relationship game that determines the relationship between two people based on their names.
+> A Tkinter implementation of the classic FLAMES relationship game, which determines a relationship category from two names.
 
 ## Overview
 
-FLAMES is a fun game where the letters in two names are compared, and the count of remaining (non-common) letters is used to cycle through the word "FLAMES" (Friends, Love, Affection, Marriage, Enemy, Siblings) to determine a relationship status. This implementation provides a graphical interface using Tkinter.
+FLAMES compares the letters in two names and uses the number of remaining non-common letters to cycle through "FLAMES" (Friends, Love, Affection, Marriage, Enemy, Siblings). This version provides a Tkinter interface.
 
 ## Features
 
@@ -17,27 +17,30 @@ FLAMES is a fun game where the letters in two names are compared, and the count 
 ## Project Structure
 
 ```
-Flames-Game/
-└── flames_game_gui.py   # Main GUI application
+Flames Game/
+├── flames_game_gui.py   # Main GUI application
+├── pyproject.toml       # uv project configuration
+└── uv.lock              # Locked Python environment
 ```
 
 ## Requirements
 
-- Python 3.x
+- Python 3.13 or later
 - `tkinter` (included with standard Python)
 
 ## Installation
 
 ```bash
-cd "Flames-Game"
+cd "Python Scripts/Flames Game"
+uv sync --no-config
 ```
 
-No package installation needed.
+The game has no third-party dependencies.
 
 ## Usage
 
 ```bash
-python flames_game_gui.py
+uv run --no-config python flames_game_gui.py
 ```
 
 1. Enter the first name in the "Name 1" field.
@@ -45,7 +48,7 @@ python flames_game_gui.py
 3. Click **Flame** to see the relationship status.
 4. Click **Clear** to reset all fields.
 
-## How It Works
+## How it works
 
 ### FLAMES Algorithm (`result_flame` function)
 
@@ -72,9 +75,8 @@ No configuration files. All appearance values are hardcoded.
 
 - The algorithm removes only the first occurrence of each common character — order of removal can vary
 - Spaces in names are stripped but other non-alphabetic characters are not handled
-- No input validation (empty names will produce a result based on 0 remaining characters)
 - The window is not resizable
-- The result is inserted into the Status field at position 10, which may cause display issues for repeated clicks without clearing
+- This is a game for entertainment, not a relationship assessment
 
 ## Security Notes
 

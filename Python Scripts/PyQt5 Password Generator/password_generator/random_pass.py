@@ -1,8 +1,8 @@
-import random
+import secrets
 
 
 def randCahr(chars):
-	ranChar = random.choice(chars)
+	ranChar = secrets.choice(chars)
 
 	return ranChar
 

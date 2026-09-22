@@ -4,7 +4,7 @@ Compare two texts or two files and display a side-by-side or
 unified diff with colour-coded additions and deletions.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import difflib

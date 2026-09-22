@@ -1,10 +1,10 @@
 # Facebook Autologin
 
-> A Selenium-based Python script that automates the Facebook login process using Chrome WebDriver.
+> A Selenium-based Python script that automates Facebook login with Chrome WebDriver.
 
 ## Overview
 
-This script uses Selenium WebDriver to open Facebook in a Chrome browser, fill in login credentials, and click the login button automatically.
+This script uses Selenium WebDriver to open Facebook in Chrome, fill in login credentials, and click the login button.
 
 ## Features
 
@@ -17,67 +17,60 @@ This script uses Selenium WebDriver to open Facebook in a Chrome browser, fill i
 ```
 Facebook-Autologin/
 ├── facebookAuto.py    # Main script for automated Facebook login
-├── chromedriver.exe   # Chrome WebDriver executable (bundled)
-└── requirements.txt   # Python dependencies
+├── pyproject.toml     # Project metadata and dependencies
+└── uv.lock            # Locked dependency versions
 ```
 
 ## Requirements
 
-- Python 3.x
-- `selenium==3.141.0`
+- Python 3.13+
+- `selenium`, managed by uv in `pyproject.toml`
 - Chrome browser installed
-- Compatible `chromedriver.exe` (bundled in the project)
+- Internet access for Selenium Manager to obtain a compatible ChromeDriver when needed
 
 ## Installation
 
 ```bash
 cd "Facebook-Autologin"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
 
-1. Edit `facebookAuto.py` and replace the placeholder credentials:
-   ```python
-   driver.find_element_by_id("email").send_keys("username@email.com")  # your email
-   driver.find_element_by_id("pass").send_keys("password")             # your password
-   ```
-
-2. Run the script:
+1. Run the script:
    ```bash
-   python facebookAuto.py
+   uv run python facebookAuto.py
    ```
 
-## How It Works
+2. Enter the email or username and password only when prompted. The password is not echoed.
 
-1. Initializes a Chrome WebDriver using the local `chromedriver.exe`.
+## How it works
+
+1. Initializes a Chrome WebDriver through Selenium Manager.
 2. Navigates to `https://www.facebook.com`.
-3. Locates the email field by ID (`email`) and sends the configured email/username.
+3. Locates the email field by ID (`email`) and sends the prompted email/username.
 4. Locates the password field by ID (`pass`) and sends the configured password.
 5. Locates the login button by name (`login`) and clicks it.
 
 ## Configuration
 
-Edit the following hardcoded values in `facebookAuto.py`:
+Pass the optional username from the command line, or enter it when prompted:
 
-| Line | Value                  | Description              |
-|------|------------------------|--------------------------|
-| 6    | `"username@email.com"` | Your Facebook email      |
-| 8    | `"password"`           | Your Facebook password   |
+```bash
+uv run python facebookAuto.py --username your.email@example.com
+```
+
+The password is always requested through a hidden prompt.
 
 ## Limitations
 
-- Uses deprecated Selenium methods (`find_element_by_id`, `find_element_by_name`) — these were removed in Selenium 4.x
-- The bundled `chromedriver.exe` may not match your installed Chrome version
 - No error handling for failed logins, missing elements, or network issues
-- Hardcoded credentials in source code
 - No support for two-factor authentication
-- WebDriver path is hardcoded as `./chromedriver.exe`
 
 ## Security Notes
 
-- **Credentials are hardcoded in plaintext** in the source file — never commit real credentials to version control
-- Uses an unencrypted local ChromeDriver binary
+- Do not put credentials in source code or commit them to version control.
+- Supplying a username through `--username` may expose it in shell history; use the interactive prompt when that matters.
 
 ## License
 

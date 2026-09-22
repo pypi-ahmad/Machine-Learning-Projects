@@ -1,12 +1,11 @@
 """Text Encryptor — CLI tool.
 
 Encrypt and decrypt text using multiple methods:
-  • AES-256-CBC (via cryptography library if available)
-  • XOR cipher with SHA-256 key stretching (pure Python fallback)
-  • ROT-13 / ROT-N (for fun/demo)
+  - AES-256-CBC via cryptography
+  - ROT-13 / ROT-N for demonstration only
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import base64
@@ -17,7 +16,7 @@ import sys
 
 
 # ---------------------------------------------------------------------------
-# AES-256-CBC (requires: pip install cryptography)
+# AES-256-CBC
 # ---------------------------------------------------------------------------
 
 def _aes_encrypt(text: str, password: str) -> str:
@@ -31,8 +30,6 @@ def _aes_encrypt(text: str, password: str) -> str:
 
     padder  = padding.PKCS7(128).padder()
     padded  = padder.update(text.encode()) + padder.finalize()
-    cipher  = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
-    ct      = cipher.encryptor().update(padded) + cipher.encryptor().finalize()
     enc     = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
     enc_ctx = enc.encryptor()
     ct      = enc_ctx.update(padded) + enc_ctx.finalize()
@@ -59,7 +56,7 @@ def _aes_decrypt(token: str, password: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# XOR fallback (pure Python)
+# Legacy XOR token support
 # ---------------------------------------------------------------------------
 
 def _xor_keystream(data: bytes, password: str) -> bytes:
@@ -100,10 +97,7 @@ def rot_n(text: str, n: int = 13) -> str:
 # ---------------------------------------------------------------------------
 
 def encrypt(text: str, password: str) -> str:
-    try:
-        return _aes_encrypt(text, password)
-    except ImportError:
-        return _xor_encrypt(text, password)
+    return _aes_encrypt(text, password)
 
 
 def decrypt(token: str, password: str) -> str:
@@ -125,23 +119,17 @@ def decrypt(token: str, password: str) -> str:
 
 MENU = """
 Text Encryptor
-──────────────────────────────
+------------------------------
   1. Encrypt text
   2. Decrypt text
   3. ROT-13
   4. Custom ROT-N
   0. Quit
-──────────────────────────────"""
+------------------------------"""
 
 
 def main():
-    try:
-        import cryptography
-        method = "AES-256-CBC"
-    except ImportError:
-        method = "XOR+SHA-256 (install 'cryptography' for AES)"
-
-    print(f"  Encryption method: {method}\n")
+    print("  Encryption method: AES-256-CBC\n")
 
     while True:
         print(MENU)

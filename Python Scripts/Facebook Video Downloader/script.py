@@ -1,139 +1,141 @@
-# ALL Imports
-import time
-from tkinter.ttk import *
-import tkinter as tk
-from requests import get, HTTPError, ConnectionError
-from re import findall
-from urllib.parse import unquote
-from threading import Thread
+"""Download public Facebook videos through a small Tkinter interface."""
+
+import argparse
+from pathlib import Path
 import queue
-from queue import Empty
+import re
+from threading import Thread
+import tkinter as tk
+from tkinter import ttk
+from urllib.parse import unquote, urlparse, urlunparse
 
-def Invalid_Url():
-    """ Sets Status bar label to error message """
-    Status["text"] = "Invalid URL..."
-    Status["fg"] = "red"
+import requests
 
-def get_downloadlink(url):
-
-    url = url.replace("www", "mbasic")
-    try:
-        r = get(url, timeout=5, allow_redirects=True)
-        if r.status_code != 200:
-            raise HTTPError
-        a = findall("/video_redirect/", r.text)
-        if len(a) == 0:
-            print("[!] Video Not Found...")
-            exit(0)
-        else:
-            return unquote(r.text.split("?src=")[1].split('"')[0])
-    except (HTTPError, ConnectionError):
-        print("[x] Invalid URL")
-        exit(1)
+REQUEST_TIMEOUT = 15
+OUTPUT_PATH = Path(__file__).with_name('video.mp4')
 
 
+def get_download_link(url: str) -> str:
+    """Return a direct video URL from a public Facebook page URL."""
+    parsed = urlparse(url)
+    hostname = (parsed.hostname or '').lower()
+    if parsed.scheme not in {'http', 'https'} or (
+        hostname != 'facebook.com' and not hostname.endswith('.facebook.com')
+    ):
+        raise ValueError('Enter a valid Facebook video URL.')
 
-def Download_vid():
+    mobile_url = urlunparse(parsed._replace(netloc='mbasic.facebook.com'))
+    response = requests.get(mobile_url, timeout=REQUEST_TIMEOUT)
+    response.raise_for_status()
+    match = re.search(r'[?&]src=([^"&]+)', response.text)
+    if match is None:
+        raise ValueError('No downloadable video was found at this URL.')
 
-    # Validates Link and download Video
-    global Url_Val
-    url=Url_Val.get()
-
-    Status["text"]="Downloading"
-    Status["fg"]="green"
-
-
-    # Validating Input
-
-    if not "www.facebook.com" in url:
-        Invalid_Url()
-        return
-
-    link=get_downloadlink(url)
-
-    start_downloading()
-
-    download_thread=VideoDownload(link)
-    download_thread.start()
-    monitor(download_thread)
-
-
-
-def monitor( download_thread):
-    """ Monitor the download thread """
-    if download_thread.is_alive():
-
-        try:
-            bar["value"]=queue.get(0)
-            ld_window.after(10, lambda: monitor(download_thread))
-        except Empty:
-            pass
-
+    return unquote(match.group(1))
 
 
 class VideoDownload(Thread):
+    """Download a video and send progress updates to the Tkinter thread."""
 
-    def __init__(self, url):
-        super().__init__()
-
+    def __init__(self, url: str, updates: queue.Queue[tuple[str, object]]) -> None:
+        super().__init__(daemon=True)
         self.url = url
+        self.updates = updates
 
-    def run(self):
-        """ download video"""
+    def run(self) -> None:
+        try:
+            response = requests.get(self.url, stream=True, timeout=REQUEST_TIMEOUT)
+            response.raise_for_status()
+            total_size = int(response.headers.get('content-length', 0))
+            downloaded = 0
 
-        # save the picture to a file
-        block_size = 1024  # 1kB
-        r = get(self.url, stream=True)
-        total_size = int(r.headers.get("content-length"))
+            with OUTPUT_PATH.open('wb') as file:
+                for chunk in response.iter_content(chunk_size=1024):
+                    if not chunk:
+                        continue
+                    file.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size:
+                        self.updates.put(('progress', downloaded * 100 / total_size))
 
-        with open('video.mp4', 'wb') as file:
-            totaldata=0;
-            for data in r.iter_content(block_size):
-                totaldata+=len(data)
-                per_downloaded=totaldata*100/total_size
-                queue.put(per_downloaded)
-                bar['value'] = per_downloaded
-                file.write(data)
-                time.sleep(0.01)
-            file.close()    
-            print("Download Finished")
-
-        print("Download Complete !!!")
-        Status["text"] = "Finished!!"
-        Status["fg"] = "green"
+            self.updates.put(('complete', OUTPUT_PATH))
+        except (OSError, requests.RequestException) as error:
+            self.updates.put(('error', str(error)))
 
 
+class DownloaderApp:
+    """Tkinter controls and state for one download at a time."""
 
-#start download
-def start_downloading():
-   bar["value"]=0;
+    def __init__(self, root: tk.Tk) -> None:
+        self.root = root
+        self.updates: queue.Queue[tuple[str, object]] = queue.Queue()
+        self.worker: VideoDownload | None = None
 
-# GUI
+        root.title('Facebook Video Downloader')
+        root.geometry('400x300')
 
-ld_window=tk.Tk()
-ld_window.title("Facebook Video Downloader")
-ld_window.geometry("400x300")
+        tk.Label(root, text='Enter Facebook Video URL:').pack()
+        self.url_value = tk.StringVar()
+        tk.Entry(root, textvariable=self.url_value, font=('Calibri', 9)).place(
+            x=25, y=50, width=350
+        )
+        self.download_button = tk.Button(root, text='Download', command=self.start_download)
+        self.download_button.place(x=100, y=100, width=200)
+        self.progress = ttk.Progressbar(root, length=350, mode='determinate')
+        self.progress.place(y=200, width=350, x=25)
+        self.status = tk.Label(
+            root, text='Ready', fg='blue', font=('Calibri', 9), bd=1, relief=tk.SUNKEN, anchor=tk.W
+        )
+        self.status.pack(side=tk.BOTTOM, fill=tk.X)
 
-# Label for URL Input
-input_label= tk.Label(ld_window,text="Enter Facebook Video URL:")
-input_label.pack()
+    def start_download(self) -> None:
+        try:
+            link = get_download_link(self.url_value.get().strip())
+        except (requests.RequestException, ValueError) as error:
+            self.set_status(str(error), 'red')
+            return
 
-# Input of URL
-Url_Val = tk.StringVar()
-Url_Input = tk.Entry(ld_window, textvariable=Url_Val, font=("Calibri", 9))
-Url_Input.place( x=25,y=50, width=350)
+        self.progress['value'] = 0
+        self.download_button['state'] = tk.DISABLED
+        self.set_status('Downloading', 'green')
+        self.worker = VideoDownload(link, self.updates)
+        self.worker.start()
+        self.monitor_download()
 
-# Button for Download
-Download_button = tk.Button(ld_window, text="Download", font=("Calibri", 9), command=Download_vid)
-Download_button.place(x=100, y=100, width=200)
+    def monitor_download(self) -> None:
+        try:
+            event, value = self.updates.get_nowait()
+        except queue.Empty:
+            event = None
+        else:
+            if event == 'progress':
+                self.progress['value'] = value
+            elif event == 'complete':
+                self.progress['value'] = 100
+                self.set_status(f'Finished: {value}', 'green')
+                self.download_button['state'] = tk.NORMAL
+                self.worker = None
+            elif event == 'error':
+                self.set_status(f'Download failed: {value}', 'red')
+                self.download_button['state'] = tk.NORMAL
+                self.worker = None
 
-# Progress Bar
-bar = Progressbar(ld_window, length=350, style='grey.Horizontal.TProgressbar',mode='determinate')
-bar.place(y=200,width=350,x=25)
+        if self.worker is not None:
+            self.root.after(50, self.monitor_download)
 
-queue=queue.Queue()
-# Text for Status of Downloading
-Status = tk.Label(ld_window, text="Hello!! :D", fg="blue", font=("Calibri", 9), bd=1, relief=tk.SUNKEN, anchor=tk.W, padx=3)
-Status.pack(side=tk.BOTTOM, fill=tk.X)
+    def set_status(self, message: str, color: str) -> None:
+        self.status['text'] = message
+        self.status['fg'] = color
 
-ld_window.mainloop() 
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Open the Facebook video downloader GUI.')
+    parser.parse_args()
+
+    root = tk.Tk()
+    DownloaderApp(root)
+    root.mainloop()
+
+
+if __name__ == '__main__':
+    main()

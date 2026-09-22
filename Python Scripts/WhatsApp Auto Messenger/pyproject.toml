@@ -1,0 +1,7 @@
+[project]
+name = "whatsapp-auto-messenger"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pywhatkit>=5.4",
+]

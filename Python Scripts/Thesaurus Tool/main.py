@@ -4,9 +4,9 @@ Find synonyms, antonyms, definitions, and example sentences.
 Uses the Datamuse API (no key required).
 
 Usage:
-    python main.py
-    python main.py --word happy
-    python main.py --word fast --antonyms
+    uv run python main.py
+    uv run python main.py --word happy
+    uv run python main.py --word fast --antonyms
 """
 
 import argparse
@@ -76,7 +76,7 @@ def display_words(title: str, words: list[dict]) -> None:
 def lookup(word: str, show_ant: bool = True, show_related: bool = True,
            show_rhymes: bool = False) -> None:
     print(f"\n  Word: \"{word}\"")
-    print(f"  {'─'*50}")
+    print(f"  {'-'*50}")
 
     syns = synonyms(word)
     display_words("Synonyms", syns)

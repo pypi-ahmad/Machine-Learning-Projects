@@ -1,0 +1,12 @@
+[project]
+name = "discord-moderation-bot"
+version = "0.1.0"
+description = "Discord moderation and welcome bot"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "discord-py>=2.3.2",
+]
+
+[tool.uv]
+package = false

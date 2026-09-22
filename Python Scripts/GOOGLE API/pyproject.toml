@@ -1,0 +1,10 @@
+[project]
+name = "google-api-geocoding"
+version = "0.1.0"
+description = "Local Google Maps geocoding cache and map-data exporter"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

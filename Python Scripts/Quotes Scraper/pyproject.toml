@@ -1,0 +1,8 @@
+[project]
+name = "quotes-scraper"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "requests>=2.28.1",
+]

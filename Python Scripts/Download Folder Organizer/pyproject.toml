@@ -1,0 +1,10 @@
+[project]
+name = "download-folder-organizer"
+version = "0.1.0"
+description = "Preview-first file organizer based on filename extensions"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

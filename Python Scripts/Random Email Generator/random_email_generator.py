@@ -1,64 +1,29 @@
-import random
+"""Generate placeholder email-like addresses for examples and test data."""
+
+import argparse
+import secrets
 import string
-import csv
-import progressbar
-''' Ask user for total number of emails required'''
 
 
-def getcount():
-    rownums = input("How many email addresses?: ")
-    try:
-        rowint = int(rownums)
-        return rowint
-    except ValueError:
-        print("Please enter an integer value")
-        return getcount()
+DOMAINS = ("gmail", "yahoo", "comcast", "verizon", "charter", "hotmail", "outlook", "frontier")
+EXTENSIONS = ("com", "net", "org", "gov")
+CHARACTERS = string.ascii_lowercase + string.digits
 
 
-'''Below function creates a random length of email between 1-20 characters length and adds domain and extension to give the resulting email'''
+def make_email() -> str:
+    """Create one random email-like address."""
+    username = "".join(map(lambda _: secrets.choice(CHARACTERS), range(secrets.randbelow(20) + 1)))
+    return f"{username}@{secrets.choice(DOMAINS)}.{secrets.choice(EXTENSIONS)}"
 
 
-def makeEmail():
-    extensions = ['com', 'net', 'org', 'gov']
-    domains = [
-        'gmail', 'yahoo', 'comcast', 'verizon', 'charter', 'hotmail',
-        'outlook', 'frontier'
-    ]
-
-    finalext = extensions[random.randint(0, len(extensions) - 1)]
-    finaldom = domains[random.randint(0, len(domains) - 1)]
-
-    accountlen = random.randint(1, 20)
-
-    finalacc = ''.join(
-        random.choice(string.ascii_lowercase + string.digits)
-        for _ in range(accountlen))
-
-    finale = finalacc + "@" + finaldom + "." + finalext
-    return finale
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate placeholder email-like addresses.")
+    parser.add_argument("count", type=int, help="Number of addresses to generate")
+    args = parser.parse_args()
+    if args.count < 1:
+        parser.error("count must be at least 1")
+    print("\n".join(map(lambda _: make_email(), range(args.count))))
 
 
-# Take the total count of emails and pass them to getcount()
-howmany = getcount()
-
-# counter for While loop
-counter = 0
-
-# empty array to add emails
-emailarray = []
-
-print("Creating email addresses...")
-print("Progress: ")
-
-prebar = progressbar.ProgressBar(maxval=int(howmany))
-
-for i in prebar(range(howmany)):
-    while counter < howmany:
-        emailarray.append(str(makeEmail()))
-        counter += 1
-        prebar.update(i)
-
-print("Creation completed.")
-
-for i in emailarray:
-    print(i)
+if __name__ == "__main__":
+    main()

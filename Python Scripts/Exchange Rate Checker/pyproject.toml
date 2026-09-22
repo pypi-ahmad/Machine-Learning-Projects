@@ -1,0 +1,10 @@
+[project]
+name = "exchange-rate-checker"
+version = "0.1.0"
+description = "Reference currency conversion using the ExchangeRate-API open endpoint"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

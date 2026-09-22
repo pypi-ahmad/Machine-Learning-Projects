@@ -18,7 +18,7 @@ import urllib.error
 from pathlib import Path
 
 
-FAVORITES_FILE = Path("book_favorites.json")
+FAVORITES_FILE = Path(__file__).with_name("book_favorites.json")
 COVERS_BASE    = "https://covers.openlibrary.org/b/isbn/{}-M.jpg"
 
 
@@ -28,7 +28,7 @@ def api_get(url: str) -> dict | list:
             return json.loads(resp.read())
     except urllib.error.HTTPError as e:
         raise ValueError(f"HTTP {e.code}")
-    except Exception as e:
+    except (urllib.error.URLError, OSError, json.JSONDecodeError) as e:
         raise ValueError(f"Network error: {e}")
 
 
@@ -43,15 +43,15 @@ def display_search(docs: list[dict]) -> None:
     if not docs:
         print("  No results found.")
         return
-    print(f"\n  {'─'*60}")
+    print(f"\n  {'-'*60}")
     for i, d in enumerate(docs):
         title   = d.get("title", "Unknown")[:50]
         authors = ", ".join(d.get("author_name", ["Unknown"])[:2])
-        year    = d.get("first_publish_year", "—")
+        year    = d.get("first_publish_year", "unknown")
         key     = d.get("key", "")
         pages   = d.get("number_of_pages_median", "—")
         rating  = d.get("ratings_average", None)
-        rating_s = f"  ⭐{rating:.1f}" if rating else ""
+        rating_s = f"  rating {rating:.1f}" if rating else ""
         print(f"  [{i+1:>2}]  {title}")
         print(f"        by {authors}  ({year})  {pages} pages{rating_s}")
         print(f"        Key: {key}")
@@ -106,8 +106,11 @@ def display_isbn(data: dict) -> None:
 
 def load_favorites() -> list:
     if FAVORITES_FILE.exists():
-        try: return json.loads(FAVORITES_FILE.read_text())
-        except: pass
+        try:
+            favorites = json.loads(FAVORITES_FILE.read_text(encoding="utf-8"))
+            return favorites if isinstance(favorites, list) else []
+        except (OSError, json.JSONDecodeError):
+            pass
     return []
 
 
@@ -117,8 +120,8 @@ def save_favorite(doc: dict) -> None:
     if not any(f.get("key") == key for f in favs):
         favs.append({"key": key, "title": doc.get("title",""),
                      "author": ", ".join(doc.get("author_name",[]))})
-        FAVORITES_FILE.write_text(json.dumps(favs, indent=2))
-        print(f"  ⭐ Saved to favorites!")
+        FAVORITES_FILE.write_text(json.dumps(favs, indent=2), encoding="utf-8")
+        print("  Saved to favorites.")
 
 
 def interactive():

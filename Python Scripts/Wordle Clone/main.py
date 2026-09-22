@@ -124,7 +124,7 @@ def play_game(hard_mode: bool = False) -> None:
                 print(f"  {attempt - len(guesses) + i - 1 + len(guesses):>2}  "
                       f"{colorize_row(guesses[i], all_scores[i])}")
             elif i == len(guesses):
-                print(f"  {i+1:>2}  [ _ ] [ _ ] [ _ ] [ _ ] [ _ ]  ← current")
+                print(f"  {i+1:>2}  [ _ ] [ _ ] [ _ ] [ _ ] [ _ ]  < current")
             else:
                 print(f"  {i+1:>2}  [ _ ] [ _ ] [ _ ] [ _ ] [ _ ]")
         display_keyboard(guesses, all_scores)
@@ -160,7 +160,7 @@ def play_game(hard_mode: bool = False) -> None:
         if guess == target:
             print(f"\n  {colorize_row(guess, scores)}")
             praises = ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"]
-            print(f"\n  🎉 {praises[attempt - 1]}  Solved in {attempt} tries!")
+            print(f"\n  {praises[attempt - 1]}  Solved in {attempt} tries!")
             return
 
     print(f"\n  {colorize_row(target, [2]*5)}")

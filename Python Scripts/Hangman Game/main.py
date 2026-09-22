@@ -1,6 +1,9 @@
 import pygame
 import math
 import random
+from pathlib import Path
+
+ASSET_DIR = Path(__file__).parent
 
 # setup display
 pygame.init()
@@ -23,12 +26,12 @@ for i in range(26):
 # load images
 images = []
 for i in range(7):
-    img = pygame.image.load("./Hangman-Game/hangman" + str(i) + ".png")
+    img = pygame.image.load(ASSET_DIR / f"hangman{i}.png")
     images.append(img)
 
 # game variables
 hangman_status = 0
-with open("./Hangman-Game/words.txt", 'r') as f:
+with (ASSET_DIR / "words.txt").open(encoding="utf-8") as f:
     content = f.read()
 list_of_words = content.split(",")
 word = random.choice(list_of_words).upper()

@@ -1,10 +1,10 @@
 # Hello
 
-> A Python script that prints "Hello Python World" to the console.
+> A Python script that prints `Hello Python World` to the console.
 
 ## Overview
 
-A single-line script that prints "Hello Python World" to the console. Typically used as a first program when learning Python.
+A single-line script that prints `Hello Python World` to the console, suitable as a first Python program.
 
 ## Features
 
@@ -20,21 +20,22 @@ Hello/
 
 ## Requirements
 
-- Python 3.x
+- Python 3.13 or later
 - No external dependencies
 
 ## Installation
 
 ```bash
-cd Hello
+cd "Python Scripts/Hello"
+uv sync --no-config
 ```
 
-No dependencies to install.
+No third-party dependencies are required.
 
 ## Usage
 
 ```bash
-python Hello.py
+uv run --no-config python Hello.py
 ```
 
 **Output:**
@@ -42,7 +43,7 @@ python Hello.py
 Hello Python World
 ```
 
-## How It Works
+## How it works
 
 Calls `print('Hello Python World')` which writes the string to stdout.
 

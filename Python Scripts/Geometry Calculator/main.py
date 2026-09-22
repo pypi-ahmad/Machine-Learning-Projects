@@ -1,4 +1,4 @@
-"""Geometry Calculator — CLI tool.
+"""Geometry Calculator CLI tool.
 
 Calculate area, perimeter, volume, and surface area for common
 2D and 3D shapes.  Also includes coordinate geometry helpers.
@@ -14,24 +14,40 @@ import math
 # 2D shapes
 # ---------------------------------------------------------------------------
 
+def valid_lengths(*values: float) -> bool:
+    for value in values:
+        if not math.isfinite(value) or value <= 0:
+            return False
+    return True
+
+
 def circle(r: float) -> dict:
+    if not valid_lengths(r):
+        return {"error": "Radius must be positive."}
     return {"area": math.pi * r ** 2,
             "circumference": 2 * math.pi * r,
             "diameter": 2 * r}
 
 
 def rectangle(w: float, h: float) -> dict:
+    if not valid_lengths(w, h):
+        return {"error": "Width and height must be positive."}
     return {"area": w * h,
             "perimeter": 2 * (w + h),
             "diagonal": math.hypot(w, h)}
 
 
 def square(s: float) -> dict:
-    return rectangle(s, s) | {"side": s}
+    result = rectangle(s, s)
+    if "error" in result:
+        return result
+    return result | {"side": s}
 
 
 def triangle_sides(a: float, b: float, c: float) -> dict:
     """By 3 sides (Heron's formula)."""
+    if not valid_lengths(a, b, c) or a + b <= c or a + c <= b or b + c <= a:
+        return {"error": "Triangle sides must be positive and satisfy the triangle inequality."}
     s = (a + b + c) / 2
     disc = s * (s - a) * (s - b) * (s - c)
     if disc < 0:
@@ -49,16 +65,22 @@ def triangle_sides(a: float, b: float, c: float) -> dict:
 
 
 def triangle_base_height(b: float, h: float) -> dict:
+    if not valid_lengths(b, h):
+        return {"error": "Base and height must be positive."}
     return {"area": 0.5 * b * h}
 
 
 def trapezoid(a: float, b: float, h: float) -> dict:
+    if not valid_lengths(a, b, h):
+        return {"error": "Parallel sides and height must be positive."}
     return {"area": 0.5 * (a + b) * h,
             "parallel sides": (a, b),
             "height": h}
 
 
 def parallelogram(base: float, height: float, side: float = 0.0) -> dict:
+    if not valid_lengths(base, height) or side < 0 or not math.isfinite(side):
+        return {"error": "Base and height must be positive; side cannot be negative."}
     res = {"area": base * height}
     if side:
         res["perimeter"] = 2 * (base + side)
@@ -66,6 +88,8 @@ def parallelogram(base: float, height: float, side: float = 0.0) -> dict:
 
 
 def regular_polygon(n: int, side: float) -> dict:
+    if n < 3 or not valid_lengths(side):
+        return {"error": "A regular polygon needs at least 3 sides and a positive side length."}
     area = (n * side ** 2) / (4 * math.tan(math.pi / n))
     return {"sides": n,
             "area": area,
@@ -74,6 +98,8 @@ def regular_polygon(n: int, side: float) -> dict:
 
 
 def ellipse(a: float, b: float) -> dict:
+    if not valid_lengths(a, b):
+        return {"error": "Ellipse axes must be positive."}
     # Ramanujan approximation for perimeter
     h = (a - b) ** 2 / (a + b) ** 2
     perim = math.pi * (a + b) * (1 + 3 * h / (10 + math.sqrt(4 - 3 * h)))
@@ -88,17 +114,23 @@ def ellipse(a: float, b: float) -> dict:
 # ---------------------------------------------------------------------------
 
 def sphere(r: float) -> dict:
+    if not valid_lengths(r):
+        return {"error": "Radius must be positive."}
     return {"volume": 4 / 3 * math.pi * r ** 3,
             "surface_area": 4 * math.pi * r ** 2}
 
 
 def cylinder(r: float, h: float) -> dict:
+    if not valid_lengths(r, h):
+        return {"error": "Radius and height must be positive."}
     return {"volume": math.pi * r ** 2 * h,
             "lateral_area": 2 * math.pi * r * h,
             "total_surface": 2 * math.pi * r * (r + h)}
 
 
 def cone(r: float, h: float) -> dict:
+    if not valid_lengths(r, h):
+        return {"error": "Radius and height must be positive."}
     slant = math.hypot(r, h)
     return {"volume": math.pi * r ** 2 * h / 3,
             "slant_height": slant,
@@ -107,18 +139,24 @@ def cone(r: float, h: float) -> dict:
 
 
 def cube(s: float) -> dict:
+    if not valid_lengths(s):
+        return {"error": "Side length must be positive."}
     return {"volume": s ** 3,
             "surface_area": 6 * s ** 2,
             "space_diagonal": s * math.sqrt(3)}
 
 
 def cuboid(l: float, w: float, h: float) -> dict:
+    if not valid_lengths(l, w, h):
+        return {"error": "Length, width, and height must be positive."}
     return {"volume": l * w * h,
             "surface_area": 2 * (l * w + w * h + l * h),
             "space_diagonal": math.sqrt(l ** 2 + w ** 2 + h ** 2)}
 
 
 def torus(R: float, r: float) -> dict:
+    if not valid_lengths(R, r) or R <= r:
+        return {"error": "For a ring torus, major radius R must be greater than minor radius r."}
     return {"volume": 2 * math.pi ** 2 * R * r ** 2,
             "surface_area": 4 * math.pi ** 2 * R * r}
 
@@ -164,7 +202,7 @@ def print_results(d: dict) -> None:
 MENU_2D = """
   2D Shapes:
   c) Circle      r) Rectangle   s) Square    t) Triangle (sides)
-  T) Triangle (base×height)     z) Trapezoid p) Parallelogram
+  T) Triangle (base*height)     z) Trapezoid p) Parallelogram
   n) Regular polygon             e) Ellipse
 """
 
@@ -191,7 +229,10 @@ Geometry Calculator
 
 def gf(prompt: str) -> float | None:
     try:
-        return float(input(prompt).strip())
+        value = float(input(prompt).strip())
+        if not math.isfinite(value):
+            raise ValueError
+        return value
     except ValueError:
         print("  Invalid number.")
         return None

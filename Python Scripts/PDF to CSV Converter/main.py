@@ -1,87 +1,42 @@
-import tabula  # simple wrapper for tabula-java, read tables from PDF into csv
-import os
-print("[-+-] starting pdf_csv.py...")
-print("[-+-] import a pdf and convert it to a csv")
-# -----------------------------------------------------------------------------
-print("[-+-] importing required packages for pdf_csv.py...")
-# from modules.defaults import df # local module
-print("[-+-] pdf_csv.py packages imported! \n")
-# -----------------------------------------------------------------------------
+"""Extract tables from one PDF into a CSV file with tabula-py."""
 
-# -----------------------------------------------------------------------------
+import argparse
+from pathlib import Path
+
+import tabula
+from tabula.errors import JavaNotFoundError
 
 
-def pdf_csv():  # convert pdf to csv
-    print("[-+-] default filenames:")
-    filename = "sample1"
-    pdf = filename + ".pdf"
-    csv = filename + ".csv"
-    print(pdf)
-    print(csv + "\n")
-
-    print("[-+-] default directory:")
-    print("[-+-] (based on current working directory of python file)")
-    defaultdir = os.getcwd()
-    print(defaultdir + "\n")
-
-    print("[-+-] default file paths:")
-    pdf_path = os.path.join(defaultdir, pdf)
-    csv_path = os.path.join(defaultdir, csv)
-    print(pdf_path)
-    print(csv_path + "\n")
-
-    print("[-+-] looking for default pdf...")
-    if os.path.exists(pdf_path) == True:  # check if the default pdf exists
-        print("[-+-] pdf found: " + pdf + "\n")
-        pdf_flag = True
-    else:
-        print("[-+-] looking for another pdf...")
-        arr_pdf = [
-            defaultdir for defaultdir in os.listdir()
-            if defaultdir.endswith(".pdf")
-        ]
-        if len(arr_pdf) == 1:  # there has to be only 1 pdf in the directory
-            print("[-+-] pdf found: " + arr_pdf[0] + "\n")
-            pdf_path = os.path.join(defaultdir, arr_pdf[0])
-            pdf_flag = True
-        elif len(arr_pdf) > 1:  # there are more than 1 pdf in the directory
-            print("[-+-] more than 1 pdf found, exiting script!")
-            pdf_flag = False
-            # TODO add option to select from available pdfs
-        else:
-            print("[-+-] pdf cannot be found, exiting script!")
-            pdf_flag = False
-
-    if pdf_flag == True:
-        # check if csv exists at the default file path
-        # if csv does not exist create a blank file at the default path
-        try:
-            print("[-+-] looking for default csv...")
-            open(csv_path, "r")
-            print("[-+-] csv found: " + csv + "\n")
-        except IOError:
-            print("[-+-] did not find csv at default file path!")
-            print("[-+-] creating a blank csv file: " + csv + "... \n")
-            open(csv_path, "w")
-
-        print("[-+-] converting pdf to csv...")
-        #    print("[-+-] pdf to csv conversion suppressed! \n")
-        try:
-            tabula.convert_into(pdf_path,
-                                csv_path,
-                                output_format="csv",
-                                pages="all")
-            print("[-+-] pdf to csv conversion complete!\n")
-        except IOError:
-            print("[-+-] pdf to csv conversion failed!")
-
-        print("[-+-] converted csv file can be found here: " + csv_path + "\n")
-
-        print("[-+-] finished pdf_csv.py successfully!")
+def convert_pdf(input_path: Path, output_path: Path, pages: str) -> None:
+    """Write tables from the selected PDF to one CSV file."""
+    tabula.convert_into(
+        input_path,
+        output_path,
+        output_format="csv",
+        pages=pages,
+    )
 
 
-# -----------------------------------------------------------------------------
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Extract PDF tables into CSV.")
+    parser.add_argument("input", type=Path, help="PDF file containing tables")
+    parser.add_argument("--output", type=Path, help="Destination CSV file")
+    parser.add_argument("--pages", default="all", help="Page range accepted by tabula-py (default: all)")
+    args = parser.parse_args()
 
-# -----------------------------------------------------------------------------
-pdf_csv()  # run the program
-# -----------------------------------------------------------------------------
+    if not args.input.is_file() or args.input.suffix.lower() != ".pdf":
+        parser.error("input must be an existing PDF file")
+
+    output_path = args.output or args.input.with_suffix(".csv")
+    try:
+        convert_pdf(args.input, output_path, args.pages)
+    except JavaNotFoundError:
+        parser.exit(1, "Java was not found. Install a JRE or JDK and add it to PATH.\n")
+    except OSError as error:
+        parser.exit(1, f"Unable to convert PDF: {error}\n")
+
+    print(f"Extracted tables from {args.input} to {output_path}")
+
+
+if __name__ == "__main__":
+    main()

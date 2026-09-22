@@ -1,10 +1,10 @@
 # Scrape Hacker News
 
-> Scrapes article listings from Hacker News and saves structured article information to text files.
+> Scrapes Hacker News article listings and saves structured article information to text files.
 
 ## Overview
 
-A Python script that fetches one or more pages from Hacker News (`news.ycombinator.com`), extracts article metadata (rank, title, source, URL, author, score, posting time), and saves the results to text files in a local `HackerNews/` directory. Supports up to 20 pages and optional verbose output.
+A Python script that fetches one or more Hacker News pages, extracts article metadata, and saves the results to text files in a local `HackerNews/` directory. It supports up to 20 pages and optional verbose output.
 
 ## Features
 
@@ -59,7 +59,7 @@ Fetching Page 3...
 
 Output files are saved to `HackerNews/NewsPage1.txt`, `HackerNews/NewsPage2.txt`, etc.
 
-## How It Works
+## How it works
 
 1. The user specifies how many pages to scrape (capped at 20) and whether to enable verbose output.
 2. For each page, a GET request is sent to `https://news.ycombinator.com/?p={page_no}`.

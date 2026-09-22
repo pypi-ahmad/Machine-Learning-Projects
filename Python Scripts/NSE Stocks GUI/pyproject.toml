@@ -1,0 +1,8 @@
+[project]
+name = "nse-stocks-gui"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "selenium>=4.49.0",
+]

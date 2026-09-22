@@ -1,206 +1,136 @@
-"""File Organizer — CLI tool.
+"""Preview file organization by extension or modification date before applying it."""
 
-Automatically moves files from a source folder into categorized
-subfolders based on file extension, creation date, or file type.
-Supports dry-run preview before applying changes.
-
-Usage:
-    python main.py
-"""
-
+import argparse
+import os
 import shutil
 from datetime import datetime
 from pathlib import Path
 
 
-# ---------------------------------------------------------------------------
-# Extension-to-category mapping
-# ---------------------------------------------------------------------------
-
 CATEGORIES: dict[str, list[str]] = {
-    "Images":      [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp",
-                    ".tiff", ".ico", ".heic", ".raw"],
-    "Videos":      [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm",
-                    ".m4v", ".3gp"],
-    "Audio":       [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a"],
-    "Documents":   [".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt", ".md",
-                    ".tex", ".epub"],
-    "Spreadsheets":[".xls", ".xlsx", ".ods", ".csv"],
-    "Presentations":[".ppt", ".pptx", ".odp", ".key"],
-    "Archives":    [".zip", ".tar", ".gz", ".bz2", ".7z", ".rar", ".xz"],
-    "Code":        [".py", ".js", ".ts", ".java", ".c", ".cpp", ".cs", ".go",
-                    ".rs", ".rb", ".php", ".html", ".css", ".sh", ".bat",
-                    ".ps1", ".r", ".swift", ".kt"],
-    "Data":        [".json", ".xml", ".yaml", ".yml", ".toml", ".ini", ".cfg",
-                    ".sql", ".db", ".sqlite"],
+    "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp", ".tiff", ".ico", ".heic", ".raw"],
+    "Videos": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v", ".3gp"],
+    "Audio": [".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma", ".m4a"],
+    "Documents": [".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt", ".md", ".tex", ".epub"],
+    "Spreadsheets": [".xls", ".xlsx", ".ods", ".csv"],
+    "Presentations": [".ppt", ".pptx", ".odp", ".key"],
+    "Archives": [".zip", ".tar", ".gz", ".bz2", ".7z", ".rar", ".xz"],
+    "Code": [".py", ".js", ".ts", ".java", ".c", ".cpp", ".cs", ".go", ".rs", ".rb", ".php", ".html", ".css", ".sh", ".bat", ".ps1", ".r", ".swift", ".kt"],
+    "Data": [".json", ".xml", ".yaml", ".yml", ".toml", ".ini", ".cfg", ".sql", ".db", ".sqlite"],
     "Executables": [".exe", ".msi", ".deb", ".rpm", ".dmg", ".app"],
-    "Fonts":       [".ttf", ".otf", ".woff", ".woff2"],
+    "Fonts": [".ttf", ".otf", ".woff", ".woff2"],
 }
-
-EXT_TO_CATEGORY: dict[str, str] = {
-    ext: cat
-    for cat, exts in CATEGORIES.items()
-    for ext in exts
-}
+EXT_TO_CATEGORY = {extension: category for category, extensions in CATEGORIES.items() for extension in extensions}
 
 
-# ---------------------------------------------------------------------------
-# Core logic
-# ---------------------------------------------------------------------------
-
-def plan_by_extension(
-    source: Path,
-    dest_root: Path,
-    recursive: bool = False,
-) -> list[tuple[Path, Path]]:
-    """Return (src_file, dest_file) pairs organized by extension category."""
-    pairs = []
-    glob = source.rglob if recursive else source.glob
-    for f in glob("*"):
-        if not f.is_file():
-            continue
-        category = EXT_TO_CATEGORY.get(f.suffix.lower(), "Other")
-        dest = dest_root / category / f.name
-        # Avoid collision
-        dest = _unique(dest)
-        pairs.append((f, dest))
-    return pairs
+def is_within(path: Path, parent: Path) -> bool:
+    """Return whether path resolves inside parent."""
+    try:
+        path.resolve().relative_to(parent.resolve())
+    except ValueError:
+        return False
+    return True
 
 
-def plan_by_date(
-    source: Path,
-    dest_root: Path,
-    fmt: str = "%Y/%m",
-    recursive: bool = False,
-) -> list[tuple[Path, Path]]:
-    """Organize files by modification date (year/month by default)."""
-    pairs = []
-    glob = source.rglob if recursive else source.glob
-    for f in glob("*"):
-        if not f.is_file():
-            continue
-        mtime = datetime.fromtimestamp(f.stat().st_mtime)
-        folder = mtime.strftime(fmt)
-        dest = dest_root / folder / f.name
-        dest = _unique(dest)
-        pairs.append((f, dest))
-    return pairs
+def source_files(source: Path, destination: Path, recursive: bool) -> list[Path]:
+    """Collect files while excluding a distinct destination tree."""
+    files = []
+    if recursive:
+        for directory, _, names in os.walk(source):
+            for name in names:
+                candidate = Path(directory, name)
+                if destination != source and is_within(candidate, destination):
+                    continue
+                if candidate.is_file():
+                    files.append(candidate)
+    else:
+        for candidate in source.iterdir():
+            if candidate.is_file():
+                files.append(candidate)
+    return sorted(files)
 
 
-def _unique(path: Path) -> Path:
-    if not path.exists():
-        return path
-    stem, suffix = path.stem, path.suffix
-    parent = path.parent
-    i = 1
+def unique_destination(destination: Path, reserved: set[Path]) -> Path:
+    """Return an unused output path, accounting for both disk and this plan."""
+    if destination not in reserved and not destination.exists():
+        reserved.add(destination)
+        return destination
+    number = 1
     while True:
-        candidate = parent / f"{stem}_{i}{suffix}"
-        if not candidate.exists():
+        candidate = destination.with_name(f"{destination.stem}_{number}{destination.suffix}")
+        if candidate not in reserved and not candidate.exists():
+            reserved.add(candidate)
             return candidate
-        i += 1
+        number += 1
 
 
-def apply_moves(
-    pairs: list[tuple[Path, Path]],
-    copy: bool = False,
-) -> tuple[int, int]:
-    moved = errors = 0
-    for src, dst in pairs:
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            if copy:
-                shutil.copy2(src, dst)
-            else:
-                shutil.move(str(src), dst)
-            moved += 1
-        except (OSError, shutil.Error) as e:
-            print(f"  Error: {e}")
-            errors += 1
-    return moved, errors
+def plan(source: Path, destination: Path, strategy: str, recursive: bool, date_format: str) -> list[tuple[Path, Path]]:
+    """Return a collision-free, non-mutating organization plan."""
+    pairs = []
+    reserved: set[Path] = set()
+    for file_path in source_files(source, destination, recursive):
+        if strategy == "extension":
+            folder = EXT_TO_CATEGORY.get(file_path.suffix.lower(), "Other")
+        else:
+            folder = datetime.fromtimestamp(file_path.stat().st_mtime).strftime(date_format)
+        target = unique_destination(destination / folder / file_path.name, reserved)
+        pairs.append((file_path, target))
+    return pairs
 
 
-# ---------------------------------------------------------------------------
-# Display helpers
-# ---------------------------------------------------------------------------
-
-def print_plan(pairs: list[tuple[Path, Path]], source: Path, dest_root: Path) -> None:
-    if not pairs:
-        print("  No files to organize.")
-        return
-    from collections import Counter
-    cats: Counter = Counter()
-    for _, dst in pairs:
-        cats[dst.parent.name] += 1
-    print(f"\n  {len(pairs)} file(s) will be organized into {len(cats)} folder(s):")
-    for cat, count in sorted(cats.items()):
-        print(f"    {cat:<20} {count} file(s)")
+def print_plan(pairs: list[tuple[Path, Path]]) -> None:
+    """Print the full planned source-to-destination mapping."""
+    print(f"Planned files: {len(pairs)}")
+    for source, destination in pairs:
+        print(f"  {source} -> {destination}")
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
-
-MENU = """
-File Organizer
---------------
-1. Organize by file type (extension)
-2. Organize by date (year/month)
-3. Preview organization (dry-run)
-0. Quit
-"""
+def apply_plan(pairs: list[tuple[Path, Path]], copy_files: bool) -> None:
+    """Apply a reviewed plan, creating output folders only at this stage."""
+    for source, destination in pairs:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if copy_files:
+            shutil.copy2(source, destination)
+        else:
+            shutil.move(str(source), destination)
 
 
-def get_dir(prompt: str) -> Path | None:
-    path_str = input(prompt).strip().strip('"')
-    p = Path(path_str)
-    if not p.is_dir():
-        print(f"  Not a directory: {path_str}")
-        return None
-    return p
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("source", type=Path, help="Existing directory whose files will be organized.")
+    parser.add_argument("--destination", "-d", type=Path, help="Output directory; defaults to SOURCE.")
+    parser.add_argument("--strategy", choices=("extension", "date"), default="extension")
+    parser.add_argument("--date-format", default="%Y/%m", help="strftime folder format for --strategy date.")
+    parser.add_argument("--recursive", action="store_true", help="Include nested files when the destination is outside SOURCE.")
+    parser.add_argument("--copy", action="store_true", help="Copy files instead of moving them when applying.")
+    parser.add_argument("--apply", action="store_true", help="Request an explicit confirmation to perform the plan.")
+    return parser.parse_args()
 
 
 def main() -> None:
-    print("File Organizer")
-    while True:
-        print(MENU)
-        choice = input("Choice: ").strip()
+    args = parse_args()
+    source = args.source.resolve()
+    destination = (args.destination or source).resolve()
+    if not source.is_dir():
+        raise SystemExit(f"Source directory does not exist: {args.source}")
+    if args.recursive and destination == source:
+        raise SystemExit("--recursive requires --destination outside the source directory.")
+    if destination.exists() and not destination.is_dir():
+        raise SystemExit(f"Destination is not a directory: {destination}")
+    if not destination.exists() and not destination.parent.is_dir():
+        raise SystemExit(f"Destination parent does not exist: {destination.parent}")
 
-        if choice == "0":
-            print("Bye!")
-            break
-
-        elif choice in ("1", "2", "3"):
-            source = get_dir("  Source directory: ")
-            if not source:
-                continue
-            dest_str = input("  Destination directory (blank = inside source): ").strip().strip('"')
-            dest_root = Path(dest_str) if dest_str else source
-            rec = input("  Recursive? (y/n, default n): ").strip().lower() == "y"
-
-            if choice in ("1", "3"):
-                pairs = plan_by_extension(source, dest_root, rec)
-            else:
-                fmt = input("  Date format (default %Y/%m): ").strip() or "%Y/%m"
-                pairs = plan_by_date(source, dest_root, fmt, rec)
-
-            print_plan(pairs, source, dest_root)
-
-            if choice == "3" or not pairs:
-                continue
-
-            action = input("\n  (m)ove or (c)opy files? (default m): ").strip().lower()
-            copy = action.startswith("c")
-            confirm = input(
-                f"  {'Copy' if copy else 'Move'} {len(pairs)} file(s)? (y/n): "
-            ).strip().lower()
-            if confirm == "y":
-                moved, errors = apply_moves(pairs, copy)
-                print(f"  {'Copied' if copy else 'Moved'} {moved} file(s). Errors: {errors}")
-            else:
-                print("  Cancelled.")
-
-        else:
-            print("  Invalid choice.")
+    pairs = plan(source, destination, args.strategy, args.recursive, args.date_format)
+    print_plan(pairs)
+    if not args.apply:
+        print("Preview only. Re-run with --apply to request final confirmation.")
+        return
+    action = "COPY" if args.copy else "MOVE"
+    if input(f"Type {action} to apply this plan: ") != action:
+        print("Cancelled. No files were changed.")
+        return
+    apply_plan(pairs, args.copy)
+    print(f"Applied {len(pairs)} file operation(s).")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+[project]
+name = "racing-bar-chart-animation"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "jupyterlab>=4.1.6",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.2",
+    "pandas>=3.0.6",
+]

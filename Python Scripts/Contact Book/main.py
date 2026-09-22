@@ -13,27 +13,25 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Contact Book", layout="wide")
-st.title("📒 Contact Book")
+st.set_page_config(page_title="Contact book", page_icon=":material/contacts:", layout="wide")
+st.title("Contact book")
 
-DATA_FILE = Path("contacts.json")
+DATA_FILE = Path(__file__).with_name("contacts.json")
 
 
 def load_contacts() -> list[dict]:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
-    return []
+    try:
+        contacts = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    return contacts if isinstance(contacts, list) else []
 
 
 def save_contacts(contacts: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(contacts, indent=2))
+    DATA_FILE.write_text(json.dumps(contacts, indent=2), encoding="utf-8")
 
 
-if "contacts" not in st.session_state:
-    st.session_state.contacts = load_contacts()
+st.session_state.setdefault("contacts", load_contacts())
 
 contacts = st.session_state.contacts
 
@@ -145,7 +143,7 @@ with tab3:
         st.info("No contacts to export.")
     else:
         df = pd.DataFrame(contacts)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, width="stretch", hide_index=True)
         csv = df.to_csv(index=False).encode()
         st.download_button("📥 Download CSV", csv, "contacts.csv", "text/csv")
         json_str = json.dumps(contacts, indent=2).encode()

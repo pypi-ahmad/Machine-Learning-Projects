@@ -19,19 +19,20 @@ This script uses `glob` to find all `.csv` files in the current working director
 ```
 Merge_csv_files/
 ├── merge_csv_files.py
-└── requirements.txt
+├── pyproject.toml
+└── uv.lock
 ```
 
 ## Requirements
 
-- Python 3.x
-- `pandas==1.1.0`
+- Python 3.13+
+- `pandas`, managed by uv in `pyproject.toml`
 
 ## Installation
 
 ```bash
 cd "Merge_csv_files"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
@@ -40,12 +41,12 @@ pip install -r requirements.txt
 2. Run the script:
 
 ```bash
-python merge_csv_files.py
+uv run python merge_csv_files.py
 ```
 
 3. The merged output will be saved as `combined_csv.csv` in the same directory.
 
-**Note:** The script discovers CSVs using `*.csv` glob, which means the output file `combined_csv.csv` will be included if you run the script a second time. Move or rename the output file before re-running to avoid duplication.
+`combined_csv.csv` is excluded from later runs, so rerunning the script does not merge the previous output back into itself.
 
 ## How It Works
 
@@ -65,9 +66,7 @@ python merge_csv_files.py
 - Only discovers CSV files in the current working directory — does not search subdirectories.
 - All CSVs must have compatible column structures for a meaningful merge; mismatched columns will result in `NaN` values.
 - No error handling for malformed CSV files, empty files, or encoding issues.
-- The output file (`combined_csv.csv`) will be picked up on subsequent runs, causing data duplication.
 - No option to specify input files, output filename, or directory via CLI arguments.
-- Requires `pandas==1.1.0` specifically per the requirements file, which is an older version.
 
 ## Security Notes
 

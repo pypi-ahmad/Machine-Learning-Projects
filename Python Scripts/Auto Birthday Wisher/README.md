@@ -1,6 +1,9 @@
 # Auto Birthday Wisher
 
-A Python script that automatically sends birthday-wish emails to contacts whose birthdays match today's date, reading data from an Excel spreadsheet and sending via Gmail SMTP.
+The modern CLI previews due wishes by default. Use `--send` only when you are
+ready to deliver email; the Gmail App Password is requested with hidden input.
+
+A Python script that sends birthday emails to contacts whose birthdays match today's date. It reads contact data from an Excel spreadsheet and sends messages through Gmail SMTP.
 
 ## Overview
 
@@ -26,7 +29,7 @@ A Python script that automatically sends birthday-wish emails to contacts whose 
 | `smtplib` | Python standard library | — |
 | `os` | Python standard library | — |
 
-## How It Works
+## How it works
 
 1. The script prompts the user to enter their Gmail address and Gmail password via `input()`.
 2. `data.xlsx` is loaded into a Pandas DataFrame using `pd.read_excel()`.
@@ -61,14 +64,14 @@ Auto Birthday Wisher/
 ## Setup & Installation
 
 ```bash
-pip install pandas openpyxl
+uv sync
 ```
 
 ## How to Run
 
 ```bash
 cd "Auto Birthday Wisher"
-python "Auto B'Day Wisher.py"
+uv run python "Auto B'Day Wisher.py"
 ```
 
 You will be prompted to enter your Gmail address and password. The script will check `data.xlsx` and send emails to any contacts whose birthday matches today.

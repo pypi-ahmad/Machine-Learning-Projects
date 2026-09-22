@@ -1,6 +1,9 @@
 # Auto-Fill Google Forms
 
-A Selenium-based automation script that reads contact data from a CSV file and automatically fills out and submits a Google Form for each record using Firefox WebDriver.
+The script validates CSV data by default. It opens Firefox and submits only
+when `--submit` and all form-specific options are supplied.
+
+A Selenium-based automation script that reads contact data from a CSV file and fills out and submits a Google Form for each record with Firefox WebDriver.
 
 ## Overview
 
@@ -26,7 +29,7 @@ A Selenium-based automation script that reads contact data from a CSV file and a
 
 Additionally, **geckodriver** (Firefox WebDriver) must be installed separately.
 
-## How It Works
+## How it works
 
 1. The script initializes a Firefox WebDriver instance with a hardcoded path to `geckodriver.exe`.
 2. It navigates to a specific Google Form URL.
@@ -59,22 +62,19 @@ Homer,Homer@gmail.com,555-1235
 ## Setup & Installation
 
 ```bash
-pip install selenium
+uv sync
 ```
 
-Download **geckodriver** from [https://github.com/mozilla/geckodriver/releases](https://github.com/mozilla/geckodriver/releases) and place it at a known path on your system.
+Selenium Manager resolves a compatible Firefox driver when Firefox is available.
 
 ## How to Run
 
-1. Edit `test.py` to set the correct `executable_path` for geckodriver on your system (line 18).
-2. Update the Google Form URL (line 20) if targeting a different form.
-3. Update the XPath selectors (lines 6–8, 11) if the form's field structure differs.
-4. Populate `input.csv` with your data.
-5. Run:
+1. Populate `input.csv` with your data.
+2. Validate it without browser activity:
 
 ```bash
 cd Auto-Fill-Google-Forms
-python test.py
+uv run python test.py --csv input.csv
 ```
 
 ## Configuration

@@ -1,4 +1,4 @@
-"""Anagram Checker — CLI tool.
+"""Anagram Checker - CLI tool.
 
 Checks if two strings are anagrams, finds all anagrams of a word
 from a wordlist, and generates anagram groups from a list of words.
@@ -7,6 +7,7 @@ Usage:
     python main.py
 """
 
+import argparse
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -16,7 +17,8 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 def normalize_word(word: str) -> str:
-    return "".join(sorted(word.lower().replace(" ", "")))
+    """Return a case-insensitive key that ignores whitespace."""
+    return "".join(sorted(character for character in word.casefold() if not character.isspace()))
 
 
 def are_anagrams(a: str, b: str) -> bool:
@@ -27,7 +29,7 @@ def are_anagrams(a: str, b: str) -> bool:
 def find_anagrams_in_list(word: str, word_list: list[str]) -> list[str]:
     """Find all anagrams of 'word' in 'word_list'."""
     key = normalize_word(word)
-    return [w for w in word_list if normalize_word(w) == key and w.lower() != word.lower()]
+    return [w for w in word_list if normalize_word(w) == key and w.casefold() != word.casefold()]
 
 
 def group_anagrams(words: list[str]) -> list[list[str]]:
@@ -39,9 +41,12 @@ def group_anagrams(words: list[str]) -> list[list[str]]:
 
 
 def load_wordlist(path: Path) -> list[str]:
-    if not path.exists():
-        return []
-    return [line.strip().lower() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    """Load non-empty wordlist entries from a UTF-8 text file."""
+    return [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
 
 
 # ---------------------------------------------------------------------------
@@ -58,7 +63,24 @@ Anagram Checker
 """
 
 
-def main() -> None:
+def print_check(first: str, second: str) -> None:
+    """Print an anagram result and any unmatched characters."""
+    if are_anagrams(first, second):
+        print(f"{first!r} and {second!r} are anagrams.")
+        return
+
+    print(f"{first!r} and {second!r} are not anagrams.")
+    first_characters = Counter(normalize_word(first))
+    second_characters = Counter(normalize_word(second))
+    only_first = first_characters - second_characters
+    only_second = second_characters - first_characters
+    if only_first:
+        print(f"Extra in {first!r}: {dict(only_first)}")
+    if only_second:
+        print(f"Extra in {second!r}: {dict(only_second)}")
+
+
+def interactive_mode() -> None:
     print("Anagram Checker")
 
     while True:
@@ -77,18 +99,10 @@ def main() -> None:
                 continue
             result = are_anagrams(a, b)
             if result:
-                print(f"\n  ✓ '{a}' and '{b}' ARE anagrams!")
+                print(f"\n  {a!r} and {b!r} are anagrams.")
             else:
-                print(f"\n  ✗ '{a}' and '{b}' are NOT anagrams.")
-                # Show diff
-                ca = Counter(normalize_word(a))
-                cb = Counter(normalize_word(b))
-                only_a = ca - cb
-                only_b = cb - ca
-                if only_a:
-                    print(f"  Extra in '{a}': {dict(only_a)}")
-                if only_b:
-                    print(f"  Extra in '{b}': {dict(only_b)}")
+                print()
+                print_check(a, b)
 
         elif choice == "2":
             print("  Enter words one per line (blank line to finish):")
@@ -132,6 +146,49 @@ def main() -> None:
 
         else:
             print("  Invalid choice.")
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Build the non-interactive command-line interface."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command")
+
+    check = commands.add_parser("check", help="check two words or phrases")
+    check.add_argument("first")
+    check.add_argument("second")
+
+    group = commands.add_parser("group", help="group words by anagram family")
+    group.add_argument("words", nargs="+", help="two or more words")
+
+    find = commands.add_parser("find", help="find a word's anagrams in a file")
+    find.add_argument("word")
+    find.add_argument("wordlist", type=Path)
+    return parser
+
+
+def main() -> None:
+    """Run a selected command or open the interactive menu."""
+    args = build_parser().parse_args()
+    if args.command is None:
+        interactive_mode()
+    elif args.command == "check":
+        print_check(args.first, args.second)
+    elif args.command == "group":
+        groups = group_anagrams(args.words)
+        if groups:
+            for group in groups:
+                print(" | ".join(group))
+        else:
+            print("No anagram groups found.")
+    elif args.command == "find":
+        try:
+            results = find_anagrams_in_list(args.word, load_wordlist(args.wordlist))
+        except OSError as error:
+            raise SystemExit(f"Error: {error}") from error
+        if results:
+            print("\n".join(results))
+        else:
+            print("No anagrams found.")
 
 
 if __name__ == "__main__":

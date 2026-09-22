@@ -21,7 +21,7 @@ import streamlit as st
 st.set_page_config(page_title="News Dashboard", layout="wide")
 st.title("📰 News Dashboard")
 
-SAVED_FILE = Path("saved_articles.json")
+SAVED_FILE = Path(__file__).resolve().with_name("saved_articles.json")
 
 RSS_FEEDS = {
     "BBC World":       "http://feeds.bbci.co.uk/news/world/rss.xml",
@@ -35,7 +35,7 @@ RSS_FEEDS = {
 def load_saved() -> list[dict]:
     if SAVED_FILE.exists():
         try:
-            return json.loads(SAVED_FILE.read_text())
+            return json.loads(SAVED_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return []
@@ -45,7 +45,7 @@ def save_article(article: dict):
     saved = load_saved()
     if not any(a["url"] == article["url"] for a in saved):
         saved.append(article)
-        SAVED_FILE.write_text(json.dumps(saved, indent=2))
+        SAVED_FILE.write_text(json.dumps(saved, indent=2), encoding="utf-8")
 
 
 @st.cache_data(ttl=600)
@@ -149,5 +149,5 @@ with tab2:
                 st.markdown(f"[Read more]({a['url']})")
                 if st.button("🗑️ Remove", key=f"del_{i}"):
                     saved.pop(i)
-                    SAVED_FILE.write_text(json.dumps(saved, indent=2))
+                    SAVED_FILE.write_text(json.dumps(saved, indent=2), encoding="utf-8")
                     st.rerun()

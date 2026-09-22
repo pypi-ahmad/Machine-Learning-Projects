@@ -1,0 +1,8 @@
+[project]
+name = "linkedin-connections-scraper"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "pandas>=3.0.6",
+    "selenium>=4.49.0",
+]

@@ -1,0 +1,7 @@
+[project]
+name = "barcode-generator"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "python-barcode>=0.16.1",
+]

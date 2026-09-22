@@ -1,0 +1,8 @@
+[project]
+name = "youtube-audio-downloader"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "moviepy>=2",
+    "yt-dlp>=2026.8.19",
+]

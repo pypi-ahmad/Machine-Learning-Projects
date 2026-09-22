@@ -29,12 +29,15 @@ def parse_duration(text: str) -> int:
         parts = text.split(":")
         if len(parts) == 3:
             h, m, s = parts
-            return int(h) * 3600 + int(m) * 60 + int(s)
+            seconds = int(h) * 3600 + int(m) * 60 + int(s)
         elif len(parts) == 2:
             m, s = parts
-            return int(m) * 60 + int(s)
+            seconds = int(m) * 60 + int(s)
         else:
             raise ValueError("Use H:MM:SS or MM:SS format.")
+        if seconds <= 0:
+            raise ValueError("Duration must be greater than zero.")
+        return seconds
 
     # e.g. 1h30m45s
     seconds = 0
@@ -89,7 +92,7 @@ def run_countdown(total_seconds: int, label: str = "") -> None:
             sleep_time = max(0.0, 1.0 - drift)
 
             display = format_duration(remaining)
-            print(f"\r  ⏱  {display}  ", end="", flush=True)
+            print(f"\r  [timer] {display}  ", end="", flush=True)
 
             if remaining == 0:
                 break
@@ -99,7 +102,7 @@ def run_countdown(total_seconds: int, label: str = "") -> None:
         return
 
     # Bell + finish message
-    print(f"\r  ✓  Time's up! \a", flush=True)
+    print("\r  Time's up! \a", flush=True)
     if label:
         print(f"  [{label}] complete.")
     print()

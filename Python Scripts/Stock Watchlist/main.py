@@ -4,8 +4,7 @@ Track a list of stock tickers with live prices (via yfinance),
 price change alerts, and a simple portfolio value tracker.
 
 Usage:
-    streamlit run main.py
-    pip install yfinance  (optional but recommended)
+    uv run streamlit run main.py
 """
 
 import json
@@ -18,7 +17,7 @@ import streamlit as st
 st.set_page_config(page_title="Stock Watchlist", layout="wide")
 st.title("📈 Stock Watchlist")
 
-DATA_FILE = Path("watchlist.json")
+DATA_FILE = Path(__file__).with_name("watchlist.json")
 
 DEMO_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"]
 
@@ -26,15 +25,15 @@ DEMO_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"]
 def load_watchlist() -> dict:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
+            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return {t: {"shares": 0, "buy_price": 0, "alert_low": 0, "alert_high": 0}
             for t in DEMO_TICKERS}
 
 
-def save_watchlist(wl: dict):
-    DATA_FILE.write_text(json.dumps(wl, indent=2))
+def save_watchlist(wl: dict) -> None:
+    DATA_FILE.write_text(json.dumps(wl, indent=2), encoding="utf-8")
 
 
 @st.cache_data(ttl=300)
@@ -83,13 +82,15 @@ if st.sidebar.button("Remove") and del_ticker:
     save_watchlist(wl)
     st.rerun()
 
+fetch_market_data = st.sidebar.checkbox("Fetch live market data", value=False)
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 tab1, tab2, tab3 = st.tabs(["Watchlist", "Charts", "Portfolio"])
 
 with tab1:
     rows = []
     for ticker, meta in wl.items():
-        q = fetch_quote(ticker)
+        q = fetch_quote(ticker) if fetch_market_data else None
         if q:
             change    = q["price"] - q["prev"]
             change_pct = change / q["prev"] * 100 if q["prev"] else 0
@@ -108,36 +109,45 @@ with tab1:
                 "Alert":   alert,
             })
         else:
+            status = "Live data disabled" if not fetch_market_data else "No data"
             rows.append({"Ticker": ticker, "Price": "—", "Change": "—",
-                         "Change%": "—", "52W High": "—", "52W Low": "—", "Alert": "No data"})
+                         "Change%": "—", "52W High": "—", "52W Low": "—", "Alert": status})
 
     if rows:
         df_wl = pd.DataFrame(rows)
-        st.dataframe(df_wl, use_container_width=True, hide_index=True)
+        st.dataframe(df_wl, hide_index=True)
 
 with tab2:
-    sel = st.selectbox("Select ticker", list(wl.keys()))
-    days = st.slider("Days of history", 30, 365, 90)
-    hist = fetch_history(sel, days)
-    if not hist.empty:
-        st.line_chart(hist)
+    if not wl:
+        st.info("Add a ticker to view chart options.")
+    elif not fetch_market_data:
+        st.info("Enable live market data in the sidebar to load price history.")
     else:
-        st.info("Could not fetch history. Install yfinance: pip install yfinance")
+        sel = st.selectbox("Select ticker", list(wl.keys()))
+        days = st.slider("Days of history", 30, 365, 90)
+        hist = fetch_history(sel, days)
+        if not hist.empty:
+            st.line_chart(hist)
+        else:
+            st.info("Could not fetch price history.")
 
 with tab3:
     st.subheader("Portfolio")
     total_value = 0
-    for ticker, meta in wl.items():
-        q = fetch_quote(ticker)
-        if q and meta["shares"] > 0:
-            value = q["price"] * meta["shares"]
-            cost  = meta["buy_price"] * meta["shares"]
-            pl    = value - cost
-            st.metric(ticker,
-                       f"${value:,.2f}",
-                       delta=f"${pl:+,.2f} ({pl/cost*100:+.1f}%)" if cost else f"${value:,.2f}")
-            total_value += value
-    if total_value:
-        st.metric("**Total Portfolio Value**", f"${total_value:,.2f}")
+    if not fetch_market_data:
+        st.info("Enable live market data in the sidebar to value the portfolio.")
     else:
-        st.info("Add shares/buy prices in the JSON file to track portfolio value.")
+        for ticker, meta in wl.items():
+            q = fetch_quote(ticker)
+            if q and meta["shares"] > 0:
+                value = q["price"] * meta["shares"]
+                cost  = meta["buy_price"] * meta["shares"]
+                pl    = value - cost
+                st.metric(ticker,
+                           f"${value:,.2f}",
+                           delta=f"${pl:+,.2f} ({pl/cost*100:+.1f}%)" if cost else f"${value:,.2f}")
+                total_value += value
+        if total_value:
+            st.metric("**Total Portfolio Value**", f"${total_value:,.2f}")
+        else:
+            st.info("Add shares and buy prices in the JSON file to track portfolio value.")

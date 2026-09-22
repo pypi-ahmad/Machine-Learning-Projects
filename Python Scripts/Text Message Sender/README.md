@@ -1,82 +1,38 @@
-# Send Texts
+# Text Message Sender
 
-> Sends an SMS message using the Twilio API.
+A small Twilio CLI for sending one SMS only after an explicit `--send` flag. It never stores credentials, phone numbers, or messages in project files.
 
-## Overview
+## Setup
 
-A Python script that sends a text message ("Hello from Python!") using the Twilio REST API. Uses placeholder credentials and phone numbers.
-
-## Features
-
-- Sends an SMS message via the Twilio API
-- Prints the message SID upon successful delivery
-
-## Project Structure
-
-```
-Send-Texts/
-├── sendText.py       # Main script to send SMS via Twilio
-├── pythonFrom.txt    # Educational text about Python imports (not used by the script)
-└── README.md
+```powershell
+uv sync
 ```
 
-## Requirements
+Set these environment variables in your operating system before sending:
 
-- Python 3.x
-- `twilio`
-- A Twilio account with Account SID, Auth Token, and a Twilio phone number
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_FROM_NUMBER` — a Twilio-enabled sender number in E.164 format
 
-## Installation
+Restart the terminal or coding host after adding environment variables so it inherits them. Do not put credentials in source code or a committed `.env` file.
 
-```bash
-cd "Send-Texts"
-pip install twilio
+## Use
+
+First confirm the recipient and message without sending anything:
+
+```powershell
+uv run python sendText.py --to +15551234567 --body "Hello" --dry-run
 ```
 
-## Usage
+To send an SMS, add the explicit confirmation flag:
 
-1. Edit `sendText.py` and replace the placeholder values:
-   - `account_sid`: Your Twilio Account SID
-   - `auth_token`: Your Twilio Auth Token
-   - `to`: The recipient's phone number
-   - `from_`: Your Twilio phone number
-2. Run the script:
-
-```bash
-python sendText.py
+```powershell
+uv run python sendText.py --to +15551234567 --body "Hello" --send
 ```
 
-The message SID is printed on success.
+The recipient and sender must comply with your Twilio account configuration, regional rules, consent requirements, and any applicable messaging policies.
 
-## How It Works
+## Dependencies
 
-1. Imports the Twilio `Client` from `twilio.rest`.
-2. Initializes the client with `account_sid` and `auth_token`.
-3. Calls `client.messages.create()` with `to`, `from_`, and `body` parameters.
-4. Prints the returned `message.sid` to confirm the message was queued.
-
-## Configuration
-
-All values are hardcoded in `sendText.py` and must be edited:
-
-- `account_sid`: Set to `"0000"` (placeholder)
-- `auth_token`: Set to `"0000"` (placeholder)
-- `to`: Set to `"0000"` (placeholder)
-- `from_`: Set to `"0000"` (placeholder)
-- `body`: Hardcoded as `"Hello from Python!"`
-
-## Limitations
-
-- All credentials and phone numbers are hardcoded as `"0000"` placeholders.
-- Only sends a single hardcoded message — no CLI arguments or dynamic input.
-- No error handling for invalid credentials, network failures, or Twilio API errors.
-- The `pythonFrom.txt` file is unrelated educational text about Python imports and is not used by the script.
-
-## Security Notes
-
-- **Hardcoded credentials**: The Account SID and Auth Token are stored directly in the source code. These should be loaded from environment variables or a secure configuration file, never committed to version control.
-- Twilio Auth Tokens grant full API access; exposure could allow unauthorized messaging and billing.
-
-## License
-
-Not specified.
+- Python 3.14+
+- twilio

@@ -16,9 +16,10 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Habit Tracker", layout="wide")
-st.title("✅ Habit Tracker")
+st.title("Habit tracker")
+st.caption("Habit data is stored locally in this project folder.")
 
-DATA_FILE = Path("habits.json")
+DATA_FILE = Path(__file__).with_name("habits.json")
 
 
 # ---------------------------------------------------------------------------
@@ -28,14 +29,17 @@ DATA_FILE = Path("habits.json")
 def load() -> dict:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
+            data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("habits"), list) and isinstance(data.get("log"), dict):
+                return data
+            raise ValueError("Habit data must contain habits and log.")
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Invalid habit data: {error}") from error
     return {"habits": [], "log": {}}  # log: {"YYYY-MM-DD": [habit1, habit2, ...]}
 
 
 def save(data: dict) -> None:
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -127,7 +131,7 @@ for habit in habits:
         "Completion %": f"{completion_rate(habit):.1f}%",
         "Done today": "✅" if habit in log.get(today, []) else "❌",
     })
-st.dataframe(pd.DataFrame(stats_data), use_container_width=True)
+st.dataframe(pd.DataFrame(stats_data))
 
 # ---------------------------------------------------------------------------
 # 30-day heatmap (simple table)
@@ -141,4 +145,4 @@ for habit in habits:
         for ds in dates_30
     ]
 heat_df = pd.DataFrame(heatmap_data, index=[d[5:] for d in dates_30]).T
-st.dataframe(heat_df, use_container_width=True)
+st.dataframe(heat_df)

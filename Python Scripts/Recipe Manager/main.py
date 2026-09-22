@@ -16,7 +16,7 @@ import streamlit as st
 st.set_page_config(page_title="Recipe Manager", layout="wide")
 st.title("🍳 Recipe Manager")
 
-DATA_FILE = Path("recipes.json")
+DATA_FILE = Path(__file__).with_name("recipes.json")
 
 SAMPLE_RECIPES = [
     {
@@ -60,8 +60,7 @@ def load_recipes() -> list[dict]:
             return json.loads(DATA_FILE.read_text())
         except Exception:
             pass
-    save_recipes(SAMPLE_RECIPES)
-    return SAMPLE_RECIPES
+    return SAMPLE_RECIPES.copy()
 
 
 def save_recipes(recipes: list[dict]) -> None:
@@ -165,7 +164,7 @@ with tab2:
                     "Quantity": f"{scaled_qty:.1f}".rstrip("0").rstrip("."),
                     "Unit":     ing.get("unit", ""),
                 })
-            st.dataframe(pd.DataFrame(ing_data), hide_index=True, use_container_width=True)
+            st.dataframe(pd.DataFrame(ing_data), hide_index=True)
 
             st.subheader("Instructions")
             for line in recipe.get("instructions", "").splitlines():

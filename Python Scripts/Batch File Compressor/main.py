@@ -61,16 +61,28 @@ def compress_tar(sources: list[Path], out: Path,
 def extract_zip(archive: Path, out_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive, "r") as zf:
+        names = zf.namelist()
+        ensure_safe_members(out_dir, names)
         zf.extractall(out_dir)
-        return zf.namelist()
+        return names
 
 
 def extract_tar(archive: Path, out_dir: Path) -> list[str]:
     out_dir.mkdir(parents=True, exist_ok=True)
     with tarfile.open(archive) as tf:
         names = tf.getnames()
-        tf.extractall(out_dir)
+        ensure_safe_members(out_dir, names)
+        tf.extractall(out_dir, filter="data")
         return names
+
+
+def ensure_safe_members(output_dir: Path, names: list[str]) -> None:
+    """Reject archive members that would escape the extraction directory."""
+    root = output_dir.resolve()
+    for name in names:
+        target = (root / name).resolve()
+        if root != target and root not in target.parents:
+            raise ValueError(f"Unsafe archive member path: {name}")
 
 
 def list_zip(archive: Path) -> list[tuple[str, int]]:

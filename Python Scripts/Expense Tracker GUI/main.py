@@ -8,27 +8,30 @@ Usage:
 """
 
 import json
-import os
 import tkinter as tk
 from datetime import date, datetime
 from tkinter import messagebox, ttk
+from pathlib import Path
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "expenses.json")
+DATA_FILE = Path(__file__).with_name("expenses.json")
 
 CATEGORIES = ["Food", "Transport", "Housing", "Entertainment",
               "Health", "Shopping", "Education", "Utilities", "Other"]
 
 
 def load_data() -> list[dict]:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f:
-            return json.load(f)
-    return []
+    if not DATA_FILE.exists():
+        return []
+    with DATA_FILE.open(encoding="utf-8") as file:
+        data = json.load(file)
+    if not isinstance(data, list):
+        raise ValueError(f"{DATA_FILE.name} must contain a JSON list of expenses.")
+    return data
 
 
-def save_data(data: list[dict]):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def save_data(data: list[dict]) -> None:
+    with DATA_FILE.open("w", encoding="utf-8") as file:
+        json.dump(data, file, indent=2)
 
 
 class ExpenseTracker(tk.Tk):
@@ -55,7 +58,7 @@ class ExpenseTracker(tk.Tk):
                  font=("Consolas", 13, "bold")).pack(anchor="w", pady=(0, 8))
 
         fields = [("Date (YYYY-MM-DD)", str(date.today())),
-                  ("Amount ($)", ""),
+                  ("Amount", ""),
                   ("Description", "")]
         self._entries = {}
         for label, default in fields:
@@ -70,11 +73,12 @@ class ExpenseTracker(tk.Tk):
         tk.Label(left, text="Category", bg="#1e1e2e", fg="#888",
                  font=("Consolas", 9)).pack(anchor="w")
         self._cat_var = tk.StringVar(value=CATEGORIES[0])
-        tk.OptionMenu(left, self._cat_var, *CATEGORIES).configure(
+        category_menu = tk.OptionMenu(left, self._cat_var, *CATEGORIES)
+        category_menu.configure(
             bg="#313244", fg="#cdd6f4", activebackground="#45475a",
             relief="flat", font=("Consolas", 10),
         )
-        tk.OptionMenu(left, self._cat_var, *CATEGORIES).pack(fill="x", pady=(0, 10))
+        category_menu.pack(fill="x", pady=(0, 10))
 
         tk.Button(left, text="+ Add Expense", command=self._add,
                   bg="#cba6f7", fg="#1e1e2e", relief="flat",
@@ -83,7 +87,7 @@ class ExpenseTracker(tk.Tk):
                   bg="#f38ba8", fg="#1e1e2e", relief="flat",
                   font=("Consolas", 10)).pack(fill="x", pady=4)
 
-        tk.Separator(left, orient="horizontal").pack(fill="x", pady=12)
+        ttk.Separator(left, orient="horizontal").pack(fill="x", pady=12)
 
         # Summary
         tk.Label(left, text="Summary", bg="#1e1e2e", fg="#cba6f7",
@@ -136,7 +140,7 @@ class ExpenseTracker(tk.Tk):
 
     def _add(self):
         date_str = self._entries["Date (YYYY-MM-DD)"].get().strip()
-        amt_str  = self._entries["Amount ($)"].get().strip()
+        amt_str  = self._entries["Amount"].get().strip()
         desc     = self._entries["Description"].get().strip()
         cat      = self._cat_var.get()
 
@@ -159,7 +163,7 @@ class ExpenseTracker(tk.Tk):
         self._data.append({"date": date_str, "amount": round(amt, 2),
                             "category": cat, "description": desc})
         save_data(self._data)
-        self._entries["Amount ($)"].delete(0, "end")
+        self._entries["Amount"].delete(0, "end")
         self._entries["Description"].delete(0, "end")
         self._refresh_table()
         self._update_summary()
@@ -185,7 +189,7 @@ class ExpenseTracker(tk.Tk):
             if month_f and not e["date"].startswith(month_f):
                 continue
             self._tree.insert("", "end", tags=(str(i),),
-                              values=(e["date"], f"${e['amount']:.2f}",
+                              values=(e["date"], f"{e['amount']:.2f}",
                                       e["category"], e["description"]))
 
     def _update_summary(self):
@@ -194,7 +198,7 @@ class ExpenseTracker(tk.Tk):
         for e in self._data:
             by_cat[e["category"]] = by_cat.get(e["category"], 0) + e["amount"]
 
-        lines = [f"Total: ${total:.2f}", f"Entries: {len(self._data)}", ""]
+        lines = [f"Total: {total:.2f}", f"Entries: {len(self._data)}", ""]
         if by_cat:
             lines.append("By Category:")
             max_val = max(by_cat.values()) or 1
@@ -202,7 +206,7 @@ class ExpenseTracker(tk.Tk):
                 if cat in by_cat:
                     v  = by_cat[cat]
                     bar = "█" * int(v / max_val * 14)
-                    lines.append(f" {cat[:11]:<11} ${v:7.2f}")
+                    lines.append(f" {cat[:11]:<11} {v:8.2f}")
                     lines.append(f"  {bar}")
 
         self._summary_text.config(state="normal")

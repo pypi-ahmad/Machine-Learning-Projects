@@ -1,11 +1,11 @@
 """Roman Numeral Converter — CLI tool.
 
-Convert integers to Roman numerals and back.
-Supports standard form (1–3999) and extended Unicode Roman numerals.
+Convert integers to standard Roman numerals and back.
+Supports values from 1 through 3999.
 Also validates and explains Roman numeral rules.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 # ---------------------------------------------------------------------------
@@ -107,8 +107,8 @@ def roman_table(start: int = 1, end: int = 20) -> list[str]:
 MENU = """
 Roman Numeral Converter
 -----------------------
-1. Integer → Roman numeral
-2. Roman numeral → Integer
+1. Integer -> Roman numeral
+2. Roman numeral -> Integer
 3. Explain Roman numeral
 4. Generate Roman numeral table
 5. Batch convert integers

@@ -1,172 +1,151 @@
-"""File Integrity Checker — CLI tool.
+"""Generate or verify a SHA-256 manifest for one directory tree."""
 
-Generate a checksum manifest for a directory,
-then verify files against it to detect tampering or corruption.
-
-Usage:
-    python main.py generate /path/to/dir
-    python main.py verify   /path/to/dir
-    python main.py          (interactive)
-"""
-
+import argparse
 import csv
 import hashlib
-import sys
-from datetime import datetime
+import os
 from pathlib import Path
 
 
 MANIFEST_NAME = "integrity_manifest.csv"
-HASH_ALGO     = "sha256"
-CHUNK_SIZE    = 1 << 20   # 1 MB
+HASH_ALGORITHM = "sha256"
+CHUNK_SIZE = 1 << 20
+MANIFEST_COLUMNS = ["path", "size", "hash"]
 
 
 def hash_file(path: Path) -> str:
-    h = hashlib.new(HASH_ALGO)
-    with open(path, "rb") as f:
-        while chunk := f.read(CHUNK_SIZE):
-            h.update(chunk)
-    return h.hexdigest()
+    """Return the SHA-256 digest of one regular file."""
+    digest = hashlib.new(HASH_ALGORITHM)
+    with path.open("rb") as file:
+        chunk = file.read(CHUNK_SIZE)
+        while chunk:
+            digest.update(chunk)
+            chunk = file.read(CHUNK_SIZE)
+    return digest.hexdigest()
 
 
-def generate_manifest(root: Path) -> Path:
-    manifest_path = root / MANIFEST_NAME
+def files_in_root(root: Path, manifest_path: Path) -> list[Path]:
+    """Collect regular files below root without including the manifest itself."""
+    files = []
+    manifest_resolved = manifest_path.resolve()
+    for directory, _, names in os.walk(root):
+        for name in names:
+            candidate = Path(directory, name)
+            if candidate.is_file() and candidate.resolve() != manifest_resolved:
+                files.append(candidate)
+    return sorted(files)
+
+
+def manifest_target(root: Path, relative_path: str) -> Path | None:
+    """Resolve a manifest entry only when it remains inside root."""
+    relative = Path(relative_path)
+    if not relative_path or relative.is_absolute() or ".." in relative.parts:
+        return None
+    root_resolved = root.resolve()
+    target = (root_resolved / relative).resolve()
+    try:
+        target.relative_to(root_resolved)
+    except ValueError:
+        return None
+    return target
+
+
+def generate_manifest(root: Path, manifest_path: Path, overwrite: bool) -> Path:
+    """Hash files and write a new CSV manifest after overwrite validation."""
+    if manifest_path.exists() and not overwrite:
+        raise FileExistsError(f"Refusing to overwrite {manifest_path}. Re-run with --overwrite.")
+
+    files = files_in_root(root, manifest_path)
     entries = []
-    files = sorted(p for p in root.rglob("*") if p.is_file() and p.name != MANIFEST_NAME)
-    print(f"  Hashing {len(files)} file(s)…")
-    for i, fpath in enumerate(files, 1):
-        rel   = fpath.relative_to(root).as_posix()
-        size  = fpath.stat().st_size
-        chk   = hash_file(fpath)
-        entries.append({"path": rel, "size": size, "hash": chk})
-        if i % 50 == 0 or i == len(files):
-            print(f"  {i}/{len(files)}", end="\r", flush=True)
+    for file_path in files:
+        entries.append(
+            {
+                "path": file_path.relative_to(root).as_posix(),
+                "size": file_path.stat().st_size,
+                "hash": hash_file(file_path),
+            }
+        )
 
-    with open(manifest_path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=["path", "size", "hash"])
+    with manifest_path.open("w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=MANIFEST_COLUMNS)
         writer.writeheader()
         writer.writerows(entries)
-
-    print(f"\n  Manifest saved: {manifest_path}  ({len(entries)} files)")
+    print(f"Manifest saved: {manifest_path} ({len(entries)} file(s), {HASH_ALGORITHM})")
     return manifest_path
 
 
-def verify_manifest(root: Path) -> dict:
-    manifest_path = root / MANIFEST_NAME
-    if not manifest_path.exists():
-        print(f"  No manifest found at {manifest_path}")
-        print("  Run 'generate' first.")
-        return {}
+def verify_manifest(root: Path, manifest_path: Path) -> dict[str, list]:
+    """Verify a manifest without modifying the tracked directory."""
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"Manifest not found: {manifest_path}")
+    with manifest_path.open(newline="", encoding="utf-8") as file:
+        reader = csv.DictReader(file)
+        if reader.fieldnames != MANIFEST_COLUMNS:
+            raise ValueError("Manifest header must be: path,size,hash")
+        expected = list(reader)
 
-    with open(manifest_path, newline="") as f:
-        expected = {row["path"]: row for row in csv.DictReader(f)}
-
-    results = {"ok": [], "modified": [], "missing": [], "new": []}
-    checked_paths: set[str] = set()
-
-    for rel, info in expected.items():
-        fpath = root / rel
-        checked_paths.add(rel)
-        if not fpath.exists():
-            results["missing"].append(rel)
+    results: dict[str, list] = {"ok": [], "modified": [], "missing": [], "new": [], "invalid": []}
+    tracked = set()
+    for entry in expected:
+        relative_path = entry["path"]
+        target = manifest_target(root, relative_path)
+        if target is None:
+            results["invalid"].append(relative_path)
+            continue
+        tracked.add(relative_path)
+        if not target.is_file():
+            results["missing"].append(relative_path)
+            continue
+        if hash_file(target) != entry["hash"] or str(target.stat().st_size) != entry["size"]:
+            results["modified"].append(relative_path)
         else:
-            current_hash = hash_file(fpath)
-            current_size = fpath.stat().st_size
-            if current_hash != info["hash"]:
-                results["modified"].append({
-                    "path": rel,
-                    "expected": info["hash"][:12] + "…",
-                    "actual":   current_hash[:12] + "…",
-                })
-            else:
-                results["ok"].append(rel)
+            results["ok"].append(relative_path)
 
-    # New files not in manifest
-    for fpath in root.rglob("*"):
-        if fpath.is_file() and fpath.name != MANIFEST_NAME:
-            rel = fpath.relative_to(root).as_posix()
-            if rel not in checked_paths:
-                results["new"].append(rel)
-
+    for file_path in files_in_root(root, manifest_path):
+        relative_path = file_path.relative_to(root).as_posix()
+        if relative_path not in tracked:
+            results["new"].append(relative_path)
     return results
 
 
-def print_results(results: dict):
-    total = sum(len(v) for v in results.values())
-    ok    = len(results.get("ok", []))
-    mod   = len(results.get("modified", []))
-    miss  = len(results.get("missing", []))
-    new   = len(results.get("new", []))
-
-    print(f"\n  ✓ OK:       {ok}")
-    print(f"  ✗ Modified: {mod}")
-    print(f"  ✗ Missing:  {miss}")
-    print(f"  + New:      {new}")
-
-    if results.get("modified"):
-        print("\n  Modified files:")
-        for e in results["modified"]:
-            print(f"    {e['path']}")
-            print(f"      expected: {e['expected']}  actual: {e['actual']}")
-
-    if results.get("missing"):
-        print("\n  Missing files:")
-        for p in results["missing"]:
-            print(f"    {p}")
-
-    if results.get("new"):
-        print("\n  New (untracked) files:")
-        for p in results["new"]:
-            print(f"    {p}")
-
-    if mod == 0 and miss == 0:
-        print("\n  ✓ All tracked files intact.")
-    else:
-        print(f"\n  ✗ INTEGRITY ISSUES DETECTED: {mod + miss} problem(s)")
+def print_results(results: dict[str, list]) -> bool:
+    """Print a summary and return whether every tracked file is intact."""
+    for label in ("ok", "modified", "missing", "new", "invalid"):
+        print(f"{label.title():<8}: {len(results[label])}")
+    for label in ("modified", "missing", "new", "invalid"):
+        for item in results[label]:
+            print(f"  {label}: {item}")
+    intact = not results["modified"] and not results["missing"] and not results["invalid"]
+    print("All tracked files intact." if intact else "Integrity issues detected.")
+    return intact
 
 
-def main():
-    if len(sys.argv) >= 2:
-        action = sys.argv[1].lower()
-        root   = Path(sys.argv[2]) if len(sys.argv) > 2 else Path(".")
-        if action == "generate":
-            generate_manifest(root)
-        elif action == "verify":
-            results = verify_manifest(root)
-            if results:
-                print_results(results)
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("action", choices=("generate", "verify"))
+    parser.add_argument("directory", type=Path, help="Existing directory to inspect.")
+    parser.add_argument("--manifest", type=Path, help="Manifest path; defaults to integrity_manifest.csv in DIRECTORY.")
+    parser.add_argument("--overwrite", action="store_true", help="Allow replacing a manifest during generate.")
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    root = args.directory.resolve()
+    if not root.is_dir():
+        raise SystemExit(f"Directory does not exist: {args.directory}")
+    manifest_path = (args.manifest or root / MANIFEST_NAME).resolve()
+    if manifest_path.parent != root and not manifest_path.parent.is_dir():
+        raise SystemExit(f"Manifest directory does not exist: {manifest_path.parent}")
+
+    try:
+        if args.action == "generate":
+            generate_manifest(root, manifest_path, args.overwrite)
         else:
-            print(f"Unknown action: {action}. Use 'generate' or 'verify'.")
-        return
-
-    print("File Integrity Checker")
-    print("────────────────────────────")
-    print("  g → generate manifest")
-    print("  v → verify files")
-    print("  q → quit\n")
-
-    while True:
-        cmd = input("> ").strip().lower()
-        if cmd in ("q", "quit"):
-            break
-        elif cmd in ("g", "generate"):
-            path_str = input("  Directory [.]: ").strip() or "."
-            root     = Path(path_str)
-            if root.is_dir():
-                generate_manifest(root)
-            else:
-                print(f"  Not a directory: {root}")
-        elif cmd in ("v", "verify"):
-            path_str = input("  Directory [.]: ").strip() or "."
-            root     = Path(path_str)
-            if root.is_dir():
-                results = verify_manifest(root)
-                if results:
-                    print_results(results)
-            else:
-                print(f"  Not a directory: {root}")
-        else:
-            print("  Commands: g=generate  v=verify  q=quit")
+            if not print_results(verify_manifest(root, manifest_path)):
+                raise SystemExit(1)
+    except (FileExistsError, FileNotFoundError, ValueError) as error:
+        raise SystemExit(str(error)) from error
 
 
 if __name__ == "__main__":

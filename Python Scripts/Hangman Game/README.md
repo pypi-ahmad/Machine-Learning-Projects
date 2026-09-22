@@ -1,10 +1,10 @@
 # Hangman Game
 
-> A graphical Hangman word-guessing game built with Pygame.
+> A graphical Hangman game built with Pygame.
 
 ## Overview
 
-A classic Hangman game with a graphical interface where players guess letters by clicking on-screen buttons. The game displays a hangman figure that progressively builds with each wrong guess, and the word is revealed letter by letter as correct guesses are made.
+A classic Hangman game where players guess letters by clicking on-screen buttons. The hangman figure builds with each wrong guess, while correct guesses reveal the word letter by letter.
 
 ## Features
 
@@ -51,7 +51,7 @@ python main.py
 
 Click on letters to guess. The game ends when you either guess the full word or accumulate 6 wrong guesses.
 
-## How It Works
+## How it works
 
 1. **Initialization**: Sets up an 800×500 Pygame window with 26 clickable circular letter buttons arranged in two rows.
 2. **Word Selection**: Reads `words.txt` (comma-separated), splits into a list, and picks a random word converted to uppercase.

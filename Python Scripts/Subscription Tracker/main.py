@@ -4,7 +4,7 @@ Track recurring subscriptions: cost, billing cycle, renewal dates.
 See monthly/yearly totals and upcoming renewals.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 import json
@@ -17,7 +17,7 @@ import streamlit as st
 st.set_page_config(page_title="Subscription Tracker", layout="wide")
 st.title("🔄 Subscription Tracker")
 
-DATA_FILE  = Path("subscriptions.json")
+DATA_FILE  = Path(__file__).with_name("subscriptions.json")
 CATEGORIES = ["Streaming", "Software", "News", "Gaming", "Fitness", "Cloud", "Other"]
 CYCLES     = {"Monthly": 1, "Quarterly": 3, "Yearly": 12}
 
@@ -25,14 +25,14 @@ CYCLES     = {"Monthly": 1, "Quarterly": 3, "Yearly": 12}
 def load_subs() -> list[dict]:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
+            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return []
 
 
 def save_subs(subs: list[dict]):
-    DATA_FILE.write_text(json.dumps(subs, indent=2))
+    DATA_FILE.write_text(json.dumps(subs, indent=2), encoding="utf-8")
 
 
 def monthly_cost(sub: dict) -> float:
@@ -111,7 +111,7 @@ with tab2:
                 "Next Renewal":  next_renewal(s),
                 "Notes":         s.get("notes", ""),
             })
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), hide_index=True)
 
         # By category breakdown
         st.subheader("Monthly Cost by Category")
@@ -148,7 +148,7 @@ with tab3:
                              "Cycle": s["cycle"]})
         upcoming.sort(key=lambda x: x["Days Left"])
         df = pd.DataFrame(upcoming)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, hide_index=True)
 
         due_soon = [u for u in upcoming if u["Days Left"] <= 7]
         if due_soon:

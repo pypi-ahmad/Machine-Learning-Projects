@@ -26,7 +26,7 @@ Install with:
 pip install requests win10toast
 ```
 
-## How It Works
+## How it works
 
 1. Sends a GET request to `https://coronavirus-19-api.herokuapp.com/all` to fetch global Covid-19 statistics.
 2. Parses the JSON response to extract `cases`, `deaths`, and `recovered` fields.

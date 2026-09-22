@@ -1,0 +1,10 @@
+[project]
+name = "git-helper-cli"
+version = "0.1.0"
+description = "Interactive helper for scoped Git commands"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

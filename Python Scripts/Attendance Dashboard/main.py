@@ -1,4 +1,4 @@
-"""Attendance Dashboard — Streamlit app.
+"""Attendance Dashboard - Streamlit app.
 
 Mark and track attendance for students or employees.
 Daily check-in, streak tracking, and monthly reports.
@@ -14,27 +14,35 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Attendance Dashboard", layout="wide")
-st.title("✅ Attendance Dashboard")
+st.set_page_config(page_title="Attendance dashboard", layout="wide")
+st.title(":material/fact_check: Attendance dashboard")
 
-DATA_FILE = Path("attendance.json")
+DATA_FILE = Path(__file__).with_name("attendance.json")
 
 
-def load_data() -> dict:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
+def empty_data() -> dict:
+    """Return the supported on-disk attendance structure."""
     return {"members": [], "records": {}}
 
 
-def save_data(data: dict):
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+def load_data() -> dict:
+    """Load local attendance data or return an empty store."""
+    if DATA_FILE.exists():
+        try:
+            data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return empty_data()
+        if isinstance(data, dict) and isinstance(data.get("members"), list) and isinstance(data.get("records"), dict):
+            return data
+    return empty_data()
 
 
-if "data" not in st.session_state:
-    st.session_state.data = load_data()
+def save_data(data: dict) -> None:
+    """Save local attendance data as UTF-8 JSON."""
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
+st.session_state.setdefault("data", load_data())
 
 data    = st.session_state.data
 members = data["members"]
@@ -76,7 +84,7 @@ with tab1:
             c = cols[i % len(cols)]
             checks[name] = c.checkbox(name, value=already_present, key=f"att_{name}_{date_str}")
 
-        if st.button("💾 Save Attendance", type="primary"):
+        if st.button(":material/save: Save attendance", type="primary"):
             for name, checked in checks.items():
                 dates_list = records.setdefault(name, [])
                 if checked and date_str not in dates_list:
@@ -100,7 +108,7 @@ with tab2:
             rows.append({"Name": name, "Days Present": attended})
         df = pd.DataFrame(rows)
         total_days = df["Days Present"].sum()
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width="stretch", hide_index=True)
         st.bar_chart(df.set_index("Name")["Days Present"])
 
         st.subheader("Monthly Breakdown")
@@ -112,7 +120,7 @@ with tab2:
         for name in sorted(members):
             month_dates = [d for d in records.get(name, []) if d.startswith(month_sel)]
             month_rows.append({"Name": name, "Days Present": len(month_dates)})
-        st.dataframe(pd.DataFrame(month_rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(month_rows), width="stretch", hide_index=True)
 
 with tab3:
     if not members:
@@ -126,8 +134,8 @@ with tab3:
             df_cal = pd.DataFrame({"Date": pd.to_datetime(all_dates), "Present": 1})
             df_cal["Month"] = df_cal["Date"].dt.to_period("M").astype(str)
             monthly = df_cal.groupby("Month")["Present"].sum()
-            st.subheader(f"{sel_member} — Monthly Attendance")
+            st.subheader(f"{sel_member} - Monthly attendance")
             st.bar_chart(monthly)
             st.caption(f"Total days attended: {len(all_dates)}")
             csv = df_cal[["Date","Present"]].to_csv(index=False).encode()
-            st.download_button("📥 Export CSV", csv, f"{sel_member}_attendance.csv")
+            st.download_button(":material/download: Export CSV", csv, f"{sel_member}_attendance.csv")

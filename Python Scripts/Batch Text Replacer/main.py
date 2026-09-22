@@ -71,10 +71,10 @@ def print_results(results: list[dict], root: Path, dry_run: bool):
     total  = 0
     for r in results:
         if r.get("error"):
-            print(f"  ✗ {r['path'].relative_to(root)}: {r['error']}")
+            print(f"  Error {r['path'].relative_to(root)}: {r['error']}")
         elif r.get("count", 0) > 0:
             rel = r["path"].relative_to(root)
-            print(f"  ✓ {prefix} {rel}: {r['count']} replacement(s)")
+            print(f"  {prefix} {rel}: {r['count']} replacement(s)")
             total += r["count"]
     changed = sum(1 for r in results if r.get("count", 0) > 0)
     print(f"\n  {changed} file(s) changed, {total} total replacement(s).")
@@ -88,17 +88,19 @@ def main():
     parser.add_argument("--ext",        nargs="+")
     parser.add_argument("--regex",      action="store_true")
     parser.add_argument("--ignore-case",action="store_true")
-    parser.add_argument("--dry-run",    action="store_true")
+    parser.add_argument("--apply",      action="store_true", help="write changes; default is dry run")
     parser.add_argument("--no-backup",  action="store_true")
     args = parser.parse_args()
 
     if args.path and args.find is not None and args.replace is not None:
         root = Path(args.path)
         exts = [e if e.startswith(".") else "." + e for e in args.ext] if args.ext else None
+        if not root.is_dir():
+            raise SystemExit(f"Error: not a directory: {root}")
         results = scan_and_replace(root, args.find, args.replace, exts,
                                     args.regex, args.ignore_case,
-                                    args.dry_run, not args.no_backup)
-        print_results(results, root, args.dry_run)
+                                    not args.apply, not args.no_backup)
+        print_results(results, root, not args.apply)
         return
 
     print("Batch Text Replacer")

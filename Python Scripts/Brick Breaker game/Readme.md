@@ -1,10 +1,13 @@
 # Brick Breaker Game
 
-A classic Breakout-style brick breaker game built with Pygame. The player controls a paddle to deflect a ball and destroy a wall of colored bricks.
+The project uses `pygame-ce`, the Python 3.14-compatible Pygame distribution,
+while retaining the standard `pygame` import API.
+
+A Breakout-style brick breaker game built with Pygame. The player controls a paddle to deflect a ball and destroy a wall of colored bricks.
 
 ## Overview
 
-This is a **GUI game** built with Pygame. The player moves a paddle horizontally using arrow keys to keep a bouncing ball in play. The ball destroys bricks on contact, with bricks having different durability levels based on their row. The game ends when all bricks are destroyed (win) or the ball falls below the paddle (lose).
+This is a **GUI game** built with Pygame. The player moves a paddle horizontally with the arrow keys to keep a bouncing ball in play. The ball destroys bricks on contact, and each row gives the bricks a different durability level. The game ends when all bricks are destroyed or the ball falls below the paddle.
 
 ## Features
 
@@ -22,7 +25,7 @@ This is a **GUI game** built with Pygame. The player moves a paddle horizontally
 
 - `pygame`
 
-## How It Works
+## How it works
 
 1. **Initialization:** A 500x500 Pygame window is created. A `Block` object generates a 6x6 grid of bricks, each with a hit-point value (rows 0–1: 3 HP, rows 2–3: 2 HP, rows 4–5: 1 HP).
 2. **Ball class:** Manages ball position, speed, and collision logic. The ball bounces off walls, the paddle, and bricks. When a brick is hit, its HP decreases; at 0 HP, it is removed.
@@ -41,14 +44,14 @@ Brick Breaker game/
 ## Setup & Installation
 
 ```bash
-pip install pygame
+uv sync
 ```
 
 ## How to Run
 
 ```bash
 cd "Brick Breaker game"
-python brick_breaker.py
+uv run python brick_breaker.py
 ```
 
 ## Configuration

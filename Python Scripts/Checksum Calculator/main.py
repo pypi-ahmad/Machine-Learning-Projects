@@ -19,12 +19,23 @@ from pathlib import Path
 # Core logic
 # ---------------------------------------------------------------------------
 
-ALGORITHMS = ["md5", "sha1", "sha256", "sha512"]
+ALGORITHMS = ("md5", "sha1", "sha256", "sha512")
+
+
+def normalize_algorithm(algorithm: str) -> str:
+    """Return a supported checksum algorithm name."""
+    normalized = algorithm.lower().replace("-", "")
+    if normalized not in (*ALGORITHMS, "crc32"):
+        raise ValueError(normalized)
+    return normalized
 
 
 def hash_file(path: Path, algorithm: str = "sha256",
               chunk: int = 65536) -> str:
-    h = hashlib.new(algorithm)
+    normalized = normalize_algorithm(algorithm)
+    if normalized == "crc32":
+        return crc32_file(path, chunk)
+    h = hashlib.new(normalized)
     with open(path, "rb") as f:
         while True:
             buf = f.read(chunk)
@@ -46,7 +57,10 @@ def crc32_file(path: Path, chunk: int = 65536) -> str:
 
 
 def hash_text(text: str, algorithm: str = "sha256") -> str:
-    h = hashlib.new(algorithm)
+    normalized = normalize_algorithm(algorithm)
+    if normalized == "crc32":
+        return format(binascii.crc32(text.encode("utf-8")) & 0xFFFFFFFF, "08X")
+    h = hashlib.new(normalized)
     h.update(text.encode("utf-8"))
     return h.hexdigest()
 
@@ -60,7 +74,7 @@ def all_hashes(path: Path) -> dict[str, str]:
 
 
 def verify(path: Path, expected: str, algorithm: str = "sha256") -> bool:
-    algo = algorithm.lower().replace("-", "")
+    algo = normalize_algorithm(algorithm)
     if algo == "crc32":
         actual = crc32_file(path)
     else:
@@ -167,11 +181,15 @@ def main() -> None:
                 continue
             expected = input("  Expected checksum: ").strip()
             algo     = pick_algo()
-            ok = verify(p, expected, algo)
+            try:
+                ok = verify(p, expected, algo)
+                actual = crc32_file(p) if algo == "crc32" else hash_file(p, algo)
+            except ValueError as error:
+                print(f"  Unknown algorithm: {error}")
+                continue
             if ok:
                 print(f"\n  \033[32m✓ MATCH\033[0m — checksum verified.")
             else:
-                actual = hash_file(p, algo) if algo != "crc32" else crc32_file(p)
                 print(f"\n  \033[31m✗ MISMATCH\033[0m")
                 print(f"  Expected: {expected}")
                 print(f"  Actual  : {actual}")
@@ -196,7 +214,7 @@ def main() -> None:
                 try:
                     digest = crc32_file(f) if algo == "crc32" else hash_file(f, algo)
                     results.append((f, digest))
-                except (PermissionError, OSError):
+                except (PermissionError, OSError, ValueError):
                     results.append((f, "ERROR"))
             print(f"\n  {'Checksum':<66}  File")
             for f, digest in results:
@@ -206,7 +224,7 @@ def main() -> None:
             save = input("\n  Save to checksums.txt? (y/n): ").strip().lower()
             if save == "y":
                 out = p / "checksums.txt"
-                with open(out, "w") as fout:
+                with open(out, "w", encoding="utf-8") as fout:
                     for f, digest in results:
                         fout.write(f"{digest}  {f.relative_to(p)}\n")
                 print(f"  Saved to {out}")

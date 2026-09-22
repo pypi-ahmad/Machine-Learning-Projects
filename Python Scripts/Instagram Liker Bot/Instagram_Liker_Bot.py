@@ -1,58 +1,88 @@
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.keys import Keys
+"""Preview or explicitly like a bounded number of Instagram posts."""
+
+from __future__ import annotations
+
+import argparse
 from getpass import getpass
-import time
 
-chrome = webdriver.Chrome(ChromeDriverManager().install())
-chrome.get("https://www.instagram.com")
-time.sleep(10)
 
-username = chrome.find_element_by_xpath(
-    '//*[@id="loginForm"]/div/div[1]/div/label/input')
-username.send_keys(input("Enter your username: "))  # enter username
-print("Enter your Password: ")
-password = chrome.find_element_by_xpath(
-    '//*[@id="loginForm"]/div/div[2]/div/label/input')
-pswd = getpass()
-password.send_keys(pswd)
-login_button = chrome.find_element_by_xpath('//*[@id="loginForm"]/div/div[3]')
-login_button.click()
-time.sleep(10)
+CONFIRMATION = "LIKE_POSTS"
 
-search_bar = chrome.find_element_by_xpath(
-    '//*[@id="react-root"]/section/nav/div[2]/div/div/div[2]/input')
-# enter the username to be searched
-search_bar.send_keys(input("Enter the username of the other person: "))
-time.sleep(7)
-search_bar.send_keys(Keys.ENTER)
-search_bar.send_keys(Keys.ENTER)
 
-time.sleep(2)
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Preview Instagram likes before any browser action.")
+    parser.add_argument("profile", help="Instagram profile username.")
+    parser.add_argument("--max-likes", type=int, default=1, help="Maximum posts to like (default: 1).")
+    parser.add_argument("--apply", action="store_true", help="Open Chrome and like posts.")
+    parser.add_argument("--confirm", help=f"Required with --apply: {CONFIRMATION}")
+    return parser.parse_args()
 
-post = chrome.find_element_by_xpath(
-    '//*[@id="react-root"]/section/main/div/div[3]/article/div[1]/div/div[1]/div[1]/a/div[1]/div[2]')
-post.click()
-time.sleep(2)
-like_button = chrome.find_element_by_xpath(
-    '/html/body/div[5]/div[2]/div/article/div[3]/section[1]/span[1]/button')
-like_button.click()
-next_button = chrome.find_element_by_xpath(
-    '/html/body/div[5]/div[1]/div/div/a')
-next_button.click()
-time.sleep(2)
 
-while True:
+def validate_profile(profile: str) -> str:
+    profile = profile.strip().lstrip("@")
+    if not profile.replace("_", "").replace(".", "").isalnum():
+        raise ValueError("Profile names may contain letters, numbers, underscores, and periods only.")
+    return profile
+
+
+def apply_likes(profile: str, max_likes: int) -> int:
+    """Log in interactively and like no more than ``max_likes`` visible posts."""
+    from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    username = input("Instagram username: ").strip()
+    password = getpass("Instagram password: ")
+    if not username or not password:
+        raise ValueError("Instagram username and password are required.")
+
+    driver = webdriver.Chrome()
     try:
-        like_button = chrome.find_element_by_xpath(
-            '/html/body/div[5]/div[2]/div/article/div[3]/section[1]/span[1]/button')
-        like_button.click()
-        next_button = chrome.find_element_by_xpath(
-            '/html/body/div[5]/div[1]/div/div/a[2]')
-        next_button.click()
-        time.sleep(5)
-    except:
-        close_button = chrome.find_element_by_xpath(
-            '/html/body/div[5]/div[3]/button')
-        close_button.click()
-        break
+        wait = WebDriverWait(driver, 30)
+        driver.get("https://www.instagram.com/")
+        wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(username)
+        driver.find_element(By.NAME, "password").send_keys(password)
+        driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+        driver.get(f"https://www.instagram.com/{profile}/")
+        liked = 0
+        while liked < max_likes:
+            try:
+                wait.until(EC.element_to_be_clickable((By.XPATH, "//article//a"))).click()
+                wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@aria-label='Like']"))).click()
+                liked += 1
+                driver.back()
+            except TimeoutException:
+                break
+        return liked
+    finally:
+        driver.quit()
+
+
+def main() -> None:
+    args = parse_args()
+    try:
+        profile = validate_profile(args.profile)
+        if args.max_likes <= 0:
+            raise ValueError("--max-likes must be greater than zero.")
+    except ValueError as error:
+        raise SystemExit(f"Invalid input: {error}") from error
+
+    if not args.apply:
+        print(f"Preview only for @{profile}. No browser or Instagram action will occur.")
+        print(f"Would like at most {args.max_likes} post(s).")
+        print(f"To apply, rerun with --apply --confirm {CONFIRMATION}.")
+        return
+    if args.confirm != CONFIRMATION:
+        raise SystemExit(f"Refusing to like posts. Use --confirm {CONFIRMATION} with --apply.")
+
+    try:
+        liked = apply_likes(profile, args.max_likes)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
+    print(f"Liked {liked} post(s) for @{profile}.")
+
+
+if __name__ == "__main__":
+    main()

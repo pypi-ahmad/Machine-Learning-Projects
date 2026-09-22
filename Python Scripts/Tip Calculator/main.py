@@ -4,7 +4,7 @@ Calculates tip amount, total bill, and per-person split.
 Supports custom tip percentages and multiple split scenarios.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 # ---------------------------------------------------------------------------
@@ -53,7 +53,7 @@ def round_up_per_person(per_person: float) -> float:
 # ---------------------------------------------------------------------------
 
 def display_result(r: dict) -> None:
-    print(f"\n  {'─' * 34}")
+    print(f"\n  {'-' * 34}")
     print(f"  Bill amount      : ${r['bill']:.2f}")
     print(f"  Tip ({r['tip_pct']:.0f}%)         : ${r['tip_amount']:.2f}")
     print(f"  Total            : ${r['total']:.2f}")
@@ -62,7 +62,7 @@ def display_result(r: dict) -> None:
         print(f"  Per person       : ${r['per_person']:.2f}  (tip ${r['tip_per_person']:.2f})")
         rounded = round_up_per_person(r['per_person'])
         print(f"  Rounded up/pp    : ${rounded:.0f}")
-    print(f"  {'─' * 34}")
+    print(f"  {'-' * 34}")
 
 
 # ---------------------------------------------------------------------------
@@ -121,12 +121,12 @@ def main() -> None:
         elif choice == "2":
             bill = get_positive_float("  Bill amount ($): ")
             people_str = input("  Number of people (default 1): ").strip()
-            people = int(people_str) if people_str.isdigit() else 1
+            people = int(people_str) if people_str.isdigit() and int(people_str) > 0 else 1
             print(f"\n  {'Tip %':<8} {'Tip $':<10} {'Total':<10} {'Per Person'}")
-            print(f"  {'─' * 44}")
+            print(f"  {'-' * 44}")
             for pct in COMMON_TIP_PERCENTAGES:
                 r = calculate_tip(bill, pct, people)
-                pp = f"${r['per_person']:.2f}" if people > 1 else "—"
+                pp = f"${r['per_person']:.2f}" if people > 1 else "-"
                 print(f"  {pct:<8} ${r['tip_amount']:<9.2f} ${r['total']:<9.2f} {pp}")
 
         else:

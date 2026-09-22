@@ -1,0 +1,10 @@
+[project]
+name = "file-watcher"
+version = "0.1.0"
+description = "Controlled polling-based local file watcher"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

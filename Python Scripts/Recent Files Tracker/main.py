@@ -74,7 +74,7 @@ def display(results: list[dict], root: Path):
         print("  No recent files found.")
         return
     print(f"\n  {'#':>3}  {'Modified':>16}  {'Size':>8}  File")
-    print("  " + "─" * 70)
+    print("  " + "-" * 70)
     for i, r in enumerate(results, 1):
         rel   = r["path"].relative_to(root)
         mtime = r["mtime"].strftime("%Y-%m-%d %H:%M")
@@ -98,7 +98,7 @@ def main():
         return
 
     print("Recent Files Tracker")
-    print("────────────────────────────")
+    print("----------------------------")
 
     while True:
         root_str = input("\nDirectory to scan [.]: ").strip() or "."

@@ -78,7 +78,11 @@ class ChessClock:
                 return self.times[self.current or 0]
             now     = time.perf_counter()
             elapsed = now - self._last_tick
-            return max(0, self.times[self.current] - elapsed)
+            remaining = max(0, self.times[self.current] - elapsed)
+            if remaining == 0:
+                self.times[self.current] = 0
+                self.running = False
+            return remaining
 
     def other_time(self) -> float:
         with self._lock:
@@ -228,6 +232,11 @@ def main():
         else:
             minutes   = float(input("Minutes per player [5]: ").strip() or 5)
             increment = float(input("Increment seconds   [0]: ").strip() or 0)
+
+    if minutes <= 0:
+        parser.error("minutes must be greater than zero")
+    if increment < 0:
+        parser.error("increment must be zero or greater")
 
     play(minutes, increment, [args.white, args.black])
 

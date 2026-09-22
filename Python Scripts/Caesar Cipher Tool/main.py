@@ -122,7 +122,7 @@ def main() -> None:
             if not text:
                 continue
             shift, plain = frequency_crack(text)
-            print(f"\n  Best guess — shift: {shift}")
+            print(f"\n  Best guess - shift: {shift}")
             print(f"  Decrypted: {plain}")
             print(f"  (Based on assuming 'e' is the most frequent letter)")
 

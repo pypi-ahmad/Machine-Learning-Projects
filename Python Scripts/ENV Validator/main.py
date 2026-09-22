@@ -16,6 +16,7 @@ import argparse
 import os
 import re
 import sys
+from pathlib import Path
 
 ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
         "yellow": "\033[93m", "red": "\033[91m", "dim": "\033[2m",
@@ -31,9 +32,10 @@ def c(text, color):
 def parse_env(path: str) -> dict[str, str]:
     """Parse a .env file into a key→value dict."""
     result = {}
-    if not os.path.exists(path):
+    file_path = Path(path)
+    if not file_path.is_file():
         return result
-    with open(path, encoding="utf-8") as f:
+    with file_path.open(encoding="utf-8") as f:
         for lineno, raw in enumerate(f, 1):
             line = raw.strip()
             if not line or line.startswith("#"):
@@ -59,9 +61,10 @@ def parse_schema(path: str) -> dict[str, dict]:
     Types: string, int, float, bool, url, email, port
     """
     schema = {}
-    if not os.path.exists(path):
+    file_path = Path(path)
+    if not file_path.is_file():
         return schema
-    with open(path, encoding="utf-8") as f:
+    with file_path.open(encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
@@ -94,28 +97,28 @@ def validate_type(val: str, typ: str) -> str | None:
         try:
             int(val)
         except ValueError:
-            return f"expected int, got '{val}'"
+            return "expected an integer"
     elif typ == "float":
         try:
             float(val)
         except ValueError:
-            return f"expected float, got '{val}'"
+            return "expected a decimal number"
     elif typ == "bool":
         if val.lower() not in ("true", "false", "1", "0", "yes", "no"):
-            return f"expected bool (true/false/1/0/yes/no), got '{val}'"
+            return "expected a boolean (true/false/1/0/yes/no)"
     elif typ == "url":
         if not URL_RE.match(val):
-            return f"expected URL (http/https), got '{val}'"
+            return "expected an HTTP or HTTPS URL"
     elif typ == "email":
         if not EMAIL_RE.match(val):
-            return f"expected email address, got '{val}'"
+            return "expected an email address"
     elif typ == "port":
         try:
             p = int(val)
             if not 1 <= p <= 65535:
                 raise ValueError
         except ValueError:
-            return f"expected port (1-65535), got '{val}'"
+            return "expected a port from 1 to 65535"
     return None
 
 
@@ -124,14 +127,14 @@ def validate_constraints(val: str, spec: dict) -> list[str]:
     if "min" in spec:
         try:
             if float(val) < float(spec["min"]):
-                errors.append(f"value {val} < min {spec['min']}")
+                errors.append(f"value is below the minimum of {spec['min']}")
         except (ValueError, TypeError):
             if len(val) < int(spec["min"]):
                 errors.append(f"length {len(val)} < min {spec['min']}")
     if "max" in spec:
         try:
             if float(val) > float(spec["max"]):
-                errors.append(f"value {val} > max {spec['max']}")
+                errors.append(f"value is above the maximum of {spec['max']}")
         except (ValueError, TypeError):
             if len(val) > int(spec["max"]):
                 errors.append(f"length {len(val)} > max {spec['max']}")
@@ -238,12 +241,9 @@ def compare_envs(env_a: dict, path_a: str, env_b: dict, path_b: str):
         for k in sorted(only_b):
             print(f"    {c(k,'cyan')}")
     if differ:
-        print(c("\n  Different values:", "yellow"))
+        print(c("\n  Keys with different values:", "yellow"))
         for k in sorted(differ):
-            av = env_a[k][:40] + ("…" if len(env_a[k]) > 40 else "")
-            bv = env_b[k][:40] + ("…" if len(env_b[k]) > 40 else "")
-            print(f"    {c(k,'cyan'):32} {path_a}: {av}")
-            print(f"    {'':32} {path_b}: {bv}")
+            print(f"    {c(k, 'cyan')}")
     if not only_a and not only_b and not differ:
         print(c("\n  ✓ Environments are identical.", "green"))
 
@@ -327,22 +327,7 @@ def main():
     parser.add_argument("env_file",         nargs="?",       help=".env file path")
     parser.add_argument("--schema", "-s",   metavar="FILE",  help="Schema file path")
     parser.add_argument("--compare", "-c",  metavar="FILE",  help="Compare with another .env file")
-    parser.add_argument("--check-all",      action="store_true", dest="check_all",
-                        help="Find and validate all .env* files in current directory")
     args = parser.parse_args()
-
-    if args.check_all:
-        files = [f for f in os.listdir(".") if f.startswith(".env") and os.path.isfile(f)]
-        if not files:
-            print(c("No .env files found in current directory.", "yellow"))
-            return
-        for env_file in sorted(files):
-            schema_path = env_file + ".schema"
-            env    = parse_env(env_file)
-            schema = parse_schema(schema_path)
-            issues = validate(env, schema)
-            report(env_file, issues, env, schema)
-        return
 
     if args.env_file:
         env    = parse_env(args.env_file)

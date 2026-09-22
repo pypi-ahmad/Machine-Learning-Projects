@@ -1,39 +1,39 @@
-"""
-    Facebook-DP-Downloader
-        Download the profile picture of any public profile on Facebook
-        by just having it's Facebook id 
-    
-"""
+"""Download the large profile image for a public Facebook numeric ID."""
 
-import os
+import argparse
+from pathlib import Path
+
 import requests
 
-url="https://graph.facebook.com/{}/picture?type=large"
+URL = 'https://graph.facebook.com/{}/picture?type=large'
+REQUEST_TIMEOUT = 15
 
-""" This url is the url provided by the Facebook graph api
-which helps to get to the profile picture of the corresponding Facebook id 
-{}==Facebook id 
-Facebook id  denotes the unique user id of the Facebook profile
-whose profile we are requesting
-"""
 
-path = os.getcwd()
-# get the path of the current working directory
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Download a public Facebook profile image.')
+    parser.add_argument('facebook_id', nargs='?', help='Numeric Facebook user ID')
+    parser.add_argument('--output-dir', type=Path, default=Path.cwd() / 'fb_dps')
+    args = parser.parse_args()
 
-if not "fb_dps" in os.listdir(path):
-    os.mkdir("fb_dps")
+    facebook_id = args.facebook_id or input('Enter the Facebook ID to download its profile picture: ')
+    if not facebook_id.isdecimal():
+        parser.error('facebook_id must contain digits only')
 
-"""checks if the folder exists in the current working directory.
-If it does not exist, then it gets created
-"""
+    try:
+        response = requests.get(URL.format(facebook_id), timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
+    except requests.RequestException as error:
+        parser.error(f'profile image request failed: {error}')
 
-fbid=int(input("Enter the Facebook-id to download it's profile picture: "))
-# the number should be a valid Facebook user id 
+    content_type = response.headers.get('Content-Type', '')
+    if not content_type.startswith('image/'):
+        parser.error(f'expected an image response, received {content_type or "unknown content"}')
 
-try:
-    result=requests.get(url.format(fbid))
-    with open("fb_dps/{}_img.jpg".format(fbid),"wb") as file:
-        file.write(result.content)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = args.output_dir / f'{facebook_id}_img.jpg'
+    output_path.write_bytes(response.content)
+    print(f'Saved profile image to {output_path}')
 
-except:
-	print("There was some error")
+
+if __name__ == '__main__':
+    main()

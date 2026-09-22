@@ -4,10 +4,10 @@ Convert JSON objects to Python dataclass, Pydantic model,
 TypedDict, or attrs class definitions.
 
 Usage:
-    python main.py
-    python main.py --file data.json --output models.py
-    python main.py --json '{"name":"Alice","age":30}'
-    python main.py --url https://api.example.com/data
+    uv run --no-config python main.py
+    uv run --no-config python main.py --file data.json --output models.py
+    uv run --no-config python main.py --json '{"name":"Alice","age":30}'
+    uv run --no-config python main.py --url https://api.example.com/data
 """
 
 import argparse

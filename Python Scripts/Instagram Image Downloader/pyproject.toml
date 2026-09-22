@@ -1,0 +1,9 @@
+[project]
+name = "instagram-image-downloader"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "requests>=2.34.2",
+    "selenium>=4.49.0",
+]

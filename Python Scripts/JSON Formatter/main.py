@@ -4,8 +4,8 @@ Pretty-print, minify, validate, sort keys, diff two JSON objects,
 flatten/unflatten nested JSON, and query values with dot-notation paths.
 
 Usage:
-    python main.py
-    python main.py data.json
+    uv run --no-config python main.py
+    uv run --no-config python main.py data.json
 """
 
 import json

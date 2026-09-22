@@ -4,28 +4,28 @@ Add, complete, delete, and search tasks with priorities and due dates.
 Data persisted to JSON.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json
 from datetime import date, datetime
 from pathlib import Path
 
-DATA_FILE = Path("todos.json")
+DATA_FILE = Path(__file__).with_name("todos.json")
 PRIORITIES = {"h": "High", "m": "Medium", "l": "Low"}
 
 
 def load() -> list[dict]:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
+            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return []
 
 
 def save(todos: list[dict]):
-    DATA_FILE.write_text(json.dumps(todos, indent=2))
+    DATA_FILE.write_text(json.dumps(todos, indent=2), encoding="utf-8")
 
 
 def next_id(todos: list[dict]) -> int:
@@ -33,7 +33,7 @@ def next_id(todos: list[dict]) -> int:
 
 
 def format_task(t: dict, idx: int | None = None) -> str:
-    check  = "✓" if t["done"] else "○"
+    check  = "x" if t["done"] else " "
     pri    = {"High": "!", "Medium": "-", "Low": " "}.get(t["priority"], " ")
     due    = f"  due:{t['due']}" if t.get("due") else ""
     tags   = f"  [{','.join(t['tags'])}]" if t.get("tags") else ""
@@ -43,7 +43,7 @@ def format_task(t: dict, idx: int | None = None) -> str:
 
 MENU = """
 To-Do List
-──────────────────────────────
+------------------------------
   add   <title>             Add task
   done  <id>                Mark complete
   del   <id>                Delete task
@@ -54,7 +54,7 @@ To-Do List
   find  <keyword>           Search tasks
   clear                     Delete all done tasks
   q                         Quit
-──────────────────────────────"""
+------------------------------"""
 
 
 def main():
@@ -158,7 +158,7 @@ def main():
                 if t:
                     t["due"] = sub[1]
                     save(todos)
-                    print(f"  Due date set: {t['title']} → {sub[1]}")
+                    print(f"  Due date set: {t['title']} -> {sub[1]}")
                 else:
                     print(f"  Task {tid} not found.")
             except ValueError:
@@ -175,7 +175,7 @@ def main():
                 if sub[1] not in t["tags"]:
                     t["tags"].append(sub[1])
                     save(todos)
-                print(f"  Tagged: {t['title']} → {t['tags']}")
+                print(f"  Tagged: {t['title']} -> {t['tags']}")
             else:
                 print(f"  Task {tid} not found.")
 

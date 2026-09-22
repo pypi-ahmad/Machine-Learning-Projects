@@ -5,7 +5,7 @@ and row-reduce matrices.  Supports arbitrary integer/float entries
 with pretty-printed output.
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import math

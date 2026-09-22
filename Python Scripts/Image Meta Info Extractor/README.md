@@ -1,10 +1,10 @@
 # Get Meta Information of Images
 
-> Extract EXIF metadata, file owner, and GPS location from image files.
+> Extract EXIF metadata, file ownership, and GPS locations from image files.
 
 ## Overview
 
-A command-line tool that reads an image file and extracts comprehensive metadata including dimensions, EXIF data (width, height, original date), file creation date, file ownership (Windows-only via Win32 API), and GPS coordinates reverse-geocoded to a human-readable address using `geopy`.
+A command-line tool that reads local image metadata such as dimensions, EXIF data, file creation date, Windows file ownership, and GPS coordinates. Reverse geocoding is optional.
 
 ## Features
 
@@ -12,7 +12,8 @@ A command-line tool that reads an image file and extracts comprehensive metadata
 - Reads EXIF data: `ExifImageWidth`, `ExifImageHeight`, `DateTimeOriginal`
 - Retrieves file creation timestamp from the OS
 - Determines file owner/author using Windows security APIs (`advapi32`, `kernel32`)
-- Extracts GPS coordinates from EXIF and reverse-geocodes to a street address via Nominatim (OpenStreetMap)
+- Extracts GPS coordinates from EXIF when present
+- Optionally reverse-geocodes coordinates through Nominatim (OpenStreetMap)
 
 ## Project Structure
 
@@ -21,42 +22,42 @@ Get_meta_information_of_images/
 ├── get_meta_from_pic.py
 ├── author_utils.py
 ├── gps_utils.py
-├── requirements.txt
+├── pyproject.toml
+├── uv.lock
 └── README.md
 ```
 
 ## Requirements
 
-- Python 3.x
+- Python 3.13+
 - Windows OS (author detection uses Win32 `ctypes` API)
 - `Pillow` (PIL)
 - `ExifRead`
 - `geopy`
-- `requests` (imported in `gps_utils.py` but not directly used)
-
-From `requirements.txt`:
-```
-Pillow
-ExifRead==2.3.1
-geopy==2.0.0
-```
+- `Pillow`, `ExifRead`, and `geopy`, managed by uv in `pyproject.toml`
 
 ## Installation
 
 ```bash
 cd "Get_meta_information_of_images"
-pip install Pillow ExifRead geopy requests
+uv sync
 ```
 
 ## Usage
 
 ```bash
-python get_meta_from_pic.py <image_file>
+uv run python get_meta_from_pic.py <image_file>
 ```
 
 Example:
 ```bash
-python get_meta_from_pic.py photo.jpg
+uv run python get_meta_from_pic.py photo.jpg
+```
+
+Reverse-geocode GPS data only when needed, with a valid Nominatim user agent:
+
+```bash
+uv run python get_meta_from_pic.py photo.jpg --reverse-geocode --nominatim-user-agent your-app-name
 ```
 
 Output:
@@ -69,32 +70,30 @@ ImageHeight: 3024
 DateTimeOriginal: 2020:06:15 14:30:00
 CreateDate: 2020-06-15 14:30:00
 Author: DOMAIN\Username
-Location: 123 Main St, City, State, Country
+Coordinates: (12.34, 56.78)
 ```
 
-## How It Works
+## How it works
 
-1. **`get_meta_from_pic.py`** — Main script. Opens the image via `PIL.Image.open(sys.argv[1])`, verifies the image, and extracts EXIF tags using `PIL.ExifTags.TAGS`. Prints image name, size, extension, select EXIF fields, creation date, author, and location.
+1. **`get_meta_from_pic.py`** — Main script. Opens the image through Pillow and safely reports available EXIF tags, timestamps, Windows owner, and coordinates without requiring EXIF or GPS data.
 
 2. **`author_utils.py`** — Windows-only module that uses `ctypes` to call Win32 APIs (`advapi32.GetNamedSecurityInfoW`, `LookupAccountSidW`) to retrieve the file's NTFS owner. Returns the owner in `DOMAIN\Username` format.
 
-3. **`gps_utils.py`** — Reads GPS EXIF tags (`GPS GPSLatitude`, `GPS GPSLongitude`) using `exifread`, converts DMS (degrees/minutes/seconds) to decimal, and reverse-geocodes using `geopy.Nominatim`.
+3. **`gps_utils.py`** — Reads GPS EXIF tags, converts DMS (degrees/minutes/seconds) to signed decimal coordinates, and reverse-geocodes only when requested.
 
 ## Configuration
 
-- **Nominatim user agent:** In `gps_utils.py`, the `user_agent` is set to `"your email"` — replace with your actual email address per Nominatim's usage policy.
+- **Nominatim user agent:** Pass `--nominatim-user-agent` only with `--reverse-geocode`.
 
 ## Limitations
 
 - **Windows-only:** `author_utils.py` relies on Win32 APIs and will not work on Linux/macOS.
-- **GPS required:** `gps_utils.py` will fail with a `KeyError` if the image lacks GPS EXIF data (no error handling).
-- **EXIF required:** `get_exif()` calls `image.verify()` then `image._getexif()` — images without EXIF data will cause an error.
-- **`requests` imported but unused** in `gps_utils.py`.
-- No command-line argument validation (crashes if no argument provided).
+- **Windows ownership:** `author_utils.py` relies on Win32 APIs and may report `Unavailable` for unsupported filesystems or inaccessible files.
+- **GPS availability:** Many images contain no GPS metadata; reverse geocoding requires both GPS data and network access.
 
 ## Security Notes
 
-- The Nominatim `user_agent` placeholder `"your email"` should be replaced before use.
+- Reverse geocoding sends image coordinates to Nominatim. Use it only when that disclosure is appropriate.
 
 ## License
 

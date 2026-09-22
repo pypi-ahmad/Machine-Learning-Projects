@@ -1,10 +1,15 @@
-import random
+"""Generate one 16-character password."""
+
+import secrets
 import string
 
-total = string.ascii_letters + string.digits + string.punctuation
 
-length = 16
+CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
-password = "".join(random.sample(total, length))
 
-print(password)
+def main() -> None:
+    print("".join(map(lambda _: secrets.choice(CHARACTERS), range(16))))
+
+
+if __name__ == "__main__":
+    main()

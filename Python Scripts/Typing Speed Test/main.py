@@ -4,7 +4,7 @@ Measures typing speed (WPM), accuracy, and consistency.
 Includes multiple difficulty levels and result history.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json
@@ -88,13 +88,13 @@ def highlight_errors(original: str, typed: str) -> str:
 # History
 # ---------------------------------------------------------------------------
 
-HISTORY_FILE = Path("typing_history.json")
+HISTORY_FILE = Path(__file__).with_name("typing_history.json")
 
 
 def load_history() -> list[dict]:
     if HISTORY_FILE.exists():
         try:
-            return json.loads(HISTORY_FILE.read_text())
+            return json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return []
@@ -103,7 +103,7 @@ def load_history() -> list[dict]:
 def save_result(result: dict) -> None:
     history = load_history()
     history.append(result)
-    HISTORY_FILE.write_text(json.dumps(history[-50:], indent=2))  # keep last 50
+    HISTORY_FILE.write_text(json.dumps(history[-50:], indent=2), encoding="utf-8")  # keep last 50
 
 
 # ---------------------------------------------------------------------------
@@ -123,9 +123,9 @@ Typing Speed Test
 
 def run_test(text: str) -> dict:
     """Run a single typing test and return results."""
-    print(f"\n  {'─'*60}")
+    print(f"\n  {'-'*60}")
     print(f"  {text}")
-    print(f"  {'─'*60}")
+    print(f"  {'-'*60}")
     print("  Press Enter when ready to start...")
     input()
 
@@ -150,13 +150,13 @@ def run_test(text: str) -> dict:
     }
 
     print(f"\n  {highlight_errors(text, typed)}\n")
-    print(f"  ┌─────────────────────────────┐")
-    print(f"  │  WPM (net)  : {net_wpm:>6.1f}        │")
-    print(f"  │  WPM (raw)  : {raw_wpm:>6.1f}        │")
-    print(f"  │  Accuracy   : {accuracy:>5.1f}%        │")
-    print(f"  │  Errors     : {errors:>6}         │")
-    print(f"  │  Time       : {elapsed:>5.2f}s        │")
-    print(f"  └─────────────────────────────┘")
+    print("  +-----------------------------+")
+    print(f"  |  WPM (net)  : {net_wpm:>6.1f}        |")
+    print(f"  |  WPM (raw)  : {raw_wpm:>6.1f}        |")
+    print(f"  |  Accuracy   : {accuracy:>5.1f}%        |")
+    print(f"  |  Errors     : {errors:>6}         |")
+    print(f"  |  Time       : {elapsed:>5.2f}s        |")
+    print("  +-----------------------------+")
 
     return result
 
@@ -207,7 +207,7 @@ def main() -> None:
             for r in history[-10:]:
                 print(f"  {r['timestamp']:>20}  {r['wpm']:>6.1f}  {r['accuracy']:>5.1f}%  {r['errors']:>6}")
             best = max(history, key=lambda x: x["wpm"])
-            print(f"\n  🏆 Best: {best['wpm']} WPM on {best['timestamp']}")
+            print(f"\n  Best: {best['wpm']} WPM on {best['timestamp']}")
 
         else:
             print("  Invalid choice.")

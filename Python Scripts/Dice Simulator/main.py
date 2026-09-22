@@ -32,6 +32,15 @@ DOT_CLR   = "#1e293b"
 ACCENT    = "#6366f1"
 
 
+def roll_dice(count: int, modifier: int = 0, rng: random.Random | None = None) -> tuple[list[int], int]:
+    """Roll one to six standard dice and return values plus modifier-adjusted total."""
+    if count < 1 or count > 6:
+        raise ValueError("Choose between 1 and 6 dice.")
+    generator = rng or random
+    values = [generator.randint(1, 6) for _ in range(count)]
+    return values, sum(values) + modifier
+
+
 class DiceFace(tk.Canvas):
     """Canvas that renders a single d6 face."""
 
@@ -146,7 +155,14 @@ class DiceApp:
                  font=("Courier", 10), justify=tk.LEFT).pack(padx=8, pady=8, anchor=tk.W)
 
         # Watch n_dice changes
-        self.n_dice_var.trace_add("write", lambda *_: self._rebuild_dice(self.n_dice_var.get()))
+        self.n_dice_var.trace_add("write", lambda *_: self._rebuild_dice(self._dice_count()))
+
+    def _dice_count(self) -> int:
+        """Return a safe count while the editable Spinbox value is changing."""
+        try:
+            return min(max(self.n_dice_var.get(), 1), 6)
+        except tk.TclError:
+            return 1
 
     def _rebuild_dice(self, n: int):
         for w in self.dice_frame.winfo_children():
@@ -158,11 +174,10 @@ class DiceApp:
             self.dice_faces.append(df)
 
     def roll(self):
-        n       = self.n_dice_var.get()
+        n       = self._dice_count()
         mod     = self.modifier_var.get()
         self._rebuild_dice(n)
-        results = [random.randint(1, 6) for _ in range(n)]
-        total   = sum(results) + mod
+        results, total = roll_dice(n, mod)
 
         for face, val in zip(self.dice_faces, results):
             face.animate_roll(val)

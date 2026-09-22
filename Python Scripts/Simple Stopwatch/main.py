@@ -1,19 +1,21 @@
-"""Stopwatch — CLI tool.
+"""Stopwatch - CLI tool.
 
 Start/stop/lap/reset a terminal stopwatch with lap history.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import time
 
 
 def format_time(elapsed: float) -> str:
-    centis = int(elapsed * 100) % 100
-    secs   = int(elapsed) % 60
-    mins   = int(elapsed) // 60 % 60
-    hrs    = int(elapsed) // 3600
+    total_centis = round(elapsed * 100)
+    centis = total_centis % 100
+    total_seconds = total_centis // 100
+    secs   = total_seconds % 60
+    mins   = total_seconds // 60 % 60
+    hrs    = total_seconds // 3600
     if hrs:
         return f"{hrs:02d}:{mins:02d}:{secs:02d}.{centis:02d}"
     return f"{mins:02d}:{secs:02d}.{centis:02d}"
@@ -21,19 +23,20 @@ def format_time(elapsed: float) -> str:
 
 def main():
     print("Stopwatch")
-    print("─────────────────────────────")
-    print("  Enter  → start / stop")
-    print("  l      → lap")
-    print("  r      → reset")
-    print("  q      → quit")
-    print("─────────────────────────────\n")
+    print("-----------------------------")
+    print("  Enter  -> start / stop")
+    print("  l      -> lap")
+    print("  r      -> reset")
+    print("  q      -> quit")
+    print("-----------------------------\n")
 
     running    = False
     start_time = 0.0
     accumulated = 0.0
     laps: list[float] = []
 
-    import sys, select, os
+    import select
+    import sys
 
     def _kbhit() -> bool:
         """Non-blocking stdin check (Unix only; falls back to blocking on Windows)."""
@@ -80,7 +83,6 @@ def main():
         def display_loop():
             while not stop_event.is_set():
                 t = elapsed()
-                lap_str = f"  Lap {len(laps)+1}: {format_time(t)}"
                 print(f"\r  {format_time(t)}   ", end="", flush=True)
                 time.sleep(0.05)
 
@@ -89,7 +91,6 @@ def main():
 
         while True:
             key = _getkey().lower()
-            t   = elapsed()
 
             if key in ("\r", "\n", " "):
                 if running:
@@ -99,7 +100,7 @@ def main():
                 else:
                     start_time = time.perf_counter()
                     running = True
-                    print(f"\r  [RUNNING…]              ", flush=True)
+                    print(f"\r  [RUNNING...]              ", flush=True)
 
             elif key == "l":
                 lap_time = elapsed()
@@ -129,7 +130,6 @@ def main():
         print("  (Enter commands: start/stop=Enter, l=lap, r=reset, q=quit)")
         while True:
             key = input().strip().lower() or "\r"
-            t   = elapsed()
             if key in ("\r", ""):
                 if running:
                     accumulated += time.perf_counter() - start_time
@@ -138,7 +138,7 @@ def main():
                 else:
                     start_time = time.perf_counter()
                     running = True
-                    print("  Running…")
+                print("  Running...")
             elif key == "l":
                 lap_time = elapsed()
                 laps.append(lap_time)

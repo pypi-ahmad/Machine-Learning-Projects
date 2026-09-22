@@ -2,32 +2,31 @@
 
 ## Overview
 
-A collection of Python scripts for converting image formats between JPG and PNG using the Pillow library. Includes a dynamic batch converter and individual single-image converters.
+A collection of Python scripts for converting images between JPG and PNG with Pillow. It includes a batch converter and individual single-image converters.
 
 **Type:** CLI Utility
 
 ## Features
 
-- **Batch conversion** (`convertDynamic.py`): Recursively walks the current directory tree, converting all `.jpg` files to `.png` and all `.png` files to `.jpg`
-- **Single JPG to PNG** (`JPGtoPNG.py`): Converts a single hardcoded JPG image to PNG format
-- **Single PNG to JPG** (`PNGtoJPG.py`): Converts a single hardcoded PNG image to JPG format
-- `IOError` handling in the batch converter (`convertDynamic.py`) with graceful exit
+- **Batch conversion** (`convertDynamic.py`): Converts JPG/PNG files below a supplied path to one chosen target format
+- **Single JPG to PNG** (`JPGtoPNG.py`): Converts a specified JPG image to a new PNG file
+- **Single PNG to JPG** (`PNGtoJPG.py`): Converts a specified PNG image to a new JPEG file
+- Refuses to overwrite existing output files
 
 ## Dependencies
 
-- `Pillow` — for image format conversion (listed in `requirements.txt`)
+- `Pillow` — for image format conversion
 
 Install with:
 
 ```bash
-pip install -r requirements.txt
+uv sync
 ```
 
-## How It Works
+## How it works
 
-1. **convertDynamic.py**: Uses `os.walk(".")` to traverse all files in the current directory and subdirectories. For each file, checks the extension — if `.jpg`, opens it with Pillow and saves as `.png` (and vice versa). Prints a message if a file is neither `.jpg` nor `.png`.
-2. **JPGtoPNG.py**: Opens a hardcoded file (`naruto_first.jpg`), converts to RGB, and saves as `naruto.png`.
-3. **PNGtoJPG.py**: Opens a hardcoded file (`naruto_first.png`), converts to RGB, and saves as `naruto.jpg`.
+1. **convertDynamic.py**: Takes an image or directory plus `--to png` or `--to jpeg`, then converts eligible images without overwriting existing counterparts.
+2. **JPGtoPNG.py** and **PNGtoJPG.py**: Take explicit source and output paths and use the same conversion logic.
 
 ## Project Structure
 
@@ -36,7 +35,8 @@ convert_Imgs/
 ├── convertDynamic.py     # Batch converter (recursive, both directions)
 ├── JPGtoPNG.py           # Single JPG → PNG converter
 ├── PNGtoJPG.py           # Single PNG → JPG converter
-├── requirements.txt      # Dependencies
+├── pyproject.toml        # Project metadata and dependencies
+├── uv.lock               # Locked dependency versions
 ├── naruto_first.jpg      # Sample input image (JPG)
 ├── naruto_first.png      # Sample input image (PNG)
 ├── naruto_last.jpg       # Sample output image (JPG)
@@ -47,25 +47,24 @@ convert_Imgs/
 ## Setup & Installation
 
 ```bash
-pip install Pillow
+uv sync
 ```
 
 ## How to Run
 
-**Batch conversion (both directions):**
+**Batch conversion:**
 ```bash
-cd convert_Imgs
-python convertDynamic.py
+uv run python convertDynamic.py . --to png
 ```
-This converts all JPG images to PNG and all PNG images to JPG in the current directory tree.
+This converts JPG images below the current directory to PNG, skipping existing PNG counterparts.
 
 **Single image conversion:**
 
-Edit the filenames inside `JPGtoPNG.py` or `PNGtoJPG.py` to match your input file, then run:
+Provide explicit source and output paths:
 
 ```bash
-python JPGtoPNG.py
-python PNGtoJPG.py
+uv run python JPGtoPNG.py naruto_first.jpg naruto.png
+uv run python PNGtoJPG.py naruto_first.png naruto.jpg
 ```
 
 ## Testing
@@ -74,7 +73,6 @@ No formal test suite present.
 
 ## Limitations
 
-- `JPGtoPNG.py` and `PNGtoJPG.py` have hardcoded filenames; they must be edited manually for different input files.
-- `convertDynamic.py` replaces the extension in the filename using string replacement (e.g., `filename.replace('jpg', 'png')`), which could cause issues if `jpg` or `png` appears elsewhere in the filename.
-- No output directory option — converted files are saved alongside the originals.
-- The batch converter runs on the current working directory (`.`), not a configurable path.
+- Batch conversion writes alongside each source image.
+- Existing target files are skipped rather than overwritten.
+- Only JPG, JPEG, and PNG sources are supported.

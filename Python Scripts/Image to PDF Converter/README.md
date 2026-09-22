@@ -2,46 +2,48 @@
 
 ## Overview
 
-A command-line utility that converts JPEG images to PDF format using the `img2pdf` library. Supports converting both a single JPG file and all JPG files within a directory into a single PDF.
+A command-line utility that converts JPG, JPEG, or PNG images to PDF format using `img2pdf`. It supports a single image or all supported images in a directory.
 
 **Type:** CLI Utility
 
 ## Features
 
-- Convert a single `.jpg` image to a PDF
-- Convert all `.jpg` images in a directory into a single multi-page PDF
+- Convert a single JPG, JPEG, or PNG image to a PDF
+- Convert supported images in a directory into a single multi-page PDF
 - Automatic detection of whether the input is a file or directory
 - Lossless conversion (img2pdf does not re-encode the image)
+- Deterministic directory ordering and overwrite protection
 
 ## Dependencies
 
-From `requirements.txt`:
+Managed in `pyproject.toml` and locked in `uv.lock`:
 
 | Package | Version |
 |---------|---------|
-| img2pdf | 0.4.0   |
+| img2pdf | Managed by uv |
 
-Additional standard library imports: `sys`, `os`
+Additional standard library imports: `argparse`, `os`, `pathlib`
 
 ## How It Works
 
-1. The script reads a file or directory path from `sys.argv[1]`.
+1. The script reads a file or directory path from the CLI.
 2. **If the path is a directory:**
    - Iterates over all files in the directory
-   - Filters for files ending with `.jpg` (skips subdirectories)
+   - Filters for JPG, JPEG, and PNG files (skips subdirectories)
    - Collects all matching image paths into a list
-   - Converts the list of images into a single `output.pdf` using `img2pdf.convert()`
+   - Converts the sorted list of images into a single PDF using `img2pdf.convert()`
 3. **If the path is a single file:**
-   - Checks that the file ends with `.jpg`
-   - Converts it directly to `output.pdf`
-4. If the path is neither a file nor a directory, prints an error message.
+   - Checks that the file is JPG, JPEG, or PNG
+   - Converts it to a new PDF path
+4. Refuses to overwrite an existing PDF.
 
 ## Project Structure
 
 ```
 Convert_a_image_to_pdf/
 ├── convert_image_to_pdf.py   # Main conversion script
-├── requirements.txt          # Python dependencies
+├── pyproject.toml            # Project metadata and dependencies
+├── uv.lock                   # Locked dependency versions
 └── README.md
 ```
 
@@ -49,7 +51,7 @@ Convert_a_image_to_pdf/
 
 ```bash
 cd Convert_a_image_to_pdf
-pip install -r requirements.txt
+uv sync
 ```
 
 ## How to Run
@@ -57,20 +59,20 @@ pip install -r requirements.txt
 ### Convert a single image
 
 ```bash
-python convert_image_to_pdf.py path/to/image.jpg
+uv run python convert_image_to_pdf.py path/to/image.jpg
 ```
 
-### Convert all JPG images in a directory
+### Convert all supported images in a directory
 
 ```bash
-python convert_image_to_pdf.py path/to/image_directory/
+uv run python convert_image_to_pdf.py path/to/image_directory/
 ```
 
-The output PDF will be saved as `output.pdf` in the current working directory.
+By default, the output is named after the input (`image.pdf` or `directory.pdf`) beside the input. Use `--output` to choose another new path.
 
 ## Configuration
 
-No environment variables or config files required. The input path is the only argument.
+No environment variables or config files required. Use `--output` to choose the PDF destination.
 
 ## Testing
 
@@ -78,9 +80,6 @@ No formal test suite present.
 
 ## Limitations
 
-- Only supports `.jpg` files — other image formats (`.png`, `.jpeg`, `.bmp`, `.tiff`) are ignored.
-- The output is always named `output.pdf` in the current working directory with no option to customize the output path or filename.
-- No argument validation — running without a command-line argument raises an `IndexError`.
-- No recursive directory scanning — only processes files in the top level of the specified directory.
-- No control over page ordering when converting a directory — order depends on `os.listdir()` which is filesystem-dependent.
-- The file extension check is case-sensitive (`.jpg` only, not `.JPG` or `.JPEG`).
+- Only JPG, JPEG, and PNG images are supported.
+- Directory conversion processes only the specified directory, not subdirectories.
+- Existing PDF outputs are not overwritten.

@@ -4,8 +4,8 @@ Multiple-choice trivia with categories, score tracking,
 timed questions, and difficulty levels.
 
 Usage:
-    python main.py
-    python main.py --category science --difficulty hard
+    uv run python main.py
+    uv run python main.py --category science --difficulty hard
 """
 
 import argparse
@@ -17,7 +17,7 @@ QUESTIONS = {
     "science": {
         "easy": [
             {"q": "What is the chemical symbol for water?",
-             "a": ["H₂O","CO₂","NaCl","O₂"], "correct": 0},
+             "a": ["H2O","CO2","NaCl","O2"], "correct": 0},
             {"q": "How many planets are in the Solar System?",
              "a": ["7","8","9","10"], "correct": 1},
             {"q": "What gas do plants absorb from the atmosphere?",
@@ -33,7 +33,7 @@ QUESTIONS = {
             {"q": "What is the powerhouse of the cell?",
              "a": ["Nucleus","Ribosome","Mitochondria","Golgi"], "correct": 2},
             {"q": "What is Newton's 2nd law?",
-             "a": ["F=ma","E=mc²","PV=nRT","v=u+at"], "correct": 0},
+             "a": ["F=ma","E=mc^2","PV=nRT","v=u+at"], "correct": 0},
         ],
         "hard": [
             {"q": "What is the Heisenberg Uncertainty Principle about?",
@@ -92,7 +92,7 @@ QUESTIONS = {
         ],
         "hard": [
             {"q": "What is the time complexity of binary search?",
-             "a": ["O(n)","O(log n)","O(n²)","O(1)"], "correct": 1},
+             "a": ["O(n)","O(log n)","O(n^2)","O(1)"], "correct": 1},
             {"q": "Which protocol operates at OSI Layer 4?",
              "a": ["IP","TCP","HTTP","ARP"], "correct": 1},
         ],
@@ -103,6 +103,14 @@ SCORE_TABLE = {"easy": 10, "medium": 20, "hard": 30}
 TIME_LIMIT  = {"easy": 30, "medium": 20, "hard": 15}
 
 
+def positive_int(value: str) -> int:
+    """Parse a question count greater than zero."""
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return number
+
+
 def ask_question(q: dict, num: int, total: int, difficulty: str, timed: bool) -> bool:
     print(f"\n  Q{num}/{total}: {q['q']}")
     options = q["a"]
@@ -111,13 +119,13 @@ def ask_question(q: dict, num: int, total: int, difficulty: str, timed: bool) ->
 
     limit = TIME_LIMIT[difficulty] if timed else None
     if limit:
-        print(f"  ⏱  {limit}s")
+        print(f"  Time limit: {limit}s")
 
     start = time.time()
     while True:
         elapsed = time.time() - start
         if limit and elapsed >= limit:
-            print(f"  ⏰ Time's up! Answer was: {options[q['correct']]}")
+            print(f"  Time's up! Answer was: {options[q['correct']]}")
             return False
         try:
             inp = input("  Your answer (1-4): ").strip()
@@ -127,10 +135,10 @@ def ask_question(q: dict, num: int, total: int, difficulty: str, timed: bool) ->
             idx = int(inp) - 1
             if idx == q["correct"]:
                 elapsed = time.time() - start
-                print(f"  ✅ Correct! ({elapsed:.1f}s)")
+                print(f"  Correct! ({elapsed:.1f}s)")
                 return True
             else:
-                print(f"  ❌ Wrong! Correct: {options[q['correct']]}")
+                print(f"  Wrong! Correct: {options[q['correct']]}")
                 return False
         print("  Enter 1, 2, 3, or 4.")
 
@@ -156,13 +164,13 @@ def play(category: str, difficulty: str, n_questions: int, timed: bool) -> None:
             correct += 1
 
     pct = correct / len(questions) * 100
-    print(f"\n  ── Results ──")
+    print("\n  -- Results --")
     print(f"  Correct:     {correct}/{len(questions)}")
     print(f"  Score:       {score}")
     print(f"  Accuracy:    {pct:.0f}%")
-    if pct == 100: print("  🏆 Perfect!")
-    elif pct >= 70: print("  👍 Well done!")
-    else: print("  📚 Keep studying!")
+    if pct == 100: print("  Perfect!")
+    elif pct >= 70: print("  Well done!")
+    else: print("  Keep studying!")
 
 
 def main():
@@ -171,7 +179,7 @@ def main():
     parser = argparse.ArgumentParser(description="Trivia Game")
     parser.add_argument("--category",   choices=cats,  default=None)
     parser.add_argument("--difficulty", choices=diffs, default="medium")
-    parser.add_argument("--questions",  type=int, default=5)
+    parser.add_argument("--questions",  type=positive_int, default=5)
     parser.add_argument("--timed",      action="store_true")
     args   = parser.parse_args()
 

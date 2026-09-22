@@ -102,12 +102,20 @@ def get_data(data_dir: Path) -> pd.DataFrame:
     """Build a classification-ready DataFrame from the weather dataset."""
     df_temp = _load_temperature_csv(data_dir)
 
-    # The dataset has a 'datetime' column and one column per city
+    # Derive time features before reshaping city columns into observations.
     if "datetime" in df_temp.columns:
-        df_temp = df_temp.drop(columns=["datetime"], errors="ignore")
+        timestamps = pd.to_datetime(df_temp["datetime"], errors="coerce")
+        df_temp["hour"] = timestamps.dt.hour.fillna(-1).astype(int)
+        df_temp["month"] = timestamps.dt.month.fillna(-1).astype(int)
+        df_temp = df_temp.drop(columns=["datetime"])
+    else:
+        df_temp["hour"] = 0
+        df_temp["month"] = 0
 
-    # Melt to long format: city + temperature
-    df_long = df_temp.melt(var_name="city", value_name="temperature").dropna()
+    # Melt to long format: city + time features + temperature.
+    df_long = df_temp.melt(
+        id_vars=["hour", "month"], var_name="city", value_name="temperature"
+    ).dropna()
     logger.info("Melted temperature data: %d rows", len(df_long))
 
     # Detect Kelvin vs Celsius (Kelvin values typically > 200)
@@ -130,12 +138,6 @@ def get_data(data_dir: Path) -> pd.DataFrame:
         desc_df = None
     # Description merging is optional — skip if format differs
 
-    # Add engineered features
-    df_long["temp_zscore"] = (
-        (df_long["temperature"] - df_long["temperature"].mean())
-        / df_long["temperature"].std()
-    )
-
     # Sample to keep things manageable
     if len(df_long) > MAX_ROWS:
         df_long = df_long.sample(n=MAX_ROWS, random_state=SEED).reset_index(drop=True)
@@ -144,8 +146,8 @@ def get_data(data_dir: Path) -> pd.DataFrame:
     # Encode city as numeric
     df_long["city_code"] = df_long["city"].astype("category").cat.codes
 
-    # Final columns for modelling
-    model_df = df_long[["temperature", "temp_zscore", "city_code", "temp_class"]].copy()
+    # Do not include temperature or its derivatives: they define temp_class.
+    model_df = df_long[["city_code", "hour", "month", "temp_class"]].copy()
     model_df["temp_class"] = model_df["temp_class"].astype(str)
     logger.info("Class distribution:\n%s", model_df["temp_class"].value_counts().to_string())
     return model_df

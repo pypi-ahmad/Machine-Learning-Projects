@@ -4,7 +4,7 @@ Create polls with multiple options, cast votes, and see live results
 as bar charts.  Multiple polls supported; data saved locally.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 import json
@@ -16,20 +16,20 @@ import streamlit as st
 st.set_page_config(page_title="Poll Creator", layout="centered")
 st.title("🗳️ Simple Poll Creator")
 
-DATA_FILE = Path("polls.json")
+DATA_FILE = Path(__file__).with_name("polls.json")
 
 
 def load() -> dict:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
+            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return {"polls": {}}
 
 
 def save(data: dict) -> None:
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 if "data" not in st.session_state:
@@ -45,9 +45,12 @@ poll_q = st.sidebar.text_input("Question")
 opt_str = st.sidebar.text_area("Options (one per line)")
 
 if st.sidebar.button("Create Poll") and poll_q.strip() and opt_str.strip():
-    opts = [o.strip() for o in opt_str.splitlines() if o.strip()]
-    if len(opts) >= 2:
-        data["polls"][poll_q.strip()] = {o: 0 for o in opts}
+    question = poll_q.strip()
+    opts = list(dict.fromkeys([o.strip() for o in opt_str.splitlines() if o.strip()]))
+    if question in data["polls"]:
+        st.sidebar.error("A poll with this question already exists.")
+    elif len(opts) >= 2:
+        data["polls"][question] = {option: 0 for option in opts}
         save(data)
         st.sidebar.success("Poll created!")
         st.rerun()
@@ -91,7 +94,7 @@ for question, options in list(polls.items()):
                 })
                 vote_df["Percent"] = (vote_df["Votes"] / total_votes * 100).round(1)
                 st.bar_chart(vote_df.set_index("Option")["Votes"])
-                st.dataframe(vote_df, use_container_width=True, hide_index=True)
+                st.dataframe(vote_df, hide_index=True)
                 st.caption(f"Total votes: {total_votes}")
 
         if st.button("🗑️ Delete poll", key=f"del_{question}"):

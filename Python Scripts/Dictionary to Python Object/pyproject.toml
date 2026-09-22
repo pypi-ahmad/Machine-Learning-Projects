@@ -1,0 +1,10 @@
+[project]
+name = "dictionary-to-python-object"
+version = "0.1.0"
+description = "Convert nested dictionaries into objects with attribute access"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

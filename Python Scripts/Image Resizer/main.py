@@ -1,19 +1,19 @@
-"""Image Resizer — CLI tool.
+"""Image Resizer CLI tool.
 
 Resize images by percentage, fixed dimensions, or max width/height.
 Supports batch processing of a directory.
-Requires Pillow: pip install Pillow
 
 Usage:
-    python main.py image.jpg --width 800
-    python main.py images/ --percent 50
-    python main.py image.jpg --max-side 1024 --output resized.jpg
+    uv run --no-config python main.py image.jpg --width 800
+    uv run --no-config python main.py images/ --percent 50
+    uv run --no-config python main.py image.jpg --max-side 1024 --output resized.jpg
 """
 
 import argparse
 import sys
 from pathlib import Path
 
+from PIL import Image
 
 SUPPORTED = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".tif", ".webp"}
 
@@ -21,12 +21,6 @@ SUPPORTED = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".tif", ".webp"}
 def resize_image(src: Path, dst: Path, width: int | None = None,
                  height: int | None = None, percent: float | None = None,
                  max_side: int | None = None, quality: int = 90):
-    try:
-        from PIL import Image
-    except ImportError:
-        print("  Pillow not installed. Run: pip install Pillow")
-        sys.exit(1)
-
     img = Image.open(src)
     ow, oh = img.size
 
@@ -48,7 +42,7 @@ def resize_image(src: Path, dst: Path, width: int | None = None,
     else:
         nw, nh = ow, oh
 
-    resized = img.resize((nw, nh), Image.LANCZOS)
+    resized = img.resize((nw, nh), Image.Resampling.LANCZOS)
     dst.parent.mkdir(parents=True, exist_ok=True)
 
     save_kwargs = {}
@@ -73,12 +67,23 @@ def main():
     parser.add_argument("--suffix",         default="_resized")
     args = parser.parse_args()
 
+    if args.width is not None and args.width <= 0:
+        parser.error("--width must be greater than zero")
+    if args.height is not None and args.height <= 0:
+        parser.error("--height must be greater than zero")
+    if args.percent is not None and args.percent <= 0:
+        parser.error("--percent must be greater than zero")
+    if args.max_side is not None and args.max_side <= 0:
+        parser.error("--max-side must be greater than zero")
+    if not 1 <= args.quality <= 100:
+        parser.error("--quality must be between 1 and 100")
+
     src = Path(args.input)
 
     if not any([args.width, args.height, args.percent, args.max_side]):
         # Interactive mode
         print("Image Resizer")
-        print("─────────────────────────────")
+        print("-----------------------------")
         src_str  = input("Image file or folder: ").strip()
         src      = Path(src_str)
         mode     = input("Mode: [p]ercent / [w]idth / [h]eight / [m]ax-side [p]: ").strip().lower() or "p"
@@ -100,21 +105,23 @@ def main():
             return
         out_dir = Path(args.output) if args.output else src / "resized"
         out_dir.mkdir(exist_ok=True)
-        print(f"  Resizing {len(images)} image(s) → {out_dir}")
+        print(f"  Resizing {len(images)} image(s) to {out_dir}")
         for img_path in images:
             dst = out_dir / img_path.name
             ow, oh, nw, nh = resize_image(img_path, dst,
                 args.width, args.height, args.percent, args.max_side, args.quality)
-            print(f"  {img_path.name}: {ow}×{oh} → {nw}×{nh}")
+            print(f"  {img_path.name}: {ow}x{oh} -> {nw}x{nh}")
         print("  Done.")
     elif src.is_file():
         if args.output:
             dst = Path(args.output)
         else:
             dst = src.with_stem(src.stem + args.suffix)
+        if src.resolve() == dst.resolve():
+            parser.error("--output must be different from the input image")
         ow, oh, nw, nh = resize_image(src, dst,
             args.width, args.height, args.percent, args.max_side, args.quality)
-        print(f"  {src.name}: {ow}×{oh} → {nw}×{nh}  saved to {dst}")
+        print(f"  {src.name}: {ow}x{oh} -> {nw}x{nh}  saved to {dst}")
     else:
         print(f"  Not found: {src}")
         sys.exit(1)

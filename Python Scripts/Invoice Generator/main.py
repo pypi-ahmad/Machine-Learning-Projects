@@ -8,6 +8,7 @@ Usage:
 """
 
 import json
+from html import escape
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -15,10 +16,11 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Invoice Generator", layout="wide")
-st.title("🧾 Invoice Generator")
+st.title("Invoice generator")
 
-DATA_FILE   = Path("invoices.json")
-INV_COUNTER = Path("invoice_counter.txt")
+DATA_DIR = Path(__file__).resolve().parent
+DATA_FILE = DATA_DIR / "invoices.json"
+INV_COUNTER = DATA_DIR / "invoice_counter.txt"
 
 
 def next_invoice_number() -> str:
@@ -42,7 +44,7 @@ def save_invoices(inv: list[dict]):
 
 def render_html(inv: dict) -> str:
     rows = "".join(
-        f"<tr><td>{i['description']}</td><td style='text-align:right'>{i['qty']}</td>"
+        f"<tr><td>{escape(i['description'])}</td><td style='text-align:right'>{i['qty']}</td>"
         f"<td style='text-align:right'>${i['unit_price']:.2f}</td>"
         f"<td style='text-align:right'>${i['total']:.2f}</td></tr>"
         for i in inv["items"]
@@ -53,10 +55,10 @@ th,td{{border:1px solid #ddd;padding:8px}} th{{background:#f4f4f4}}
 .totals{{text-align:right;margin-top:10px}} .total-row{{font-weight:bold;font-size:1.1em}}
 </style></head><body>
 <h1>INVOICE</h1>
-<p><b>Invoice #:</b> {inv['number']}<br>
-<b>Date:</b> {inv['date']}<br><b>Due:</b> {inv['due_date']}</p>
-<h3>Bill To</h3><p>{inv['client_name']}<br>{inv['client_email']}<br>{inv['client_address']}</p>
-<h3>From</h3><p>{inv['company_name']}<br>{inv['company_email']}</p>
+<p><b>Invoice #:</b> {escape(inv['number'])}<br>
+<b>Date:</b> {escape(inv['date'])}<br><b>Due:</b> {escape(inv['due_date'])}</p>
+<h3>Bill To</h3><p>{escape(inv['client_name'])}<br>{escape(inv['client_email'])}<br>{escape(inv['client_address'])}</p>
+<h3>From</h3><p>{escape(inv['company_name'])}<br>{escape(inv['company_email'])}</p>
 <table><thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
 <tbody>{rows}</tbody></table>
 <div class='totals'>
@@ -64,7 +66,7 @@ th,td{{border:1px solid #ddd;padding:8px}} th{{background:#f4f4f4}}
 <p>Tax ({inv['tax_rate']}%): ${inv['tax_amount']:.2f}</p>
 <p class='total-row'>TOTAL: ${inv['total']:.2f}</p>
 </div>
-<p><b>Notes:</b> {inv.get('notes','')}</p>
+<p><b>Notes:</b> {escape(inv.get('notes', ''))}</p>
 </body></html>"""
 
 
@@ -141,7 +143,7 @@ with tab2:
         rows = [{k: v for k, v in inv.items() if k not in ("items","notes","client_address")}
                 for inv in invoices]
         df = pd.DataFrame(rows)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, hide_index=True)
         st.metric("Total Invoiced", f"${df['total'].sum():,.2f}")
         csv = df.to_csv(index=False).encode()
         st.download_button("📥 Export CSV", csv, "invoices.csv", "text/csv")

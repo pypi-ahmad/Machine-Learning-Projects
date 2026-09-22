@@ -4,7 +4,7 @@ Track movies to watch, watching, and watched.
 Rate, review, filter by genre, and see watch stats.
 
 Usage:
-    streamlit run main.py
+    uv run --no-config streamlit run main.py
 """
 
 import json
@@ -15,9 +15,9 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Movie Watchlist", layout="wide")
-st.title("🎬 Movie Watchlist")
+st.title("Movie watchlist")
 
-DATA_FILE = Path("movies.json")
+DATA_FILE = Path(__file__).resolve().parent / "movies.json"
 STATUSES  = ["Want to Watch", "Watching", "Watched", "Dropped"]
 GENRES    = ["Action", "Comedy", "Drama", "Horror", "Sci-Fi", "Romance",
              "Thriller", "Animation", "Documentary", "Fantasy", "Other"]

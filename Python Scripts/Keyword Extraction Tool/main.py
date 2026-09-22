@@ -6,9 +6,9 @@ No heavy NLP dependencies required — uses only the standard library
 plus basic text statistics.
 
 Usage:
-    python main.py
-    python main.py article.txt
-    python main.py article.txt --top 10
+    uv run --no-config python main.py
+    uv run --no-config python main.py article.txt
+    uv run --no-config python main.py article.txt --top 10
 """
 
 import argparse

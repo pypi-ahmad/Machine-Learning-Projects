@@ -159,7 +159,7 @@ for c in palette:
     })
 
 import pandas as pd
-st.dataframe(pd.DataFrame(col_data), use_container_width=True)
+st.dataframe(pd.DataFrame(col_data))
 
 # Hex codes for copying
 st.subheader("Copy Hex Codes")

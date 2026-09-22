@@ -9,12 +9,22 @@ Usage:
 """
 
 import io
+import zipfile
 
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Statistics Dashboard", layout="wide")
-st.title("📈 Data Statistics Dashboard")
+st.set_page_config(page_title="Data statistics dashboard", page_icon=":material/analytics:", layout="wide")
+st.title("Data statistics dashboard")
+
+
+@st.cache_data
+def load_dataframe(contents: bytes, filename: str) -> pd.DataFrame:
+    """Read one uploaded CSV or Excel file without persisting it to disk."""
+    buffer = io.BytesIO(contents)
+    if filename.lower().endswith((".xlsx", ".xls")):
+        return pd.read_excel(buffer)
+    return pd.read_csv(buffer)
 
 # ---------------------------------------------------------------------------
 # Upload
@@ -26,13 +36,10 @@ if not upload:
     st.stop()
 
 try:
-    if upload.name.endswith((".xlsx", ".xls")):
-        df = pd.read_excel(upload)
-    else:
-        df = pd.read_csv(upload)
+    df = load_dataframe(upload.getvalue(), upload.name)
     st.sidebar.success(f"{len(df):,} rows × {len(df.columns)} columns")
-except Exception as e:
-    st.error(f"Could not load file: {e}")
+except (OSError, UnicodeDecodeError, ValueError, zipfile.BadZipFile, pd.errors.ParserError) as error:
+    st.error(f"Could not load file: {error}")
     st.stop()
 
 numeric_df = df.select_dtypes(include="number")
@@ -60,18 +67,21 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 ])
 
 with tab1:
-    st.subheader("Dataset Overview")
+    st.subheader("Dataset overview")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Rows",    f"{len(df):,}")
     c2.metric("Columns", len(df.columns))
-    c3.metric("Numeric cols", len(numeric_df.columns))
-    c4.metric("Categorical cols", len(cat_df.columns))
+    c3.metric("Numeric columns", len(numeric_df.columns))
+    c4.metric("Categorical columns", len(cat_df.columns))
 
     st.write("**Sample (first 10 rows)**")
-    st.dataframe(df.head(10), use_container_width=True)
+    st.dataframe(df.head(10), hide_index=True)
 
-    st.write("**Descriptive Statistics**")
-    st.dataframe(num_sel.describe().T.round(3), use_container_width=True)
+    st.write("**Descriptive statistics**")
+    if num_sel.empty:
+        st.info("No numeric columns are selected.")
+    else:
+        st.dataframe(num_sel.describe().T.round(3))
 
 with tab2:
     if num_sel.empty:
@@ -94,16 +104,16 @@ with tab2:
         skew  = num_sel[col].skew()
         kurt  = num_sel[col].kurtosis()
         stats_df = pd.concat([stats, pd.Series({"skewness": skew, "kurtosis": kurt})])
-        st.dataframe(stats_df.rename("value").to_frame().round(4), use_container_width=True)
+        st.dataframe(stats_df.rename("value").to_frame().round(4))
 
 with tab3:
     if num_sel.shape[1] < 2:
         st.info("Need at least 2 numeric columns for correlation.")
     else:
         corr = num_sel.corr()
-        st.write("**Pearson Correlation Matrix**")
+        st.write("**Pearson correlation matrix**")
         st.dataframe(corr.style.background_gradient(cmap="RdYlGn", vmin=-1, vmax=1).format("{:.2f}"),
-                     use_container_width=True)
+                     hide_index=False)
 
         # Top correlations
         pairs = []
@@ -113,8 +123,8 @@ with tab3:
                 pairs.append((cols_c[i], cols_c[j], corr.iloc[i, j]))
         pairs.sort(key=lambda x: abs(x[2]), reverse=True)
         top_pairs = pd.DataFrame(pairs[:10], columns=["Col A", "Col B", "Correlation"])
-        st.write("**Top Correlated Pairs**")
-        st.dataframe(top_pairs, use_container_width=True)
+        st.write("**Top correlated pairs**")
+        st.dataframe(top_pairs, hide_index=True)
 
 with tab4:
     if num_sel.empty:
@@ -134,17 +144,18 @@ with tab4:
 
         st.metric("Outliers found", len(outliers))
         if not outliers.empty:
-            st.dataframe(outliers.rename("value").to_frame(), use_container_width=True)
+            st.dataframe(outliers.rename("value").to_frame())
 
 with tab5:
-    st.subheader("Data Quality Report")
+    st.subheader("Data quality report")
+    zero_counts = num_sel.eq(0).sum().reindex(df_sel.columns, fill_value=0)
     quality = pd.DataFrame({
         "Missing":    df_sel.isnull().sum(),
         "Missing %":  (df_sel.isnull().mean() * 100).round(2),
         "Unique":     df_sel.nunique(),
         "Dtype":      df_sel.dtypes.astype(str),
-        "Zeros":      (df_sel == 0).sum() if not num_sel.empty else 0,
+        "Zeros":      zero_counts,
     })
-    st.dataframe(quality, use_container_width=True)
+    st.dataframe(quality)
     st.metric("Total missing cells", int(df_sel.isnull().sum().sum()))
     st.metric("Duplicate rows", int(df_sel.duplicated().sum()))

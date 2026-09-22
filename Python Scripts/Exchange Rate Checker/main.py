@@ -11,14 +11,17 @@ Usage:
 
 import argparse
 import json
+import math
+import re
 import sys
 import urllib.request
-from datetime import datetime
 from pathlib import Path
 
 
 API_URL  = "https://open.er-api.com/v6/latest/{base}"
-FAV_FILE = Path("exchange_favorites.json")
+FAV_FILE = Path(__file__).with_name("exchange_favorites.json")
+CURRENCY_CODE = re.compile(r"^[A-Z]{3}$")
+ATTRIBUTION = "Rates by ExchangeRate-API: https://www.exchangerate-api.com"
 
 CURRENCY_NAMES = {
     "USD":"US Dollar","EUR":"Euro","GBP":"British Pound","JPY":"Japanese Yen",
@@ -34,22 +37,36 @@ CURRENCY_NAMES = {
 }
 
 
+def normalize_currency(code: str) -> str:
+    """Return an ISO-style currency code or raise a user-facing error."""
+    currency = code.strip().upper()
+    if not CURRENCY_CODE.fullmatch(currency):
+        raise ValueError("Currency codes must use exactly three letters, for example USD.")
+    return currency
+
+
 def fetch_rates(base: str) -> dict:
-    url = API_URL.format(base=base.upper())
+    """Fetch the latest provider response for one validated base currency."""
+    base = normalize_currency(base)
+    url = API_URL.format(base=base)
     try:
         with urllib.request.urlopen(url, timeout=8) as resp:
             data = json.loads(resp.read())
-    except Exception as e:
-        raise ValueError(f"Network error: {e}")
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Could not fetch rates: {error}") from error
     if data.get("result") != "success":
-        raise ValueError(f"API error: {data.get('error-type','unknown')}")
+        raise ValueError(f"Provider error: {data.get('error-type', 'unknown')}")
     return data
 
 
 def convert(amount: float, from_cur: str, to_cur: str, rates: dict) -> float:
+    if not math.isfinite(amount):
+        raise ValueError("Amount must be a finite number.")
+    from_cur = normalize_currency(from_cur)
+    to_cur = normalize_currency(to_cur)
     r = rates.get("rates", {})
     if from_cur not in r or to_cur not in r:
-        raise ValueError(f"Unknown currency.")
+        raise ValueError("One or both currency codes are not available from the provider.")
     # Rates are relative to base
     base_amount = amount / r[from_cur]
     return base_amount * r[to_cur]
@@ -61,15 +78,15 @@ def display_rates(data: dict, currencies: list[str] = None) -> None:
     update = data.get("time_last_update_utc","—")
     print(f"\n  Base: {base} ({CURRENCY_NAMES.get(base,'')})")
     print(f"  Updated: {update[:25]}")
-    print(f"  {'─'*44}")
+    print(f"  {'-'*44}")
     print(f"  {'Code':<6}  {'Currency':<24}  {'Rate':>12}")
-    print(f"  {'─'*44}")
+    print(f"  {'-'*44}")
     target = currencies or list(CURRENCY_NAMES.keys())
     for c in target:
         if c not in rates: continue
         name = CURRENCY_NAMES.get(c, c)
         print(f"  {c:<6}  {name:<24}  {rates[c]:>12.4f}")
-    print()
+    print(f"  {ATTRIBUTION}\n")
 
 
 def display_conversion(amount: float, from_cur: str, to_cur: str, result: float) -> None:
@@ -77,17 +94,20 @@ def display_conversion(amount: float, from_cur: str, to_cur: str, result: float)
     tn = CURRENCY_NAMES.get(to_cur,   to_cur)
     print(f"\n  {amount:,.2f} {from_cur} ({fn})")
     print(f"  = {result:,.4f} {to_cur} ({tn})\n")
+    print(f"  {ATTRIBUTION}\n")
 
 
 def load_favorites() -> list:
     if FAV_FILE.exists():
-        try: return json.loads(FAV_FILE.read_text())
-        except: pass
+        try:
+            return json.loads(FAV_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            pass
     return [("USD","EUR"),("USD","GBP"),("USD","JPY")]
 
 
 def save_favorites(favs: list) -> None:
-    FAV_FILE.write_text(json.dumps(favs, indent=2))
+    FAV_FILE.write_text(json.dumps(favs, indent=2), encoding="utf-8")
 
 
 def interactive():
@@ -133,11 +153,12 @@ def interactive():
             try:
                 data = fetch_rates(base)
                 print(f"\n  Favorite pairs (base {base}):")
-                print(f"  {'─'*40}")
+                print(f"  {'-'*40}")
                 for f, t in favs:
                     if t in data["rates"]:
                         rate = data["rates"][t]
-                        print(f"  1 {f} = {rate:.4f} {t}")
+                        print(f"  1 {base} = {rate:.4f} {t}")
+                print(f"  {ATTRIBUTION}")
             except ValueError as e: print(f"  Error: {e}")
 
         else:
@@ -155,9 +176,11 @@ def main():
 
     try:
         if args.from_cur and args.to_cur:
-            data   = fetch_rates(args.from_cur)
-            result = convert(args.amount, args.from_cur, args.to_cur, data)
-            display_conversion(args.amount, args.from_cur, args.to_cur, result)
+            from_cur = normalize_currency(args.from_cur)
+            to_cur = normalize_currency(args.to_cur)
+            data   = fetch_rates(from_cur)
+            result = convert(args.amount, from_cur, to_cur, data)
+            display_conversion(args.amount, from_cur, to_cur, result)
         elif args.base:
             data = fetch_rates(args.base)
             display_rates(data)

@@ -16,7 +16,7 @@ class LinkFinder(HTMLParser):
 		if tag=='a':
 			for (attribute, value) in attrs:
 				if attribute == 'href':
-					url = parse.urljoin(self.base_url, value)  
+					url = parse.urljoin(self.page_url, value)
 					self.links.add(url)
 
 	def page_links(self):

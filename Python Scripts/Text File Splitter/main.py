@@ -4,7 +4,7 @@ Split large text files by line count, file size, delimiter pattern,
 or into equal N parts.  Also merges split files back together.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import re
@@ -68,8 +68,10 @@ def split_by_size(source: Path, max_bytes: int,
 def split_by_equal(source: Path, n: int,
                     out_dir: Path | None = None) -> list[Path]:
     """Split into N roughly equal parts by line count."""
+    if n <= 0:
+        raise ValueError("Number of parts must be positive.")
     all_lines = source.read_text(encoding="utf-8", errors="replace").splitlines(keepends=True)
-    chunk_size = max(1, len(all_lines) // n)
+    chunk_size = max(1, (len(all_lines) + n - 1) // n)
     return split_by_lines(source, chunk_size, out_dir)
 
 

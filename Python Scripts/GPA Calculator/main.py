@@ -1,4 +1,4 @@
-"""GPA Calculator — CLI tool.
+"""GPA Calculator CLI tool.
 
 Supports two grading scales:
   - 4.0 US GPA scale (A=4, B=3, C=2, D=1, F=0)
@@ -7,6 +7,8 @@ Supports two grading scales:
 Usage:
     python main.py
 """
+
+import math
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -43,6 +45,8 @@ def calculate_gpa(courses: list[tuple[str, float, float]]) -> dict:
     total_points = 0.0
     total_credits = 0.0
     for grade, credits, weight in courses:
+        if not math.isfinite(credits) or not math.isfinite(weight) or credits <= 0 or weight <= 0:
+            raise ValueError("Credit hours and weight multipliers must be finite positive values.")
         pts = letter_to_points(grade)
         total_points += pts * credits * weight
         total_credits += credits * weight
@@ -86,7 +90,7 @@ def get_float(prompt: str, min_val: float = 0.0) -> float:
     while True:
         try:
             val = float(input(prompt).strip())
-            if val < min_val:
+            if not math.isfinite(val) or val < min_val:
                 print(f"  Value must be >= {min_val}")
                 continue
             return val
@@ -153,12 +157,12 @@ def main() -> None:
                 continue
             try:
                 result = calculate_gpa(courses)
-                print(f"\n  {'─' * 30}")
+                print(f"\n  {'-' * 30}")
                 print(f"  Courses entered : {len(courses)}")
                 print(f"  Total credits   : {result['total_credits']:.1f}")
                 print(f"  Total points    : {result['total_points']:.3f}")
                 print(f"  GPA             : {result['gpa']:.3f}  ({result['letter']})")
-                print(f"  {'─' * 30}")
+                print(f"  {'-' * 30}")
             except ValueError as e:
                 print(f"  Error: {e}")
 

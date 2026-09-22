@@ -1,20 +1,13 @@
-import urllib.request, urllib.parse, urllib.error
-import http
+import os
+import urllib.request, urllib.parse
 import sqlite3
 import json
 import time
 import ssl
 import sys
 
-api_key = False
-# If you have a Google Places API key, enter it here
-# api_key = 'AIzaSy___IDByT70'
-
-if api_key is False:
-    api_key = 42
-    serviceurl = "http://py4e-data.dr-chuck.net/json?"
-else :
-    serviceurl = "https://maps.googleapis.com/maps/api/geocode/json?"
+api_key = os.environ.get("GOOGLE_API_KEY")
+serviceurl = "https://maps.googleapis.com/maps/api/geocode/json?"
 
 # Additional detail for urllib
 # http.client.HTTPConnection.debuglevel = 1
@@ -25,12 +18,10 @@ cur = conn.cursor()
 cur.execute('''
 CREATE TABLE IF NOT EXISTS Locations (address TEXT, geodata TEXT)''')
 
-# Ignore SSL certificate errors
-ctx = ssl.create_default_context()
-ctx.check_hostname = False
-ctx.verify_mode = ssl.CERT_NONE
+if not api_key:
+    raise RuntimeError("GOOGLE_API_KEY is required. Relaunch the host if it was configured recently.")
 
-fh = open("where.data")
+fh = open("where.data", encoding="utf-8")
 count = 0
 for line in fh:
     if count > 200 :
@@ -51,11 +42,11 @@ for line in fh:
 
     parms = dict()
     parms["address"] = address
-    if api_key is not False: parms['key'] = api_key
+    parms['key'] = api_key
     url = serviceurl + urllib.parse.urlencode(parms)
 
     print('Retrieving', url)
-    uh = urllib.request.urlopen(url, context=ctx)
+    uh = urllib.request.urlopen(url, timeout=15)
     data = uh.read().decode()
     print('Retrieved', len(data), 'characters', data[:20].replace('\n', ' '))
     count = count + 1

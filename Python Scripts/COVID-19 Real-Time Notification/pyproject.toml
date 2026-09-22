@@ -1,0 +1,10 @@
+[project]
+name = "covid-19-real-time-notification"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "english-to-hindi>=0.0.1",
+    "plyer>=2.1.0",
+    "requests>=2.28.1",
+]

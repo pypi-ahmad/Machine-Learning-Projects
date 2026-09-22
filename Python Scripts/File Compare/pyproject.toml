@@ -1,0 +1,10 @@
+[project]
+name = "file-compare"
+version = "0.1.0"
+description = "Order-preserving shared-line comparison for text files"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

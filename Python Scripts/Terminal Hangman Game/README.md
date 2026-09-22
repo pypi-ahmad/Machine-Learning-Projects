@@ -1,10 +1,10 @@
 # Terminal-Based Hangman Game
 
-> A classic hangman word-guessing game played entirely in the terminal, with ASCII art gallows and a large word list.
+> A classic Hangman game played in the terminal with ASCII gallows and a large word list.
 
 ## Overview
 
-This is a terminal-based implementation of the classic Hangman game. A random word is selected from a JSON file containing over 1,400 words. The player guesses one letter at a time (or attempts the full word) with 6 allowed wrong guesses. ASCII art displays the hangman's progressive state after each guess.
+This terminal game selects a random word from a JSON file containing more than 1,400 words. The player guesses letters or the full word with six allowed wrong guesses, while ASCII art shows the hangman's state.
 
 ## Features
 
@@ -29,21 +29,22 @@ Terminal_Based_Hangman_Game/
 
 ## Requirements
 
-- Python 3.x
+- Python 3.14+
+- uv
 - No external dependencies (uses only `random` and `json` from the standard library)
 
 ## Installation
 
 ```bash
-cd Terminal_Based_Hangman_Game
+uv sync
 ```
 
-No additional installation needed — standard library only.
+No package installation is needed beyond the uv-managed Python environment.
 
 ## Usage
 
 ```bash
-python hangman.py
+uv run python hangman.py
 ```
 
 **Gameplay:**
@@ -75,7 +76,7 @@ Please guess a letter or the word: e
 Good job, e is in the word!
 ```
 
-## How It Works
+## How it works
 
 1. `get_word()` loads `words.json`, picks a random word from the `"word_list"` array, and converts it to uppercase
 2. `play(word)` runs the main game loop:
@@ -98,7 +99,7 @@ Good job, e is in the word!
 - No difficulty levels or category selection
 - No score tracking across games
 - All words are converted to uppercase — no mixed-case support
-- The `words.json` file must be in the same directory as `hangman.py` (relative path)
+- The `words.json` file must remain beside `hangman.py`
 - No clear-screen between turns, so the terminal scrolls with repeated output
 
 ## Security Notes

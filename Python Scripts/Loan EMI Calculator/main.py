@@ -7,7 +7,7 @@ Formula: EMI = P * r * (1+r)^n / ((1+r)^n - 1)
   P = principal, r = monthly rate, n = months
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 # ---------------------------------------------------------------------------

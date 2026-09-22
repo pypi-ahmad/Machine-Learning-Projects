@@ -4,7 +4,7 @@ Classic Snake: eat food to grow, avoid walls and yourself.
 Arrow keys to steer, P to pause, R to restart.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import tkinter as tk

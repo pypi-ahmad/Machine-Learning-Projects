@@ -1,10 +1,13 @@
 # Automatic Certificate Generator
 
-A Python script that batch-generates personalized certificates by reading names from a CSV file and overlaying them onto a certificate template image.
+The modern CLI accepts explicit CSV, template, font, and output paths. It creates
+the output directory and gives duplicate names unique filenames.
+
+A Python script that generates personalized certificates by reading names from a CSV file and overlaying them on a certificate template image.
 
 ## Overview
 
-This is a **CLI utility** that uses Pillow (PIL) for image manipulation and Pandas for CSV parsing. It reads a list of names from `list.csv`, draws each name onto a `certificate.png` template image, and saves the resulting certificates as individual PNG files in a `pictures/` directory.
+This **CLI utility** uses Pillow (PIL) for image manipulation and Pandas for CSV parsing. It reads names from `list.csv`, draws each name on a `certificate.png` template image, and saves the resulting certificates as individual PNG files in `pictures/`.
 
 ## Features
 
@@ -21,7 +24,7 @@ This is a **CLI utility** that uses Pillow (PIL) for image manipulation and Pand
 - `Pillow` (PIL)
 - `pandas`
 
-## How It Works
+## How it works
 
 1. The script reads `list.csv` using `pandas.read_csv()`, expecting a column named `name`.
 2. It loads a TrueType font (`arial.ttf`) at size 60.
@@ -46,7 +49,7 @@ Automatic Certificate Generator/
 ## Setup & Installation
 
 ```bash
-pip install Pillow pandas
+uv sync
 ```
 
 1. Place a `certificate.png` template image in the project folder.
@@ -66,7 +69,7 @@ pip install Pillow pandas
 
 ```bash
 cd "Automatic Certificate Generator"
-python main.py
+uv run python main.py --csv list.csv --template certificate.png --font arial.ttf
 ```
 
 Generated certificates will be saved in the `pictures/` folder.

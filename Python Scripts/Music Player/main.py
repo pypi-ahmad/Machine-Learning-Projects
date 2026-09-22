@@ -15,10 +15,18 @@ from tkinter import filedialog, messagebox
 
 try:
     import pygame
-    pygame.mixer.init()
-    PYGAME_OK = True
 except ImportError:
     PYGAME_OK = False
+    PYGAME_ERROR = "pygame is not installed."
+else:
+    try:
+        pygame.mixer.init()
+    except pygame.error as error:
+        PYGAME_OK = False
+        PYGAME_ERROR = f"The audio backend could not start: {error}"
+    else:
+        PYGAME_OK = True
+        PYGAME_ERROR = ""
 
 
 class MusicPlayer(tk.Tk):
@@ -108,7 +116,7 @@ class MusicPlayer(tk.Tk):
                       relief="flat", padx=6).pack(side="left", padx=2)
 
         if not PYGAME_OK:
-            tk.Label(self, text="⚠ pygame not installed — playback disabled",
+            tk.Label(self, text=f"Playback disabled: {PYGAME_ERROR}",
                      bg="#1e1e2e", fg="#f38ba8", font=("Consolas", 9)).pack()
 
     # ── Playlist management ───────────────────────────────────────────────────
@@ -148,7 +156,7 @@ class MusicPlayer(tk.Tk):
         if not (0 <= idx < len(self._playlist)):
             return
         if not PYGAME_OK:
-            messagebox.showwarning("pygame missing", "Install pygame to enable playback.")
+            messagebox.showwarning("Playback unavailable", PYGAME_ERROR)
             return
         self._current = idx
         path = self._playlist[idx]

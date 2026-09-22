@@ -13,25 +13,28 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Employee Directory", layout="wide")
-st.title("🏢 Employee Directory")
+st.title("Employee directory")
+st.caption("Data stays in the local `employees.csv` file beside this app. Avoid storing sensitive information unless you have authorization.")
 
-DATA_FILE = Path("employees.csv")
+DATA_FILE = Path(__file__).with_name("employees.csv")
 
 DEPARTMENTS = ["Engineering", "Marketing", "Sales", "HR", "Finance",
                "Operations", "Design", "Legal", "Support", "Executive"]
 STATUSES    = ["Active", "On Leave", "Remote", "Contractor", "Intern"]
+EMPLOYEE_COLUMNS = [
+    "ID", "Name", "Email", "Phone", "Department",
+    "Role", "Manager", "Location", "Status", "Start Date",
+]
 
 
 def load_employees() -> pd.DataFrame:
-    if DATA_FILE.exists():
-        try:
-            return pd.read_csv(DATA_FILE)
-        except Exception:
-            pass
-    return pd.DataFrame(columns=[
-        "ID", "Name", "Email", "Phone", "Department",
-        "Role", "Manager", "Location", "Status", "Start Date"
-    ])
+    if not DATA_FILE.exists():
+        return pd.DataFrame(columns=EMPLOYEE_COLUMNS)
+    employees = pd.read_csv(DATA_FILE)
+    missing = set(EMPLOYEE_COLUMNS).difference(employees.columns)
+    if missing:
+        raise ValueError(f"{DATA_FILE.name} is missing columns: {', '.join(sorted(missing))}")
+    return employees[EMPLOYEE_COLUMNS]
 
 
 def save_employees(df: pd.DataFrame) -> None:
@@ -89,7 +92,7 @@ with tab1:
     else:
         col1, col2, col3 = st.columns(3)
         with col1:
-            search = st.text_input("🔍 Search by name, role, or email")
+            search = st.text_input("Search by name, role, or email")
         with col2:
             dept_filter = st.multiselect("Department",
                                           emp["Department"].unique().tolist(),
@@ -112,11 +115,13 @@ with tab1:
 
         view = emp[mask].sort_values("Name")
         st.caption(f"{len(view)} employee(s)")
-        st.dataframe(view, use_container_width=True, hide_index=True)
+        st.dataframe(view, hide_index=True)
 
         st.divider()
         del_id = st.text_input("Enter Employee ID to delete")
-        if st.button("🗑️ Delete Employee") and del_id.strip():
+        confirm_delete = st.checkbox("I understand this permanently deletes the selected local record.")
+        delete_clicked = st.button("Delete employee", type="primary")
+        if delete_clicked and del_id.strip() and confirm_delete:
             if del_id.strip() in emp["ID"].values:
                 st.session_state.emp = emp[emp["ID"] != del_id.strip()].reset_index(drop=True)
                 save_employees(st.session_state.emp)
@@ -124,6 +129,8 @@ with tab1:
                 st.rerun()
             else:
                 st.error("Employee ID not found.")
+        elif delete_clicked and del_id.strip() and not confirm_delete:
+            st.warning("Select the confirmation checkbox before deleting a record.")
 
 with tab2:
     if emp.empty:

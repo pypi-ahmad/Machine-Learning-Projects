@@ -1,88 +1,47 @@
 # WhatsApp Automation
 
-> Automates sending WhatsApp messages via Selenium WebDriver and WhatsApp Web.
-
-## Overview
-
-This script uses Selenium to open WhatsApp Web in Chrome, finds a specified contact by name, types a message into the chat input, and sends it. The user has 15 seconds to scan the WhatsApp Web QR code before the script proceeds.
-
-## Features
-
-- Sends WhatsApp messages programmatically via WhatsApp Web
-- Finds contacts by their exact saved name
-- Interactive CLI for recipient name and message input
-- Uses Selenium WebDriver for browser automation
-
-## Project Structure
-
-```
-Whatsapp-Automation/
-├── README.md
-└── whatsappAutomation.py
-```
+Send one WhatsApp Web message through Selenium after an explicit confirmation flag. The default command only previews the recipient and message; it does not open a browser or send anything.
 
 ## Requirements
 
-- Python 3.x
-- `selenium` — Browser automation
-- Google Chrome browser
-- [ChromeDriver](https://chromedriver.chromium.org/downloads) matching your Chrome version
+- Python 3.14 or newer
+- [uv](https://docs.astral.sh/uv/)
+- Google Chrome or another Selenium-supported browser
+- A WhatsApp Web login
 
-## Installation
+## Install
 
-```bash
-cd Whatsapp-Automation
-pip install selenium
+```powershell
+cd "Python Scripts\WhatsApp Automation"
+uv sync
 ```
 
-Download ChromeDriver and place it at the path specified in the script (or update the path).
+Selenium manages a compatible driver when a supported browser is available, so no hardcoded ChromeDriver path is required.
 
-## Usage
+## Preview a message
 
-1. Update the ChromeDriver path in `whatsappAutomation.py`:
-   ```python
-   chrome_driver_binary = "C:\\Program Files\\Google\\Chrome\\Application\\chromedriver.exe"
-   ```
-2. Run:
-   ```bash
-   python whatsappAutomation.py
-   ```
-3. Enter the contact name (exactly as saved in WhatsApp) and the message when prompted.
-4. Scan the QR code within 15 seconds when WhatsApp Web opens.
-5. The message will be sent automatically.
+```powershell
+uv run python .\whatsappAutomation.py "Contact name" "Hello from the automation"
+```
 
-## How It Works
+## Send a message
 
-1. The `whatsapp(to, message)` function launches Chrome via Selenium and navigates to `https://web.whatsapp.com/`.
-2. Waits 15 seconds (`sleep(15)`) for the user to scan the QR code.
-3. Finds the contact by XPath: `//span[@title='CONTACT_NAME']` and clicks on it.
-4. Locates the message input box via XPath: `//*[@id="main"]/footer/div[1]/div[2]/div/div[2]`.
-5. Types the message using `send_keys()`.
-6. Finds and clicks the send button via XPath: `//*[@id="main"]/footer/div[1]/div[3]/button`.
-7. Waits 10 seconds, then prints "Message Sent!!".
+Pass `--send` only when ready to open WhatsApp Web and send the message:
 
-## Configuration
+```powershell
+uv run python .\whatsappAutomation.py "Contact name" "Hello from the automation" --send
+```
 
-| Setting | Location | Value |
-|---|---|---|
-| ChromeDriver path | `whatsappAutomation.py` | `"C:\\Program Files\\Google\\Chrome\\Application\\chromedriver.exe"` |
-| QR scan timeout | `whatsappAutomation.py` | `sleep(15)` — 15 seconds |
+Scan the WhatsApp Web QR code if prompted. The command waits up to 60 seconds for login and the contact. Adjust that window when needed:
 
-## Limitations
+```powershell
+uv run python .\whatsappAutomation.py "Contact name" "Hello" --send --timeout 120
+```
 
-- ChromeDriver path is hardcoded; must be manually updated.
-- Fixed 15-second wait for QR scanning — no dynamic wait/check.
-- Uses deprecated Selenium methods (`find_element_by_xpath`, `find_elements_by_xpath`); newer Selenium versions require `find_element(By.XPATH, ...)`.
-- WhatsApp Web's DOM structure changes frequently, which may break the hardcoded XPath selectors.
-- Bare `except` clause in send logic catches all exceptions with only a print statement.
-- The browser remains open after sending.
-- Contact name must match exactly (case-sensitive) as saved in WhatsApp.
-- Only sends a single message per run.
+The browser closes after the send attempt unless `--keep-open` is supplied.
 
-## Security Notes
+## Notes
 
-No sensitive data or credentials in the code.
-
-## License
-
-Not specified.
+- Contact names must match the saved WhatsApp contact name and cannot contain quote characters.
+- WhatsApp Web's page structure and automation restrictions may change, so a selector can stop working.
+- Send messages only with the recipient's consent and in accordance with WhatsApp's terms.

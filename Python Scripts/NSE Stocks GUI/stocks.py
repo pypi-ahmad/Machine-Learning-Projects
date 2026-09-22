@@ -1,122 +1,122 @@
-import requests
-from bs4 import BeautifulSoup
+"""Browse selected NSE stock tables in a Tkinter desktop window."""
+
+from __future__ import annotations
+
+import threading
 import tkinter as tk
-from tkinter import ttk
-from tkinter import font as tkFont
+from tkinter import messagebox, ttk
+
+from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-import time
+from selenium.common.exceptions import TimeoutException, WebDriverException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as expected
+from selenium.webdriver.support.ui import WebDriverWait
 
-driver_path = input('Enter path for chromedriver: ')
 
-# Categories and their URL slugs
-most_active = {'Most Active equities - Main Board':'mae_mainboard_tableC','Most Active equities - SME':'mae_sme_tableC','Most Active equities - ETFs':'mae_etf_tableC',
-                'Most Active equities - Price Spurts':'mae_pricespurts_tableC', 'Most Active equities - Volume Spurts':'mae_volumespurts_tableC'}
-top_20 = {'NIFTY 50 Top 20 Gainers':'topgainer-Table','NIFTY 50 Top 20 Losers':'toplosers-Table'}
+CATEGORY_TABLES = {
+    "Most Active equities - Main Board": "mae_mainboard_tableC",
+    "Most Active equities - SME": "mae_sme_tableC",
+    "Most Active equities - ETFs": "mae_etf_tableC",
+    "Most Active equities - Price Spurts": "mae_pricespurts_tableC",
+    "Most Active equities - Volume Spurts": "mae_volumespurts_tableC",
+    "NIFTY 50 Top 20 Gainers": "topgainer-Table",
+    "NIFTY 50 Top 20 Losers": "toplosers-Table",
+}
+MOST_ACTIVE_CATEGORIES = frozenset(tuple(CATEGORY_TABLES)[:5])
+NSE_URL = "https://www.nseindia.com/market-data/{}"
+WAIT_SECONDS = 20
 
-# Function to generate request url based on user choice
-def generate_url():
-    category_choice = category.get()
-    if(category_choice in most_active):
-        page = 'most-active-equities'
-    else:
-        page = 'top-gainers-loosers'
-    url = 'https://www.nseindia.com/market-data/{}'.format(page)
-    return url
 
-# Function to scrape stock data from generated URL
-def scraper():
-    url = generate_url()
-    driver = webdriver.Chrome(driver_path)
-    driver.get(url)
+def category_url(category: str) -> str:
+    """Return the appropriate NSE page for a configured category."""
+    page = "most-active-equities" if category in MOST_ACTIVE_CATEGORIES else "top-gainers-loosers"
+    return NSE_URL.format(page)
 
-    # Wait for results to load
-    time.sleep(5)
-    html = driver.page_source
 
-    # Start scraping resultant html data
-    soup = BeautifulSoup(html, 'html.parser')
+def extract_table_text(html: str, table_id: str) -> str:
+    """Return readable text from the selected NSE table."""
+    table = BeautifulSoup(html, "html.parser").find("table", id=table_id)
+    if table is None:
+        raise ValueError("The selected NSE table was not present in the loaded page.")
+    text = table.get_text("\n", strip=True)
+    if not text:
+        raise ValueError("The selected NSE table did not contain any data.")
+    return text
 
-    # Based on choice scrape div 
-    category_choice = category.get()
-    if category_choice in most_active :
-        category_div = most_active[category_choice]
-    else :
-        category_div = top_20[category_choice]
 
-    # Find the table to scrape 
-    results = soup.find("table", {"id": category_div})
-    rows = results.findChildren('tr')
+def fetch_table_html(category: str) -> str:
+    """Load the category page and wait for its table using Selenium Manager."""
+    driver = webdriver.Chrome()
+    try:
+        driver.get(category_url(category))
+        WebDriverWait(driver, WAIT_SECONDS).until(
+            expected.presence_of_element_located((By.ID, CATEGORY_TABLES[category]))
+        )
+        return driver.page_source
+    except TimeoutException as error:
+        raise RuntimeError("NSE did not load the selected table in time.") from error
+    finally:
+        driver.quit()
 
-    table_data = []
-    row_values = []
-    # Append stock data into a list
-    for row in rows:
-        cells = row.findChildren(['th', 'td'])
-        for cell in cells:
-            value = cell.text.strip()
-            value = " ".join(value.split())
-            row_values.append(value)
-        table_data.append(row_values)
-        row_values = []
 
-    # Formatting the stock data stored in the list
-    stocks_data = ""
-    for stock in table_data:
-        single_record = ""
-        for cell in stock:
-            format_cell = "{:<20}"
-            single_record += format_cell.format(cell[:20])
-        single_record += "\n"
-        stocks_data += single_record
-    
-     # Adding the formatted data into tkinter GUI
-    query_label.config(state=tk.NORMAL)
-    query_label.delete(1.0,"end")
-    query_label.insert(1.0,stocks_data)
-    query_label.config(state=tk.DISABLED)
-    driver.close()
+class StocksApp:
+    """Tkinter interface for one NSE table at a time."""
 
-# Creating tkinter window
-window = tk.Tk()
-window.title('NSE Stock data')
-window.geometry('1200x1000')
-window.configure(bg='white')
+    def __init__(self, root: tk.Tk) -> None:
+        self.root = root
+        self.root.title("NSE Stock data")
+        self.root.geometry("1000x700")
 
-style = ttk.Style()
-style.configure('my.TButton', font=('Helvetica', 16))
-style.configure('my.TFrame', background='white')
+        controls = ttk.Frame(root, padding=12)
+        controls.pack(fill=tk.X)
+        ttk.Label(controls, text="Market data").grid(row=0, column=0, padx=(0, 8))
+        self.category = ttk.Combobox(controls, values=tuple(CATEGORY_TABLES), state="readonly", width=42)
+        self.category.grid(row=0, column=1, padx=(0, 12))
+        self.category.current(0)
+        self.fetch_button = ttk.Button(controls, text="Get stock data", command=self.fetch)
+        self.fetch_button.grid(row=0, column=2)
 
-# label text for title
-ttk.Label(window, text="NSE Stock market data",
-          background='white', foreground="SpringGreen2",
-          font=("Helvetica", 30, 'bold')).grid(row=0, column=1)
+        self.results = tk.Text(root, wrap=tk.NONE, state=tk.DISABLED)
+        self.results.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 12))
 
-# label
-ttk.Label(window, text="Select Market data to get:", background = 'white',
-          font=("Helvetica", 15)).grid(column=0,
-                                       row=5, padx=10, pady=25)
+    def fetch(self) -> None:
+        """Load a category table without blocking the GUI."""
+        self.fetch_button.configure(state=tk.DISABLED)
+        self.root.config(cursor="watch")
+        thread = threading.Thread(target=self._fetch_in_background, args=(self.category.get(),), daemon=True)
+        thread.start()
 
-# Combobox creation
-category = ttk.Combobox(
-    window, width=60, state='readonly',font="Helvetica 15")
+    def _fetch_in_background(self, category: str) -> None:
+        try:
+            table_text = extract_table_text(fetch_table_html(category), CATEGORY_TABLES[category])
+        except (RuntimeError, ValueError, WebDriverException) as error:
+            self.root.after(0, self._show_error, str(error))
+            return
+        self.root.after(0, self._show_results, table_text)
 
-submit_btn = ttk.Button(window, text="Get Stock Data!", style='my.TButton', command = scraper)
+    def _finish_request(self) -> None:
+        self.fetch_button.configure(state=tk.NORMAL)
+        self.root.config(cursor="")
 
-# Adding combobox drop down list
-category['values'] = ('Most Active equities - Main Board','Most Active equities - SME','Most Active equities - ETFs','Most Active equities - Price Spurts',
-                        'Most Active equities - Volume Spurts','NIFTY 50 Top 20 Gainers','NIFTY 50 Top 20 Losers')
+    def _show_error(self, error: str) -> None:
+        self._finish_request()
+        messagebox.showerror("Unable to load NSE data", error, parent=self.root)
 
-category.grid(column=1, row=5, padx=10)
-category.current(0)
+    def _show_results(self, table_text: str) -> None:
+        self._finish_request()
+        self.results.configure(state=tk.NORMAL)
+        self.results.delete("1.0", tk.END)
+        self.results.insert(tk.END, table_text)
+        self.results.configure(state=tk.DISABLED)
 
-submit_btn.grid(row=5, column=3, pady=5, padx=15, ipadx=5)
 
-frame = ttk.Frame(window, style='my.TFrame')
-frame.place(relx=0.50, rely=0.12, relwidth=0.98, relheight=0.90, anchor="n")
+def main() -> None:
+    """Launch the NSE table viewer."""
+    root = tk.Tk()
+    StocksApp(root)
+    root.mainloop()
 
-# To display stock data
-query_label = tk.Text(frame ,height="52" ,width="500", bg="alice blue")
-query_label.grid(row=7,  columnspan=2)
 
-window.mainloop()
+if __name__ == "__main__":
+    main()

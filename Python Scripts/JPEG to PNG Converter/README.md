@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Python project that converts JPEG images to PNG format, available in two modes: a terminal-based converter and a Tkinter-based GUI application with file browsing and save dialogs.
+A Python project that converts JPEG images to PNG in two modes: a terminal converter and a Tkinter GUI with file browsing and save dialogs.
 
 **Type:** GUI / CLI Utility
 
@@ -19,13 +19,13 @@ A Python project that converts JPEG images to PNG format, available in two modes
 - `Pillow` (PIL) — for image opening and format conversion
 - `tkinter` — for the GUI (included with standard Python on most platforms)
 
-Install Pillow:
+Install Pillow with uv:
 
-```bash
-pip install Pillow
+```powershell
+uv sync --no-config
 ```
 
-## How It Works
+## How it works
 
 1. **Terminal mode**: Opens `input.jpeg` from the current folder using Pillow's `Image.open()`, then saves it as `output.png` using `im1.save()`.
 2. **GUI mode**: Creates a Tkinter window with an "Import JPEG File" button that opens a file dialog (`filedialog.askopenfilename`). The selected image is stored in a global variable. A "Convert JPEG to PNG" button triggers `filedialog.asksaveasfilename` with `.png` as the default extension and saves the image.
@@ -43,23 +43,20 @@ Convert_JPEG_to_PNG/
 
 ## Setup & Installation
 
-```bash
-pip install Pillow
+```powershell
+uv sync --no-config
 ```
 
 ## How to Run
 
 **Terminal mode:**
-1. Place your JPEG image as `input.jpeg` in the project folder.
-2. Run:
-   ```bash
-   python converter_terminal.py
-   ```
-3. `output.png` will be generated in the same folder.
+```powershell
+uv run --no-config python converter_terminal.py input.jpeg output.png
+```
 
 **GUI mode:**
-```bash
-python converter_GUI.py
+```powershell
+uv run --no-config python converter_GUI.py
 ```
 1. Click "Import JPEG File" to browse for a JPEG image.
 2. Click "Convert JPEG to PNG" to choose a save location.

@@ -4,10 +4,10 @@ Translate text between languages using LibreTranslate (self-hosted)
 or the MyMemory free API (no key required for basic use).
 
 Usage:
-    python main.py
-    python main.py --text "Hello, world!" --to es
-    python main.py --text "Bonjour" --from fr --to en
-    python main.py --list-languages
+    uv run python main.py
+    uv run python main.py --text "Hello, world!" --to es
+    uv run python main.py --text "Bonjour" --from fr --to en
+    uv run python main.py --list-languages
 """
 
 import argparse

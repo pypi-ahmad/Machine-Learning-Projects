@@ -1,0 +1,8 @@
+[project]
+name = "audiobook-creator"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pypdf>=6.19.0",
+    "pyttsx3>=2.99",
+]

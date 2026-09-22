@@ -42,12 +42,12 @@ No installation required. Only a working Python 3 interpreter is needed.
 
 ## How to Run
 
-1. Place your JSON data in `input.json` (must be an array of objects).
-2. Run:
-   ```bash
-   python converter.py
-   ```
-3. The output will be written to `output.csv` in the same directory.
+```powershell
+uv sync --no-config
+uv run --no-config python converter.py input.json output.csv
+```
+
+The input must be a non-empty JSON array of objects. Columns are collected from all objects, and Python's CSV writer handles commas and quoting safely.
 
 ## Testing
 

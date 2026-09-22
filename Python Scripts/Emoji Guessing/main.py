@@ -114,9 +114,9 @@ def play_round(puzzle: tuple, num: int, total: int, hints_enabled: bool) -> bool
     return False
 
 
-def play(category: str, n_rounds: int, hints: bool) -> None:
+def play(category: str, n_rounds: int, hints: bool, seed: int | None) -> None:
     pool  = PUZZLES.get(category) or [p for ps in PUZZLES.values() for p in ps]
-    puzzles = random.sample(pool, min(n_rounds, len(pool)))
+    puzzles = random.Random(seed).sample(pool, min(n_rounds, len(pool)))
     score   = 0
 
     print(f"\n=== Emoji Guessing Game ===  [{category.title()}]")
@@ -142,7 +142,11 @@ def main():
     parser.add_argument("--category", choices=cats, default=None)
     parser.add_argument("--rounds",   type=int, default=5)
     parser.add_argument("--no-hints", action="store_true")
+    parser.add_argument("--seed", type=int, help="Use a repeatable puzzle order.")
     args = parser.parse_args()
+
+    if args.rounds < 1:
+        parser.error("--rounds must be at least 1")
 
     if not args.category:
         print("=== Emoji Guessing Game ===")
@@ -151,7 +155,7 @@ def main():
         if cat not in cats: cat = "all"
         args.category = cat
 
-    play(args.category, args.rounds, not args.no_hints)
+    play(args.category, args.rounds, not args.no_hints, args.seed)
 
 
 if __name__ == "__main__":

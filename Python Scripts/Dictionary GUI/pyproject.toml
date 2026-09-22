@@ -1,0 +1,14 @@
+[project]
+name = "dictionary-gui"
+version = "0.1.0"
+description = "Tkinter word-definition lookup powered by PyDictionary"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pydictionary>=2.0.1",
+]
+
+[tool.uv]
+override-dependencies = [
+    "futures; python_version < '3.0'",
+]

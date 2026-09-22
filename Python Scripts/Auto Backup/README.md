@@ -1,6 +1,10 @@
 # Auto Backup
 
-A multithreaded CLI backup utility that recursively copies files from one or more source directories to a target directory, with automatic gzip compression for files exceeding a configurable size threshold.
+The current CLI previews changes by default. Add `--apply` only after reviewing
+the plan; each source is stored beneath the target using its source-directory
+name, so absolute source paths do not escape the backup folder.
+
+A multithreaded CLI backup utility that recursively copies files from one or more source directories to a target directory. Files above a configurable size threshold are compressed with gzip.
 
 ## Overview
 
@@ -30,7 +34,7 @@ A multithreaded CLI backup utility that recursively copies files from one or mor
 
 No external dependencies — standard library only.
 
-## How It Works
+## How it works
 
 1. `parse_input()` uses `argparse` to parse CLI arguments: `--target` (required), `--source` (required, one or more paths), and `--compress` (optional threshold in bytes, default 1024000).
 2. If no arguments are provided, the help message is printed and the script exits.
@@ -62,10 +66,10 @@ No installation required — uses only the Python standard library.
 cd Auto_Backup
 
 # Basic usage: back up a single folder
-python Auto_Backup.py --target ./Backup_Folder --source ./Source_Folder
+uv run python Auto_Backup.py --target ./Backup_Folder --source ./Source_Folder
 
 # Multiple sources with a custom compression threshold (100 KB)
-python Auto_Backup.py -t ./Backup -s ./Folder1 ./Folder2 -c 100000
+uv run python Auto_Backup.py --target ./Backup --source ./Folder1 ./Folder2 --compress 100000 --apply
 ```
 
 ### CLI Arguments
@@ -75,6 +79,7 @@ python Auto_Backup.py -t ./Backup -s ./Folder1 ./Folder2 -c 100000
 | `-t` / `--target` | Yes | Target backup directory |
 | `-s` / `--source` | Yes | One or more source directories |
 | `-c` / `--compress` | No | Gzip compression threshold in bytes (default: `1024000`) |
+| `--apply` | No | Write files; omitted means dry run |
 
 ## Configuration
 

@@ -1,10 +1,14 @@
 # Python Auto Draw
 
-> An automated spiral drawing script that uses PyAutoGUI to draw a shrinking rectangular spiral on screen.
+The script previews its movement plan by default. Add `--draw` only after the
+target canvas is ready; moving the pointer to a screen corner triggers
+PyAutoGUI's fail-safe.
+
+> An automated spiral-drawing script that uses PyAutoGUI to draw a shrinking rectangular spiral on screen.
 
 ## Overview
 
-This script uses the `pyautogui` library to programmatically control the mouse and draw a rectangular spiral pattern. It gives the user 10 seconds to switch to a drawing application (e.g., MS Paint), then continuously drags the mouse in a right-down-left-up pattern with decreasing distance until the spiral converges to the center.
+This script uses the `pyautogui` library to control the mouse and draw a rectangular spiral. It gives the user 10 seconds to switch to a drawing application, then drags the mouse in a right-down-left-up pattern with decreasing distances until the spiral reaches the center.
 
 ## Features
 
@@ -31,7 +35,7 @@ Python_auto_draw/
 
 ```bash
 cd "Python_auto_draw"
-pip install pyautogui
+uv sync
 ```
 
 ## Usage
@@ -40,13 +44,13 @@ pip install pyautogui
 2. Run the script:
 
 ```bash
-python python-auto-draw.py
+uv run python python-auto-draw.py
 ```
 
-3. Quickly switch to the drawing application within 10 seconds
-4. The script will automatically draw a rectangular spiral starting from the current cursor position
+3. Review the preview, then run `uv run python python-auto-draw.py --draw`
+4. Switch to the drawing application during the configurable delay
 
-## How It Works
+## How it works
 
 1. **Delay**: `time.sleep(10)` gives the user time to switch to a drawing application.
 2. **Initial click**: `pyautogui.click()` activates the drawing tool at the current cursor position.

@@ -1,0 +1,10 @@
+[project]
+name = "github-repo-viewer"
+version = "0.1.0"
+description = "Authenticated read-only command-line GitHub repository viewer"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

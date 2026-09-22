@@ -1,0 +1,7 @@
+[project]
+name = "instagram-follow-and-message-bot"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "selenium>=4.49.0",
+]

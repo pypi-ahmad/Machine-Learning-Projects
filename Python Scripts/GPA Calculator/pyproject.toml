@@ -1,0 +1,10 @@
+[project]
+name = "gpa-calculator"
+version = "0.1.0"
+description = "Interactive weighted GPA calculator"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

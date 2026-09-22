@@ -8,17 +8,18 @@ Usage:
     streamlit run main.py
 """
 
-import json
-from datetime import date, datetime
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Expense Tracker", layout="wide")
-st.title("💰 Expense Tracker")
+st.title("Expense tracker")
+st.caption("Transactions stay in the local CSV beside this app. Amounts use the currency units you enter; the app does not convert currencies.")
 
-DATA_FILE = Path("expenses.csv")
+DATA_FILE = Path(__file__).with_name("expenses.csv")
+DATA_COLUMNS = ["Date", "Description", "Category", "Amount", "Type"]
 CATEGORIES = [
     "Food", "Transport", "Housing", "Utilities", "Healthcare",
     "Entertainment", "Shopping", "Education", "Savings", "Income", "Other",
@@ -30,13 +31,17 @@ CATEGORIES = [
 # ---------------------------------------------------------------------------
 
 def load_data() -> pd.DataFrame:
-    if DATA_FILE.exists():
-        try:
-            df = pd.read_csv(DATA_FILE, parse_dates=["Date"])
-            return df
-        except Exception:
-            pass
-    return pd.DataFrame(columns=["Date", "Description", "Category", "Amount", "Type"])
+    if not DATA_FILE.exists():
+        return pd.DataFrame(columns=DATA_COLUMNS)
+    df = pd.read_csv(DATA_FILE, parse_dates=["Date"])
+    missing = set(DATA_COLUMNS).difference(df.columns)
+    if missing:
+        raise ValueError(f"{DATA_FILE.name} is missing columns: {', '.join(sorted(missing))}")
+    df = df[DATA_COLUMNS]
+    df["Amount"] = pd.to_numeric(df["Amount"], errors="raise")
+    if not df["Type"].isin(["Expense", "Income"]).all():
+        raise ValueError(f"{DATA_FILE.name} contains an unsupported transaction type.")
+    return df
 
 
 def save_data(df: pd.DataFrame) -> None:
@@ -59,7 +64,7 @@ with st.sidebar.form("add_form"):
     tx_date  = st.date_input("Date", value=date.today())
     tx_desc  = st.text_input("Description")
     tx_cat   = st.selectbox("Category", CATEGORIES)
-    tx_type  = st.radio("Type", ["Expense", "Income"], horizontal=True)
+    tx_type  = st.segmented_control("Type", ["Expense", "Income"], default="Expense")
     tx_amt   = st.number_input("Amount", min_value=0.01, step=0.01, format="%.2f")
     submitted = st.form_submit_button("Add")
 
@@ -88,10 +93,9 @@ expenses = df[df["Type"] == "Expense"]["Amount"].sum()
 balance  = income - expenses
 
 col1, col2, col3 = st.columns(3)
-col1.metric("💚 Total Income",   f"${income:,.2f}")
-col2.metric("🔴 Total Expenses", f"${expenses:,.2f}")
-col3.metric("💎 Balance",        f"${balance:,.2f}",
-            delta=f"${balance:,.2f}", delta_color="normal")
+col1.metric("Total income", f"{income:,.2f}")
+col2.metric("Total expenses", f"{expenses:,.2f}")
+col3.metric("Balance", f"{balance:,.2f}", delta=f"{balance:,.2f}", delta_color="normal")
 
 st.divider()
 
@@ -107,7 +111,7 @@ with tab1:
     cat_filter  = c2.multiselect("Category", CATEGORIES, default=CATEGORIES)
     view = df[df["Type"].isin(type_filter) & df["Category"].isin(cat_filter)]
     view = view.sort_values("Date", ascending=False)
-    st.dataframe(view.reset_index(drop=True), use_container_width=True)
+    st.dataframe(view.reset_index(drop=True))
 
 with tab2:
     exp_df = df[df["Type"] == "Expense"].copy()
@@ -116,7 +120,7 @@ with tab2:
     else:
         cat_totals = exp_df.groupby("Category")["Amount"].sum().sort_values(ascending=False)
         st.bar_chart(cat_totals)
-        st.dataframe(cat_totals.rename("Total ($)").reset_index(), use_container_width=True)
+        st.dataframe(cat_totals.rename("Total").reset_index())
 
 with tab3:
     df2 = df.copy()
@@ -130,8 +134,12 @@ with tab4:
     if not df.empty:
         idx = st.number_input("Row index to delete (0-based)", 0, len(df) - 1, 0)
         st.write(df.iloc[idx])
-        if st.button("Delete this row"):
+        confirm_delete = st.checkbox("I understand this permanently deletes the selected local transaction.")
+        delete_clicked = st.button("Delete this row", type="primary")
+        if delete_clicked and confirm_delete:
             st.session_state.df = df.drop(index=df.index[idx]).reset_index(drop=True)
             save_data(st.session_state.df)
             st.success("Deleted.")
             st.rerun()
+        elif delete_clicked:
+            st.warning("Select the confirmation checkbox before deleting a transaction.")

@@ -1,75 +1,76 @@
-'''
-This script will sort and move the files in the directory
-(the alphabetical order).
+"""Preview or organize regular files into folders by their first character."""
 
-'apple.txt' --> 'A'
-'ryan.txt' --> 'R'
-'01010.txt' --> 'Misc'
+from __future__ import annotations
 
-'''
-import os
+import argparse
 import shutil
-
-filenames = []
-
-
-def getfoldername(filename):
-    '''
-    'Test.txt' --> 't'
-    '010.txt' --> 'misc'
-    'zebra.txt' --> 'z'
-    'Alpha@@.txt' --> 'a'
-    '!@#.txt' --> 'misc'
-    '''
-    if filename[0].isalpha():
-        return filename[0].lower()
-    else:
-        return 'misc'
+from pathlib import Path
 
 
-def readdirectory():
-    '''
-    read the filename in the current directory and append them to a list
-    '''
-    global filenames
-    for files in os.listdir(os.getcwd()):
-        if os.path.isfile(os.path.join(os.getcwd(), files)):
-            filenames.append(files)
-    filenames.remove('main.py')  # removing script from the file list
+def destination_folder(filename: str) -> str:
+    """Return the lowercase initial folder name or ``misc``."""
+    return filename[0].lower() if filename and filename[0].isalpha() else "misc"
 
 
-# getting the first letters of the file & creating a file in the current_dir
-def createfolder():
-    '''
-    creating a folders
-    '''
-    global filenames
-    for f in filenames:
-        if os.path.isdir(getfoldername(f)):
-            print("folder already created")
-        else:
-            os.mkdir(getfoldername(f))
-            print('creating folder...')
+def plan_moves(directory: Path) -> list[tuple[Path, Path]]:
+    """Plan safe file moves without changing the filesystem."""
+    script_path = Path(__file__).resolve()
+    moves: list[tuple[Path, Path]] = []
+    for source in sorted(directory.iterdir(), key=lambda path: path.name.casefold()):
+        if not source.is_file() or source.is_symlink() or source.resolve() == script_path:
+            continue
+        destination = directory / destination_folder(source.name) / source.name
+        if destination.exists() or destination.is_symlink():
+            raise FileExistsError(
+                f"Refusing to overwrite existing file: {destination}"
+            )
+        moves.append((source, destination))
+    return moves
 
 
-# moving the file into the proper folder
-def movetofolder():
-    '''
-    movetofolder('zebra.py','z')
-
-    'zebra.py'(moved to) 'z'
-    '''
-    global filenames
-    for i in filenames:
-        filename = i
-        file = getfoldername(i)
-        source = os.path.join(os.getcwd(), filename)
-        destination = os.path.join(os.getcwd(), file)
-        print(f"moving {source} to {destination}")
-        shutil.move(source, destination)
+def organize(directory: Path, apply: bool = False) -> list[tuple[Path, Path]]:
+    """Return planned moves and optionally apply them after all checks pass."""
+    moves = plan_moves(directory)
+    if apply:
+        for source, destination in moves:
+            destination.parent.mkdir(exist_ok=True)
+            shutil.move(str(source), str(destination))
+    return moves
 
 
-if __name__ == '__main__':
-    readdirectory()
-    createfolder()
-    movetofolder()
+def print_moves(moves: list[tuple[Path, Path]], apply: bool) -> None:
+    """Print the planned or completed moves."""
+    if not moves:
+        print("No regular files to organize.")
+        return
+
+    prefix = "" if apply else "[dry run] "
+    for source, destination in moves:
+        print(f"{prefix}{source.name} -> {destination.parent.name}/{destination.name}")
+
+
+def main() -> None:
+    """Parse command-line arguments and organize the selected directory."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("directory", type=Path, help="directory containing files to organize")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="move files after showing the same plan; omitted means dry run",
+    )
+    args = parser.parse_args()
+    directory = args.directory.expanduser().resolve()
+    if not directory.is_dir():
+        raise SystemExit(f"Error: not a directory: {directory}")
+
+    try:
+        moves = organize(directory, apply=args.apply)
+    except FileExistsError as error:
+        raise SystemExit(f"Error: {error}") from error
+    print_moves(moves, args.apply)
+    if not args.apply and moves:
+        print("Run again with --apply to move these files.")
+
+
+if __name__ == "__main__":
+    main()

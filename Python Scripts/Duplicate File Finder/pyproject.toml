@@ -1,0 +1,10 @@
+[project]
+name = "duplicate-file-finder"
+version = "0.1.0"
+description = "CLI duplicate-file detector with explicit permanent deletion confirmation"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

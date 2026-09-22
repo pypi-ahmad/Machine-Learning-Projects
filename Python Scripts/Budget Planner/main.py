@@ -15,10 +15,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Budget Planner", layout="wide")
-st.title("🗓️ Budget Planner")
+st.set_page_config(page_title="Budget planner", layout="wide")
+st.title(":material/account_balance_wallet: Budget planner")
 
-DATA_FILE = Path("budget.json")
+DATA_FILE = Path(__file__).with_name("budget.json")
 
 DEFAULT_CATEGORIES = [
     "Housing", "Food & Dining", "Transport", "Utilities", "Healthcare",
@@ -29,8 +29,10 @@ DEFAULT_CATEGORIES = [
 def load() -> dict:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
+            data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("budgets"), dict) and isinstance(data.get("expenses"), list):
+                return data
+        except (OSError, json.JSONDecodeError):
             pass
     return {
         "budgets": {cat: 0 for cat in DEFAULT_CATEGORIES},
@@ -40,11 +42,10 @@ def load() -> dict:
 
 
 def save(data: dict) -> None:
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
-if "data" not in st.session_state:
-    st.session_state.data = load()
+st.session_state.setdefault("data", load())
 
 data = st.session_state.data
 month = date.today().strftime("%Y-%m")
@@ -141,7 +142,7 @@ for cat in DEFAULT_CATEGORIES:
 
 if rows:
     df = pd.DataFrame(rows)
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df, width="stretch")
 
     # Progress bars
     st.subheader("Spending Progress")
@@ -158,7 +159,7 @@ if rows:
 st.subheader(f"Transactions this month ({len(this_month_expenses)})")
 if this_month_expenses:
     exp_df = pd.DataFrame(this_month_expenses).sort_values("date", ascending=False)
-    st.dataframe(exp_df, use_container_width=True)
+    st.dataframe(exp_df, width="stretch")
 
     # Chart
     cat_totals = pd.DataFrame(this_month_expenses).groupby("category")["amount"].sum()

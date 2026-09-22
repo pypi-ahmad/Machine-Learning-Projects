@@ -20,9 +20,6 @@ _REPLACEMENTS = [
     (r"\bOR\b",   " or "),
     (r"\bNOT\b",  " not "),
     (r"\bXOR\b",  " ^ "),
-    (r"\bNAND\b", " nand "),
-    (r"\bNOR\b",  " nor "),
-    (r"\bXNOR\b", " xnor "),
     (r"&&",       " and "),
     (r"\|\|",     " or "),
     (r"!",        " not "),
@@ -65,6 +62,8 @@ def evaluate(expr: str, values: dict[str, bool]) -> bool:
     # Insert actual Python bool values
     for var, val in sorted(values.items(), key=lambda x: -len(x[0])):
         processed = re.sub(r"\b" + var + r"\b", str(val), processed)
+    if not re.fullmatch(r"[TrueFalsandornot^()\s]+", processed):
+        raise ValueError("Expression contains unsupported syntax.")
     safe_ns = {"True": True, "False": False}
     try:
         return bool(eval(processed, {"__builtins__": {}}, safe_ns))
@@ -123,14 +122,14 @@ def bool_str(b) -> str:
 
 def print_truth_table(expr: str) -> None:
     vars_, rows = truth_table(expr)
-    header = "  " + "  ".join(f"{v:^5}" for v in vars_) + "  │  " + "Result"
+    header = "  " + "  ".join(f"{v:^5}" for v in vars_) + "  |  " + "Result"
     sep    = "  " + "-" * (len(vars_) * 7 + 10)
     print(f"\n{header}")
     print(sep)
     for row in rows:
         vals   = "  ".join(f"{'T' if v else 'F':^5}" for v in row[:-1])
         result = "T" if row[-1] else "F"
-        print(f"  {vals}  │  {result}")
+        print(f"  {vals}  |  {result}")
     ones = sum(1 for r in rows if r[-1])
     print(f"\n  Satisfying assignments: {ones}/{len(rows)}")
 
@@ -191,9 +190,9 @@ def main() -> None:
             try:
                 print_truth_table(expr)
                 if is_tautology(expr):
-                    print("  ✓ This expression is a TAUTOLOGY (always true).")
+                    print("  This expression is a TAUTOLOGY (always true).")
                 elif is_contradiction(expr):
-                    print("  ✓ This expression is a CONTRADICTION (always false).")
+                    print("  This expression is a CONTRADICTION (always false).")
             except Exception as e:
                 print(f"  Error: {e}")
 
@@ -203,11 +202,11 @@ def main() -> None:
                 continue
             try:
                 if is_tautology(expr):
-                    print("\n  TAUTOLOGY — always true.")
+                    print("\n  TAUTOLOGY - always true.")
                 elif is_contradiction(expr):
-                    print("\n  CONTRADICTION — always false.")
+                    print("\n  CONTRADICTION - always false.")
                 else:
-                    print("\n  CONTINGENCY — sometimes true, sometimes false.")
+                    print("\n  CONTINGENCY - sometimes true, sometimes false.")
             except Exception as e:
                 print(f"  Error: {e}")
 
@@ -218,9 +217,9 @@ def main() -> None:
                 continue
             try:
                 if are_equivalent(e1, e2):
-                    print("\n  ✓ The expressions are LOGICALLY EQUIVALENT.")
+                    print("\n  The expressions are LOGICALLY EQUIVALENT.")
                 else:
-                    print("\n  ✗ The expressions are NOT equivalent.")
+                    print("\n  The expressions are NOT equivalent.")
                     print("  Showing differences:")
                     vars_ = sorted(set(_extract_vars(e1)) | set(_extract_vars(e2)))
                     n = len(vars_)
@@ -230,7 +229,7 @@ def main() -> None:
                         r2 = evaluate(e2, asgn)
                         if r1 != r2:
                             asgn_str = ", ".join(f"{k}={'T' if v else 'F'}" for k, v in asgn.items())
-                            print(f"    [{asgn_str}]  →  E1={'T' if r1 else 'F'}  E2={'T' if r2 else 'F'}")
+                            print(f"    [{asgn_str}]  ->  E1={'T' if r1 else 'F'}  E2={'T' if r2 else 'F'}")
             except Exception as e:
                 print(f"  Error: {e}")
 

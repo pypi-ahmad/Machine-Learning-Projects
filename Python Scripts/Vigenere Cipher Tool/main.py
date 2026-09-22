@@ -1,8 +1,8 @@
-"""Vigenère Cipher Tool — CLI tool.
+"""Vigenere Cipher Tool CLI.
 
 Encrypts and decrypts text using the Vigenère cipher.
-Also performs Kasiski / Index-of-Coincidence key-length estimation
-and frequency-analysis-based key recovery.
+Also performs Index-of-Coincidence key-length estimation and
+frequency-analysis-based key recovery.
 
 Usage:
     python main.py
@@ -125,7 +125,7 @@ def crack_key(ciphertext: str, key_length: int) -> str:
 # ---------------------------------------------------------------------------
 
 MENU = """
-Vigenère Cipher Tool
+Vigenere Cipher Tool
 --------------------
 1. Encrypt text
 2. Decrypt text (known key)
@@ -148,7 +148,7 @@ def get_text(prompt: str) -> str:
 
 
 def main() -> None:
-    print("Vigenère Cipher Tool")
+    print("Vigenere Cipher Tool")
     while True:
         print(MENU)
         choice = input("Choice: ").strip()
@@ -196,6 +196,9 @@ def main() -> None:
             if not text:
                 continue
             estimates = estimate_key_length(text)
+            if not estimates:
+                print("  Enter a longer ciphertext to estimate a key length.")
+                continue
             best_kl   = estimates[0][0]
             print(f"\n  Best estimated key length: {best_kl}")
             key = crack_key(text, best_kl)

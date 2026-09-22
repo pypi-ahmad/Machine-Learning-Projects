@@ -1,9 +1,8 @@
 # Convert XML to JSON
 
-A modern CLI tool to convert XML files to JSON.
+A CLI tool for converting XML files to JSON.
 
-Replaces the legacy `converter.py` script with a fully-featured,
-tested, and type-safe implementation.
+It replaces the legacy `converter.py` script with a tested, type-safe implementation.
 
 ## What changed from the legacy script
 
@@ -22,8 +21,8 @@ tested, and type-safe implementation.
 ## Installation
 
 ```bash
-cd Convert_XML_To_JSON
-pip install -e .
+cd "Python Scripts/XML to JSON Converter"
+uv sync
 ```
 
 ## Usage
@@ -31,37 +30,37 @@ pip install -e .
 ### Convert and print to stdout (compact)
 
 ```bash
-xml2json input.xml
+uv run xml2json input.xml
 ```
 
 ### Pretty-print with 2-space indent
 
 ```bash
-xml2json input.xml --pretty
+uv run xml2json input.xml --pretty
 ```
 
 ### Custom indent
 
 ```bash
-xml2json input.xml --indent 4
+uv run xml2json input.xml --indent 4
 ```
 
 ### Write to file
 
 ```bash
-xml2json input.xml --out output.json --pretty
+uv run xml2json input.xml --out output.json --pretty
 ```
 
 ### Sort keys alphabetically
 
 ```bash
-xml2json input.xml --pretty --sort-keys
+uv run xml2json input.xml --pretty --sort-keys
 ```
 
 ### Specify encoding
 
 ```bash
-xml2json legacy.xml --encoding latin-1 --pretty
+uv run xml2json legacy.xml --encoding latin-1 --pretty
 ```
 
 ## Options
@@ -86,11 +85,9 @@ xml2json legacy.xml --encoding latin-1 --pretty
 ## Development
 
 ```bash
-pip install -e .
-pip install ruff pytest
-ruff check src tests
-ruff format --check src tests
-pytest -q
+uv sync
+uv run ruff check src
+uv run ruff format --check src
 ```
 
 ## Project structure

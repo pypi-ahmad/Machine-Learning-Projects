@@ -4,14 +4,14 @@ Rule-based symptom checker that suggests urgency level.
 Educational tool only — NOT a medical diagnosis system.
 
 Usage:
-    streamlit run main.py
+    uv run --no-config streamlit run main.py
 """
 
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Symptom Triage", layout="wide")
-st.title("🏥 Medical Symptom Triage")
+st.title("Medical symptom triage")
 st.warning("⚠️ **Disclaimer:** This is an educational tool only. It does NOT provide medical advice. Always consult a qualified healthcare professional for medical concerns.")
 
 # ── Symptom knowledge base ────────────────────────────────────────────────────

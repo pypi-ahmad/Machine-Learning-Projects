@@ -14,12 +14,12 @@ Usage:
 
 import argparse
 import json
-import os
 import re
 import sys
 from datetime import datetime
+from pathlib import Path
 
-DATA_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snippets.json")
+DATA_FILE = Path(__file__).with_name("snippets.json")
 
 ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
         "yellow": "\033[93m", "red": "\033[91m", "magenta": "\033[95m",
@@ -35,15 +35,15 @@ LANGUAGES = ["python", "javascript", "typescript", "bash", "sql", "html",
 
 
 def load() -> list[dict]:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
-    return []
+    try:
+        snippets = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    return snippets if isinstance(snippets, list) else []
 
 
 def save(snippets: list[dict]):
-    with open(DATA_FILE, "w") as f:
-        json.dump(snippets, f, indent=2)
+    DATA_FILE.write_text(json.dumps(snippets, indent=2), encoding="utf-8")
 
 
 def next_id(snippets: list[dict]) -> int:
@@ -78,7 +78,8 @@ def copy_to_clipboard(text: str) -> bool:
 
 
 def print_snippet(s: dict, show_code: bool = True):
-    print(f"\n  {c(f'#{s[\"id\"]}', 'cyan')} {c(s['title'], 'bold')}  "
+    snippet_id = f"#{s['id']}"
+    print(f"\n  {c(snippet_id, 'cyan')} {c(s['title'], 'bold')}  "
           f"{c(s.get('language',''), 'yellow')}  "
           f"{c(' '.join('#'+t for t in s.get('tags',[])), 'magenta')}")
     print(f"  {c(s.get('description',''), 'dim')}")
@@ -149,8 +150,10 @@ def cmd_list(args):
         if tag_filter and tag_filter not in s.get("tags", []):
             continue
         tags_str = " ".join(c(f"#{t}", "magenta") for t in s.get("tags", []))
-        print(f"  {c(f'#{s[\"id\"]:>3}', 'cyan')} {c(s['title'][:40], 'bold'):<42} "
-              f"{c(s.get('language',''):>12, 'yellow')}  {tags_str}")
+        snippet_id = f"#{s['id']:>3}"
+        language = c(f"{s.get('language', ''):>12}", "yellow")
+        print(f"  {c(snippet_id, 'cyan')} {c(s['title'][:40], 'bold'):<42} "
+              f"{language}  {tags_str}")
 
 
 def cmd_show(args):

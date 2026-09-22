@@ -1,0 +1,8 @@
+[project]
+name = "pdf-summarizer"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "pypdf>=6.19.0",
+    "streamlit>=1.64.0",
+]

@@ -4,7 +4,7 @@ Create, manage, and print invoices with line items,
 tax calculation, and PDF/text export.
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import json
@@ -18,13 +18,13 @@ DATA_FILE = os.path.join(os.path.dirname(__file__), "invoices.json")
 
 def load() -> dict:
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
+        with open(DATA_FILE, encoding="utf-8") as f:
             return json.load(f)
     return {"invoices": [], "next_id": 1001, "company": {}}
 
 
 def save(data: dict):
-    with open(DATA_FILE, "w") as f:
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 

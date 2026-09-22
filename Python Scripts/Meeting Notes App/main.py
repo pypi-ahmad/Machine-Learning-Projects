@@ -4,7 +4,7 @@ Create, browse, search, and export meeting notes with
 attendees, action items, and decisions.  Data stored as JSON.
 
 Usage:
-    streamlit run main.py
+    uv run --no-config streamlit run main.py
 """
 
 import json
@@ -15,9 +15,9 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Meeting Notes", layout="wide")
-st.title("📋 Meeting Notes App")
+st.title("Meeting notes app")
 
-DATA_FILE = Path("meetings.json")
+DATA_FILE = Path(__file__).resolve().parent / "meetings.json"
 
 
 def load_meetings() -> list[dict]:

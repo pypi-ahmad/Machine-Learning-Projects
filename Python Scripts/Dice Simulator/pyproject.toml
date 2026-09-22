@@ -1,0 +1,10 @@
+[project]
+name = "dice-simulator"
+version = "0.1.0"
+description = "Tkinter six-sided dice simulator with roll history and statistics"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

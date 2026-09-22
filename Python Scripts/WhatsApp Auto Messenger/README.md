@@ -1,82 +1,49 @@
-# WhatsApp Auto Messenger
+# WhatsApp auto messenger
 
-> Send scheduled WhatsApp messages using `pywhatkit` with an interactive prompt.
-
-## Overview
-
-This script prompts the user for a recipient's phone number, a message, and a scheduled time, then uses the `pywhatkit` library to send the WhatsApp message at the specified time via WhatsApp Web.
-
-## Features
-
-- Interactive command-line prompts for phone number, message, and schedule time
-- Scheduled message delivery at a user-specified hour and minute
-- Supports both individual and group messaging (group messaging code included as a comment)
-
-## Project Structure
-
-```
-WhatsApp-Auto-Messenger/
-├── README.md
-├── requirements.txt
-└── WhatsApp-Auto-Messenger.py
-```
+`WhatsApp-Auto-Messenger.py` prepares a WhatsApp Web message schedule through
+`pywhatkit`. It validates the recipient and schedule, then previews the plan.
+It does not open WhatsApp Web unless you explicitly add `--send`.
 
 ## Requirements
 
-- Python 3.x
-- `pywhatkit` — WhatsApp automation library
-- A web browser with an active WhatsApp Web session (logged in via QR code)
+- Python 3.13 or later
+- A browser with an active WhatsApp Web session
 
-## Installation
+## Install
 
-```bash
-cd WhatsApp-Auto-Messenger
-pip install -r requirements.txt
+```powershell
+cd "Python Scripts/WhatsApp Auto Messenger"
+uv sync
 ```
 
-## Usage
+## Preview a message
 
-```bash
-python WhatsApp-Auto-Messenger.py
+Use an E.164 recipient number and a local 24-hour delivery time. If the time
+has already passed today, the script schedules the next day.
+
+```powershell
+uv run python WhatsApp-Auto-Messenger.py +15551234567 "Meeting starts soon" --at 14:30
 ```
 
-The script will prompt for:
-1. **Receiver Phone Number** — Must include country code (e.g., `+1234567890`)
-2. **Message** — The text message to send
-3. **Hour** — Scheduled hour in 24-hour format
-4. **Minutes** — Scheduled minutes
+The default command is a dry run. It prints the recipient, schedule, and text,
+then exits without opening a browser.
 
-### Group messaging (commented out in code)
+## Send a confirmed schedule
 
-```python
-pywhatkit.sendwhatmsg_to_group(GroupID, message, time_hour, time_min, wait_time)
+Add `--send` only after reviewing the dry-run output:
+
+```powershell
+uv run python WhatsApp-Auto-Messenger.py +15551234567 "Meeting starts soon" --at 14:30 --send
 ```
 
-The Group ID is found in the group's invite link.
+The selected time must be at least two minutes in the future. `--wait` controls
+how long pywhatkit waits for WhatsApp Web to load; it defaults to 15 seconds.
 
-## How It Works
+## Limits
 
-1. Collects user input via `input()` for phone number, message, hour, and minute.
-2. Calls `pywhatkit.sendwhatmsg(phoneno, message, Time_hrs, Time_min)`.
-3. `pywhatkit` waits until the scheduled time, opens WhatsApp Web in the default browser, finds the contact, pastes the message, and sends it.
+`pywhatkit` controls the browser and WhatsApp Web interface. A missing login,
+network issue, changed web interface, or browser automation restriction can
+prevent delivery. The tool does not confirm that WhatsApp accepted the message.
 
-## Configuration
-
-No configuration files. All parameters are provided interactively at runtime.
-
-## Limitations
-
-- The schedule time must be in the future; no validation is performed on the input.
-- Requires the default browser to be logged into WhatsApp Web before the scheduled time.
-- The browser window opens visibly — not a background operation.
-- No error handling for invalid phone numbers or connection issues.
-- No confirmation prompt before sending.
-- `pywhatkit` depends on `pyautogui` for keyboard simulation, which may not work on all systems.
-
-## Security Notes
-
-No sensitive data or credentials in the code.
-
-## License
-
-Not specified.
+Run `uv run python WhatsApp-Auto-Messenger.py --help` for the command
+reference.

@@ -1,60 +1,66 @@
+"""Display local image metadata and optional GPS-derived location details."""
+
+import argparse
+from datetime import datetime
+from pathlib import Path
+
 from PIL import Image
 from PIL.ExifTags import TAGS
-from author_utils import get_file_security, get_author
-from gps_utils import get_location
-import os
-import sys
-from datetime import datetime
 
-def get_exif(image):
-    image.verify()
-    return image._getexif()
+from author_utils import get_author
+from gps_utils import get_coordinates, get_location
 
 
-def get_labeled_exif(exif):
-    labeled = {}
-    for (key, val) in exif.items():
-        labeled[TAGS.get(key)] = val
+def inspect_image(path: Path) -> dict[str, object]:
+    """Return local metadata without making a network request."""
+    with Image.open(path) as image:
+        width, height = image.size
+        labeled_exif = {TAGS.get(key, str(key)): value for key, value in image.getexif().items()}
 
-    return labeled
+    metadata: dict[str, object] = {
+        'ImageName': path.name,
+        'Size': f'{width}x{height}',
+        'FileExtension': path.suffix,
+        'ImageWidth': labeled_exif.get('ExifImageWidth', 'No ImageWidth'),
+        'ImageHeight': labeled_exif.get('ExifImageHeight', 'No ImageHeight'),
+        'DateTimeOriginal': labeled_exif.get('DateTimeOriginal', 'No DateTimeOriginal'),
+        'CreateDate': datetime.fromtimestamp(path.stat().st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    try:
+        metadata['Author'] = get_author(str(path))
+    except OSError:
+        metadata['Author'] = 'Unavailable'
+    try:
+        metadata['Coordinates'] = get_coordinates(path)
+    except ValueError:
+        metadata['Coordinates'] = 'No GPS metadata'
+    return metadata
 
-im = Image.open(sys.argv[1])
 
-# get the image name
-name = im.filename
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Display image metadata and optional GPS location.')
+    parser.add_argument('image', type=Path, help='Image file to inspect')
+    parser.add_argument('--reverse-geocode', action='store_true', help='Look up GPS coordinates through Nominatim')
+    parser.add_argument('--nominatim-user-agent', help='Required Nominatim user agent for reverse geocoding')
+    args = parser.parse_args()
+    if not args.image.is_file():
+        parser.error(f'Image file not found: {args.image}')
+    if args.reverse_geocode and not args.nominatim_user_agent:
+        parser.error('--nominatim-user-agent is required with --reverse-geocode')
 
-# get the image size
-w, h = im.size
+    try:
+        metadata = inspect_image(args.image)
+    except OSError as error:
+        parser.error(f'Unable to inspect image: {error}')
+    for label, value in metadata.items():
+        print(f'{label}: {value}')
 
-# get the image file extension
-_, file_extension = os.path.splitext(sys.argv[1])
+    if args.reverse_geocode:
+        try:
+            print(f'Location: {get_location(args.image, args.nominatim_user_agent)}')
+        except (OSError, ValueError) as error:
+            print(f'Location: unavailable ({error})')
 
-# get the exif information
-exif = get_exif(im)
-labeled = get_labeled_exif(exif)
 
-# get the file creation time
-ctime = os.path.getctime(sys.argv[1])
-
-# output information
-print("ImageName: %s" %(name))
-print("size: %sx%s" % (w, h))
-print("FileExtension: %s" %(file_extension))
-if ('ExifImageWidth' in labeled.keys()):
-    print("ImageWidth: %s" % (labeled['ExifImageWidth']))
-else:
-    print("No ImageWidth")
-
-if ('ExifImageHeight' in labeled.keys()):
-    print("ImageHeight: %s" % (labeled['ExifImageHeight']))
-else:
-    print("No ImageHeight")
-
-if ('DateTimeOriginal' in labeled.keys()):
-    print("DateTimeOriginal: %s" % (labeled['DateTimeOriginal']))
-else:
-    print("No DateTimeOriginal")
-
-print("CreateDate: %s" % (datetime.fromtimestamp(ctime).strftime('%Y-%m-%d %H:%M:%S')))
-print("Author: %s" % (get_author(sys.argv[1])))
-print("Location: %s" % (get_location(sys.argv[1])))
+if __name__ == '__main__':
+    main()

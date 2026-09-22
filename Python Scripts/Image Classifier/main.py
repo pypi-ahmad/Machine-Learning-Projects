@@ -11,56 +11,25 @@ Usage:
 
 import io
 import math
-import struct
-import zlib
 
 import streamlit as st
+from PIL import Image, UnidentifiedImageError
 
 st.set_page_config(page_title="Image Classifier", layout="wide")
 st.title("🖼️ Image Classifier")
-st.caption("Rule-based color/brightness analysis. Optionally uses HF Inference API for real classification.")
+st.caption("Local color and brightness analysis, with an optional Hugging Face model call.")
 
 
-# ── Pure-Python PNG pixel reader ──────────────────────────────────────────────
+# ── Image pixel reader ────────────────────────────────────────────────────────
 
-def read_png_pixels(data: bytes) -> tuple[list, int, int] | None:
-    """Returns (flat RGBA pixel list, width, height) for simple 8-bit RGBA/RGB PNG."""
+def read_image_pixels(data: bytes) -> tuple[list[tuple[int, int, int, int]], int, int] | None:
+    """Return RGBA pixels and dimensions for a supported uploaded image."""
     try:
-        if data[:8] != b"\x89PNG\r\n\x1a\n":
-            return None
-        pos    = 8
-        idat   = b""
-        width  = height = 0
-        color_type = bit_depth = 0
-        while pos < len(data):
-            length = struct.unpack(">I", data[pos:pos + 4])[0]
-            chunk  = data[pos + 4:pos + 8]
-            cdata  = data[pos + 8:pos + 8 + length]
-            pos   += 12 + length
-            if chunk == b"IHDR":
-                width, height = struct.unpack(">II", cdata[:8])
-                bit_depth     = cdata[8]
-                color_type    = cdata[9]
-            elif chunk == b"IDAT":
-                idat += cdata
-            elif chunk == b"IEND":
-                break
-        raw = zlib.decompress(idat)
-        # Only handle 8-bit RGB (type 2) and RGBA (type 6)
-        if bit_depth != 8 or color_type not in (2, 6):
-            return None
-        channels = 4 if color_type == 6 else 3
-        stride   = width * channels + 1
-        pixels   = []
-        for row in range(height):
-            base = row * stride + 1          # skip filter byte
-            for col in range(width):
-                off = base + col * channels
-                r, g, b = raw[off], raw[off + 1], raw[off + 2]
-                a = raw[off + 3] if channels == 4 else 255
-                pixels.append((r, g, b, a))
-        return pixels, width, height
-    except Exception:
+        image = Image.open(io.BytesIO(data))
+        image.load()
+        rgba = image.convert("RGBA")
+        return list(rgba.getdata()), rgba.width, rgba.height
+    except (OSError, UnidentifiedImageError):
         return None
 
 
@@ -183,8 +152,7 @@ with tab1:
 
         st.subheader("Rule-Based Analysis")
         parsed = None
-        if uploaded.name.lower().endswith(".png"):
-            parsed = read_png_pixels(img_bytes)
+        parsed = read_image_pixels(img_bytes)
 
         if parsed:
             pixels, width, height = parsed
@@ -207,8 +175,7 @@ with tab1:
             for label, conf in labels[1:3]:
                 st.write(f"• {label} — {conf:.1%}")
         else:
-            st.info("Pixel-level analysis is only available for PNG files. "
-                    "JPEG files can be classified via the HF API (see below).")
+            st.error("The uploaded file could not be decoded as a PNG or JPEG image.")
 
         st.subheader("Hugging Face Inference API (Optional)")
         st.caption("Provides real deep-learning classification using ViT (Vision Transformer).")
@@ -228,7 +195,7 @@ with tab1:
 with tab2:
     st.markdown("""
     ### How Rule-Based Classification Works
-    1. **Read pixels** from the uploaded PNG image.
+    1. **Read pixels** from the uploaded PNG or JPEG image.
     2. **Compute statistics**: average RGB, brightness, saturation, variance, hue distribution.
     3. **Apply rules**:
        - High green → Nature/Outdoors
@@ -247,5 +214,5 @@ with tab2:
     ### Limitations
     - Rule-based results are heuristic and approximate.
     - Deep-learning API requires internet access and a valid token.
-    - JPEG pixel analysis requires the HF API path.
+    - The optional HF result leaves your computer only after you provide a token and click its button.
     """)

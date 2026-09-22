@@ -1,0 +1,13 @@
+[project]
+name = "customer-churn-demo"
+version = "0.1.0"
+description = "Synthetic customer-churn prediction demo built with Streamlit"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=2.3.3",
+    "streamlit>=1.57.0",
+]
+
+[tool.uv]
+package = false

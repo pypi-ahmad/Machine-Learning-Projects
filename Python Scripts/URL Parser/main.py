@@ -5,7 +5,7 @@ query strings, and extracts information such as domain, TLD, and path
 segments.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json

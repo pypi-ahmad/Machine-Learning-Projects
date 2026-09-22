@@ -5,9 +5,9 @@ Compute OLS coefficients, R², residuals, and predictions.
 Optional ASCII scatter plot.
 
 Usage:
-    python main.py
-    python main.py --file data.csv --x col1 --y col2
-    python main.py --demo
+    uv run --no-config python main.py
+    uv run --no-config python main.py --file data.csv --x col1 --y col2
+    uv run --no-config python main.py --demo
 """
 
 import argparse
@@ -81,13 +81,13 @@ def ascii_scatter(xs, ys, slope, intercept, width=60, height=20):
         col = int((x - min_x) / rx * (width  - 1))
         row = int((max_y - y) / ry * (height - 1))
         if 0 <= row < height and 0 <= col < width:
-            grid[row][col] = "●"
+            grid[row][col] = "*"
 
     # Axes labels
     print(f"  {max_y:.2f}")
     for row in grid:
         print("  |" + "".join(row))
-    print(f"  └{'─'*width}")
+    print(f"  +{'-' * width}")
     print(f"  {min_x:.2f}{' '*(width-12)}{max_x:.2f}")
 
 
@@ -101,9 +101,9 @@ def analyse(xs, ys, x_label="x", y_label="y", plot=True):
     r      = pearson_r(xs, ys)
 
     print(f"\n  Simple Linear Regression: {y_label} = f({x_label})")
-    print(f"  {'─'*40}")
-    print(f"  Equation:   ŷ = {slope:.6f}·x + ({intercept:.6f})")
-    print(f"  R²:         {r2:.6f}")
+    print(f"  {'-' * 40}")
+    print(f"  Equation:   y = {slope:.6f} * x + ({intercept:.6f})")
+    print(f"  R2:         {r2:.6f}")
     print(f"  RMSE:       {rmse_v:.6f}")
     print(f"  Pearson r:  {r:.6f}")
     print(f"  N:          {len(xs)}")
@@ -122,14 +122,14 @@ def analyse(xs, ys, x_label="x", y_label="y", plot=True):
 
 def predict_mode(xs, ys):
     slope, intercept = simple_ols(xs, ys)
-    print(f"\n  Model: ŷ = {slope:.6f}·x + ({intercept:.6f})")
+    print(f"\n  Model: y = {slope:.6f} * x + ({intercept:.6f})")
     while True:
         try:
             val = input("  Enter x value to predict (or 'done'): ").strip()
             if val.lower() in ("done", "q", ""): break
             x = float(val)
             y = slope * x + intercept
-            print(f"    x = {x}  →  ŷ = {y:.6f}")
+            print(f"    x = {x}  ->  y = {y:.6f}")
         except ValueError:
             print("  Invalid number.")
 

@@ -27,28 +27,29 @@ Take-A-Break/
 
 ## Requirements
 
-- Python 3.x
+- Python 3.14+
+- uv
 - No external dependencies (uses only `time` and `webbrowser` from the standard library)
 
 ## Installation
 
 ```bash
-cd "Take-A-Break"
+uv sync
 ```
 
-No additional installation needed — standard library only.
+No package installation is needed beyond the uv-managed Python environment.
 
 ## Usage
 
 ```bash
 # Run the main loop (opens URL 3 times with 10s delays)
-python firstTry.py
+uv run python firstTry.py
 
 # Open the URL once immediately
-python openURL.py
+uv run python openURL.py
 
 # Sleep for 10 seconds (demo/placeholder)
-python wait2Hours.py
+uv run python wait2Hours.py
 ```
 
 ## How It Works

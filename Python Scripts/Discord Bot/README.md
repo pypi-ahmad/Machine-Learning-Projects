@@ -1,87 +1,61 @@
 # Discord Bot
 
-## Overview
+A Discord moderation bot with welcome messages and nickname commands. It uses the prefix `!` and performs actions only in servers, not direct messages.
 
-A Discord bot built with the `discord.py` library that provides moderation commands (ban, unban, kick), a welcome message system for new members, and nickname management commands.
+## Requirements
 
-**Type:** Bot
-
-## Features
-
-- **Welcome messages:** Automatically sends a welcome message in a configurable channel when a new member joins the server
-- **Ban command (`!ban`):** Bans a specified user (requires `ban_members` permission)
-- **Unban command (`!unban`):** Unbans a specified user (requires `ban_members` permission)
-- **Kick command (`!kick`):** Kicks a specified user (requires `kick_members` permission)
-- **Random nickname (`!random_nick` or `!rnick`):** Sets the invoking user's nickname to a random choice from a predefined list
-- **Change nickname (`!change_nick` or `!change_name`):** Changes another user's nickname (requires `manage_nicknames` permission)
-- Permission-based command access using `@commands.has_permissions` decorators
-- Configurable command prefix (default: `!`)
-
-## Dependencies
-
-- `discord.py` — Discord API wrapper
-- `random` (Python standard library)
-
-## How It Works
-
-1. The bot is initialized with `commands.Bot(command_prefix="!")`.
-2. On startup, `on_ready` prints "bot started" to the console.
-3. When a new member joins, `on_member_join` finds the channel named in `WELCOME_CHANNEL` and sends a welcome message mentioning the new member.
-4. Moderation commands (`ban`, `unban`, `kick`) use Discord.py's permission checks to ensure the invoking user has the required server permissions.
-5. `random_nick` picks a random nickname from the `NICKS` list and applies it to the command invoker.
-6. `change_nick` accepts a target user and a new nickname string, applying it to the target.
-7. The bot is started with `bot.run(TOKEN)` where `TOKEN` must be set to a valid Discord bot token.
-
-## Project Structure
-
-```
-Discord-Bot/
-├── main.py     # Main bot script
-└── README.md
-```
-
-## Setup & Installation
-
-1. Ensure Python 3.x is installed.
-2. Install dependencies:
-   ```bash
-   pip install discord.py
-   ```
-3. Create a Discord bot application at the [Discord Developer Portal](https://discord.com/developers/applications) and obtain a bot token.
-4. Open `main.py` and set the `TOKEN` variable to your bot token.
-5. Optionally configure `WELCOME_CHANNEL` and `NICKS` at the top of the file.
-
-## How to Run
-
-```bash
-python main.py
-```
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/)
+- A Discord bot application and token
 
 ## Configuration
 
-Configuration is done by editing variables at the top of `main.py`:
+Set the token only in the process environment; do not add it to source code or commit it to the repository.
 
-| Variable          | Description                                        | Default       |
-|-------------------|----------------------------------------------------|---------------|
-| `TOKEN`           | Discord bot token (required)                       | `""` (empty)  |
-| `WELCOME_CHANNEL` | Name of the channel for welcome messages           | `"welcome"`   |
-| `NICKS`           | List of nicknames for the random nickname command   | `["example1", "example2", "example3"]` |
-| `command_prefix`  | The prefix for bot commands                        | `"!"`         |
+```powershell
+$env:DISCORD_BOT_TOKEN = "your-bot-token"
+```
 
-## Testing
+In the Discord Developer Portal, enable **Message Content Intent** for prefix commands and **Server Members Intent** for the member-join welcome event. Discord.py requires Message Content Intent both in code and in the portal for commands to receive message text. [discord.py command documentation](https://discordpy.readthedocs.io/en/stable/ext/commands/commands.html)
 
-No formal test suite present.
+If you configured the variable after launching your coding host, restart that host before running the bot.
 
-## Limitations
+## Run
 
-- The bot token is stored as a plaintext string in the source code.
-- The `NICKS` list is hardcoded and cannot be modified at runtime.
-- No error handling for missing welcome channel (will raise an `AttributeError` if the channel doesn't exist).
-- The `!kick` command type-hints `discord.User` instead of `discord.Member`, which may cause issues in certain contexts.
-- No logging beyond the initial "bot started" print statement.
-- No help text customization (uses default discord.py help command).
+From this directory:
 
-## Security Notes
+```powershell
+uv sync
+uv run python main.py
+```
 
-- **Bot Token:** The `TOKEN` variable is stored in plaintext in the source code. For production use, store the token in an environment variable or a `.env` file and load it securely (e.g., using `python-dotenv`).
-- The bot requires elevated Discord permissions (ban, kick, manage nicknames). Ensure the bot's role is configured with least-privilege access appropriate for your server.
+## Commands
+
+- `!ban @member` — ban a member; requires `ban_members`.
+- `!unban user` — unban a user; requires `ban_members`.
+- `!kick @member` — kick a member; requires `kick_members`.
+- `!random_nick` or `!rnick` — set your nickname to an option from `NICKS`.
+- `!change_nick @member new name` or `!change_name` — change a nickname; requires `manage_nicknames`.
+
+Set `WELCOME_CHANNEL` and `NICKS` in `main.py` to suit the server. The bot reports a missing welcome channel instead of trying to send through `None`.
+
+## Security and moderation notes
+
+- Give the bot only the Discord permissions it needs. Its role must be positioned above roles it will moderate.
+- The bot is capable of banning, kicking, and changing nicknames. Test it in a non-production server first.
+- Token values are never logged by this project.
+
+## Project files
+
+```text
+main.py         # Discord bot entry point
+pyproject.toml  # uv dependency definition
+uv.lock         # Resolved dependency versions
+```
+
+## Verification
+
+```powershell
+uv run python -m py_compile main.py
+uv lock --check
+```

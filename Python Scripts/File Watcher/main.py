@@ -20,17 +20,29 @@ from pathlib import Path
 def snapshot(directory: Path, recursive: bool = True) -> dict[Path, tuple[float, int]]:
     """Return {path: (mtime, size)} for all files in directory."""
     state: dict[Path, tuple[float, int]] = {}
-    glob = directory.rglob if recursive else directory.glob
-    try:
-        for f in glob("*"):
-            if f.is_file():
+    if recursive:
+        entries = os.walk(directory, followlinks=False)
+        for root, _, names in entries:
+            for name in names:
+                file_path = Path(root, name)
+                if file_path.is_file() and not file_path.is_symlink():
+                    try:
+                        file_stat = file_path.stat()
+                        state[file_path] = (file_stat.st_mtime, file_stat.st_size)
+                    except OSError:
+                        continue
+    else:
+        try:
+            entries = list(directory.iterdir())
+        except OSError:
+            return state
+        for file_path in entries:
+            if file_path.is_file() and not file_path.is_symlink():
                 try:
-                    st = f.stat()
-                    state[f] = (st.st_mtime, st.st_size)
+                    file_stat = file_path.stat()
+                    state[file_path] = (file_stat.st_mtime, file_stat.st_size)
                 except OSError:
-                    pass
-    except PermissionError:
-        pass
+                    continue
     return state
 
 
@@ -60,6 +72,15 @@ def watch(
     max_events: int = 0,
 ) -> None:
     """Poll for changes until interrupted or max_events reached."""
+    if interval <= 0:
+        raise ValueError("Polling interval must be greater than zero.")
+    if log_file:
+        try:
+            log_file.resolve().relative_to(directory.resolve())
+        except ValueError:
+            pass
+        else:
+            raise ValueError("Log file must be outside the watched directory.")
     print(f"\n  Watching: {directory.resolve()}")
     print(f"  Interval: {interval}s  |  Recursive: {recursive}")
     print(f"  Press Ctrl+C to stop.\n")
@@ -117,7 +138,10 @@ File Watcher
 
 def get_dir(prompt: str = "  Directory to watch: ") -> Path | None:
     path_str = input(prompt).strip().strip('"')
-    p = Path(path_str) if path_str else Path(".")
+    if not path_str:
+        print("  A directory path is required.")
+        return None
+    p = Path(path_str)
     if not p.is_dir():
         print(f"  Not a directory: {p}")
         return None
@@ -153,6 +177,9 @@ def main() -> None:
                 interval = float(interval_s) if interval_s else 1.0
             except ValueError:
                 interval = 1.0
+            if interval <= 0:
+                print("  Interval must be greater than zero.")
+                continue
             rec     = input("  Recursive? (y/n, default y): ").strip().lower() != "n"
             pattern = input("  Filename filter (blank=all): ").strip() or None
             log_s   = input("  Log file path (blank=none): ").strip().strip('"')
@@ -160,7 +187,10 @@ def main() -> None:
             max_s   = input("  Max events before stopping (0=infinite): ").strip()
             max_ev  = int(max_s) if max_s.isdigit() else 0
 
-            watch(root, interval, rec, pattern, log_p, max_ev)
+            try:
+                watch(root, interval, rec, pattern, log_p, max_ev)
+            except ValueError as error:
+                print(f"  Error: {error}")
 
         elif choice == "2":
             root = get_dir("  Directory to snapshot: ")

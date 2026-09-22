@@ -4,11 +4,12 @@ Supports basic arithmetic, trigonometry, logarithms, powers, factorials,
 and constants. Operates in a REPL loop until the user exits.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
-import math
 import operator
+import ast
+import math
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -22,8 +23,8 @@ CONSTANTS = {
 }
 
 HELP_TEXT = """
-Scientific Calculator — supported operations
---------------------------------------------
+Scientific Calculator - supported operations
+---------------------------------------------
 Basic       : +  -  *  /  //  %  ** (e.g. 3 + 4, 2 ** 8)
 Functions   : sin, cos, tan, asin, acos, atan   (degrees)
             : log(x), log(x, base), log10, log2
@@ -37,8 +38,7 @@ Type 'help' to show this menu, 'quit' to exit.
 # Evaluation helpers
 # ---------------------------------------------------------------------------
 
-_SAFE_NAMES: dict = {
-    # math functions
+_SAFE_FUNCTIONS = {
     "sin":       lambda x: math.sin(math.radians(x)),
     "cos":       lambda x: math.cos(math.radians(x)),
     "tan":       lambda x: math.tan(math.radians(x)),
@@ -56,22 +56,59 @@ _SAFE_NAMES: dict = {
     "floor":     math.floor,
     "round":     round,
     "factorial": math.factorial,
-    # constants
-    **CONSTANTS,
-    "__builtins__": {},
+}
+
+_BINARY_OPERATORS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+}
+
+_UNARY_OPERATORS = {
+    ast.UAdd: operator.pos,
+    ast.USub: operator.neg,
 }
 
 
-def evaluate(expr: str) -> float:
-    """Safely evaluate a mathematical expression string."""
+def _evaluate_node(node: ast.expr) -> int | float:
+    """Evaluate a permitted numeric expression node."""
+    if isinstance(node, ast.Constant) and type(node.value) in {int, float}:
+        return node.value
+    if isinstance(node, ast.Name) and node.id in CONSTANTS:
+        return CONSTANTS[node.id]
+    if isinstance(node, ast.UnaryOp):
+        operation = _UNARY_OPERATORS.get(type(node.op))
+        if operation:
+            return operation(_evaluate_node(node.operand))
+    if isinstance(node, ast.BinOp):
+        operation = _BINARY_OPERATORS.get(type(node.op))
+        if operation:
+            return operation(_evaluate_node(node.left), _evaluate_node(node.right))
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and not node.keywords:
+        function = _SAFE_FUNCTIONS.get(node.func.id)
+        if function:
+            return function(*map(_evaluate_node, node.args))
+    raise ValueError("Unsupported expression.")
+
+
+def evaluate(expr: str) -> int | float:
+    """Evaluate a restricted arithmetic expression string."""
     expr = expr.strip()
     if not expr:
         raise ValueError("Empty expression.")
     try:
-        result = eval(expr, {"__builtins__": {}}, _SAFE_NAMES)  # noqa: S307
+        result = _evaluate_node(ast.parse(expr, mode="eval").body)
+        if type(result) not in {int, float}:
+            raise ValueError("Expression must return a number.")
         return result
     except ZeroDivisionError:
         raise ValueError("Division by zero.")
+    except ValueError as exc:
+        raise ValueError(f"Cannot evaluate: {exc}") from exc
     except Exception as exc:
         raise ValueError(f"Cannot evaluate: {exc}") from exc
 

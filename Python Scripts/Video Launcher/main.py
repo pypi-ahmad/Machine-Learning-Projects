@@ -4,7 +4,7 @@ Browse local video files, organize a playlist, and launch them
 with the system default player. Supports thumbnails via folder art.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json

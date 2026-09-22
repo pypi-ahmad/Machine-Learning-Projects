@@ -1,35 +1,39 @@
+"""Print case-insensitive words that occur exactly once in a text file.
+
+Usage:
+    uv run python unique.py
+    uv run python unique.py path\\to\\document.txt
+"""
+
+import argparse
 import re
+from pathlib import Path
 
-# script to fetch unique sorted words from a text file.
-list_of_words = []
 
-# Alternate Method to insert file
-# filename = input("Enter file name: ")
-filename = "text_file.txt"
+def unique_words(path: Path) -> list[str]:
+    """Return sorted alphabetic words that appear exactly once in *path*."""
+    counts: dict[str, int] = {}
+    with path.open(encoding="utf-8", errors="replace") as source:
+        for line in source:
+            for word in re.findall(r"[\w]+", line.lower()):
+                counts[word] = counts.get(word, 0) + 1
 
-with open(filename, "r") as f:
-    for line in f:
-        # if case is ignored then Great and great are same words
-        list_of_words.extend(re.findall(r"[\w]+", line.lower()))
-        # else use this alternate method:
-        # list_of_words.extend(re.findall(r"[\w]+", line))
+    words = []
+    for word, count in counts.items():
+        if count == 1:
+            words.append(word)
+    return sorted(words)
 
-        
-# Creating a dictionary to store the number of occurence of a word
-unique = {}
-for each in list_of_words:
-    if each not in unique:
-        unique[each] = 0
-    unique[each] += 1
- 
-# Creating a list to sort the final unique words
-s = []
 
-# If occurence of a word(val) is 1 then it is unique
-for key, val in unique.items():
-    if val == 1:
-        s.append(key)
-        
-print(sorted(s))
-    
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Print words that occur exactly once.")
+    parser.add_argument("file", nargs="?", help="UTF-8 text file to inspect")
+    args = parser.parse_args()
+    path = Path(args.file) if args.file else Path(__file__).with_name("text_file.txt")
+    if not path.is_file():
+        parser.error(f"file not found: {path}")
+    print(unique_words(path))
 
+
+if __name__ == "__main__":
+    main()

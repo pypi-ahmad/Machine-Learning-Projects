@@ -8,7 +8,7 @@ Usage:
 """
 
 import re
-import shutil
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -24,10 +24,20 @@ def rename_preview(
 ) -> list[tuple[Path, Path]]:
     """Return list of (old_path, new_path) pairs without performing renames."""
     pairs = []
+    planned_names: set[Path] = set()
+    source_paths = set(files)
     for i, f in enumerate(files):
         new_name = _apply_strategy(f, i, len(files), strategy, **kwargs)
         if new_name and new_name != f.name:
-            pairs.append((f, f.parent / new_name))
+            target = f.parent / new_name
+            if Path(new_name).name != new_name or new_name in {".", ".."}:
+                raise ValueError(f"Invalid output name for {f.name}: {new_name}")
+            if target in planned_names:
+                raise ValueError(f"Multiple files would be renamed to {target.name}.")
+            if target.exists() and target not in source_paths:
+                raise ValueError(f"Refusing to overwrite existing file: {target.name}")
+            planned_names.add(target)
+            pairs.append((f, target))
     return pairs
 
 
@@ -36,6 +46,8 @@ def _apply_strategy(f: Path, idx: int, total: int, strategy: str, **kw) -> str:
 
     if strategy == "replace":
         find    = kw.get("find", "")
+        if not find:
+            return f.name
         replace = kw.get("replace", "")
         flags   = re.IGNORECASE if kw.get("ignore_case") else 0
         new_stem = re.sub(re.escape(find), replace, stem, flags=flags)
@@ -100,7 +112,7 @@ def _apply_strategy(f: Path, idx: int, total: int, strategy: str, **kw) -> str:
 def apply_renames(pairs: list[tuple[Path, Path]]) -> int:
     renamed = 0
     for old, new in pairs:
-        if new.exists():
+        if new.exists() and new != old:
             print(f"  SKIP (exists): {new.name}")
             continue
         old.rename(new)
@@ -112,13 +124,20 @@ def apply_renames(pairs: list[tuple[Path, Path]]) -> int:
 # Helpers
 # ---------------------------------------------------------------------------
 
-def list_files(directory: Path, pattern: str = "*",
-               recursive: bool = False, files_only: bool = True) -> list[Path]:
-    glob = directory.rglob if recursive else directory.glob
-    results = sorted(glob(pattern))
-    if files_only:
-        results = [f for f in results if f.is_file()]
-    return results
+def list_files(directory: Path, recursive: bool = False) -> list[Path]:
+    """Return files from one directory, optionally including nested folders."""
+    results = []
+    if recursive:
+        for root, _, names in os.walk(directory):
+            for name in names:
+                candidate = Path(root, name)
+                if candidate.is_file():
+                    results.append(candidate)
+    else:
+        for candidate in directory.iterdir():
+            if candidate.is_file():
+                results.append(candidate)
+    return sorted(results)
 
 
 def print_preview(pairs: list[tuple[Path, Path]]) -> None:
@@ -160,10 +179,9 @@ def get_directory() -> Path | None:
 
 
 def get_file_filter(directory: Path) -> list[Path]:
-    pattern = input("  File pattern (default *): ").strip() or "*"
     recursive_str = input("  Include subdirectories? (y/n, default n): ").strip().lower()
     recursive = recursive_str == "y"
-    files = list_files(directory, pattern, recursive)
+    files = list_files(directory, recursive)
     print(f"  Found {len(files)} file(s).")
     return files
 
@@ -172,8 +190,8 @@ def confirm_and_apply(pairs: list[tuple[Path, Path]]) -> None:
     print_preview(pairs)
     if not pairs:
         return
-    ok = input("\n  Apply renames? (y/n): ").strip().lower()
-    if ok == "y":
+    ok = input("\n  Type RENAME to apply these changes: ").strip()
+    if ok == "RENAME":
         n = apply_renames(pairs)
         print(f"  Renamed {n} file(s).")
     else:

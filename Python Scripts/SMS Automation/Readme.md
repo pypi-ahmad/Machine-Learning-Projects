@@ -1,90 +1,42 @@
 # SMS Automation
 
-> A Python script to send SMS messages to multiple recipients using the Twilio API.
+A Twilio command-line sender for one message and one or more recipient numbers.
+The command is a dry run unless `--send` is explicitly supplied.
 
-## Overview
+## Credentials
 
-This script uses the Twilio REST API to send a custom SMS message to one or more phone numbers. All credentials and message details are entered interactively at runtime.
+Set these process environment variables before sending:
 
-## Features
-
-- Send SMS to multiple recipients (comma-separated phone numbers)
-- Interactive prompts for Twilio credentials, sender number, message body, and recipient numbers
-- Uses the official Twilio Python SDK (`twilio.rest.Client`)
-
-## Project Structure
-
-```
-SMS Automation/
-└── script.py
+```text
+TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN
 ```
 
-## Requirements
+Do not place Twilio credentials in source files, command-line arguments, or
+committed `.env` files. If these variables were added recently on Windows,
+relaunch the terminal or coding host before using `--send`.
 
-- Python 3.x
-- `twilio`
-- A Twilio account with:
-  - Account SID
-  - Auth Token
-  - A Twilio phone number (or verified sender number)
-  - Verified recipient numbers (required for trial accounts)
+## Dry run
 
-## Installation
-
-```bash
-cd "SMS Automation"
-pip install twilio
+```powershell
+uv sync
+uv run python script.py --from-number +15551234567 --to +15557654321 --message "Hello"
 ```
 
-## Usage
+This validates the command shape and reports the recipient count without
+contacting Twilio or sending a message.
 
-```bash
-python script.py
+## Send
+
+```powershell
+uv run python script.py --from-number +15551234567 --to +15557654321 +15559876543 --message "Hello" --send
 ```
 
-**Interactive prompts:**
+Numbers must use E.164 format and begin with `+`. Sending can incur charges,
+and trial accounts may require verified recipients. Confirm the message,
+recipients, account restrictions, and cost before using `--send`.
 
-```
-Enter your ACCOUNT SID: ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Enter your AUTH TOKEN: your_auth_token_here
-Enter number from which you want to send the SMS: +1234567890
-Enter the massage: Hello from Python!
-Enter comma separated numbers to which you want to send the SMS: +1111111111,+2222222222
-```
+## Dependencies
 
-- Phone numbers should include country codes (e.g., `+1` for US)
-- Separate multiple recipient numbers with commas (no spaces)
-
-## How It Works
-
-1. Prompts the user for Twilio Account SID, Auth Token, sender number, message body, and comma-separated recipient numbers
-2. Splits the recipient input on commas into a list
-3. Creates a `twilio.rest.Client` with the provided credentials
-4. Iterates over the recipient list and calls `client.messages.create()` for each number
-
-## Configuration
-
-All configuration is provided at runtime via interactive input:
-
-- **Account SID**: Your Twilio account identifier
-- **Auth Token**: Your Twilio authentication token
-- **From number**: The Twilio phone number to send from
-- **To numbers**: Comma-separated list of recipient phone numbers
-
-## Limitations
-
-- No error handling — if Twilio credentials are invalid or a number is malformed, the script crashes with an unhandled exception
-- No confirmation or delivery status feedback after sending
-- Phone numbers are not validated before sending
-- Prompt says "massage" instead of "message" (typo in source code)
-- No support for reading credentials from environment variables or config files
-
-## Security Notes
-
-- Twilio Account SID and Auth Token are entered in plaintext via `input()` — they may be visible in terminal history
-- Credentials should ideally be stored in environment variables rather than entered interactively
-- Trial Twilio accounts can only send to pre-verified phone numbers
-
-## License
-
-Not specified.
+uv manages the official Twilio SDK in `pyproject.toml`; exact resolved versions
+are recorded in `uv.lock`.

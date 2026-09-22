@@ -1,10 +1,19 @@
 # LinkedIn Connections Scrapper
 
-> A Selenium-based CLI tool that scrapes your LinkedIn connections list (names, headlines, profile links, and optionally skills) and exports them to a CSV file.
+## uv setup and safety
+
+```powershell
+uv sync --no-config
+uv run --no-config python script.py --help
+```
+
+This legacy Selenium workflow logs into LinkedIn and collects connection data. Run it only for an account you are authorized to access, keep credentials out of command history where possible, and review LinkedIn's current rules before use. The browser login and scraping flow are not run during local verification.
+
+> A Selenium-based CLI tool that scrapes LinkedIn connection details and exports them to a CSV file.
 
 ## Overview
 
-This script automates Chrome to log into LinkedIn, navigate to your connections page, scroll through the entire list to load all connections via Ajax, and extract each connection's name, headline, and profile link. An optional skills-scraping mode visits each profile individually to extract their listed skills. Results are saved to a CSV file.
+This script automates Chrome to log into LinkedIn, open the connections page, load the list through scrolling, and extract each connection's name, headline, and profile link. An optional skills mode visits each profile to extract listed skills. Results are saved to a CSV file.
 
 ## Features
 
@@ -63,7 +72,7 @@ python script.py -e <your_email> -p <your_password> -s
 | `-s` | `--skills` | Enable skills scraping mode |
 | `-h` | `--help` | Show help message |
 
-## How It Works
+## How it works
 
 1. **`login(email, password)`**: Opens LinkedIn in Chrome, fills in credentials, clicks submit, and verifies login by checking the page title equals "LinkedIn".
 

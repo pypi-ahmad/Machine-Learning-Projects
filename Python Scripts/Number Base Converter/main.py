@@ -18,7 +18,7 @@ DIGITS = string.digits + string.ascii_uppercase
 
 
 def to_base(n: int, base: int) -> str:
-    """Convert non-negative integer to given base string."""
+    """Convert an integer to a string in the requested base."""
     if base < 2 or base > 36:
         raise ValueError("Base must be 2–36.")
     if n == 0:
@@ -151,7 +151,7 @@ def main() -> None:
                 base = int(base_s)
                 result = to_base(n, base)
                 print(f"\n  {n} in base {base} = {result}")
-            except (ValueError, Exception) as e:
+            except ValueError as e:
                 print(f"  Error: {e}")
 
         elif choice == "3":

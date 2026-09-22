@@ -1,0 +1,8 @@
+[project]
+name = "bill-splitter"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pandas>=3.0.6",
+    "streamlit>=1.64.0",
+]

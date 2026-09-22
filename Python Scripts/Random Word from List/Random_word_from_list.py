@@ -1,29 +1,32 @@
-import sys
-import random
+"""Select one non-empty line from a UTF-8 text file."""
 
-# check if filename is supplied as a command line argument
-if sys.argv[1:]:
-    filename = sys.argv[1]
-else:
-    filename = input("What is the name of the file? (extension included): ")
+import argparse
+import secrets
+from pathlib import Path
 
-try:
-    file = open(filename)
-except (FileNotFoundError, IOError):
-    print("File doesn't exist!")
-    exit()
-# handle exception
 
-# get number of lines
-num_lines = sum(1 for line in file if line.rstrip())
+DEFAULT_LIST = Path(__file__).with_name("file.txt")
 
-# generate a random number between possible interval
-random_line = random.randint(0, num_lines)
 
-# re-iterate from first line
-file.seek(0)
+def choose_word(path: Path) -> str:
+    """Return one non-empty line from the selected word list."""
+    words = list(filter(str.strip, path.read_text(encoding="utf-8").splitlines()))
+    if not words:
+        raise ValueError("word list has no non-empty lines")
+    return secrets.choice(words)
 
-for i, line in enumerate(file):
-    if i == random_line:
-        print(line.rstrip())  # rstrip removes any trailing newlines :)
-        break
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Select a random word from a text file.")
+    parser.add_argument("word_list", nargs="?", type=Path, default=DEFAULT_LIST)
+    args = parser.parse_args()
+    if not args.word_list.is_file():
+        parser.error("word_list must be an existing text file")
+    try:
+        print(choose_word(args.word_list))
+    except (OSError, UnicodeDecodeError, ValueError) as error:
+        parser.exit(1, f"Unable to choose a word: {error}\n")
+
+
+if __name__ == "__main__":
+    main()

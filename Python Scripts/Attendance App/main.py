@@ -8,27 +8,67 @@ Usage:
 """
 
 import json
-import os
 import tkinter as tk
 from datetime import date, datetime, timedelta
+from pathlib import Path
 from tkinter import messagebox, ttk
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "attendance.json")
+DATA_FILE = Path(__file__).with_name("attendance.json")
 STATUSES  = ["Present", "Absent", "Late", "Excused"]
 STATUS_COLORS = {"Present": "#a6e3a1", "Absent": "#f38ba8",
                  "Late": "#fab387", "Excused": "#89b4fa"}
 
 
-def load() -> dict:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
+def empty_data() -> dict:
     return {"members": [], "records": {}}
 
 
-def save(data: dict):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def parse_date(value: str) -> date:
+    """Parse a date entered in the UI's YYYY-MM-DD format."""
+    return datetime.strptime(value.strip(), "%Y-%m-%d").date()
+
+
+def load(path: Path = DATA_FILE) -> dict:
+    """Load valid attendance data, returning an empty store when absent."""
+    if not path.exists():
+        return empty_data()
+    try:
+        with path.open(encoding="utf-8") as data_file:
+            data = json.load(data_file)
+    except (OSError, json.JSONDecodeError) as error:
+        raise ValueError(f"Could not read attendance data: {error}") from error
+    if not isinstance(data, dict) or not isinstance(data.get("members"), list) or not isinstance(data.get("records"), dict):
+        raise ValueError("Attendance data must contain 'members' and 'records'.")
+    return data
+
+
+def save(data: dict, path: Path = DATA_FILE) -> None:
+    """Persist attendance data as UTF-8 JSON."""
+    with path.open("w", encoding="utf-8") as data_file:
+        json.dump(data, data_file, indent=2)
+
+
+def report_lines(members: list[str], records: dict, start: date, end: date) -> list[str]:
+    """Build attendance report lines for an inclusive date range."""
+    if end < start:
+        raise ValueError("The end date must not be earlier than the start date.")
+    lines = [f"Attendance Report: {start} to {end}\n"]
+    for name in members:
+        counts = {status: 0 for status in STATUSES}
+        total = 0
+        current = start
+        while current <= end:
+            status = records.get(str(current), {}).get(name)
+            if status in counts:
+                counts[status] += 1
+                total += 1
+            current += timedelta(days=1)
+        percentage = counts["Present"] / total * 100 if total else 0
+        lines.append(
+            f"{name:<24}  P={counts['Present']} A={counts['Absent']} "
+            f"L={counts['Late']} E={counts['Excused']}  Attendance: {percentage:.1f}%"
+        )
+    return lines
 
 
 class AttendanceApp(tk.Tk):
@@ -163,7 +203,12 @@ class AttendanceApp(tk.Tk):
     # ── Logic ──────────────────────────────────────────────────────────────────
 
     def _load_date_records(self):
-        self._sel_date = self._date_var.get().strip()
+        try:
+            self._sel_date = str(parse_date(self._date_var.get()))
+        except ValueError:
+            messagebox.showerror("Invalid Date", "Use YYYY-MM-DD format.")
+            return
+        self._date_var.set(self._sel_date)
         day_records    = self._records.get(self._sel_date, {})
 
         for w in self._att_inner.winfo_children():
@@ -205,11 +250,11 @@ class AttendanceApp(tk.Tk):
 
     def _shift_date(self, delta: int):
         try:
-            d = datetime.strptime(self._date_var.get().strip(), "%Y-%m-%d").date()
+            d = parse_date(self._date_var.get())
             self._date_var.set(str(d + timedelta(days=delta)))
             self._load_date_records()
         except ValueError:
-            pass
+            messagebox.showerror("Invalid Date", "Use YYYY-MM-DD format.")
 
     def _goto_today(self):
         self._date_var.set(str(date.today()))
@@ -217,27 +262,12 @@ class AttendanceApp(tk.Tk):
 
     def _generate_report(self):
         try:
-            frm = datetime.strptime(self._from_var.get(), "%Y-%m-%d").date()
-            to  = datetime.strptime(self._to_var.get(), "%Y-%m-%d").date()
-        except ValueError:
-            messagebox.showerror("Invalid Date", "Use YYYY-MM-DD format.")
+            frm = parse_date(self._from_var.get())
+            to = parse_date(self._to_var.get())
+            lines = report_lines(self._members, self._records, frm, to)
+        except ValueError as error:
+            messagebox.showerror("Invalid Report", str(error))
             return
-
-        lines = [f"Attendance Report: {frm} → {to}\n"]
-        for name in self._members:
-            counts = {s: 0 for s in STATUSES}
-            total  = 0
-            d = frm
-            while d <= to:
-                ds = str(d)
-                if ds in self._records and name in self._records[ds]:
-                    counts[self._records[ds][name]] += 1
-                    total += 1
-                d += timedelta(days=1)
-            pct = counts["Present"] / total * 100 if total else 0
-            lines.append(f"{name:<24}  P={counts['Present']} A={counts['Absent']} "
-                         f"L={counts['Late']} E={counts['Excused']}  "
-                         f"Attendance: {pct:.1f}%")
 
         self._report_text.config(state="normal")
         self._report_text.delete("1.0", "end")
@@ -271,6 +301,11 @@ class AttendanceApp(tk.Tk):
             self._member_lb.insert("end", n)
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Launch the attendance tracker desktop application."""
     app = AttendanceApp()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()

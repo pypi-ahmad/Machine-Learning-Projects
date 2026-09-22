@@ -4,7 +4,7 @@ Displays OS, CPU, memory, disk, network, and Python environment
 information using only the standard library.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import os
@@ -88,6 +88,16 @@ def env_vars(filter_key: str = "") -> list[tuple[str, str]]:
     return items
 
 
+def display_env_value(name: str, value: str) -> str:
+    """Return a safe preview for environment-variable output."""
+    normalized = name.upper()
+    if ("TOKEN" in normalized or "KEY" in normalized or "SECRET" in normalized
+            or "PASSWORD" in normalized or "PASS" in normalized
+            or "CREDENTIAL" in normalized or "AUTH" in normalized):
+        return "[redacted]"
+    return value[:60]
+
+
 def _run_cmd(cmd: str) -> str:
     import subprocess
     try:
@@ -110,9 +120,9 @@ def human_size(n: int) -> str:
 # ---------------------------------------------------------------------------
 
 def print_section(title: str, data: dict) -> None:
-    print(f"\n  {'─' * 40}")
+    print(f"\n  {'-' * 40}")
     print(f"  {title}")
-    print(f"  {'─' * 40}")
+    print(f"  {'-' * 40}")
     for k, v in data.items():
         print(f"  {k:<22}: {v}")
 
@@ -160,9 +170,9 @@ def main() -> None:
 
         elif choice == "3":
             import shutil
-            print(f"\n  {'─' * 40}")
+            print(f"\n  {'-' * 40}")
             print("  Disk Usage")
-            print(f"  {'─' * 40}")
+            print(f"  {'-' * 40}")
             try:
                 drives = disk_info()
                 if drives and "total" in drives[0]:
@@ -187,7 +197,7 @@ def main() -> None:
             items = env_vars(filt)
             print(f"\n  {len(items)} environment variable(s):")
             for k, v in items[:40]:
-                print(f"  {k:<35} = {v[:60]}")
+                print(f"  {k:<35} = {display_env_value(k, v)}")
             if len(items) > 40:
                 print(f"  ... {len(items) - 40} more")
 
@@ -198,9 +208,9 @@ def main() -> None:
             # Quick disk
             import shutil
             cwd_usage = shutil.disk_usage(Path.cwd())
-            print(f"\n  {'─' * 40}")
+            print(f"\n  {'-' * 40}")
             print("  Current Drive Usage")
-            print(f"  {'─' * 40}")
+            print(f"  {'-' * 40}")
             print(f"  Total : {human_size(cwd_usage.total)}")
             print(f"  Used  : {human_size(cwd_usage.used)}")
             print(f"  Free  : {human_size(cwd_usage.free)}")

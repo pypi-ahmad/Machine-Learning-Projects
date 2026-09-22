@@ -1,86 +1,48 @@
-# Convert PNG Images to ICO Format
+# PNG to ICO Converter
 
-## Overview
+Single-file PNG-to-ICO converter with command-line and Tkinter file-picker modes.
 
-A Python project that converts PNG images to ICO (icon) format using Pillow, available as both a terminal-based script and a Tkinter GUI application.
+## Setup
 
-**Type:** GUI / CLI Utility
+Requirements: Python 3.13+.
 
-## Features
-
-- **Terminal mode** (`convert.py`): Converts a hardcoded PNG file to ICO in the same directory
-- **GUI mode** (`convertUI.py`): Tkinter GUI with:
-  - File browser dialog filtered to `.png` files only
-  - "Save As" dialog with `.ico` as default extension
-  - Error message popup if no file is selected before converting
-  - Success message popup after conversion
-  - Light blue themed canvas with styled blue buttons
-  - Window title set to "PNG to ICO Converter"
-
-## Dependencies
-
-- `Pillow` — for image opening and format conversion (listed in `requirements.txt` as `Pillow==7.2.0`)
-- `tkinter` — for the GUI (included with standard Python on most platforms)
-
-Install with:
-
-```bash
-pip install -r requirements.txt
+```powershell
+cd "PNG to ICO Converter"
+uv sync
 ```
 
-Or:
+## Usage
 
-```bash
-pip install Pillow
+Convert from the command line:
+
+```powershell
+uv run python convert.py input.png output.ico
 ```
 
-## How It Works
+Or open the file-picker interface:
 
-1. **Terminal mode** (`convert.py`): Opens `input.png` using `Image.open()`, then saves it as `output.ico` using `img.save()`. Pillow handles the format conversion based on the file extension.
-2. **GUI mode** (`convertUI.py`): Creates a Tkinter window (500×350, light blue canvas). The "Import PNG File" button opens a file dialog filtered to `.png` files. The selected image is stored in a global variable. The "Convert PNG to ICO" button opens a save dialog defaulting to `.ico` extension and saves the image.
-
-## Project Structure
-
-```
-convert_png_images_to_ico_format/
-├── convert.py          # Terminal-based converter
-├── convertUI.py        # Tkinter GUI converter
-├── input.png           # Sample input image
-├── output.ico          # Sample output icon
-├── requirements.txt    # Dependencies (Pillow==7.2.0)
-└── README.md
+```powershell
+uv run python convert.py --gui
 ```
 
-## Setup & Installation
+The converter writes common icon sizes from 16×16 through 256×256 when the source image supports them. It refuses to overwrite an existing output file.
 
-```bash
-pip install Pillow
+## Behavior
+
+1. Validates that the input exists and has a `.png` extension.
+2. Validates that the output name uses `.ico`.
+3. Uses Pillow to create a multi-resolution ICO file.
+4. Reports file and image errors without replacing an existing icon.
+
+This is a format conversion utility. It does not improve a low-resolution source image or guarantee visual quality at every icon size.
+
+## Project files
+
+```text
+PNG to ICO Converter/
+├── convert.py
+├── input.png
+├── output.ico
+├── pyproject.toml
+└── uv.lock
 ```
-
-## How to Run
-
-**Terminal mode:**
-1. Place your PNG image as `input.png` in the project folder.
-2. Run:
-   ```bash
-   python convert.py
-   ```
-3. `output.ico` will be generated in the same folder.
-
-**GUI mode:**
-```bash
-python convertUI.py
-```
-1. Click "Import PNG File" to browse for a PNG image.
-2. Click "Convert PNG to ICO" to choose a save location.
-
-## Testing
-
-No formal test suite present.
-
-## Limitations
-
-- Terminal mode uses hardcoded filenames (`input.png` → `output.ico`).
-- The GUI script uses `tk.filedialog` and `tk.messagebox` without explicitly importing them from `tkinter` (may cause `AttributeError` on some Python versions).
-- ICO files have size constraints (typically 256×256 max); large PNG images may not convert correctly without resizing.
-- No batch conversion support.

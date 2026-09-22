@@ -1,13 +1,11 @@
 """Survey Analyzer — Streamlit app.
 
-Upload survey results CSV and get automatic analysis:
-response distributions, likert scales, word clouds, and cross-tabs.
+Upload survey results CSV and explore response distributions, common words,
+and cross-tabs.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
-
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -15,8 +13,7 @@ import streamlit as st
 st.set_page_config(page_title="Survey Analyzer", layout="wide")
 st.title("📋 Survey Analyzer")
 
-SAMPLE = Path("sample_survey.csv")
-
+@st.cache_data
 def make_sample() -> pd.DataFrame:
     import random
     random.seed(0)
@@ -39,16 +36,14 @@ if uploaded:
     df = pd.read_csv(uploaded)
 else:
     st.sidebar.info("Using sample survey data.")
-    if not SAMPLE.exists():
-        make_sample().to_csv(SAMPLE, index=False)
-    df = pd.read_csv(SAMPLE)
+    df = make_sample()
 
 st.caption(f"{len(df)} responses  ·  {len(df.columns)} questions")
 
 numeric_cols  = df.select_dtypes(include="number").columns.tolist()
 category_cols = df.select_dtypes(exclude="number").columns.tolist()
 text_cols     = [c for c in category_cols if df[c].nunique() > 10 or
-                  df[c].str.len().mean() > 15 if hasattr(df[c], "str") else False]
+                  (df[c].str.len().mean() > 15 if hasattr(df[c], "str") else False)]
 cat_cols      = [c for c in category_cols if c not in text_cols]
 
 tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Distributions", "Cross-Tab", "Comments"])
@@ -62,7 +57,7 @@ with tab1:
 
     if numeric_cols:
         st.subheader("Numeric Question Summary")
-        st.dataframe(df[numeric_cols].describe().round(2), use_container_width=True)
+        st.dataframe(df[numeric_cols].describe().round(2))
 
 with tab2:
     if cat_cols:
@@ -70,7 +65,7 @@ with tab2:
         counts  = df[sel_col].value_counts()
         st.bar_chart(counts)
         pct = (counts / len(df) * 100).round(1).rename("Percent %")
-        st.dataframe(pd.concat([counts, pct], axis=1), use_container_width=True)
+        st.dataframe(pd.concat([counts, pct], axis=1))
 
     if numeric_cols:
         sel_num = st.selectbox("Numeric question", numeric_cols)
@@ -85,17 +80,18 @@ with tab3:
         col_b = st.selectbox("Column variable", cat_cols, index=min(1, len(cat_cols)-1))
         if col_a != col_b:
             ct = pd.crosstab(df[col_a], df[col_b])
-            st.dataframe(ct, use_container_width=True)
+            st.dataframe(ct)
             pct_ct = pd.crosstab(df[col_a], df[col_b], normalize="index").round(3) * 100
             st.caption("Row percentages:")
-            st.dataframe(pct_ct.round(1), use_container_width=True)
+            st.dataframe(pct_ct.round(1))
     else:
         st.info("Need at least 2 categorical columns for cross-tab.")
 
 with tab4:
-    text_col = st.selectbox("Comments column", category_cols) if category_cols else None
+    text_options = text_cols or category_cols
+    text_col = st.selectbox("Comments column", text_options) if text_options else None
     if text_col:
-        comments = df[text_col].dropna()
+        comments = df[text_col].dropna().astype(str)
         comments = comments[comments.str.strip() != ""]
         st.caption(f"{len(comments)} non-empty responses")
         for c in comments.sample(min(20, len(comments)), random_state=1):

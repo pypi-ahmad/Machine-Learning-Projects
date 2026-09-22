@@ -1,4 +1,5 @@
 import os
+import time
 import gitcommands as git
 import diffcalc
 from ignore import getIgnoreFiles
@@ -8,7 +9,6 @@ from colors import logcolors
 mypath = os.getcwd()
 
 ignoredirs = getIgnoreFiles()
-print(ignoredirs)
 
 # gets the list of all nested files
 onlyfiles = getNestedFiles(mypath, ignoredirs)
@@ -19,6 +19,7 @@ def ischanged(url, branch, *args, **kwargs):
     diffarr = []
     # if uncommited data found perform git commands on them
     initbuffer = kwargs.get('initbuffer', -1)
+    poll_interval = kwargs.get('poll_interval', 1.0)
     if (initbuffer != -1):
         for obj in initbuffer:
             file = obj['path']
@@ -62,4 +63,4 @@ def ischanged(url, branch, *args, **kwargs):
             commitAndUpdate(changedfile, diffarr, url, branch)
 
             initial = current
-            # time.sleep(5)
+        time.sleep(poll_interval)

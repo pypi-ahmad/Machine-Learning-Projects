@@ -13,6 +13,10 @@ import platform
 from pathlib import Path
 
 
+SENSITIVE_MARKERS = (
+    "api", "auth", "credential", "cookie", "key", "password", "private", "secret", "token",
+)
+
 # ---------------------------------------------------------------------------
 # Core logic
 # ---------------------------------------------------------------------------
@@ -57,24 +61,43 @@ def unset_var(key: str) -> bool:
     return False
 
 
-def export_shell(out_path: Path) -> None:
-    """Export as shell script."""
+def is_sensitive_key(key: str) -> bool:
+    """Identify names whose values should not be displayed by default."""
+    return any(marker in key.lower() for marker in SENSITIVE_MARKERS)
+
+
+def display_value(key: str, value: str, max_val: int = 80) -> str:
+    """Return a safe terminal representation of an environment value."""
+    if is_sensitive_key(key):
+        return "[redacted]"
+    return value.replace("\n", "\\n").replace("\r", "\\r")[:max_val]
+
+
+def export_shell(out_path: Path, include_sensitive: bool = False) -> int:
+    """Export non-sensitive variables as a shell script and return their count."""
     lines = ["#!/bin/sh\n"]
+    count = 0
     for k, v in sorted(os.environ.items()):
+        if is_sensitive_key(k) and not include_sensitive:
+            continue
         safe_v = v.replace("'", "'\\''")
         lines.append(f"export {k}='{safe_v}'\n")
+        count += 1
     out_path.write_text("".join(lines), encoding="utf-8")
+    return count
 
 
-def export_dotenv(out_path: Path) -> None:
-    """Export as .env file."""
+def export_dotenv(out_path: Path, include_sensitive: bool = False) -> int:
+    """Export non-sensitive variables as a .env file and return their count."""
     lines = []
+    count = 0
     for k, v in sorted(os.environ.items()):
-        # Skip values with newlines for .env format
-        if "\n" not in v:
+        if "\n" not in v and (include_sensitive or not is_sensitive_key(k)):
             safe_v = v.replace('"', '\\"')
             lines.append(f'{k}="{safe_v}"\n')
+            count += 1
     out_path.write_text("".join(lines), encoding="utf-8")
+    return count
 
 
 def path_entries() -> list[str]:
@@ -102,8 +125,7 @@ Environment Variable Manager
 
 
 def print_var(k: str, v: str, max_val: int = 80) -> None:
-    display = v.replace("\n", "\\n").replace("\r", "\\r")
-    print(f"  {k:<35} = {display[:max_val]}")
+    print(f"  {k:<35} = {display_value(k, v, max_val)}")
 
 
 def main() -> None:
@@ -165,10 +187,10 @@ def main() -> None:
                 continue
             current = os.environ.get(key)
             if current:
-                print(f"  Current: {current[:80]}")
+                print(f"  Current: {display_value(key, current)}")
             value = input("  New value: ")
             set_var(key, value)
-            print(f"  Set {key} = {value[:80]} (this session only)")
+            print(f"  Set {key} (this session only)")
 
         elif choice == "6":
             key = input("  Variable name: ").strip().upper()
@@ -185,11 +207,12 @@ def main() -> None:
             ext = ".sh" if fmt.startswith("s") else ".env"
             out_s = input(f"  Output file (default vars{ext}): ").strip() or f"vars{ext}"
             out_path = Path(out_s)
+            include_sensitive = input("  Type INCLUDE to export sensitive values: ").strip() == "INCLUDE"
             if fmt.startswith("s"):
-                export_shell(out_path)
+                count = export_shell(out_path, include_sensitive)
             else:
-                export_dotenv(out_path)
-            print(f"  Exported {len(os.environ)} variables to {out_path}")
+                count = export_dotenv(out_path, include_sensitive)
+            print(f"  Exported {count} variable(s) to {out_path}")
 
         else:
             print("  Invalid choice.")
