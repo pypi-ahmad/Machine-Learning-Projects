@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
+from typing import cast
 
 from platformdirs import user_data_dir
 
@@ -43,9 +44,18 @@ class _StoreData:
 
     @classmethod
     def from_dict(cls, data: dict[str, object]) -> _StoreData:
-        next_id = int(data.get("next_id", 0))  # type: ignore[arg-type]
-        raw_tasks: list[dict[str, object]] = data.get("tasks", [])  # type: ignore[assignment]
-        tasks = [Task.from_dict(t) for t in raw_tasks]
+        raw_next_id = data.get("next_id", 0)
+        if isinstance(raw_next_id, bool) or not isinstance(raw_next_id, (int, str)):
+            raise ValueError("Next task ID must be an integer.")
+        next_id = int(raw_next_id)
+        raw_tasks = data.get("tasks", [])
+        if not isinstance(raw_tasks, list):
+            raise ValueError("Tasks must be a list.")
+        tasks = [
+            Task.from_dict(cast(dict[str, object], task))
+            for task in raw_tasks
+            if isinstance(task, dict)
+        ]
         return cls(next_id=next_id, tasks=tasks)
 
     @classmethod

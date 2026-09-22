@@ -1,0 +1,8 @@
+[project]
+name = "pyqt5-password-generator"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "pyqt5==5.15.11",
+    "pyqt5-qt5==5.15.2",
+]

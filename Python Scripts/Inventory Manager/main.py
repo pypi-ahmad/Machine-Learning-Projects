@@ -14,31 +14,31 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Inventory Manager", layout="wide")
-st.title("📦 Inventory Manager")
+st.title("Inventory manager")
 
-INV_FILE = Path("inventory.csv")
-TXN_FILE = Path("transactions.csv")
+DATA_DIR = Path(__file__).resolve().parent
+INV_FILE = DATA_DIR / "inventory.csv"
+TXN_FILE = DATA_DIR / "transactions.csv"
+INVENTORY_COLUMNS = ["SKU", "Name", "Category", "Quantity", "Unit", "Price", "Cost", "Reorder_Point", "Supplier"]
+TRANSACTION_COLUMNS = ["Date", "SKU", "Name", "Type", "Qty", "Notes"]
 
 
 def load_inventory() -> pd.DataFrame:
     if INV_FILE.exists():
-        try:
-            return pd.read_csv(INV_FILE)
-        except Exception:
-            pass
-    return pd.DataFrame(columns=[
-        "SKU", "Name", "Category", "Quantity", "Unit", "Price", "Cost",
-        "Reorder_Point", "Supplier"
-    ])
+        inventory = pd.read_csv(INV_FILE)
+        if list(inventory.columns) != INVENTORY_COLUMNS:
+            raise ValueError(f"Unexpected inventory columns in {INV_FILE}.")
+        return inventory
+    return pd.DataFrame(columns=INVENTORY_COLUMNS)
 
 
 def load_transactions() -> pd.DataFrame:
     if TXN_FILE.exists():
-        try:
-            return pd.read_csv(TXN_FILE)
-        except Exception:
-            pass
-    return pd.DataFrame(columns=["Date", "SKU", "Name", "Type", "Qty", "Notes"])
+        transactions = pd.read_csv(TXN_FILE)
+        if list(transactions.columns) != TRANSACTION_COLUMNS:
+            raise ValueError(f"Unexpected transaction columns in {TXN_FILE}.")
+        return transactions
+    return pd.DataFrame(columns=TRANSACTION_COLUMNS)
 
 
 def save_inventory(df: pd.DataFrame) -> None:
@@ -104,14 +104,13 @@ with tab1:
         low = inv[inv["Quantity"] <= inv["Reorder_Point"]]
         if not low.empty:
             st.warning(f"⚠️ {len(low)} product(s) at or below reorder point!")
-            st.dataframe(low[["SKU", "Name", "Quantity", "Reorder_Point"]],
-                         use_container_width=True)
+            st.dataframe(low[["SKU", "Name", "Quantity", "Reorder_Point"]])
 
     cat_filter = st.multiselect("Filter by category",
                                  inv["Category"].unique().tolist(),
                                  default=inv["Category"].unique().tolist())
     view = inv[inv["Category"].isin(cat_filter)]
-    st.dataframe(view, use_container_width=True)
+    st.dataframe(view)
 
     total_value = (inv["Quantity"] * inv.get("Price", 0)).sum() if "Price" in inv else 0
     total_cost  = (inv["Quantity"] * inv.get("Cost",  0)).sum() if "Cost"  in inv else 0
@@ -166,8 +165,7 @@ with tab3:
     if st.session_state.txn.empty:
         st.info("No transactions yet.")
     else:
-        st.dataframe(st.session_state.txn.sort_values("Date", ascending=False),
-                     use_container_width=True)
+        st.dataframe(st.session_state.txn.sort_values("Date", ascending=False))
 
 with tab4:
     st.subheader("Analytics")
@@ -182,4 +180,4 @@ with tab4:
         inv_copy["Value"] = inv_copy["Quantity"] * inv_copy["Price"]
         top = inv_copy.nlargest(10, "Value")[["Name", "Quantity", "Price", "Value"]]
         st.write("**Top 10 by Value**")
-        st.dataframe(top, use_container_width=True)
+        st.dataframe(top)

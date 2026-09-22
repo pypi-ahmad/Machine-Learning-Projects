@@ -1,0 +1,10 @@
+[project]
+name = "email-validator"
+version = "0.1.0"
+description = "Syntax and DNS-resolution checks for email addresses"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

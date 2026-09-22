@@ -1,0 +1,10 @@
+[project]
+name = "github-profile-viewer"
+version = "0.1.0"
+description = "Authenticated command-line GitHub profile viewer"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

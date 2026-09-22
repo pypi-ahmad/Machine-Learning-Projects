@@ -4,9 +4,9 @@ Fetch random memes from the Meme API (no key needed).
 Filter by subreddit, save favorites, and show meme URLs.
 
 Usage:
-    python main.py
-    python main.py --count 5
-    python main.py --sub ProgrammerHumor
+    uv run --no-config python main.py
+    uv run --no-config python main.py --count 5
+    uv run --no-config python main.py --sub ProgrammerHumor
 """
 
 import argparse
@@ -17,7 +17,7 @@ from pathlib import Path
 
 
 MEME_API     = "https://meme-api.com/gimme"
-FAVORITES    = Path("meme_favorites.json")
+FAVORITES = Path(__file__).resolve().parent / "meme_favorites.json"
 
 POPULAR_SUBS = [
     "memes", "dankmemes", "me_irl", "ProgrammerHumor",

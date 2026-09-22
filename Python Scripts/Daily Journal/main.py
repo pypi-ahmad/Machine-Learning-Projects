@@ -14,10 +14,10 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Daily Journal", layout="wide")
-st.title("📔 Daily Journal")
+st.set_page_config(page_title="Daily Journal", page_icon=":material/book_2:", layout="wide")
+st.title("Daily journal")
 
-DATA_FILE = Path("journal.json")
+DATA_FILE = Path(__file__).with_name("journal.json")
 
 MOODS = ["😊 Happy", "😌 Calm", "😐 Neutral", "😟 Sad", "😤 Frustrated", "😴 Tired", "🤩 Excited"]
 
@@ -25,14 +25,16 @@ MOODS = ["😊 Happy", "😌 Calm", "😐 Neutral", "😟 Sad", "😤 Frustrated
 def load_entries() -> list[dict]:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
+            entries = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return []
+        if isinstance(entries, list):
+            return entries
     return []
 
 
 def save_entries(entries: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(entries, indent=2))
+    DATA_FILE.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
 if "entries" not in st.session_state:
@@ -43,7 +45,7 @@ entries = st.session_state.entries
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["Write Entry", "Browse", "Stats & Export"])
+tab1, tab2, tab3 = st.tabs(["Write entry", "Browse", "Stats and export"])
 
 with tab1:
     st.subheader("New Entry")
@@ -53,7 +55,7 @@ with tab1:
     entry_text  = st.text_area("Journal entry", height=280, placeholder="Write your thoughts here…")
     entry_tags  = st.text_input("Tags (comma-separated)", placeholder="personal, work, gratitude")
 
-    if st.button("💾 Save Entry", type="primary"):
+    if st.button("Save entry", icon=":material/save:", type="primary"):
         if entry_text.strip():
             new_entry = {
                 "date":  str(entry_date),
@@ -81,9 +83,9 @@ with tab1:
 
 with tab2:
     if not entries:
-        st.info("No entries yet. Start writing!")
+        st.info("No entries yet. Start writing.")
     else:
-        search  = st.text_input("🔍 Search entries")
+        search  = st.text_input("Search entries", icon=":material/search:")
         all_tags = sorted({t for e in entries for t in e.get("tags", [])})
         tag_filter = st.multiselect("Filter by tag", all_tags)
         mood_filter = st.multiselect("Filter by mood", MOODS)
@@ -100,9 +102,9 @@ with tab2:
             with st.expander(f"**{e['date']}** — {e.get('title') or e['mood']}  {e['mood'].split()[0]}"):
                 st.write(f"**Mood:** {e['mood']}")
                 if e.get("tags"):
-                    st.caption("🏷️ " + ", ".join(e["tags"]))
+                    st.caption("Tags: " + ", ".join(e["tags"]))
                 st.write(e["text"])
-                if st.button("🗑️ Delete", key=f"del_{e['date']}"):
+                if st.button("Delete", icon=":material/delete:", key=f"del_{e['date']}"):
                     st.session_state.entries = [x for x in entries if x["date"] != e["date"]]
                     save_entries(st.session_state.entries)
                     st.rerun()

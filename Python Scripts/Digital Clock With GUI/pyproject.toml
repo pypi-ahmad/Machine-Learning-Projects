@@ -1,0 +1,10 @@
+[project]
+name = "digital-clock-gui"
+version = "0.1.0"
+description = "Resizable Tkinter digital clock in 24-hour format"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

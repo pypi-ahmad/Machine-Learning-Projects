@@ -98,6 +98,8 @@ def tribonacci(n: int) -> list[int]:
 
 
 def fibonacci_properties(n: int) -> dict:
+    if n < 1:
+        raise ValueError("N must be at least 1.")
     f = nth_fibonacci(n)
     prev = nth_fibonacci(n - 1) if n > 1 else 0
     nxt  = nth_fibonacci(n + 1)
@@ -133,7 +135,7 @@ Fibonacci Generator
 
 def main() -> None:
     print("Fibonacci Generator")
-    print(f"  φ (Golden ratio) = {(1+math.sqrt(5))/2:.10f}")
+    print(f"  Golden ratio (phi) = {(1+math.sqrt(5))/2:.10f}")
     while True:
         print(MENU)
         choice = input("Choice: ").strip()
@@ -160,8 +162,8 @@ def main() -> None:
             n_s = input("  N: ").strip()
             try:
                 n = int(n_s)
-                if n > 100_000:
-                    print("  N too large (max 100,000).")
+                if n > 20_000:
+                    print("  N too large (max 20,000).")
                     continue
                 f = nth_fibonacci(n)
                 print(f"\n  F({n}) = {f:,}")
@@ -174,9 +176,9 @@ def main() -> None:
             try:
                 n = int(n_s)
                 if is_fibonacci(n):
-                    print(f"\n  ✓ {n:,} IS a Fibonacci number.")
+                    print(f"\n  YES: {n:,} is a Fibonacci number.")
                 else:
-                    print(f"\n  ✗ {n:,} is NOT a Fibonacci number.")
+                    print(f"\n  NO: {n:,} is not a Fibonacci number.")
             except ValueError:
                 print("  Invalid number.")
 
@@ -184,6 +186,8 @@ def main() -> None:
             n_s = input("  N: ").strip()
             try:
                 n = int(n_s)
+                if n < 1:
+                    raise ValueError
                 props = fibonacci_properties(n)
                 print()
                 for k, v in props.items():

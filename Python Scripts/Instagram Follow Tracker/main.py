@@ -1,100 +1,101 @@
-from selenium import webdriver
-from time import sleep
-import datetime
+"""Preview or run a read-only Instagram follow-back check."""
+
+from __future__ import annotations
+
+import argparse
+from getpass import getpass
+
 from prettytable import PrettyTable
 
-start = datetime.datetime.now()
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Find followed accounts that do not follow back.")
+    parser.add_argument("username", help="Instagram account to inspect.")
+    parser.add_argument("--run", action="store_true", help="Open Chrome, log in, and read follower lists.")
+    return parser.parse_args()
 
 
-table = PrettyTable()
-column_names = ["Non-Followers"]
+def validate_username(username: str) -> str:
+    username = username.strip().lstrip("@")
+    if not username.replace("_", "").replace(".", "").isalnum():
+        raise ValueError("Username may contain letters, numbers, underscores, and periods only.")
+    return username
 
 
 class InstaBot:
-    """ for login
-        """
+    """Read the signed-in account's follower and following lists through Chrome."""
 
-    def __init__(self, username, pw):
+    def __init__(self, username: str, password: str):
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support import expected_conditions as EC
+        from selenium.webdriver.support.ui import WebDriverWait
+
         self.driver = webdriver.Chrome()
         self.username = username
-        self.driver.get("https://instagram.com")
-        sleep(2)
-        self.driver.find_element_by_xpath(
-            "//input[@name=\"username\"]").send_keys(username)
-        self.driver.find_element_by_xpath(
-            "//input[@name=\"password\"]").send_keys(pw)
-        self.driver.find_element_by_xpath("//button[@type=\"submit\"]").click()
-        sleep(4)
-        self.url = self.driver.current_url
-        if self.url == "https://www.instagram.com/accounts/onetap/?next=%2F":
-            self.driver.find_element_by_xpath(
-                "//button[contains(text(), 'Not Now')]").click()
-            sleep(4)
-            self.driver.find_element_by_xpath(
-                "//button[contains(text(), 'Not Now')]").click()
-        else:
-            sleep(2)
-            self.driver.find_element_by_xpath(
-                "//button[contains(text(), 'Not Now')]").click()
-            sleep(1)
+        self.by = By
+        self.wait = WebDriverWait(self.driver, 30)
+        self.driver.get("https://www.instagram.com/")
+        self.wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(username)
+        self.driver.find_element(By.NAME, "password").send_keys(password)
+        self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-    def get_unfollowers(self):
-        """ names of unfollowers
-        """
-        self.driver.find_element_by_xpath(
-            "//a[contains(@href,'/{}')]".format(self.username)).click()
-        sleep(2)
-        self.driver.find_element_by_xpath(
-            "//a[contains(@href,'/following')]").click()
-        following = self._get_names()
-        sleep(2)
-        self.driver.find_element_by_xpath(
-            "//a[contains(@href,'/followers')]").click()
-        sleep(2)
-        followers = self._get_names()
+    def get_unfollowers(self) -> list[str]:
+        self.driver.get(f"https://www.instagram.com/{self.username}/")
+        following = self._read_names("following")
+        followers = self._read_names("followers")
+        return sorted(set(following) - set(followers))
 
-        notfollowingback = [
-            user for user in following if user not in followers]
+    def _read_names(self, relation: str) -> list[str]:
+        from selenium.webdriver.support import expected_conditions as EC
 
-        table.add_column(column_names[0], notfollowingback)
+        self.driver.get(f"https://www.instagram.com/{self.username}/{relation}/")
+        dialog = self.wait.until(
+            EC.presence_of_element_located((self.by.CSS_SELECTOR, "div[role='dialog']"))
+        )
+        previous_height = -1
+        current_height = 0
+        while current_height != previous_height:
+            previous_height = current_height
+            current_height = self.driver.execute_script(
+                "arguments[0].scrollTop = arguments[0].scrollHeight; return arguments[0].scrollHeight;", dialog
+            )
+        links = dialog.find_elements(self.by.TAG_NAME, "a")
+        return [link.text for link in links if link.text]
 
-        print(table)
-
-    def _get_names(self):
-        """ names of unfollowers
-        """
-
-        sleep(2)
-        scroll_box = self.driver.find_element_by_xpath(
-            '/html/body/div[5]/div/div/div[2]')
-        last_ht, ht = 0, 1
-
-        # Keep scrolling till you can't go down any further
-        while last_ht != ht:
-            last_ht = ht
-            sleep(1)
-            ht = self.driver.execute_script(
-                """
-                arguments[0].scrollTo(0, arguments[0].scrollHeight);
-                return arguments[0].scrollHeight;
-                """, scroll_box)
-
-        # Gets the list of accounts
-        links = scroll_box.find_elements_by_tag_name('a')
-        names = [name.text for name in links if name.text != '']
-
-        sleep(1)
-
-        # Closes the box
-        close_btn = self.driver.find_element_by_xpath(
-            '/html/body/div[5]/div/div/div[1]/div/div[2]')
-        close_btn.click()
-
-        return names
+    def close(self) -> None:
+        self.driver.quit()
 
 
-usr_name = input("Enter Username : ")
-password = input("Enter Password : ")
+def print_results(unfollowers: list[str]) -> None:
+    table = PrettyTable(["Does not follow back"])
+    for username in unfollowers:
+        table.add_row([username])
+    print(table)
 
-my_bot = InstaBot(usr_name, password)
-my_bot.get_unfollowers()
+
+def main() -> None:
+    args = parse_args()
+    try:
+        username = validate_username(args.username)
+    except ValueError as error:
+        raise SystemExit(f"Invalid username: {error}") from error
+
+    if not args.run:
+        print(f"Preview only for @{username}. No browser will open and no Instagram data will be read.")
+        print("Rerun with --run to open Chrome and perform the read-only check.")
+        return
+
+    password = getpass("Instagram password: ")
+    if not password:
+        raise SystemExit("A password is required.")
+
+    bot = InstaBot(username, password)
+    try:
+        print_results(bot.get_unfollowers())
+    finally:
+        bot.close()
+
+
+if __name__ == "__main__":
+    main()

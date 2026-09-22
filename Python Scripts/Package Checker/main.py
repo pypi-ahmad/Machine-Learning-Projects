@@ -1,7 +1,6 @@
 """Package Checker — CLI developer tool.
 
-Check installed Python packages for outdated versions,
-security advisories, and missing dependencies.
+Compare installed Python packages and requirements files with PyPI versions.
 
 Usage:
     python main.py
@@ -13,8 +12,8 @@ Usage:
 import argparse
 import importlib.metadata
 import json
-import subprocess
 import sys
+import urllib.parse
 import urllib.request
 from typing import Optional
 
@@ -36,7 +35,7 @@ def c(text: str, color: str) -> str:
 def get_pypi_info(package: str) -> Optional[dict]:
     """Fetch latest version info from PyPI JSON API."""
     try:
-        url = f"https://pypi.org/pypi/{package}/json"
+        url = f"https://pypi.org/pypi/{urllib.parse.quote(package, safe='')}/json"
         with urllib.request.urlopen(url, timeout=5) as resp:
             data = json.loads(resp.read())
         return {

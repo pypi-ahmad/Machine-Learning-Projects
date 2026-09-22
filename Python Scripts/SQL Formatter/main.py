@@ -4,16 +4,14 @@ Format, beautify, and analyze SQL queries. Supports
 pretty-printing, keyword case normalization, and basic linting.
 
 Usage:
-    python main.py
-    python main.py --file query.sql
-    python main.py --inline "SELECT * FROM users WHERE id=1"
-    python main.py --file query.sql --output formatted.sql
+    uv run python main.py
+    uv run python main.py --file query.sql
+    uv run python main.py --inline "SELECT * FROM users WHERE id=1"
+    uv run python main.py --file query.sql --output formatted.sql
 """
 
 import argparse
-import os
 import re
-import sys
 
 ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
         "yellow": "\033[93m", "red": "\033[91m", "dim": "\033[2m", "reset": "\033[0m"}
@@ -135,19 +133,19 @@ def lint_sql(sql: str) -> list[str]:
     issues = []
     sql_upper = sql.upper()
     if "SELECT *" in sql_upper:
-        issues.append("⚠ Avoid SELECT * — specify columns explicitly.")
+        issues.append("WARNING: Avoid SELECT * - specify columns explicitly.")
     if re.search(r"\bDROP\s+(TABLE|DATABASE|SCHEMA)\b", sql_upper):
-        issues.append("⚠ Destructive operation detected (DROP).")
+        issues.append("WARNING: Destructive operation detected (DROP).")
     if re.search(r"\bDELETE\b.*(?!\bWHERE\b)", sql_upper) and "WHERE" not in sql_upper:
-        issues.append("⚠ DELETE without WHERE — will delete all rows!")
+        issues.append("WARNING: DELETE without WHERE - will delete all rows!")
     if re.search(r"\bUPDATE\b.*(?!\bWHERE\b)", sql_upper) and "WHERE" not in sql_upper:
-        issues.append("⚠ UPDATE without WHERE — will update all rows!")
+        issues.append("WARNING: UPDATE without WHERE - will update all rows!")
     if sql_upper.count("(") != sql_upper.count(")"):
-        issues.append("⚠ Unbalanced parentheses.")
+        issues.append("WARNING: Unbalanced parentheses.")
     if re.search(r"'\s*OR\s*'\d+'\s*=\s*'\d+", sql_upper, re.IGNORECASE):
-        issues.append("⚠ Possible SQL injection pattern detected.")
+        issues.append("WARNING: Possible SQL injection pattern detected.")
     if not issues:
-        issues.append("✓ No obvious issues found.")
+        issues.append("OK: No obvious issues found.")
     return issues
 
 
@@ -213,12 +211,12 @@ def interactive_mode():
         if cmd in ("format", "file"):
             kc = input(c("  Keyword case (upper/lower/keep) [upper]: ", "cyan")).strip() or "upper"
             formatted = format_sql(sql, keyword_case=kc)
-            print(c("\n─── Formatted SQL ───────────────────────", "dim"))
+            print(c("\n--- Formatted SQL -----------------------", "dim"))
             print(formatted)
         elif cmd == "lint":
             issues = lint_sql(sql)
             for issue in issues:
-                col = "red" if "⚠" in issue else "green"
+                col = "red" if issue.startswith("WARNING:") else "green"
                 print(c(f"  {issue}", col))
         elif cmd == "analyze":
             info = analyze_sql(sql)
@@ -226,7 +224,7 @@ def interactive_mode():
                 print(f"  {c(k,'cyan')}: {v}")
         else:
             # Just format
-            print(c("\n─── Formatted SQL ───────────────────────", "dim"))
+            print(c("\n--- Formatted SQL -----------------------", "dim"))
             print(format_sql(sql))
 
 
@@ -259,7 +257,7 @@ def main():
             if args.output:
                 with open(args.output, "w") as f:
                     f.write(result)
-                print(c(f"✓ Written to {args.output}", "green"))
+                print(c(f"Written to {args.output}", "green"))
             else:
                 print(result)
     else:

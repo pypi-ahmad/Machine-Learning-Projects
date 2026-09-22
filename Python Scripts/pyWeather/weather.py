@@ -1,33 +1,61 @@
-#importing required modules
-import requests, json
+"""Fetch current weather for one city from OpenWeatherMap."""
 
-#enter your API key from openweathermap.org here
-api_key = 'Your API key goes here'
+import argparse
+import os
 
-#base url to store url from api
-base_url = "http://api.openweathermap.org/data/2.5/weather?"
+import requests
 
-#input city name here
-city_name = input('Enter city name: ')
 
-complete_url = base_url + 'appid=' + api_key + '&q=' + city_name
-response = requests.get(complete_url)
-x = response.json()
+API_URL = "https://api.openweathermap.org/data/2.5/weather"
 
-#checking validity of city name
-if x['cod'] != '404':
-    y = x['main']
-    current_temperature = y['temp']
-    current_pressure = y['pressure']
-    current_humidity = y['humidity']
-    z = x['weather']
-    weather_description = z[0]['description']
-    q = x['wind']
-    wind_speed = q['speed']
-    wind_direction = q['deg']
-    k = x['clouds']
-    cloudliness = k['all']
 
-    print('Temperature (in Kelvin) = ' + str(current_temperature) + '\n Atmospheric Pressure (in hPa) = ' + str(current_pressure) + '\n Humidity (in percentage) = ' + str(current_humidity) + '\n Wind Speed (in m/s) = ' + str(wind_speed) + '\n Wind Direction (in degrees) = ' + str(wind_direction) + '\n Cloudliness (in percentage) = ' + str(cloudliness) +  '\n Weather Description = ' + str(weather_description) )
-else:
-    print('City Not Found')
+def get_weather(city: str, api_key: str, units: str) -> dict:
+    """Request current conditions without exposing the API key."""
+    response = requests.get(
+        API_URL,
+        params={"appid": api_key, "q": city, "units": units},
+        timeout=10,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def display_weather(data: dict, units: str) -> None:
+    """Print the current conditions returned by OpenWeatherMap."""
+    main = data["main"]
+    wind = data.get("wind", {})
+    clouds = data.get("clouds", {})
+    description = data.get("weather", [{}])[0].get("description", "Unknown")
+    temperature_unit = {"metric": "C", "imperial": "F"}.get(units, "K")
+    print(f"Temperature: {main['temp']} {temperature_unit}")
+    print(f"Pressure: {main['pressure']} hPa")
+    print(f"Humidity: {main['humidity']}%")
+    print(f"Wind speed: {wind.get('speed', 'Unknown')} m/s")
+    print(f"Wind direction: {wind.get('deg', 'Unknown')} degrees")
+    print(f"Cloudiness: {clouds.get('all', 'Unknown')}%")
+    print(f"Weather: {description}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Fetch current weather from OpenWeatherMap.")
+    parser.add_argument("city", nargs="?", help="City name to look up")
+    parser.add_argument("--units", choices=["standard", "metric", "imperial"], default="metric")
+    args = parser.parse_args()
+    city = args.city or input("Enter city name: ").strip()
+    api_key = os.getenv("OPENWEATHER_API_KEY")
+
+    if not city:
+        parser.error("a city is required")
+    if not api_key:
+        parser.exit(1, "Required environment variable OPENWEATHER_API_KEY is unavailable.\n")
+
+    try:
+        display_weather(get_weather(city, api_key, args.units), args.units)
+    except requests.RequestException as error:
+        parser.exit(1, f"Weather request failed: {error}\n")
+    except (KeyError, IndexError, TypeError) as error:
+        parser.exit(1, f"Unexpected weather response: {error}\n")
+
+
+if __name__ == "__main__":
+    main()

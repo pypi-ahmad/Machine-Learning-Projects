@@ -1,88 +1,45 @@
 # Text to Speech
 
-> Converts text from a file to speech using Google Text-to-Speech (gTTS), saves it as an MP3, and plays it.
+Convert a UTF-8 text file into an MP3 using Google Text-to-Speech.
 
-## Overview
+## Setup
 
-This script reads text from `abc.txt`, converts it to speech using the Google Text-to-Speech API via the `gTTS` library, saves the audio as `voice.mp3`, and then plays the audio file using the system's default media player.
+Requirements: Python 3.13+ and internet access for gTTS.
 
-## Features
-
-- Reads text from a local file (`abc.txt`)
-- Converts text to speech using Google's TTS engine
-- Supports English language output
-- Saves generated audio as an MP3 file
-- Automatically plays the audio file after generation
-
-## Project Structure
-
-```
-Text_to_speech/
-├── txtToSpeech.py
-├── abc.txt
-├── voice.mp3
-├── requirements.txt
-└── README.md
-```
-
-## Requirements
-
-- Python 3.x
-- `gTTS==2.1.1` (specified in requirements.txt)
-- Internet connection (gTTS uses Google's online TTS API)
-
-## Installation
-
-```bash
-cd Text_to_speech
-pip install -r requirements.txt
+```powershell
+cd "Text to Speech"
+uv sync
 ```
 
 ## Usage
 
-1. **Edit the input file:** Place the text you want converted in `abc.txt`.
+```powershell
+uv run python txtToSpeech.py abc.txt --output voice.mp3
+```
 
-2. **Run the script:**
+Options:
 
-   ```bash
-   python txtToSpeech.py
-   ```
+- `--output PATH`: New MP3 destination. Default: `voice.mp3`.
+- `--language CODE`: gTTS language code. Default: `en`.
+- `--slow`: Generate slower speech.
+- `--play`: Open the generated MP3 with the Windows default player after saving.
 
-3. **Output:** The script generates `voice.mp3` and opens it with your system's default media player.
+The command refuses to replace an existing MP3. Choose another output path or remove the old file intentionally.
 
-**Current `abc.txt` content:**
+## Behavior
 
-> Thanks to Gail Cleaver, Beth Barrack, Bingo Nightly, Emily Webber and Sharon Counts. Finally, special thanks to Casey Cromwell. Radio Lab is produced by WNYC New York public radio, and distributed by NPR, National Public Radio.
+The script reads UTF-8 text, validates that it is not empty, sends it to the Google TTS service, and saves the returned audio as MP3. Playback is disabled unless `--play` is supplied.
 
-## How It Works
+Text is transmitted to Google for speech synthesis. Do not use sensitive content unless that data handling is acceptable to you.
 
-1. Opens and reads the entire content of `abc.txt`
-2. Passes the text to `gTTS(text=file, lang='en', slow=False)` to create a speech object
-3. Saves the speech as `voice.mp3` using `speech.save()`
-4. Calls `os.system("voice.mp3")` to open the file with the system's default handler
+## Project files
 
-## Configuration
+```text
+Text to Speech/
+├── txtToSpeech.py
+├── abc.txt
+├── pyproject.toml
+└── uv.lock
+```
 
-| Item | Location | Description |
-|---|---|---|
-| Input file | `txtToSpeech.py` line 3 | Hardcoded to `abc.txt` |
-| Output file | `txtToSpeech.py` line 6 | Hardcoded to `voice.mp3` |
-| Language | `txtToSpeech.py` line 5 | Hardcoded to `'en'` (English) |
-| Speed | `txtToSpeech.py` line 5 | `slow=False` (normal speed) |
-
-## Limitations
-
-- Input filename (`abc.txt`) and output filename (`voice.mp3`) are hardcoded — no CLI arguments
-- Requires an active internet connection (gTTS sends text to Google's servers)
-- `os.system("voice.mp3")` relies on OS file association — may not work on all systems (primarily works on Windows)
-- No error handling for missing input file, network errors, or API failures
-- The entire file is read and sent as a single request — very large files may exceed API limits
-- The generated `voice.mp3` is committed to the repository (unnecessary binary file)
-
-## Security Notes
-
-- Text content is sent to Google's servers for TTS conversion — do not use with sensitive or private text.
-
-## License
-
-Not specified.
+`voice.mp3` is a legacy sample artifact and is not overwritten by default.

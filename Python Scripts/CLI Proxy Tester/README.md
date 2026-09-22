@@ -2,7 +2,7 @@
 
 ## Overview
 
-A command-line tool for testing HTTP/HTTPS/SOCKS proxy servers. It validates proxies by making requests through them to an IP-checking service and comparing the returned IP against the proxy address. Results are stored and tracked in a CSV file.
+A command-line tool for testing HTTP, HTTPS, and SOCKS proxy servers. It validates proxies by sending requests through them to an IP-checking service and comparing the returned IP with the proxy address. Results are stored in a CSV file.
 
 **Type:** CLI Tool
 
@@ -20,19 +20,17 @@ A command-line tool for testing HTTP/HTTPS/SOCKS proxy servers. It validates pro
 
 ## Dependencies
 
-From `requirements.txt`:
+Managed by uv in `pyproject.toml` and locked in `uv.lock`:
 
-| Package   | Version |
-|-----------|---------|
-| click     | 7.1.2   |
-| proxytest | 0.5.4   |
-| pandas    | 1.0.5   |
+| Package  | Purpose |
+|----------|---------|
+| click    | Command-line interface |
+| pandas   | CSV storage and updates |
+| requests | Proxy HTTP requests |
 
 Additional standard library imports: `re`, `logging`, `json.decoder`, `pathlib`
 
-Also uses: `requests` (direct dependency, not in `requirements.txt`, used in `proxytest.py`)
-
-## How It Works
+## How it works
 
 ### CLI Layer (`cli.py`)
 - Built with the `click` library using a command group pattern.
@@ -57,7 +55,8 @@ Also uses: `requests` (direct dependency, not in `requirements.txt`, used in `pr
 cli_proxy_tester/
 ├── cli.py              # Click-based CLI interface
 ├── proxytest.py        # Core proxy testing and CSV management logic
-├── requirements.txt    # Python dependencies
+├── pyproject.toml      # Python project and dependency metadata
+├── uv.lock             # Reproducible dependency lock file
 ├── .gitignore          # Git ignore rules (excludes proxies.csv)
 ├── ipinfo/
 │   └── index.php       # Self-hosted IP test service (PHP)
@@ -66,35 +65,35 @@ cli_proxy_tester/
 
 ## Setup & Installation
 
-```bash
-cd cli_proxy_tester
-pip install -r requirements.txt
+```powershell
+cd "Python Scripts\CLI Proxy Tester"
+uv sync
 ```
 
 ## How to Run
 
 ### Test a single proxy
 
-```bash
-python cli.py single http://1.1.1.1
+```powershell
+uv run python cli.py single http://1.1.1.1
 ```
 
 ### Test with a custom IP test service
 
-```bash
-python cli.py single http://1.1.1.1 --iptest iptest.yourdomain.com
+```powershell
+uv run python cli.py single http://1.1.1.1 --iptest iptest.yourdomain.com
 ```
 
 ### Re-test all proxies in a CSV file
 
-```bash
-python cli.py csv-file proxies.csv
+```powershell
+uv run python cli.py csv-file proxies.csv
 ```
 
 ### Import and test proxies from a text file
 
-```bash
-python cli.py add-from-txt-file proxy_candidates.txt
+```powershell
+uv run python cli.py add-from-txt-file proxy_candidates.txt
 ```
 
 Each text file line should be in the format `protocol://address` (e.g., `http://1.2.3.4:8080`).
@@ -112,10 +111,8 @@ No formal test suite present.
 ## Limitations
 
 - The proxy regex validator does not support authentication (user:pass@host) in proxy URLs.
-- Uses `pd.DataFrame.append()` which is deprecated in newer versions of pandas (removed in pandas 2.0+).
 - No timeout configuration for proxy test requests — slow or unresponsive proxies may hang indefinitely.
 - No concurrent/parallel proxy testing — proxies are tested sequentially.
-- The `proxytest` package in `requirements.txt` (v0.5.4) appears to be an external package, but the local `proxytest.py` file shadows it; the local file is what is actually used.
 - The IP test service (`ipinfo/index.php`) requires a PHP-capable web server.
 
 ## Security Notes

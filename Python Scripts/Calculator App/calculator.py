@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
-from tkinter import Tk, END, Entry, N, E, S, W, Button
+import ast
+import math
+from tkinter import Tk, END, Entry, N, E, S, W, Button, messagebox
 from tkinter import font
-from tkinter import Label
 from functools import partial
 
 
@@ -11,33 +11,66 @@ def get_input(entry, argu):
 
 def backspace(entry):
     input_len = len(entry.get())
-    entry.delete(input_len - 1)
+    if input_len:
+        entry.delete(input_len - 1)
 
 
 def clear(entry):
     entry.delete(0, END)
 
 
-def calc(entry):
-    input_info = entry.get()
+def evaluate_expression(expression):
+    """Evaluate a calculator expression containing only numbers and arithmetic."""
+    def evaluate(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            if isinstance(node.value, bool) or not math.isfinite(node.value):
+                raise ValueError("Enter finite numbers only.")
+            return node.value
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+            value = evaluate(node.operand)
+            return value if isinstance(node.op, ast.UAdd) else -value
+        if isinstance(node, ast.BinOp):
+            left = evaluate(node.left)
+            right = evaluate(node.right)
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left / right
+            if isinstance(node.op, ast.Pow):
+                return left ** right
+        raise ValueError("Use numbers and +, -, *, /, or ^ only.")
+
     try:
-        output = str(eval(input_info.strip()))
+        tree = ast.parse(expression, mode="eval")
+    except SyntaxError as error:
+        raise ValueError("Enter a valid expression.") from error
+
+    result = evaluate(tree.body)
+    if not math.isfinite(result):
+        raise ValueError("The result must be finite.")
+    return result
+
+
+def calc(entry):
+    try:
+        output = str(evaluate_expression(entry.get().strip()))
     except ZeroDivisionError:
-        popupmsg()
-        output = ""
+        popupmsg("Cannot divide by zero. Enter valid values.")
+        return
+    except ValueError as error:
+        popupmsg(str(error))
+        return
+
     clear(entry)
     entry.insert(END, output)
 
 
-def popupmsg():
-    popup = Tk()
-    popup.resizable(0, 0)
-    popup.geometry("120x100")
-    popup.title("Alert")
-    label = Label(popup, text="Cannot divide by 0 ! \n Enter valid values")
-    label.pack(side="top", fill="x", pady=10)
-    B1 = Button(popup, text="Okay", bg="#DDDDDD", command=popup.destroy)
-    B1.pack()
+def popupmsg(message):
+    messagebox.showerror("Calculator", message)
 
 
 def cal():

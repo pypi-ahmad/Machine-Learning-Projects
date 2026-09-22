@@ -12,32 +12,39 @@ This script prompts the user for a URL or API endpoint, sends an HTTP request us
 - Displays success responses with a thumbs-up emoji and the status code
 - Displays HTTP error responses with a thumbs-down emoji, error code, and reason
 - Handles URL/connection errors separately with descriptive messages
-- Uses the `emoji` library for terminal-friendly emoji rendering
+- Uses standard-library Unicode indicators
 
 ## Project Structure
 
 ```
 Fetch HTTP status code/
 ├── fetch_http_status_code.py   # Main script
-└── requirements.txt            # Python dependencies
+├── pyproject.toml              # Project metadata and dependencies
+└── uv.lock                     # Locked dependency versions
 ```
 
 ## Requirements
 
-- Python 3.x
-- `emoji==0.6.0`
+- Python 3.13+
+- No third-party dependencies
 
 ## Installation
 
 ```bash
 cd "Fetch HTTP status code"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
 
 ```bash
-python fetch_http_status_code.py
+uv run python fetch_http_status_code.py
+```
+
+Or pass the URL directly:
+
+```bash
+uv run python fetch_http_status_code.py https://www.google.com
 ```
 
 Example interaction:
@@ -56,11 +63,9 @@ Message : Request failed. Request returned reason - Not Found
 
 ## How It Works
 
-1. Prompts the user to enter a URL.
-2. Calls `urllib.request.urlopen()` to send the request.
-3. On success: prints the HTTP status code with a thumbs-up emoji and the response reason.
-4. On `HTTPError`: prints the HTTP error code with a thumbs-down emoji and the error reason.
-5. On `URLError`: parses the error reason string to extract the Windows error code and message, displays with a thumbs-down emoji.
+1. Gets a URL from the command line or prompt.
+2. Validates the HTTP(S) scheme and calls `urllib.request.urlopen()` with a timeout.
+3. Prints the status and reason, handling HTTP and connection errors separately.
 
 ## Configuration
 
@@ -68,11 +73,8 @@ No configuration needed.
 
 ## Limitations
 
-- Uses `urlopen` which only sends GET requests — cannot test POST, PUT, DELETE, etc.
-- The `URLError` parsing logic uses string splitting on `]` and `[`, which is fragile and Windows-specific
-- The `emoji` library version `0.6.0` is very old and may not work on newer Python versions
-- No timeout configured for the request — may hang on unresponsive servers
-- The URL must include the protocol scheme (e.g., `https://`)
+- Uses `urlopen`, so it checks GET requests only.
+- The URL must include the protocol scheme (for example, `https://`).
 
 ## Security Notes
 

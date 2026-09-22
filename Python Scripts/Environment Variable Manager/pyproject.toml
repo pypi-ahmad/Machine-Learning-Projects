@@ -1,0 +1,10 @@
+[project]
+name = "environment-variable-manager"
+version = "0.1.0"
+description = "Session-only environment-variable manager with safe defaults"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

@@ -1,0 +1,5 @@
+[project]
+name = "unique-words-in-file"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = []

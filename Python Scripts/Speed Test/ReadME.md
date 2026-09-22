@@ -1,78 +1,36 @@
 # Speed Test
 
-> A Python script that measures internet speed by invoking the `speedtest-cli` command-line tool.
+A command-line internet speed test using the `speedtest-cli` Python package.
+It measures download bandwidth, upload bandwidth, ping, and the selected test
+server.
 
-## Overview
+## Run
 
-This script runs the external `speedtest-cli` command via `subprocess.check_output()` and prints the results (download speed, upload speed, and ping) to the console.
-
-## Features
-
-- Measures download speed, upload speed, and ping
-- Uses `subprocess.check_output()` to capture and display `speedtest-cli` output
-- Single-file script with no interactive input
-
-## Project Structure
-
-```
-Speed Test/
-└── speedtest.py
+```powershell
+uv sync
+uv run python speedtest.py --run
 ```
 
-## Requirements
+Use JSON output when another program needs the result:
 
-- Python 3.x
-- `speedtest-cli` (must be installed and available on the system PATH)
-
-## Installation
-
-```bash
-cd "Speed Test"
-pip install speedtest-cli
+```powershell
+uv run python speedtest.py --run --json
 ```
 
-## Usage
-
-```bash
-python speedtest.py
-```
-
-**Sample Output:**
-
-```
-The Result of Speed Test
-Retrieving speedtest.net configuration...
-Testing from ISP (xxx.xxx.xxx.xxx)...
-Retrieving speedtest.net server list...
-Selecting best server based on ping...
-Hosted by Server Name [Location]: xx.xxx ms
-Testing download speed................
-Download: xx.xx Mbit/s
-Testing upload speed................
-Upload: xx.xx Mbit/s
-```
-
-## How It Works
-
-1. `subprocess.check_output("speedtest-cli", shell=True, universal_newlines=True)` executes the `speedtest-cli` command and captures its stdout as a string
-2. The result is printed to the console with a header line
-
-## Configuration
-
-No configuration options. The script runs `speedtest-cli` with its default settings.
+`--run` is required. A live test contacts Speedtest infrastructure and consumes
+network bandwidth, so the script does nothing merely by being imported or
+invoked without explicit consent.
 
 ## Limitations
 
-- Requires `speedtest-cli` to be installed as a system command — the script does not use the `speedtest` Python library directly
-- Uses `shell=True` in `subprocess.check_output()`, which is generally discouraged for security reasons
-- No error handling — if `speedtest-cli` is not installed, the script raises a `CalledProcessError`
-- No option to select a specific server or output format
-- The `speedtest-cli` package is deprecated in favor of `speedtest` by Ookla
+- Results vary with network load, Wi-Fi quality, VPNs, server selection, and
+  competing traffic.
+- The result measures the connection at that moment; it is not a service-level
+  guarantee.
+- The test needs internet access and may disclose connection metadata to the
+  selected speed-test service.
 
-## Security Notes
+## Dependencies
 
-- `shell=True` in `subprocess.check_output()` could be a security risk if the command string were user-controlled, but in this case the command is hardcoded
-
-## License
-
-Not specified.
+uv manages `speedtest-cli` in `pyproject.toml`; the resolved version is
+recorded in `uv.lock`.

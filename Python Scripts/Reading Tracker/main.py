@@ -17,7 +17,7 @@ import streamlit as st
 st.set_page_config(page_title="Reading Tracker", layout="wide")
 st.title("📚 Reading Tracker")
 
-DATA_FILE = Path("books.json")
+DATA_FILE = Path(__file__).with_name("books.json")
 STATUSES  = ["Want to Read", "Reading", "Finished", "Abandoned"]
 GENRES    = ["Fiction", "Non-Fiction", "Sci-Fi", "Fantasy", "Biography",
              "Self-Help", "History", "Mystery", "Other"]
@@ -90,7 +90,7 @@ with tab2:
             rows.append({"Title": b["title"], "Author": b["author"], "Genre": b["genre"],
                          "Status": b["status"], "Pages": b["pages"] or "—",
                          "Rating": stars, "Finished": b.get("date_finished") or "—"})
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), hide_index=True)
         st.caption(f"{len(filtered)} book(s)")
 
 with tab3:

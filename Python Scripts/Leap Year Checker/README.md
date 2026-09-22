@@ -1,10 +1,10 @@
 # Leap Year Checker
 
-> A Python script that determines whether a given year is a leap year.
+> A Python script that checks whether a given year is a leap year.
 
 ## Overview
 
-This script takes a year as user input and checks whether it is a leap year using the standard Gregorian calendar rules. It prints the result to the console.
+This script accepts a year and checks it against the standard Gregorian calendar rules, then prints the result to the console.
 
 ## Features
 
@@ -34,22 +34,21 @@ cd "Leap_Year_Checker"
 
 ## Usage
 
-```bash
-python leapyear.py
+```powershell
+uv sync --no-config
+uv run --no-config python leapyear.py 2024
 ```
 
 **Example:**
 ```
-Enter a year:- 2024
-2024 is a leap year!!
+2024 is a leap year.
 ```
 
 ```
-Enter a year:- 1900
-1900 is not a leap year!!
+1900 is not a leap year.
 ```
 
-## How It Works
+## How it works
 
 The script applies the Gregorian leap year rule:
 

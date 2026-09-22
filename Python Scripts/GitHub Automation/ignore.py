@@ -6,6 +6,9 @@ ignorepath = os.path.join(cwd, '.gitignore')
 
 def getIgnoreFiles():
     ignorefiles = []
+    if not os.path.isfile(ignorepath):
+        return ignorefiles
+
     with open(ignorepath) as ignore:
         files = ignore.readlines()
         for file in files:

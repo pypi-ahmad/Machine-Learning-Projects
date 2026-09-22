@@ -1,0 +1,7 @@
+[project]
+name = "wikipedia-scraper"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "wikipedia>=1.4.0",
+]

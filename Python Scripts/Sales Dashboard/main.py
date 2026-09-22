@@ -10,17 +10,16 @@ Usage:
     streamlit run main.py
 """
 
-from pathlib import Path
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Sales Dashboard", layout="wide")
 st.title("📊 Sales Dashboard")
 
-SAMPLE_CSV = Path("sample_sales.csv")
 
+@st.cache_data
 def make_sample():
-    import random, string
+    import random
     from datetime import date, timedelta
     random.seed(42)
     products  = ["Widget A","Widget B","Gadget X","Gadget Y","Pro Kit","Starter Pack"]
@@ -48,9 +47,7 @@ if uploaded:
     df = pd.read_csv(uploaded)
 else:
     st.sidebar.info("No file uploaded — using sample data.")
-    if not SAMPLE_CSV.exists():
-        make_sample().to_csv(SAMPLE_CSV, index=False)
-    df = pd.read_csv(SAMPLE_CSV)
+    df = make_sample()
 
 # Auto-detect columns
 date_col  = next((c for c in df.columns if "date" in c.lower()), None)
@@ -104,7 +101,7 @@ with tab2:
     if prod_col and units_col:
         st.subheader("Units by Product")
         bu = df.groupby(prod_col)[units_col].sum().sort_values(ascending=False)
-        st.dataframe(bu.reset_index(), use_container_width=True)
+        st.dataframe(bu.reset_index())
 
 with tab3:
     if region_col and sales_col:
@@ -117,6 +114,6 @@ with tab3:
         st.bar_chart(bc)
 
 with tab4:
-    st.dataframe(df, use_container_width=True)
+    st.dataframe(df)
     csv = df.to_csv(index=False).encode()
     st.download_button("📥 Download filtered CSV", csv, "sales_filtered.csv", "text/csv")

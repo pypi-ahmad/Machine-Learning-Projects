@@ -10,7 +10,6 @@ Usage:
 
 import json
 import time
-import threading
 from datetime import datetime
 from pathlib import Path
 
@@ -20,21 +19,30 @@ try:
 except ImportError:
     HAS_CLIPBOARD = False
 
-DATA_FILE = Path("clipboard_history.json")
+DATA_FILE = Path(__file__).with_name("clipboard_history.json")
+EXPORT_FILE = Path(__file__).with_name("clipboard_export.json")
 MAX_HISTORY = 100
 
 
 def load_history() -> list[dict]:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
-    return []
+    try:
+        history = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    return history if isinstance(history, list) else []
 
 
 def save_history(history: list[dict]):
-    DATA_FILE.write_text(json.dumps(history[-MAX_HISTORY:], indent=2))
+    DATA_FILE.write_text(
+        json.dumps(history[-MAX_HISTORY:], indent=2), encoding="utf-8"
+    )
+
+
+def entry_at(history: list[dict], position: int) -> dict:
+    """Return an entry for a one-based displayed position."""
+    if position < 1 or position > len(history):
+        raise IndexError(position)
+    return history[position - 1]
 
 
 def add_entry(history: list[dict], text: str, pinned: bool = False) -> bool:
@@ -115,7 +123,7 @@ def main():
                 continue
             try:
                 idx = int(arg) - 1
-                entry = history[idx]
+                entry = entry_at(history, idx + 1)
                 pyperclip.copy(entry["text"])
                 print(f"  Copied: {entry['preview']}")
             except (ValueError, IndexError):
@@ -124,6 +132,7 @@ def main():
         elif cmd == "del":
             try:
                 idx = int(arg) - 1
+                entry_at(history, idx + 1)
                 removed = history.pop(idx)
                 save_history(history)
                 print(f"  Deleted: {removed['preview']}")
@@ -133,10 +142,11 @@ def main():
         elif cmd == "pin":
             try:
                 idx = int(arg) - 1
-                history[idx]["pinned"] = not history[idx]["pinned"]
+                entry = entry_at(history, idx + 1)
+                entry["pinned"] = not entry["pinned"]
                 save_history(history)
-                state = "Pinned" if history[idx]["pinned"] else "Unpinned"
-                print(f"  {state}: {history[idx]['preview']}")
+                state = "Pinned" if entry["pinned"] else "Unpinned"
+                print(f"  {state}: {entry['preview']}")
             except (ValueError, IndexError):
                 print("  Invalid entry number.")
 
@@ -183,9 +193,8 @@ def main():
                 print("\n  Stopped watching.")
 
         elif cmd == "export":
-            out = Path("clipboard_export.json")
-            out.write_text(json.dumps(history, indent=2))
-            print(f"  Exported {len(history)} entries to {out}")
+            EXPORT_FILE.write_text(json.dumps(history, indent=2), encoding="utf-8")
+            print(f"  Exported {len(history)} entries to {EXPORT_FILE}")
 
         else:
             print(f"  Unknown command: {cmd}")

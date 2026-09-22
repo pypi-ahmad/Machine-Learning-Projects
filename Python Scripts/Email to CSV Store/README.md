@@ -10,7 +10,7 @@ This script connects to Gmail's IMAP server using SSL, authenticates with creden
 
 - Connects to Gmail IMAP server with SSL
 - Reads credentials from a local `credentials.txt` file
-- Fetches the N most recent emails from the inbox (configurable via hardcoded variable)
+- Fetches a configurable number of recent emails from the inbox
 - Extracts email date, sender, subject, and body text
 - Handles both multipart and single-part email messages
 - Converts HTML email bodies to plain text using BeautifulSoup
@@ -24,21 +24,21 @@ Store_emails_in_csv/
 ├── store_emails.py
 ├── credentials.txt
 ├── mails.csv
-├── requirements.txt
+├── pyproject.toml
+├── uv.lock
 └── README.md
 ```
 
 ## Requirements
 
-- Python 3.x
-- `beautifulsoup4` (specified in requirements.txt)
-- `lxml` (specified in requirements.txt)
+- Python 3.13+
+- `beautifulsoup4` and `lxml`, managed by uv in `pyproject.toml`
 
 ## Installation
 
 ```bash
 cd Store_emails_in_csv
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
@@ -55,7 +55,13 @@ pip install -r requirements.txt
 3. **Run the script:**
 
    ```bash
-   python store_emails.py
+   uv run python store_emails.py
+   ```
+
+   To change the count, credentials file, or output path:
+
+   ```bash
+   uv run python store_emails.py --count 10 --credentials credentials.txt --output mails.csv
    ```
 
 4. **Output:** The fetched emails will be saved to `mails.csv`.
@@ -76,17 +82,15 @@ pip install -r requirements.txt
 | Item | Location | Description |
 |---|---|---|
 | Email credentials | `credentials.txt` | Line 1: email address, Line 2: password |
-| Number of emails to fetch | `store_emails.py` line ~107 | Hardcoded `N = 2` |
+| Number of emails to fetch | `--count` | Defaults to 2 |
 | IMAP host/port | `store_emails.py` lines 19-20 | Hardcoded to `imap.gmail.com:993` |
-| Output file | `store_emails.py` line 15 | Hardcoded to `mails.csv` |
+| Output file | `--output` | Defaults to `mails.csv` beside the script |
 | Mailbox | `store_emails.py` line 34 | Hardcoded to `"INBOX"` |
 
 ## Limitations
 
-- The number of emails to fetch (`N = 2`) is hardcoded — must edit source code to change
 - Only fetches from the INBOX folder
 - Only supports Gmail's IMAP server (hardcoded host)
-- No command-line arguments — all configuration requires editing source files
 - The `credentials.txt` file stores credentials in plaintext
 - No retry logic for network failures
 - Logging level is set to `WARNING`, so normal operation is silent

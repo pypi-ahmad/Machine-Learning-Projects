@@ -4,7 +4,7 @@ Manage a book collection with checkout, return, member management,
 due date tracking, and overdue alerts. JSON persistence.
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import json
@@ -20,13 +20,13 @@ GENRES    = ["Fiction", "Non-Fiction", "Science", "History", "Biography",
 
 def load() -> dict:
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
+        with open(DATA_FILE, encoding="utf-8") as f:
             return json.load(f)
     return {"books": [], "members": [], "loans": []}
 
 
 def save(data: dict):
-    with open(DATA_FILE, "w") as f:
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 

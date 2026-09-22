@@ -114,6 +114,9 @@ def main():
     parser.add_argument("--random",  type=int, metavar="N", help="Fetch N random APODs")
     args = parser.parse_args()
 
+    if args.random is not None and not 1 <= args.random <= 10:
+        parser.error("--random must be between 1 and 10")
+
     if args.api_key == DEMO_KEY:
         print("  Using DEMO_KEY — rate limited. Set NASA_API_KEY env var for full access.")
 

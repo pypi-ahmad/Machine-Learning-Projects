@@ -1,4 +1,4 @@
-"""Git Helper CLI — Command-line tool.
+"""Git Helper CLI command-line tool.
 
 Shortcuts for common Git workflows:
   status, log summary, branch management, stash helpers,
@@ -12,7 +12,6 @@ Usage:
 
 import subprocess
 import sys
-from pathlib import Path
 
 
 # ---------------------------------------------------------------------------
@@ -34,7 +33,7 @@ def is_git_repo() -> bool:
     return code == 0
 
 
-def print_separator(char: str = "─", width: int = 50):
+def print_separator(char: str = "-", width: int = 50) -> None:
     print(char * width)
 
 
@@ -94,14 +93,21 @@ def cmd_stash_list():
 
 
 def cmd_quick_commit():
-    """Stage all changes and commit with a message."""
-    cmd_status()
+    """Commit already staged changes after explicit confirmation."""
+    code, staged, _ = git("diff", "--cached", "--stat")
+    if code != 0 or not staged:
+        print("No staged changes. Stage specific files with Git first.")
+        return
+    print("\nStaged changes:")
+    print(staged)
     msg = input("\nCommit message (blank to cancel): ").strip()
     if not msg:
         print("Cancelled.")
         return
-    _, o1, _ = git("add", "-A")
-    code, o2, err = git("commit", "-m", msg)
+    if input("Type COMMIT to create this commit: ").strip() != "COMMIT":
+        print("Cancelled.")
+        return
+    code, _, err = git("commit", "-m", msg)
     if code == 0:
         print(f"  Committed: {msg}")
     else:
@@ -111,8 +117,8 @@ def cmd_quick_commit():
 def cmd_undo_last():
     """Soft-undo the last commit (keeps changes staged)."""
     _, head, _ = git("log", "-1", "--pretty=%H %s")
-    confirm = input(f"Undo last commit?\n  {head}\n  (changes will be kept staged) [y/N]: ").strip().lower()
-    if confirm == "y":
+    confirm = input(f"Undo last commit?\n  {head}\n  Changes stay staged. Type RESET to continue: ").strip()
+    if confirm == "RESET":
         code, out, err = git("reset", "--soft", "HEAD~1")
         print(out or err or ("Undone." if code == 0 else "Failed."))
 
@@ -120,14 +126,21 @@ def cmd_undo_last():
 def cmd_push():
     """Push current branch to origin."""
     _, branch, _ = git("rev-parse", "--abbrev-ref", "HEAD")
-    confirm = input(f"Push '{branch}' to origin? [y/N]: ").strip().lower()
-    if confirm == "y":
-        code, out, err = run(["git", "push", "-u", "origin", branch], capture=False)
+    confirm = input(f"Push '{branch}' to origin? Type PUSH to continue: ").strip()
+    if confirm == "PUSH":
+        code, _, _ = run(["git", "push", "-u", "origin", branch], capture=False)
+        if code != 0:
+            print("Push failed.")
 
 
 def cmd_pull():
     """Pull latest changes."""
-    code, out, err = run(["git", "pull", "--rebase"], capture=False)
+    if input("Pull with rebase? Type PULL to continue: ").strip() != "PULL":
+        print("Cancelled.")
+        return
+    code, _, _ = run(["git", "pull", "--rebase"], capture=False)
+    if code != 0:
+        print("Pull failed.")
 
 
 def cmd_new_branch():
@@ -143,12 +156,13 @@ def cmd_delete_branch():
     """Delete a local branch."""
     _, out, _ = git("branch")
     print(out)
-    name = input("Branch to delete (! for force): ").strip()
+    name = input("Merged branch to delete: ").strip()
     if not name:
         return
-    flag = "-D" if name.startswith("!") else "-d"
-    name = name.lstrip("!")
-    code, out, err = git("branch", flag, name)
+    if input(f"Type DELETE to remove '{name}': ").strip() != "DELETE":
+        print("Cancelled.")
+        return
+    code, out, err = git("branch", "-d", name)
     print(out or err)
 
 
@@ -184,7 +198,7 @@ COMMANDS: dict[str, tuple] = {
     "4":  ("branches",        cmd_branches,       "List branches"),
     "5":  ("new-branch",      cmd_new_branch,     "Create new branch"),
     "6":  ("delete-branch",   cmd_delete_branch,  "Delete a branch"),
-    "7":  ("quick-commit",    cmd_quick_commit,   "Stage all & commit"),
+    "7":  ("quick-commit",    cmd_quick_commit,   "Commit staged changes"),
     "8":  ("push",            cmd_push,           "Push current branch"),
     "9":  ("pull",            cmd_pull,           "Pull (rebase)"),
     "10": ("undo",            cmd_undo_last,      "Undo last commit (soft)"),
@@ -197,7 +211,7 @@ COMMANDS: dict[str, tuple] = {
 SHORTCUTS = {v[0]: v[1] for v in COMMANDS.values() if v[1]}
 
 
-def print_menu():
+def print_menu() -> None:
     print("\nGit Helper")
     print_separator()
     for key, (name, _, desc) in COMMANDS.items():
@@ -208,7 +222,10 @@ def print_menu():
     print_separator()
 
 
-def main():
+def main() -> None:
+    if not is_git_repo():
+        print("Run this helper from inside a Git repository.")
+        return
     # Direct command mode
     if len(sys.argv) > 1:
         cmd_name = sys.argv[1].lower()

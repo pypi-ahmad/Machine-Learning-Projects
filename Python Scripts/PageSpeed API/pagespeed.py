@@ -1,5 +1,8 @@
-import requests
 import json
+import os
+from pathlib import Path
+
+import requests
 from responses import PageSpeedResponse
 
 
@@ -12,8 +15,9 @@ class PageSpeed(object):
         endpoint (str): Endpoint for HTTP request
     """
 
-    def __init__(self, api_key=None):
-        self.api_key = api_key
+    def __init__(self, api_key: str | None = None, timeout: float = 30) -> None:
+        self.api_key = api_key or os.environ.get("GOOGLE_API_KEY")
+        self.timeout = timeout
         self.endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
 
     def analyse(self, url, strategy='desktop', category='performance'):
@@ -30,6 +34,11 @@ class PageSpeed(object):
         """
         strategy = strategy.lower()
 
+        if strategy not in ('mobile', 'desktop'):
+            raise ValueError('invalid strategy: {0}'.format(strategy))
+        if self.timeout <= 0:
+            raise ValueError("timeout must be greater than zero")
+
         params = {
             'strategy': strategy,
             'url': url,
@@ -39,32 +48,16 @@ class PageSpeed(object):
         if self.api_key:
             params['key'] = self.api_key
 
-        # Sanity Check
-        if strategy not in ('mobile', 'desktop'):
-            raise ValueError('invalid strategy: {0}'.format(strategy))
-
-        # Returns raw data
-        raw = requests.get(self.endpoint, params=params)
+        raw = requests.get(self.endpoint, params=params, timeout=self.timeout)
 
         response = PageSpeedResponse(raw)
 
         return response
 
-    def save(self, response, path='./'):
+    def save(self, response: PageSpeedResponse, path: str | Path = "json_data.json") -> Path:
         json_data = response._json
-        with open(path + "json_data.json", 'w+') as f:
-            json.dump(json_data, f, indent=2)
-
-
-if __name__ == "__main__":
-    ps = PageSpeed()
-    response = ps.analyse('https://www.example.com', strategy='mobile')
-    ls = [
-        response.url, response.loadingExperience,
-        response.originLoadingExperience,
-        response.originLoadingExperienceDetailed,
-        response.loadingExperienceDetailed, response.finalUrl,
-        response.requestedUrl, response.version, response.userAgent
-    ]  # , response.lighthouseResults]
-    ps.save(response)
-    print(ls)
+        output = Path(path)
+        if output.is_dir():
+            output = output / "json_data.json"
+        output.write_text(json.dumps(json_data, indent=2), encoding="utf-8")
+        return output

@@ -5,8 +5,8 @@ or generic line-based logs).  Supports filtering by level/keyword,
 date range, error counting, and frequency analysis.
 
 Usage:
-    python main.py
-    python main.py app.log
+    uv run --no-config python main.py
+    uv run --no-config python main.py app.log
 """
 
 import re
@@ -165,6 +165,10 @@ def load_file(path: Path) -> tuple[list[dict], str]:
 
 
 def main() -> None:
+    if len(sys.argv) > 1 and sys.argv[1] in {"-h", "--help"}:
+        print("Usage: python main.py [LOG_FILE]")
+        print("Without LOG_FILE, start the interactive analyzer.")
+        return
     path_arg = sys.argv[1] if len(sys.argv) > 1 else None
     records: list[dict] = []
     fmt = "generic"

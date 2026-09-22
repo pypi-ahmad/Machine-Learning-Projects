@@ -2,7 +2,7 @@
 
 ## Overview
 
-A GUI calculator application built with Python's Tkinter library. Provides a standard calculator interface with number buttons, arithmetic operators, backspace, clear, and an equals button to evaluate expressions.
+A GUI calculator built with Python's Tkinter library. It provides number buttons, arithmetic operators, backspace, clear, and an equals button for evaluating expressions.
 
 **Type:** GUI Application
 
@@ -14,7 +14,7 @@ A GUI calculator application built with Python's Tkinter library. Provides a sta
 - Backspace (`<-`) button to delete the last character
 - Clear (`C`) button to reset the input field
 - Equals (`=`) button to evaluate the expression
-- Division-by-zero error handling with a popup alert ("Cannot divide by 0 ! Enter valid values")
+- Clear popup messages for division by zero and invalid expressions
 - Color-coded buttons: dark grey for numbers, orange for operators, light grey for utility buttons
 - Non-resizable window
 - Right-aligned entry field with custom font size 15
@@ -26,12 +26,12 @@ A GUI calculator application built with Python's Tkinter library. Provides a sta
 
 No external packages required.
 
-## How It Works
+## How it works
 
 1. The `cal()` function creates the main Tkinter window and lays out all widgets using a grid layout.
 2. Number and operator buttons append their respective characters to the entry field via `get_input()`.
-3. The `calc()` function reads the entry field contents and evaluates them using Python's `eval()`.
-4. If a `ZeroDivisionError` occurs, a popup window alerts the user.
+3. The `calc()` function evaluates only numeric arithmetic using Python's `ast` module.
+4. Invalid expressions and division by zero show a popup message without changing the current input.
 5. The `backspace()` function removes the last character from the entry field.
 6. The `clear()` function empties the entry field entirely.
 7. `functools.partial` is used to create reusable button templates with consistent styling.
@@ -39,7 +39,7 @@ No external packages required.
 ## Project Structure
 
 ```
-Create_calculator_app/
+Calculator App/
 ├── calculator.py   # Main application script
 ├── output.png      # Screenshot of the application
 └── README.md
@@ -47,13 +47,13 @@ Create_calculator_app/
 
 ## Setup & Installation
 
-1. Ensure Python 3.x is installed on your system.
-2. No additional packages need to be installed.
+1. Install [uv](https://docs.astral.sh/uv/).
+2. Run `uv sync` from this directory.
 
 ## How to Run
 
 ```bash
-python calculator.py
+uv run python calculator.py
 ```
 
 ## Configuration
@@ -62,19 +62,18 @@ No configuration required.
 
 ## Testing
 
-No formal test suite present.
+Run a syntax check with `uv run python -m py_compile calculator.py`.
 
 ## Limitations
 
-- Uses `eval()` to evaluate expressions, which can execute arbitrary Python code — this is a security concern if the input were ever sourced externally.
-- No support for parentheses in expressions.
-- No keyboard input support; all input must be via mouse clicks on buttons.
+- There are no dedicated buttons for parentheses, although typed or pasted parentheses are supported.
+- The Enter key is not wired to the equals button.
 - The exponentiation button displays `^` but internally inserts `**`.
 - No history of previous calculations.
 
 ## Security Notes
 
-- The use of `eval()` on user input is inherently unsafe. In this context (local GUI with direct button input only), the risk is limited, but the entry field also accepts pasted text which could contain arbitrary Python code.
+Expressions are parsed as arithmetic only. Names, function calls, attributes, and other Python syntax are rejected.
 
 
 

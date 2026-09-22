@@ -1,0 +1,4 @@
+.venv/
+clipboard_history.json
+clipboard_export.json
+__pycache__/

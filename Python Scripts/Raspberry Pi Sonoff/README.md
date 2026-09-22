@@ -1,10 +1,12 @@
 # Raspberry Pi Sonoff
 
-> A Flask-based web interface for controlling a relay (Sonoff-style) connected to a Raspberry Pi's GPIO pin.
+> A Flask web interface for controlling a Sonoff-style relay connected to a Raspberry Pi GPIO pin.
 
 ## Overview
 
-This project runs a Flask web server on a Raspberry Pi that provides an HTML interface to turn a relay on or off using GPIO pin 2. The web page displays the current relay status and provides ON/OFF buttons. It functions as a DIY Sonoff-like smart switch.
+This project runs a Flask server on a Raspberry Pi with an HTML interface for turning a relay on or off through GPIO pin 2. The page displays the current status and provides ON/OFF buttons.
+
+This project must run on the wired Raspberry Pi. Dependency installation can be resolved on Windows, but GPIO control cannot be verified without the target hardware.
 
 ## Features
 
@@ -38,17 +40,16 @@ Raspberry-Pi-Sonoff/
 
 ## Installation
 
-```bash
-cd "Raspberry-Pi-Sonoff"
-pip install flask gpiozero
+```powershell
+uv sync --no-config
 ```
 
 ## Usage
 
 Run on the Raspberry Pi:
 
-```bash
-python Main.py
+```powershell
+uv run --no-config python Main.py
 ```
 
 The server starts at `http://0.0.0.0:8000/`. Access it from any browser on the same network using the Pi's IP address:
@@ -65,7 +66,7 @@ http://<raspberry-pi-ip>:8000/
 | `/on`  | Turns the LED/relay ON           |
 | `/off` | Turns the LED/relay OFF          |
 
-## How It Works
+## How it works
 
 1. **GPIO Setup**: Uses `gpiozero.LED(2)` to control GPIO pin 2 as a digital output.
 2. **Home Route (`/`)**: Checks `led.value` — if 1, status is "ON"; otherwise "OFF". Renders `home.html` with the status passed as a template variable.
@@ -92,7 +93,7 @@ http://<raspberry-pi-ip>:8000/
 
 - **No authentication or access control** — the server is accessible to anyone on the local network. Consider adding authentication for production use.
 - The server binds to `0.0.0.0`, making it accessible on all network interfaces.
-- Flask debug mode is not enabled (good), but no CSRF protection is implemented.
+- Flask debug mode is not enabled, but no CSRF protection is implemented.
 
 ## License
 

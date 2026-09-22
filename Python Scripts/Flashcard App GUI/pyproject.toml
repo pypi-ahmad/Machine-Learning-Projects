@@ -1,0 +1,10 @@
+[project]
+name = "flashcard-app-gui"
+version = "0.1.0"
+description = "Local Tkinter flashcard desktop application"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

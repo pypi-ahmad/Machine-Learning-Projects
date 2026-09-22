@@ -2,16 +2,16 @@
 
 ## Overview
 
-A Python script that automatically opens a predefined list of websites in Google Chrome. Useful for quickly launching your daily set of frequently visited sites.
+A Windows CLI that previews or opens a predefined list of websites in Google Chrome. It previews URLs by default and launches Chrome only when explicitly requested.
 
 **Type:** CLI Utility
 
 ## Features
 
-- Opens multiple URLs sequentially in Google Chrome
-- Uses Python's built-in `webbrowser` module
-- Prints each URL to the console as it is opened
-- Preconfigured with a set of common developer/productivity sites
+- Previews normalized URLs before any browser action
+- Opens multiple URLs as Chrome tabs with `--open`
+- Accepts replacement URLs and an explicit Chrome executable path
+- Uses only the Python standard library
 
 ## Dependencies
 
@@ -23,55 +23,48 @@ No `requirements.txt` present. Dependencies inferred from imports:
 
 ## How It Works
 
-1. A Chrome browser path is defined as `C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s`.
-2. A tuple of URLs is defined: `stackoverflow.com`, `github.com/avinashkranjan`, `gmail.com`, `google.co.in`, `youtube.com`.
-3. The `webauto()` function iterates over the URL list, prints "Opening: {url}" for each, and calls `wb.get(chrome_path).open(url)` to launch each site in Chrome.
-4. The function is called immediately when the script is run.
+1. URLs are normalized to `https://` addresses and validated.
+2. Without `--open`, the script prints a preview only.
+3. With `--open`, it finds Chrome in common Windows locations or uses `--chrome-path`.
+4. Chrome opens each URL in a new tab.
 
 ## Project Structure
 
 ```
-Chrome-Automation/
+Chrome Automation/
 ├── chrome-automation.py   # Main script
 └── README.md
 ```
 
 ## Setup & Installation
 
-1. Ensure Python 3.x is installed.
-2. Ensure Google Chrome is installed at the path specified in the script (or modify the path).
-
-No additional packages are required.
+1. Install [uv](https://docs.astral.sh/uv/).
+2. Run `uv sync` from this directory.
+3. Install Google Chrome when you intend to use `--open`.
 
 ## How to Run
 
 ```bash
-cd Chrome-Automation
-python chrome-automation.py
+uv run python chrome-automation.py
+uv run python chrome-automation.py --open
+uv run python chrome-automation.py example.com https://openai.com --open
 ```
 
-Chrome will open with each of the predefined URLs in separate tabs/windows.
+The first command prints a preview. Commands with `--open` launch Chrome with the selected URLs in tabs.
 
 ## Configuration
 
-The Chrome executable path and the list of URLs are hardcoded in the script:
+The default URL list is defined in the script. Supply URLs as positional arguments to replace it. Use `--chrome-path` when Chrome is installed outside the standard Windows locations:
 
 ```python
-chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-URLS = ("stackoverflow.com", "github.com/avinashkranjan", "gmail.com",
-        "google.co.in", "youtube.com")
+uv run python chrome-automation.py --chrome-path "C:\\Path\\to\\chrome.exe" --open
 ```
-
-Modify these values directly in the script to customize.
 
 ## Testing
 
-No formal test suite present.
+Run `uv run python -m py_compile chrome-automation.py` to check syntax. The preview command can be run without opening a browser.
 
 ## Limitations
 
-- The Chrome executable path is hardcoded to a Windows x86 installation path (`C:/Program Files (x86)/...`). It will fail on systems where Chrome is installed elsewhere (e.g., `Program Files` on 64-bit, or Linux/macOS).
-- The URL list is hardcoded — there is no command-line argument or config file to customize the sites.
-- No error handling if Chrome is not installed or the path is incorrect.
-- URLs do not include the `http://` or `https://` protocol prefix, relying on the browser to infer it.
-- No `if __name__ == "__main__"` guard — the function runs on import as well.
+- The tool is designed for Windows Chrome installations.
+- Opening a URL may sign in or trigger normal browser-side behavior for that site.

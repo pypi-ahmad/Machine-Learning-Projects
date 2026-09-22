@@ -4,9 +4,9 @@ Input a 9×9 Sudoku puzzle, check its validity,
 highlight errors, and attempt to solve it.
 
 Usage:
-    python main.py
-    python main.py --file puzzle.txt
-    python main.py --solve
+    uv run python main.py
+    uv run python main.py --file puzzle.txt
+    uv run python main.py --solve
 """
 
 import argparse
@@ -33,17 +33,17 @@ def print_board(board: list[list[int]], errors: set = None) -> None:
     print()
     for r in range(9):
         if r in (3, 6):
-            print("  ├───────┼───────┼───────┤")
-        row_str = "  │"
+            print("  +-------+-------+-------+")
+        row_str = "  |"
         for c in range(9):
             v = board[r][c]
-            s = str(v) if v else "·"
+            s = str(v) if v else "."
             if (r, c) in errors:
                 s = f"\033[91m{s}\033[0m"    # red
             row_str += f" {s}"
             if c in (2, 5):
-                row_str += " │"
-        row_str += " │"
+                row_str += " |"
+        row_str += " |"
         print(row_str)
     print()
 
@@ -133,24 +133,24 @@ def interactive() -> None:
         elif cmd == "check":
             valid, errs = check_valid(board)
             if valid and is_complete(board):
-                print("  ✅ Puzzle is correctly solved!")
+                print("  Puzzle is correctly solved!")
             elif valid:
-                print(f"  ✅ No errors so far (puzzle not yet complete).")
+                print("  No errors so far (puzzle not yet complete).")
             else:
                 print_board(board, errs)
-                print(f"  ❌ {len(errs)} conflicting cell(s) highlighted in red.")
+                print(f"  {len(errs)} conflicting cell(s) highlighted in red.")
         elif cmd == "solve":
             b = copy.deepcopy(board)
             valid, _ = check_valid(b)
             if not valid:
-                print("  ❌ Fix errors before solving.")
+                print("  Fix errors before solving.")
                 continue
             if solve(b):
-                print("  ✅ Solved!")
+                print("  Solved!")
                 print_board(b)
                 board = b
             else:
-                print("  ❌ No solution found for this puzzle.")
+                print("  No solution found for this puzzle.")
         elif cmd == "load":
             print("  Paste 81 digits (0 or . for empty):")
             try:
@@ -198,7 +198,7 @@ def main():
         valid, errs = check_valid(board)
         if not valid:
             print_board(board, errs)
-            print(f"❌ Puzzle has {len(errs)} conflicting cells.")
+            print(f"Puzzle has {len(errs)} conflicting cells.")
             sys.exit(1)
         b = copy.deepcopy(board)
         if solve(b):

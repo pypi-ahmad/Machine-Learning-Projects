@@ -137,7 +137,7 @@ def play(size: int = 4) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Memory Card Game")
     parser.add_argument("--size", type=int, choices=[2,4,6], default=4,
-                        help="Grid size (2,4,6 — must be even, default 4)")
+                        help="Grid size (2, 4, or 6; must be even; default 4)")
     args = parser.parse_args()
     while True:
         play(args.size)

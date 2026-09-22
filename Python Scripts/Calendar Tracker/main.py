@@ -1,11 +1,4 @@
-"""Calendar Tracker — Streamlit app.
-
-Add, view, and manage calendar events.
-Daily/monthly view, reminders, and event categories.
-
-Usage:
-    streamlit run main.py
-"""
+"""A local Streamlit calendar for creating and reviewing events."""
 
 import json
 from datetime import date, datetime, timedelta
@@ -14,122 +7,177 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Calendar Tracker", layout="wide")
-st.title("📅 Calendar Tracker")
 
-DATA_FILE = Path("events.json")
+DATA_FILE = Path(__file__).with_name("events.json")
 CATEGORIES = ["Work", "Personal", "Health", "Social", "Other"]
 CAT_COLORS = {"Work": "🔵", "Personal": "🟢", "Health": "🔴", "Social": "🟡", "Other": "⚪"}
 
 
+def is_valid_event(event: object) -> bool:
+    """Return whether a stored event has the expected local schema."""
+    if not isinstance(event, dict):
+        return False
+    if not isinstance(event.get("title"), str) or not event["title"].strip():
+        return False
+    if event.get("category") not in CATEGORIES or not isinstance(event.get("notes"), str):
+        return False
+    if not isinstance(event.get("duration"), int) or isinstance(event["duration"], bool):
+        return False
+    if not 15 <= event["duration"] <= 480:
+        return False
+    if not isinstance(event.get("date"), str) or not isinstance(event.get("time"), str):
+        return False
+    try:
+        date.fromisoformat(event["date"])
+        datetime.strptime(event["time"], "%H:%M")
+    except ValueError:
+        return False
+    return True
+
+
 def load_events() -> list[dict]:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
-    return []
+    """Load the local event list, treating missing or invalid files as empty."""
+    try:
+        events = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    return list(filter(is_valid_event, events)) if isinstance(events, list) else []
 
 
-def save_events(events: list[dict]):
-    DATA_FILE.write_text(json.dumps(events, indent=2))
+def save_events(events: list[dict]) -> None:
+    """Persist events in the application directory."""
+    DATA_FILE.write_text(json.dumps(events, indent=2), encoding="utf-8")
 
 
-if "events" not in st.session_state:
-    st.session_state.events = load_events()
+def month_for_offset(today: date, offset: int) -> date:
+    """Return the first day of the month offset from today."""
+    year, month = divmod(today.year * 12 + today.month - 1 + offset, 12)
+    return date(year, month + 1, 1)
+
+
+st.set_page_config(
+    page_title="Calendar tracker",
+    page_icon=":material/calendar_month:",
+    layout="wide",
+)
+st.title("Calendar tracker")
+
+st.session_state.setdefault("events", load_events())
+st.session_state.setdefault("cal_offset", 0)
+st.session_state.setdefault("confirm_delete", False)
+
 events = st.session_state.events
+today = date.today()
+add_tab, monthly_tab, all_events_tab = st.tabs(["Add event", "Monthly view", "All events"])
 
-tab1, tab2, tab3 = st.tabs(["Add Event", "Monthly View", "All Events"])
-
-with tab1:
+with add_tab:
     with st.form("add_event"):
-        st.subheader("New Event")
-        title    = st.text_input("Title", placeholder="Team meeting")
-        c1, c2   = st.columns(2)
-        ev_date  = c1.date_input("Date", value=date.today())
-        ev_time  = c2.time_input("Time", value=datetime.now().replace(minute=0, second=0).time())
+        st.subheader("New event")
+        title = st.text_input("Title", placeholder="Team meeting")
+        date_column, time_column = st.columns(2)
+        event_date = date_column.date_input("Date", value=today)
+        event_time = time_column.time_input(
+            "Time", value=datetime.now().replace(minute=0, second=0, microsecond=0).time()
+        )
         category = st.selectbox("Category", CATEGORIES)
         duration = st.number_input("Duration (minutes)", 15, 480, 60, step=15)
-        notes    = st.text_area("Notes", height=80)
-        submit   = st.form_submit_button("Add Event", type="primary")
+        notes = st.text_area("Notes", height=80)
+        submitted = st.form_submit_button("Add event", type="primary", icon=":material/add:")
 
-    if submit and title:
-        events.append({
-            "title":    title,
-            "date":     str(ev_date),
-            "time":     ev_time.strftime("%H:%M"),
-            "category": category,
-            "duration": int(duration),
-            "notes":    notes,
-        })
-        save_events(events)
-        st.success(f"Event '{title}' added for {ev_date} at {ev_time.strftime('%H:%M')}.")
+    if submitted:
+        clean_title = title.strip()
+        if not clean_title:
+            st.error("Enter an event title.")
+        else:
+            events.append(
+                {
+                    "title": clean_title,
+                    "date": str(event_date),
+                    "time": event_time.strftime("%H:%M"),
+                    "category": category,
+                    "duration": int(duration),
+                    "notes": notes.strip(),
+                }
+            )
+            save_events(events)
+            st.success(f"Event '{clean_title}' added for {event_date} at {event_time:%H:%M}.")
 
-with tab2:
-    today = date.today()
-    # Month navigation
-    c1, c2, c3 = st.columns([1, 2, 1])
-    if "cal_offset" not in st.session_state:
-        st.session_state.cal_offset = 0
-    if c1.button("◀ Prev"):
+with monthly_tab:
+    previous_column, current_column, next_column = st.columns([1, 2, 1])
+    if previous_column.button("Previous", icon=":material/chevron_left:"):
         st.session_state.cal_offset -= 1
-    if c3.button("Next ▶"):
+    if next_column.button("Next", icon=":material/chevron_right:"):
         st.session_state.cal_offset += 1
-    if c2.button("Today"):
+    if current_column.button("Today", icon=":material/today:"):
         st.session_state.cal_offset = 0
 
-    offset     = st.session_state.cal_offset
-    month_date = (today.replace(day=1) + timedelta(days=32 * offset)).replace(day=1)
-    month_str  = month_date.strftime("%Y-%m")
-    c2.markdown(f"<h3 style='text-align:center'>{month_date.strftime('%B %Y')}</h3>",
-                unsafe_allow_html=True)
+    month_date = month_for_offset(today, st.session_state.cal_offset)
+    month_str = month_date.strftime("%Y-%m")
+    current_column.subheader(month_date.strftime("%B %Y"))
 
-    month_events = [e for e in events if e["date"].startswith(month_str)]
+    month_events = [event for event in events if event["date"].startswith(month_str)]
     if not month_events:
-        st.info(f"No events in {month_date.strftime('%B %Y')}.")
+        st.info(f"No events in {month_date:%B %Y}.")
     else:
-        by_day: dict[str, list] = {}
-        for e in sorted(month_events, key=lambda x: (x["date"], x["time"])):
-            by_day.setdefault(e["date"], []).append(e)
+        by_day: dict[str, list[dict]] = {}
+        for event in sorted(month_events, key=lambda item: (item["date"], item["time"])):
+            by_day.setdefault(event["date"], []).append(event)
 
-        for day_str, day_evs in sorted(by_day.items()):
-            d = datetime.strptime(day_str, "%Y-%m-%d").date()
-            label = "**Today**" if d == today else d.strftime("%a, %b %d")
-            with st.expander(f"{label} — {len(day_evs)} event(s)"):
-                for e in day_evs:
-                    icon = CAT_COLORS.get(e["category"], "⚪")
-                    st.markdown(f"{icon} **{e['time']}** — {e['title']} "
-                                f"*({e['category']}, {e['duration']} min)*")
-                    if e.get("notes"):
-                        st.caption(e["notes"])
+        for day_str, day_events in sorted(by_day.items()):
+            event_day = datetime.strptime(day_str, "%Y-%m-%d").date()
+            label = "Today" if event_day == today else event_day.strftime("%a, %b %d")
+            with st.expander(f"{label} - {len(day_events)} event(s)"):
+                for event in day_events:
+                    icon = CAT_COLORS.get(event["category"], "⚪")
+                    st.markdown(
+                        f"{icon} **{event['time']}** - {event['title']} "
+                        f"*({event['category']}, {event['duration']} min)*"
+                    )
+                    if event.get("notes"):
+                        st.caption(event["notes"])
 
-with tab3:
+with all_events_tab:
     if not events:
         st.info("No events yet.")
     else:
-        cat_filter = st.multiselect("Filter by category", CATEGORIES, default=CATEGORIES)
-        filtered   = [e for e in events if e["category"] in cat_filter]
-        filtered   = sorted(filtered, key=lambda x: (x["date"], x["time"]))
-
-        rows = [{"Date": e["date"], "Time": e["time"], "Title": e["title"],
-                 "Category": e["category"], "Duration": f"{e['duration']} min"}
-                for e in filtered]
-        df = pd.DataFrame(rows)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        category_filter = st.multiselect("Filter by category", CATEGORIES, default=CATEGORIES)
+        filtered = [event for event in events if event["category"] in category_filter]
+        filtered = sorted(filtered, key=lambda item: (item["date"], item["time"]))
+        rows = [
+            {
+                "Date": event["date"],
+                "Time": event["time"],
+                "Title": event["title"],
+                "Category": event["category"],
+                "Duration": f"{event['duration']} min",
+            }
+            for event in filtered
+        ]
+        st.dataframe(pd.DataFrame(rows), width="stretch", hide_index=True)
         st.caption(f"{len(filtered)} event(s) shown")
 
-        # Upcoming events
-        st.subheader("Upcoming (Next 7 Days)")
-        cutoff = str(today + timedelta(days=7))
-        upcoming = [e for e in filtered if today.isoformat() <= e["date"] <= cutoff]
+        st.subheader("Upcoming (next 7 days)")
+        cutoff = (today + timedelta(days=7)).isoformat()
+        upcoming = [event for event in filtered if today.isoformat() <= event["date"] <= cutoff]
         if upcoming:
-            for e in upcoming:
-                icon = CAT_COLORS.get(e["category"], "⚪")
-                st.markdown(f"{icon} **{e['date']} {e['time']}** — {e['title']}")
+            for event in upcoming:
+                icon = CAT_COLORS.get(event["category"], "⚪")
+                st.markdown(f"{icon} **{event['date']} {event['time']}** - {event['title']}")
         else:
             st.info("No upcoming events in the next 7 days.")
 
-        if st.button("Delete All Events", type="secondary"):
-            st.session_state.events = []
-            save_events([])
-            st.rerun()
+        if not st.session_state.confirm_delete:
+            if st.button("Delete all events", type="secondary", icon=":material/delete:"):
+                st.session_state.confirm_delete = True
+                st.rerun()
+        else:
+            st.warning("This permanently deletes every local event.")
+            cancel_column, confirm_column = st.columns(2)
+            if cancel_column.button("Cancel"):
+                st.session_state.confirm_delete = False
+                st.rerun()
+            if confirm_column.button("Confirm deletion", type="primary"):
+                events.clear()
+                save_events(events)
+                st.session_state.confirm_delete = False
+                st.rerun()

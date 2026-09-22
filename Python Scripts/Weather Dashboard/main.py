@@ -1,129 +1,179 @@
-"""Weather Dashboard — Streamlit app.
+"""Current conditions and a seven-day forecast from Open-Meteo."""
 
-Current weather and 5-day forecast via Open-Meteo (no API key needed).
-Geocoding via Open-Meteo geocoding API.
-
-Usage:
-    streamlit run main.py
-"""
+from __future__ import annotations
 
 import json
-import urllib.request
+import urllib.error
 import urllib.parse
-from datetime import datetime
+import urllib.request
 
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Weather Dashboard", layout="wide")
-st.title("🌤️ Weather Dashboard")
-
 WMO_CODES = {
-    0:"Clear sky",1:"Mainly clear",2:"Partly cloudy",3:"Overcast",
-    45:"Fog",48:"Icy fog",51:"Light drizzle",53:"Moderate drizzle",55:"Dense drizzle",
-    61:"Slight rain",63:"Moderate rain",65:"Heavy rain",
-    71:"Slight snow",73:"Moderate snow",75:"Heavy snow",77:"Snow grains",
-    80:"Slight showers",81:"Moderate showers",82:"Violent showers",
-    85:"Slight snow showers",86:"Heavy snow showers",
-    95:"Thunderstorm",96:"Thunderstorm + hail",99:"Thunderstorm + heavy hail",
+    0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+    45: "Fog", 48: "Icy fog", 51: "Light drizzle", 53: "Moderate drizzle",
+    55: "Dense drizzle", 61: "Slight rain", 63: "Moderate rain", 65: "Heavy rain",
+    71: "Slight snow", 73: "Moderate snow", 75: "Heavy snow", 77: "Snow grains",
+    80: "Slight showers", 81: "Moderate showers", 82: "Violent showers",
+    85: "Slight snow showers", 86: "Heavy snow showers", 95: "Thunderstorm",
+    96: "Thunderstorm with hail", 99: "Thunderstorm with heavy hail",
 }
 WMO_EMOJI = {
-    0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",
-    51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",
-    71:"🌨️",73:"🌨️",75:"❄️",77:"❄️",80:"🌦️",81:"🌧️",82:"⛈️",
-    85:"🌨️",86:"❄️",95:"⛈️",96:"⛈️",99:"⛈️",
+    0: "sunny", 1: "partly_cloudy_day", 2: "partly_cloudy_day", 3: "cloud",
+    45: "foggy", 48: "foggy", 51: "rainy", 53: "rainy", 55: "rainy",
+    61: "rainy", 63: "rainy", 65: "rainy", 71: "weather_snowy", 73: "weather_snowy",
+    75: "weather_snowy", 77: "weather_snowy", 80: "rainy", 81: "rainy",
+    82: "thunderstorm", 85: "weather_snowy", 86: "weather_snowy", 95: "thunderstorm",
+    96: "thunderstorm", 99: "thunderstorm",
 }
 
 
-@st.cache_data(ttl=3600)
-def geocode(city: str) -> dict | None:
-    url = f"https://geocoding-api.open-meteo.com/v1/search?name={urllib.parse.quote(city)}&count=1"
+@st.cache_data(ttl="1h", max_entries=100)
+def geocode(city: str) -> dict[str, float | str] | None:
+    """Resolve a city to the first Open-Meteo geocoding result."""
+    query = urllib.parse.urlencode({"name": city, "count": 1})
+    url = f"https://geocoding-api.open-meteo.com/v1/search?{query}"
     try:
-        with urllib.request.urlopen(url, timeout=5) as resp:
-            data = json.loads(resp.read())
-            results = data.get("results")
-            if results:
-                r = results[0]
-                return {"lat": r["latitude"], "lon": r["longitude"],
-                        "name": r["name"], "country": r.get("country", "")}
-    except Exception:
-        pass
-    return None
+        with urllib.request.urlopen(url, timeout=5) as response:
+            results = json.loads(response.read()).get("results")
+    except (urllib.error.URLError, ValueError):
+        return None
+    if not results:
+        return None
+    result = results[0]
+    return {
+        "lat": result["latitude"],
+        "lon": result["longitude"],
+        "name": result["name"],
+        "country": result.get("country", ""),
+    }
 
 
-@st.cache_data(ttl=1800)
-def fetch_weather(lat: float, lon: float) -> dict | None:
-    url = (
-        f"https://api.open-meteo.com/v1/forecast?"
-        f"latitude={lat}&longitude={lon}"
-        f"&current=temperature_2m,relative_humidity_2m,wind_speed_10m,"
-        f"weather_code,apparent_temperature,precipitation"
-        f"&daily=weather_code,temperature_2m_max,temperature_2m_min,"
-        f"precipitation_sum,wind_speed_10m_max"
-        f"&timezone=auto&forecast_days=7"
+@st.cache_data(ttl="30m", max_entries=100)
+def fetch_weather(latitude: float, longitude: float) -> dict | None:
+    """Fetch current conditions and a seven-day forecast from Open-Meteo."""
+    query = urllib.parse.urlencode(
+        {
+            "latitude": latitude,
+            "longitude": longitude,
+            "current": (
+                "temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code,"
+                "apparent_temperature,precipitation"
+            ),
+            "daily": (
+                "weather_code,temperature_2m_max,temperature_2m_min,"
+                "precipitation_sum,wind_speed_10m_max"
+            ),
+            "timezone": "auto",
+            "forecast_days": 7,
+        }
     )
+    url = f"https://api.open-meteo.com/v1/forecast?{query}"
     try:
-        with urllib.request.urlopen(url, timeout=6) as resp:
-            return json.loads(resp.read())
-    except Exception:
+        with urllib.request.urlopen(url, timeout=6) as response:
+            return json.loads(response.read())
+    except (urllib.error.URLError, ValueError):
         return None
 
 
-# ── UI ─────────────────────────────────────────────────────────────────────
-city = st.text_input("🔍 Enter city name", "London")
-unit = st.radio("Temperature unit", ["°C", "°F"], horizontal=True)
+def convert_temperature(celsius: float, unit: str) -> float:
+    """Convert Celsius to the selected display unit."""
+    return celsius if unit == "C" else round(celsius * 9 / 5 + 32, 1)
 
-if st.button("Get Weather") or city:
-    geo = geocode(city)
-    if not geo:
-        st.error(f"City '{city}' not found.")
-        st.stop()
 
-    data = fetch_weather(geo["lat"], geo["lon"])
-    if not data:
-        st.error("Could not fetch weather data.")
-        st.stop()
-
-    def to_unit(c): return c if unit == "°C" else round(c * 9/5 + 32, 1)
-    u_label = unit
-
-    cur = data["current"]
-    code = cur["weather_code"]
-    emoji = WMO_EMOJI.get(code, "🌡️")
-    desc  = WMO_CODES.get(code, "Unknown")
-
-    st.subheader(f"{emoji} {geo['name']}, {geo['country']}")
-    st.caption(f"Updated: {cur['time']}")
-
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric(f"Temperature ({u_label})", f"{to_unit(cur['temperature_2m'])}{u_label}")
-    c2.metric(f"Feels Like",  f"{to_unit(cur['apparent_temperature'])}{u_label}")
-    c3.metric("Humidity",     f"{cur['relative_humidity_2m']}%")
-    c4.metric("Wind",         f"{cur['wind_speed_10m']} km/h")
-
-    st.info(f"**{desc}**  ·  Precipitation: {cur['precipitation']} mm")
-
-    st.subheader("7-Day Forecast")
+def forecast_frame(data: dict, unit: str) -> pd.DataFrame:
+    """Build the forecast table for display."""
     daily = data["daily"]
-    rows  = []
-    for i, date_str in enumerate(daily["time"]):
-        c = daily["weather_code"][i]
-        rows.append({
-            "Date":    date_str,
-            "":        WMO_EMOJI.get(c, ""),
-            "Condition": WMO_CODES.get(c, ""),
-            f"High ({u_label})": to_unit(daily["temperature_2m_max"][i]),
-            f"Low ({u_label})":  to_unit(daily["temperature_2m_min"][i]),
-            "Rain (mm)":  daily["precipitation_sum"][i],
-            "Wind (km/h)": daily["wind_speed_10m_max"][i],
-        })
-    df = pd.DataFrame(rows)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    high = pd.Series(daily["temperature_2m_max"])
+    low = pd.Series(daily["temperature_2m_min"])
+    if unit == "F":
+        high = (high * 9 / 5 + 32).round(1)
+        low = (low * 9 / 5 + 32).round(1)
+    return pd.DataFrame(
+        {
+            "Date": daily["time"],
+            "Condition": pd.Series(daily["weather_code"]).map(WMO_CODES).fillna("Unknown"),
+            f"High ({unit})": high,
+            f"Low ({unit})": low,
+            "Rain (mm)": daily["precipitation_sum"],
+            "Wind (km/h)": daily["wind_speed_10m_max"],
+        }
+    )
 
-    # Temperature chart
-    chart_df = pd.DataFrame({
-        "High": [to_unit(t) for t in daily["temperature_2m_max"]],
-        "Low":  [to_unit(t) for t in daily["temperature_2m_min"]],
-    }, index=daily["time"])
-    st.subheader("Temperature Range")
-    st.line_chart(chart_df)
+
+st.set_page_config(page_title="Weather dashboard", page_icon=":material/cloud:", layout="wide")
+st.title("Weather dashboard")
+st.caption("Current conditions and a seven-day forecast from Open-Meteo. No API key required.")
+
+st.session_state.setdefault("weather_data", None)
+st.session_state.setdefault("weather_location", None)
+
+with st.form("weather_search"):
+    city = st.text_input("City", placeholder="For example, London", key="weather_city")
+    unit = st.segmented_control(
+        "Temperature unit",
+        ["C", "F"],
+        default="C",
+        format_func=lambda value: f"°{value}",
+        key="weather_unit",
+    )
+    submitted = st.form_submit_button("Get weather", icon=":material/search:")
+
+if submitted:
+    st.session_state.weather_data = None
+    st.session_state.weather_location = None
+    if not city.strip():
+        st.warning("Enter a city name.")
+    else:
+        with st.spinner("Fetching weather..."):
+            location = geocode(city.strip())
+            weather_data = (
+                fetch_weather(location["lat"], location["lon"]) if location else None
+            )
+        if not location:
+            st.error(f"City '{city.strip()}' was not found.")
+        elif not weather_data:
+            st.error("Weather data could not be fetched. Please try again.")
+        else:
+            st.session_state.weather_location = location
+            st.session_state.weather_data = weather_data
+
+location = st.session_state.weather_location
+weather_data = st.session_state.weather_data
+if location and weather_data:
+    current = weather_data["current"]
+    weather_code = current["weather_code"]
+    unit_label = f"°{unit}"
+    st.subheader(
+        f":material/{WMO_EMOJI.get(weather_code, 'thermostat')}: "
+        f"{location['name']}, {location['country']}"
+    )
+    st.caption(f"Updated: {current['time']}")
+    with st.container(horizontal=True):
+        st.metric(
+            f"Temperature ({unit_label})",
+            f"{convert_temperature(current['temperature_2m'], unit)}{unit_label}",
+            border=True,
+        )
+        st.metric(
+            "Feels like",
+            f"{convert_temperature(current['apparent_temperature'], unit)}{unit_label}",
+            border=True,
+        )
+        st.metric("Humidity", f"{current['relative_humidity_2m']}%", border=True)
+        st.metric("Wind", f"{current['wind_speed_10m']} km/h", border=True)
+
+    st.info(
+        f"{WMO_CODES.get(weather_code, 'Unknown conditions')} · "
+        f"Precipitation: {current['precipitation']} mm"
+    )
+    forecast = forecast_frame(weather_data, unit)
+    with st.container(border=True):
+        st.subheader("Seven-day forecast")
+        st.dataframe(forecast, hide_index=True)
+
+    chart_data = forecast.set_index("Date")[[f"High ({unit})", f"Low ({unit})"]]
+    with st.container(border=True):
+        st.subheader("Temperature range")
+        st.line_chart(chart_data)

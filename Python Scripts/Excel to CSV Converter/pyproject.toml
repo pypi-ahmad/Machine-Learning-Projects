@@ -1,0 +1,13 @@
+[project]
+name = "excel-to-csv-converter"
+version = "0.1.0"
+description = "Convert Excel workbook sheets to CSV files"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1",
+    "xlrd>=2.0.1",
+]
+
+[tool.uv]
+package = false

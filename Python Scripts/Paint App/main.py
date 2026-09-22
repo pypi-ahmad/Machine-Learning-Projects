@@ -8,7 +8,7 @@ Usage:
 """
 
 import tkinter as tk
-from tkinter import colorchooser, filedialog, messagebox
+from tkinter import colorchooser, filedialog, messagebox, simpledialog
 
 
 class PaintApp(tk.Tk):
@@ -176,15 +176,10 @@ class PaintApp(tk.Tk):
             self._canvas.itemconfig(items[0], fill=self._color)
 
     def _place_text(self, x: int, y: int):
-        t = tk.simpledialog_text = tk.simpledialog.askstring if hasattr(tk, "simpledialog") else None
-        try:
-            from tkinter import simpledialog
-            txt = simpledialog.askstring("Text", "Enter text:", parent=self)
-            if txt:
-                self._canvas.create_text(x, y, text=txt, fill=self._color,
-                                          font=("Consolas", self._size.get() * 3 + 8))
-        except Exception:
-            pass
+        text = simpledialog.askstring("Text", "Enter text:", parent=self)
+        if text:
+            self._canvas.create_text(x, y, text=text, fill=self._color,
+                                     font=("Consolas", self._size.get() * 3 + 8))
 
     # ── File operations ────────────────────────────────────────────────────────
 
@@ -207,6 +202,5 @@ class PaintApp(tk.Tk):
 
 
 if __name__ == "__main__":
-    from tkinter import simpledialog
     app = PaintApp()
     app.mainloop()

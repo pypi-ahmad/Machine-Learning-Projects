@@ -311,13 +311,22 @@ def main():
     texts, labels, le = preprocess(df)
 
     # 2. Split (70/15/15)
-    train_idx, temp_idx = train_test_split(
-        range(len(texts)), test_size=0.3, random_state=args.seed, stratify=labels,
-    )
-    val_idx, test_idx = train_test_split(
-        temp_idx, test_size=0.5, random_state=args.seed,
-        stratify=[labels[i] for i in temp_idx],
-    )
+    try:
+        train_idx, temp_idx = train_test_split(
+            range(len(texts)), test_size=0.3, random_state=args.seed, stratify=labels,
+        )
+        val_idx, test_idx = train_test_split(
+            temp_idx, test_size=0.5, random_state=args.seed,
+            stratify=[labels[i] for i in temp_idx],
+        )
+    except ValueError:
+        logger.warning("Stratified split failed; falling back to a random split")
+        train_idx, temp_idx = train_test_split(
+            range(len(texts)), test_size=0.3, random_state=args.seed,
+        )
+        val_idx, test_idx = train_test_split(
+            temp_idx, test_size=0.5, random_state=args.seed,
+        )
 
     write_split_manifest(
         paths["outputs"],

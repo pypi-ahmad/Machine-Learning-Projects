@@ -1,10 +1,10 @@
 # String Search from Multiple Files
 
-> CLI tool that recursively searches for a text string across all files in a given directory.
+> CLI tool that recursively searches for text across files in a given directory.
 
 ## Overview
 
-This script prompts the user for a search string and a directory path, then recursively traverses the directory tree to find files containing the specified text. When a match is found, it prints the absolute path of the matching file.
+This script prompts for a search string and directory path, then traverses the directory tree to find files containing the text. When it finds a match, it prints the file's absolute path.
 
 ## Features
 
@@ -43,8 +43,9 @@ No additional installation needed — standard library only.
 
 ## Usage
 
-```bash
-python findstring.py
+```powershell
+uv sync --no-config
+uv run --no-config python findstring.py
 ```
 
 The script will prompt for:
@@ -66,7 +67,7 @@ hello found in
 C:\...\files\folder1\hello.txt
 ```
 
-## How It Works
+## How it works
 
 1. Prompts the user for a search string and directory path via `input()`
 2. Changes the working directory to the specified path using `os.chdir()`

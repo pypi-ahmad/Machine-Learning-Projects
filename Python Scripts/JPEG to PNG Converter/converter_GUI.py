@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from PIL import Image
 root = tk.Tk()   # Tkinter window initialized
 root.title('Converter')     # Title of the window
@@ -29,7 +29,7 @@ def convertToPNG():
     '''Function to change file extenstion to png and save it to User's prefered location '''
     global im1
     if im1 is None:
-        tk.messagebox.showerror("Error", "No File selected")
+        messagebox.showerror("Error", "No File selected")
     else:
         export_file_path = filedialog.asksaveasfilename(defaultextension='.png')
         im1.save(export_file_path)

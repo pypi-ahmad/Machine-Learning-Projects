@@ -4,8 +4,8 @@ Play against the computer with score tracking,
 win/loss streaks, and optional best-of-N mode.
 
 Usage:
-    python main.py
-    python main.py --rounds 5
+    uv run python main.py
+    uv run python main.py --rounds 5
 """
 
 import argparse
@@ -13,7 +13,7 @@ import random
 import sys
 
 CHOICES   = ["rock", "paper", "scissors"]
-EMOJI     = {"rock": "🪨", "paper": "📄", "scissors": "✂️"}
+SYMBOLS   = {"rock": "R", "paper": "P", "scissors": "S"}
 BEATS     = {"rock": "scissors", "paper": "rock", "scissors": "paper"}
 SHORTCUTS = {"r": "rock", "p": "paper", "s": "scissors"}
 
@@ -25,15 +25,15 @@ def get_winner(player: str, cpu: str) -> str:
 
 
 def display_result(player: str, cpu: str, winner: str) -> None:
-    p_e = EMOJI[player]
-    c_e = EMOJI[cpu]
-    print(f"\n  You: {p_e} {player.upper():<10}  CPU: {c_e} {cpu.upper():<10}", end="")
+    p_s = SYMBOLS[player]
+    c_s = SYMBOLS[cpu]
+    print(f"\n  You: [{p_s}] {player.upper():<10}  CPU: [{c_s}] {cpu.upper():<10}", end="")
     if winner == "draw":
-        print("→ DRAW!")
+        print("-> DRAW!")
     elif winner == "player":
-        print(f"→ {BEATS[player].upper()} beats {cpu.upper()} — YOU WIN! 🎉")
+        print(f"-> {player.upper()} beats {cpu.upper()} - YOU WIN!")
     else:
-        print(f"→ {BEATS[cpu].upper()} beats {player.upper()} — CPU WINS! 🤖")
+        print(f"-> {cpu.upper()} beats {player.upper()} - CPU WINS!")
 
 
 def play(best_of: int = None) -> None:
@@ -46,7 +46,7 @@ def play(best_of: int = None) -> None:
 
     print("=== Rock Paper Scissors ===")
     if best_of:
-        print(f"Best of {best_of} — first to {target} wins!\n")
+        print(f"Best of {best_of} - first to {target} wins!\n")
     print("Enter: r=rock  p=paper  s=scissors  q=quit\n")
 
     while True:
@@ -78,20 +78,20 @@ def play(best_of: int = None) -> None:
             lose_streak  = 0
             max_ws       = max(max_ws, win_streak)
             if win_streak >= 3:
-                print(f"  🔥 Win streak: {win_streak}!")
+                print(f"  Win streak: {win_streak}!")
         elif winner == "cpu":
             lose_streak += 1
             win_streak   = 0
             if lose_streak >= 3:
-                print(f"  😬 Lose streak: {lose_streak}…")
+                print(f"  Lose streak: {lose_streak}...")
         else:
             win_streak = lose_streak = 0
 
-        print(f"  Score — You: {scores['player']}  CPU: {scores['cpu']}  Draws: {scores['draw']}\n")
+        print(f"  Score - You: {scores['player']}  CPU: {scores['cpu']}  Draws: {scores['draw']}\n")
 
     # Final report
     total = scores["player"] + scores["cpu"] + scores["draw"]
-    print("\n  ── Final Results ──")
+    print("\n  -- Final Results --")
     print(f"  Rounds played:  {total}")
     print(f"  Your wins:      {scores['player']}")
     print(f"  CPU wins:       {scores['cpu']}")
@@ -103,9 +103,9 @@ def play(best_of: int = None) -> None:
         print(f"  Your win rate:  {win_pct:.1f}%")
     if best_of:
         if scores["player"] >= target:
-            print("  🏆 YOU WIN THE SERIES!")
+            print("  YOU WIN THE SERIES!")
         elif scores["cpu"] >= target:
-            print("  🤖 CPU WINS THE SERIES!")
+            print("  CPU WINS THE SERIES!")
         else:
             print("  Series ended early.")
 
@@ -113,8 +113,10 @@ def play(best_of: int = None) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Rock Paper Scissors")
     parser.add_argument("--rounds", type=int, default=None, metavar="N",
-                        help="Best-of-N mode (e.g. --rounds 5)")
+                        help="Positive odd best-of-N mode (e.g. --rounds 5)")
     args = parser.parse_args()
+    if args.rounds is not None and (args.rounds < 1 or args.rounds % 2 == 0):
+        parser.error("--rounds must be a positive odd number")
     play(best_of=args.rounds)
 
 

@@ -13,8 +13,8 @@ from collections import Counter
 
 import streamlit as st
 
-st.set_page_config(page_title="Document Q&A", layout="wide")
-st.title("📄 Document Q&A")
+st.set_page_config(page_title="Document Q&A", page_icon=":material/article:", layout="wide")
+st.title("Document Q&A")
 st.caption("Ask questions about any text document using keyword-based sentence retrieval.")
 
 
@@ -48,7 +48,7 @@ def tfidf_vectors(docs: list[list[str]]) -> list[dict]:
     for doc in docs:
         tf  = Counter(doc)
         tot = len(doc) or 1
-        vec = {t: (tf[t] / tot) * math.log((N + 1) / (df_cnt[t] + 1))
+        vec = {t: (tf[t] / tot) * (math.log((N + 1) / (df_cnt[t] + 1)) + 1)
                for t in tf}
         result.append(vec)
     return result
@@ -64,7 +64,18 @@ def cosine(a: dict, b: dict) -> float:
 
 def answer_question(question: str, sentences: list[str],
                     sent_vecs: list[dict], top_k: int = 3) -> list[tuple[str, float]]:
-    q_vec = tfidf_vectors([tokenize(question)])[0]
+    sentence_tokens = [tokenize(sentence) for sentence in sentences]
+    document_count = len(sentence_tokens)
+    document_frequency = Counter(token for tokens in sentence_tokens for token in set(tokens))
+    question_tokens = tokenize(question)
+    question_counts = Counter(question_tokens)
+    question_length = len(question_tokens) or 1
+    q_vec = {
+        token: (question_counts[token] / question_length)
+        * (math.log((document_count + 1) / (document_frequency[token] + 1)) + 1)
+        for token in question_counts
+        if token in document_frequency
+    }
     scores = [(sentences[i], cosine(q_vec, sent_vecs[i])) for i in range(len(sentences))]
     scores.sort(key=lambda x: -x[1])
     return [(s, sc) for s, sc in scores[:top_k] if sc > 0]
@@ -144,29 +155,32 @@ are among the solutions being pursued to mitigate climate change.
 
 # ── Session state ─────────────────────────────────────────────────────────────
 
-if "sentences" not in st.session_state:
-    st.session_state.sentences = []
-    st.session_state.sent_vecs = []
-    st.session_state.doc_loaded = False
-    st.session_state.qa_history = []
+st.session_state.setdefault("sentences", [])
+st.session_state.setdefault("sent_vecs", [])
+st.session_state.setdefault("doc_loaded", False)
+st.session_state.setdefault("qa_history", [])
 
-tab1, tab2, tab3 = st.tabs(["Load Document", "Ask Questions", "Q&A History"])
+tab1, tab2, tab3 = st.tabs(["Load document", "Ask questions", "Q&A history"])
 
 with tab1:
-    st.subheader("Load a Document")
-    source = st.radio("Source", ["Sample Document", "Paste Text", "Upload .txt File"])
+    st.subheader("Load a document")
+    source = st.radio("Source", ["Sample document", "Paste text", "Upload .txt file"])
 
-    if source == "Sample Document":
+    if source == "Sample document":
         chosen = st.selectbox("Choose sample", list(SAMPLE_DOCS.keys()))
         doc_text = SAMPLE_DOCS[chosen].strip()
         st.text_area("Preview", doc_text[:500] + "...", height=150, disabled=True)
-    elif source == "Paste Text":
+    elif source == "Paste text":
         doc_text = st.text_area("Paste your document here", height=250)
     else:
         uploaded = st.file_uploader("Upload .txt file", type="txt")
-        doc_text = uploaded.read().decode("utf-8") if uploaded else ""
+        try:
+            doc_text = uploaded.getvalue().decode("utf-8") if uploaded else ""
+        except UnicodeDecodeError:
+            st.error("The uploaded file must use UTF-8 text encoding.")
+            doc_text = ""
 
-    if st.button("📥 Load Document", type="primary") and doc_text.strip():
+    if st.button("Load document", icon=":material/upload_file:", type="primary") and doc_text.strip():
         sents = split_sentences(doc_text)
         if len(sents) < 3:
             st.error("Document too short — needs at least 3 sentences.")
@@ -183,12 +197,12 @@ with tab2:
     if not st.session_state.doc_loaded:
         st.info("Load a document first in the 'Load Document' tab.")
     else:
-        st.subheader("Ask a Question")
+        st.subheader("Ask a question")
         st.caption(f"Document has {len(st.session_state.sentences)} indexed sentences.")
         question = st.text_input("Your question", placeholder="e.g. What is supervised learning?")
         top_k    = st.slider("Number of answers to retrieve", 1, 5, 3)
 
-        if st.button("🔍 Find Answer", type="primary") and question.strip():
+        if st.button("Find answer", icon=":material/search:", type="primary") and question.strip():
             results = answer_question(
                 question,
                 st.session_state.sentences,
@@ -197,7 +211,7 @@ with tab2:
             )
             if results:
                 st.divider()
-                st.subheader("Best Matching Passages")
+                st.subheader("Best matching passages")
                 for i, (sent, score) in enumerate(results, 1):
                     with st.expander(f"#{i} — Relevance: {score:.4f}", expanded=(i == 1)):
                         st.write(sent)
@@ -210,7 +224,7 @@ with tab2:
 
 with tab3:
     if st.session_state.qa_history:
-        st.subheader("Previous Questions & Answers")
+        st.subheader("Previous questions and answers")
         for item in reversed(st.session_state.qa_history):
             st.markdown(f"**Q:** {item['question']}")
             for i, ans in enumerate(item["answers"], 1):

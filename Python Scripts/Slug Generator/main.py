@@ -1,11 +1,11 @@
 """Slug Generator — CLI tool.
 
 Converts text to URL-friendly slugs.
-Supports multiple slug styles, Unicode transliteration, custom separators,
+Supports multiple slug styles, diacritic normalization, custom separators,
 max-length truncation, and batch generation.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import re

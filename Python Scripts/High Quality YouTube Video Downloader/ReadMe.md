@@ -1,10 +1,10 @@
 # High Quality YouTube Video Downloader
 
-> GUI-based YouTube video downloader with multiple versions, built with Tkinter and youtube_dl.
+> A GUI-based YouTube video downloader with multiple versions, built with Tkinter and `youtube_dl`.
 
 ## Overview
 
-A collection of three YouTube downloader scripts with Tkinter GUIs. The main version (`YTD.py`) provides a single-link downloader, while the V2.0 and V2.1 versions support downloading up to 4 videos at once with an optional auto-shutdown feature after downloads complete.
+This project contains three YouTube downloader scripts with Tkinter interfaces. The main version (`YTD.py`) downloads one link, while V2.0 and V2.1 support up to four videos and an optional shutdown after downloads finish.
 
 ## Features
 
@@ -50,7 +50,7 @@ python YouTube_downloader_V2.1.py
 2. Click **Download** (or **download all** for batch versions).
 3. For V2.0/V2.1: Optionally click **yes** to enable auto-shutdown after downloads finish.
 
-## How It Works
+## How it works
 
 - **YTD.py**: Creates a 500×200 centered Tkinter window. On clicking Download, retrieves the URL from the entry field, strips whitespace, and calls `youtube_dl.YoutubeDL().download()`.
 - **V2.0**: Provides 4 entry fields. Downloads each sequentially, skipping entries that still contain the placeholder text. If shutdown was enabled (`key=0`), runs `os.system("shutdown /s /t 1")`.

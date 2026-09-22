@@ -1,54 +1,61 @@
-# !/usr/bin/env python
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-import json
+"""Save a public GeeksForGeeks article as a PDF through Chrome."""
+
+import argparse
+from base64 import b64decode
+from pathlib import Path
+from urllib.parse import urlparse
+
 import requests
+from selenium import webdriver
+from selenium.common.exceptions import WebDriverException
+
+REQUEST_TIMEOUT = 15
 
 
-# article url
-# URL = "https://www.geeksforgeeks.org/what-can-i-do-with-python/"
+def validate_article_url(url: str) -> None:
+    """Reject non-GeeksForGeeks URLs before opening Chrome."""
+    parsed = urlparse(url)
+    hostname = (parsed.hostname or '').lower()
+    if parsed.scheme not in {'http', 'https'} or (
+        hostname != 'geeksforgeeks.org' and not hostname.endswith('.geeksforgeeks.org')
+    ):
+        raise ValueError('Enter a valid GeeksForGeeks article URL.')
 
 
-def get_driver():
-    # chrome options settings
-    chrome_options = webdriver.ChromeOptions()
-    settings = {
-        "recentDestinations": [
-            {"id": "Save as PDF", "origin": "local", "account": ""}
-        ],
-        "selectedDestinationId": "Save as PDF",
-        "version": 2,
-    }
-    prefs = {
-        "printing.print_preview_sticky_settings.appState": json.dumps(settings)
-    }
-    chrome_options.add_experimental_option("prefs", prefs)
-    chrome_options.add_argument("--kiosk-printing")
+def download_article(url: str, output_path: Path) -> None:
+    """Render an article in headless Chrome and save it as a PDF."""
+    response = requests.get(url, timeout=REQUEST_TIMEOUT)
+    response.raise_for_status()
 
-    # launch browser with predefined settings
-    browser = webdriver.Chrome(
-        executable_path=ChromeDriverManager().install(), options=chrome_options
-    )
-    return browser
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless=new')
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    driver = webdriver.Chrome(options=options)
+    try:
+        driver.get(url)
+        pdf = driver.execute_cdp_cmd('Page.printToPDF', {'printBackground': True})
+        output_path.write_bytes(b64decode(pdf['data']))
+    finally:
+        driver.quit()
 
 
-def download_article(URL):
-    browser = get_driver()
-    browser.get(URL)
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Download a GeeksForGeeks article as PDF.')
+    parser.add_argument('url', nargs='?', help='GeeksForGeeks article URL')
+    parser.add_argument('--output', type=Path, default=Path('article.pdf'), help='PDF output path')
+    args = parser.parse_args()
+    url = args.url or input('Provide GeeksForGeeks article URL: ').strip()
 
-    # launch print and save as pdf
-    browser.execute_script("window.print();")
-    browser.close()
+    try:
+        validate_article_url(url)
+        if args.output.exists():
+            raise FileExistsError(f'Refusing to overwrite existing file: {args.output}')
+        download_article(url, args.output)
+    except (OSError, ValueError, WebDriverException, requests.RequestException) as error:
+        parser.error(str(error))
+
+    print(f'Article saved to {args.output}')
 
 
-if __name__ == "__main__":
-    URL = input("provide article URL: ")
-    # check if the url is valid/reachable
-    if requests.get(URL).status_code == 200:
-        try:
-            download_article(URL)
-            print("Your article is successfully downloaded")
-        except Exception as e:
-            print(e)
-    else:
-        print("Enter a valid  working URL")
+if __name__ == '__main__':
+    main()

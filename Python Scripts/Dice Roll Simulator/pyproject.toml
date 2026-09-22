@@ -1,0 +1,10 @@
+[project]
+name = "dice-roll-simulator"
+version = "0.1.0"
+description = "CLI dice roller supporting modifiers, advantage, drops, and statistics"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

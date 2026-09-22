@@ -25,11 +25,11 @@ def sim_coins(n_flips: int, n_trials: int) -> None:
         heads = sum(random.randint(0, 1) for _ in range(n_flips))
         head_counts[heads] += 1
 
-    print(f"\nCoin flip simulation: {n_flips} flip(s) × {n_trials:,} trials")
+    print(f"\nCoin flip simulation: {n_flips} flip(s) x {n_trials:,} trials")
     print(f"{'Heads':>6}  {'Count':>8}  {'Probability':>12}")
     for k in range(n_flips + 1):
         p = head_counts[k] / n_trials
-        bar = "█" * int(p * 40)
+        bar = "#" * int(p * 40)
         print(f"{k:>6}  {head_counts[k]:>8,}  {p:>12.4f}  {bar}")
 
 
@@ -42,11 +42,11 @@ def sim_dice(n_dice: int, n_rolls: int) -> None:
 
     min_sum = n_dice
     max_sum = n_dice * 6
-    print(f"\nDice simulation: {n_dice}d6 × {n_rolls:,} rolls")
+    print(f"\nDice simulation: {n_dice}d6 x {n_rolls:,} rolls")
     print(f"{'Sum':>5}  {'Count':>8}  {'Probability':>12}")
     for s in range(min_sum, max_sum + 1):
         p = sums[s] / n_rolls
-        bar = "█" * int(p * 50)
+        bar = "#" * int(p * 50)
         print(f"{s:>5}  {sums[s]:>8,}  {p:>12.4f}  {bar}")
 
 
@@ -87,15 +87,15 @@ def sim_monty_hall(n_trials: int) -> None:
 
     print(f"\nMonty Hall simulation: {n_trials:,} trials")
     print(f"  Switch strategy wins: {switch_wins:,}/{n_trials:,} = {switch_wins/n_trials:.4f} "
-          f"(theory: 2/3 ≈ 0.6667)")
+          f"(theory: 2/3 ~= 0.6667)")
     print(f"  Stay   strategy wins: {stay_wins:,}/{n_trials:,} = {stay_wins/n_trials:.4f} "
-          f"(theory: 1/3 ≈ 0.3333)")
+          f"(theory: 1/3 ~= 0.3333)")
 
 
 def sim_cards(n_draws: int, n_trials: int) -> None:
     """Draw n_draws cards from a standard deck, report suit/rank frequencies."""
     from collections import Counter
-    suits = ["♠", "♥", "♦", "♣"]
+    suits = ["S", "H", "D", "C"]
     ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"]
     deck  = [f"{r}{s}" for s in suits for r in ranks]
 
@@ -106,7 +106,7 @@ def sim_cards(n_draws: int, n_trials: int) -> None:
             suit_counts[card[-1]] += 1
 
     total = sum(suit_counts.values())
-    print(f"\nCard draw: {n_draws} card(s) × {n_trials:,} trials")
+    print(f"\nCard draw: {n_draws} card(s) x {n_trials:,} trials")
     print(f"{'Suit':>6}  {'Count':>8}  {'Probability':>12}  {'Expected':>10}")
     for s in suits:
         p = suit_counts[s] / total

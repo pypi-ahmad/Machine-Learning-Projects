@@ -1,0 +1,7 @@
+[project]
+name = "image-to-pdf-converter"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "img2pdf>=0.6.3",
+]

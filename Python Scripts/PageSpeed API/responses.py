@@ -1,6 +1,3 @@
-import json
-
-
 class Response(object):
     """ 
     Base Response Object
@@ -16,7 +13,7 @@ class Response(object):
 
         self._response = response
         self._request = response.url
-        self._json = json.loads(response.content)
+        self._json = response.json()
 
 
 class PageSpeedResponse(Response):

@@ -1,24 +1,26 @@
-import random
+"""Generate a secure password without whitespace characters."""
+
+import argparse
+import secrets
 import string
 
-def stretch(text,maxlength):
-    if len(text) < maxlength:
-        randomChar = get_random_char()
-        return stretch(text+randomChar,maxlength)
-    else:
-        return text
 
-def get_random_char():
-    chars = string.printable
-    randomChar = chars[random.randint(0,len(chars)-1)]
-    return randomChar
+CHARACTERS = string.ascii_letters + string.digits + string.punctuation
 
-while 1:
-    maxlen = input(' [?] Enter a length for your password (e for exit): ')
-    try:
-        maxlength = int(maxlen)
-        print("'",stretch('',maxlength),"'\n")
-    except:
-        if maxlen == 'e':
-            break
-        print('Please Enter an integer')
+
+def generate_password(length: int) -> str:
+    """Return a cryptographically secure random password."""
+    return "".join(map(lambda _: secrets.choice(CHARACTERS), range(length)))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate a secure random password.")
+    parser.add_argument("length", type=int, help="Password length")
+    args = parser.parse_args()
+    if args.length < 1:
+        parser.error("length must be at least 1")
+    print(generate_password(args.length))
+
+
+if __name__ == "__main__":
+    main()

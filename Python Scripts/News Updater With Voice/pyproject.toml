@@ -1,0 +1,8 @@
+[project]
+name = "news-updater-with-voice"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "newsapi-python>=0.2.7",
+    "pyttsx3>=2.99",
+]

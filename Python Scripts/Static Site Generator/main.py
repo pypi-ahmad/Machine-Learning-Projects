@@ -1,15 +1,15 @@
-"""Static Site Generator — CLI developer tool.
+"""Static Site Generator - CLI developer tool.
 
 Generate a static HTML website from Markdown files and a
 simple template system. Supports front matter, layouts,
 and an asset copy step.
 
 Usage:
-    python main.py init my-site
-    python main.py build
-    python main.py build --src content --out public
-    python main.py new post "My First Post"
-    python main.py serve
+    uv run python main.py init my-site
+    uv run python main.py build
+    uv run python main.py build --src content --out public
+    uv run python main.py new post "My First Post"
+    uv run python main.py serve
 """
 
 import argparse
@@ -19,8 +19,6 @@ import os
 import re
 import shutil
 import sys
-import threading
-import time
 from datetime import datetime
 
 ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
@@ -254,8 +252,8 @@ def save_config(cfg: dict, root: str = "."):
 def cmd_init(name: str):
     if os.path.exists(name):
         print(c(f"Directory '{name}' already exists.", "yellow"))
-    else:
-        os.makedirs(name)
+        return
+    os.makedirs(name)
 
     cfg = {"site_name": name.replace("-", " ").title(), "src": "content", "out": "public"}
     save_config(cfg, name)
@@ -282,7 +280,7 @@ A static site generated from Markdown files.
     with open(os.path.join(content_dir, "hello-world.md"), "w") as f:
         f.write(starter)
 
-    print(c(f"✓ Initialized site at '{name}/'", "green"))
+    print(c(f"Initialized site at '{name}/'", "green"))
     print(f"  Edit {name}/content/*.md to write posts.")
     print(f"  Run: python main.py build --src {name}/content --out {name}/public")
 
@@ -305,7 +303,7 @@ Write your {kind} here.
 """
     with open(path, "w") as f:
         f.write(content)
-    print(c(f"✓ Created {path}", "green"))
+    print(c(f"Created {path}", "green"))
 
 
 def cmd_build(src: str, out: str, cfg: dict):
@@ -358,7 +356,7 @@ def cmd_build(src: str, out: str, cfg: dict):
 
         pages.append({"slug": slug, "title": title, "date": date})
         count += 1
-        print(c(f"  ✓ {fname} → {slug}.html", "dim"))
+        print(c(f"  {fname} -> {slug}.html", "dim"))
 
     # Sort pages by date desc
     pages.sort(key=lambda p: p["date"], reverse=True)
@@ -375,7 +373,7 @@ def cmd_build(src: str, out: str, cfg: dict):
     with open(os.path.join(out, "index.html"), "w", encoding="utf-8") as f:
         f.write(index_html)
 
-    print(c(f"\n  Built {count} page(s) + index → {out}/", "green"))
+    print(c(f"\n  Built {count} page(s) + index -> {out}/", "green"))
 
 
 def cmd_serve(out: str, port: int = 8000):

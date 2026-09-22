@@ -18,8 +18,8 @@ from tkinter import ttk
 # ---------------------------------------------------------------------------
 
 def calc_bmi(weight: float, height_m: float) -> float:
-    if height_m <= 0:
-        return 0.0
+    if weight <= 0 or height_m <= 0:
+        raise ValueError("Weight and height must be positive.")
     return weight / (height_m ** 2)
 
 
@@ -102,7 +102,7 @@ class BMIApp(tk.Tk):
         self.result_frame.grid(row=6, column=0, columnspan=2, padx=20, pady=8, sticky="ew")
         self.result_frame.columnconfigure(0, weight=1)
 
-        self.bmi_label = tk.Label(self.result_frame, text="—", font=result_font,
+        self.bmi_label = tk.Label(self.result_frame, text="-", font=result_font,
                                    bg="#ffffff", fg="#333333")
         self.bmi_label.grid(row=0, column=0, pady=(12, 4))
 
@@ -147,7 +147,7 @@ class BMIApp(tk.Tk):
             w = float(self.weight_var.get())
             h = float(self.height_var.get())
         except ValueError:
-            self.bmi_label.config(text="—", fg="#333333")
+            self.bmi_label.config(text="-", fg="#333333")
             self.cat_label.config(text="Please enter valid numbers.", fg="#e74c3c")
             self.tip_label.config(text="")
             return
@@ -157,7 +157,13 @@ class BMIApp(tk.Tk):
             h = h * 2.54
         h_m = h / 100
 
-        bmi = calc_bmi(w, h_m)
+        try:
+            bmi = calc_bmi(w, h_m)
+        except ValueError as error:
+            self.bmi_label.config(text="-", fg="#333333")
+            self.cat_label.config(text=str(error), fg="#e74c3c")
+            self.tip_label.config(text="")
+            return
         category, color = bmi_category(bmi)
 
         self.bmi_label.config(text=f"{bmi:.1f}", fg=color)
@@ -179,7 +185,7 @@ class BMIApp(tk.Tk):
             pass
 
 
-def main():
+def main() -> None:
     app = BMIApp()
     app.mainloop()
 

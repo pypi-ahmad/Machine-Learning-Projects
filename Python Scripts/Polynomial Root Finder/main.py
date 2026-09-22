@@ -19,7 +19,7 @@ def fmt_complex(z: complex, tol: float = 1e-8) -> str:
     """Format complex number, hiding tiny imaginary parts."""
     if abs(z.imag) < tol:
         r = z.real
-        return str(int(r)) if abs(r - round(r)) < tol else f"{r:.6g}"
+        return str(round(r)) if abs(r - round(r)) < tol else f"{r:.6g}"
     if abs(z.real) < tol:
         return f"{z.imag:.6g}i"
     sign = "+" if z.imag >= 0 else "-"
@@ -117,7 +117,7 @@ def find_and_display(coeffs: list[float]) -> None:
     real_roots    = sorted([r for r in roots if abs(r.imag) < 1e-7], key=lambda z: z.real)
     complex_roots = [r for r in roots if abs(r.imag) >= 1e-7]
 
-    print(f"\n  {'─'*40}")
+    print(f"\n  {'-' * 40}")
     if real_roots:
         print(f"  Real roots ({len(real_roots)}):")
         for r in real_roots:

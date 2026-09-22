@@ -1,79 +1,57 @@
-# Youtube Trending Feed Reader
-# Written by XZANATOL
-from optparse import OptionParser
+"""Display trending records saved by youtube_scrapper.py."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+from pathlib import Path
+
 from pymongo import MongoClient
-import pandas as pd
-import sys
-
-# Help menu
-usage = """
-<Script> [Options]
-
-[Options]
-    -h, --help    Shows this help message and exit
-    -c, --csv     Reads data from "Youtube.csv" file
-    -m, --mongo   Reads data from MongoDB
-"""
-
-# Load args
-parser = OptionParser()
-parser.add_option("-c", "--csv", action="store_true", dest="csv",
-                  help="Saves extracted contents to a CSV file.")
-parser.add_option("-m", "--mongo", action="store_true",
-                  dest="mongo", help="Saves extracted contents to a MongoDB.")
 
 
-def read_mongo():
-    # Connect to service
-    client = MongoClient("127.0.0.1")
-    # Create an object
-    db = client.Youtube.trending
-    return db.find()  # Return all values
+def parse_args() -> argparse.Namespace:
+    """Choose a CSV file or explicitly configured MongoDB source."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--csv", type=Path, help="CSV file produced by the scraper")
+    source.add_argument("--mongo-uri", help="MongoDB URI used by the scraper")
+    parser.add_argument("--database", default="youtube", help="MongoDB database name (default: youtube)")
+    return parser.parse_args()
 
 
-def read_csv():
-    # read databse
-    df = pd.read_csv("Youtube.csv")
-    data = []
-    for index, row in df.iterrows():
-        data.append(row)  # Append each dictionary to the list
-    return data  # Return all values
+def read_csv(path: Path) -> list[dict[str, str]]:
+    """Read UTF-8 records from a scraper CSV output."""
+    with path.open(newline="", encoding="utf-8") as file:
+        return list(csv.DictReader(file))
 
 
-def display(data):
-    i = 0
-    for card in data:
-        # For every 10 cards print section
-        if i % 10 == 0:
-            c = input("Show Section? [y/n] > ")
-            if c.lower() == "y":
-                print("***********************************")
-                print(f"""{card["section"]} section""")
-                print("***********************************")
-            else:
-                sys.exit()  # If had enough of reading
-        i += 1  # Increament
-        print("Title:", card["title"])
-        print("Link:",  card["link"])
-        print("Channel:", card["channel"])
-        print("Views:", card["views"])
-        print("Time:", card["date"])
-        print("==============================================")
+def read_mongo(uri: str, database: str) -> list[dict[str, str]]:
+    """Read MongoDB records and discard the internal identifier."""
+    with MongoClient(uri, serverSelectionTimeoutMS=5_000) as client:
+        return list(client[database]["trending"].find({}, {"_id": False}))
+
+
+def display(records: list[dict[str, str]]) -> None:
+    """Print saved records in a readable text format."""
+    for record in records:
+        print(f"Section: {record.get('section', '')}")
+        print(f"Title: {record.get('title', '')}")
+        print(f"Link: {record.get('link', '')}")
+        print(f"Channel: {record.get('channel', '')}")
+        print(f"Views: {record.get('views', '')}")
+        print(f"Time: {record.get('date', '')}")
+        print("-" * 48)
+
+
+def main() -> None:
+    """Read and display one configured storage source."""
+    args = parse_args()
+    try:
+        records = read_csv(args.csv) if args.csv else read_mongo(args.mongo_uri, args.database)
+    except OSError as error:
+        raise SystemExit(f"Read failed: {error}") from error
+    display(records)
 
 
 if __name__ == "__main__":
-    (options, args) = parser.parse_args()
-
-    # Flags
-    csv = options.csv
-    mongo = options.mongo
-    # Validate flags
-    if not (bool(csv) ^ bool(mongo)):  # XNOR Gate
-        print(usage)
-        sys.exit()
-
-    if mongo:
-        data = read_mongo()
-    else:
-        data = read_csv()
-    display(data)
+    main()

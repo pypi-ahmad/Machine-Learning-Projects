@@ -2,7 +2,7 @@
 
 ## Overview
 
-A Python script that scrapes real-time Covid-19 data for specific Indian states from a web source and delivers desktop notifications at user-defined intervals. Includes Hindi translation of state names using the `englisttohindi` library.
+A Python script that scrapes Covid-19 data for selected Indian states and sends desktop notifications at user-defined intervals. It also translates state names into Hindi with the `english-to-hindi` library.
 
 **Type:** Scraper / Desktop Notification Utility
 
@@ -11,30 +11,30 @@ A Python script that scrapes real-time Covid-19 data for specific Indian states 
 - Scrapes Covid-19 statistics (total cases, active cases, deaths) from `medtalks.in`
 - Filters data for user-specified Indian states
 - Sends desktop push notifications using `plyer`
-- Translates state names from English to Hindi using `englisttohindi`
+- Translates state names from English to Hindi using `english-to-hindi`
 - Configurable notification interval (user inputs seconds at runtime)
 - Supports multiple states in a single session (comma-separated input)
 - Runs continuously in a loop until manually stopped
 
 ## Dependencies
 
-Listed in `requirements.txt`:
+Managed in `pyproject.toml` and locked in `uv.lock`:
 
 - `Plyer` — for desktop notifications
 - `requests` — for HTTP requests
 - `bs4` (BeautifulSoup4) — for HTML parsing
-- `englisttohindi` — for English-to-Hindi transliteration
+- `english-to-hindi` — for English-to-Hindi translation
 
 Install with:
 
 ```bash
-pip install plyer requests beautifulsoup4 englisttohindi
+uv sync
 ```
 
-## How It Works
+## How it works
 
 1. The user is prompted to enter a notification interval (in seconds) and a comma-separated list of Indian state names.
-2. Each state name is augmented with its Hindi transliteration using `EngtoHindi`.
+2. Each state name is augmented with its Hindi translation using `eng_hindi.eth()`.
 3. In an infinite loop:
    - The script sends a GET request to `https://www.medtalks.in/live-corona-counter-india`.
    - The HTML response is parsed with BeautifulSoup, extracting data from the `<tbody>` table rows.
@@ -49,20 +49,21 @@ pip install plyer requests beautifulsoup4 englisttohindi
 Covid-19_Real-time_Notification/
 ├── Covid.py            # Main script
 ├── Notify_icon.ico     # Icon file used for desktop notifications
-├── requirements.txt    # Dependencies
+├── pyproject.toml      # Project metadata and dependencies
+├── uv.lock             # Locked dependency versions
 └── readME.md
 ```
 
 ## Setup & Installation
 
 ```bash
-pip install plyer requests beautifulsoup4 englisttohindi
+uv sync
 ```
 
 ## How to Run
 
 ```bash
-python Covid.py
+uv run python Covid.py
 ```
 
 When prompted:
@@ -73,7 +74,7 @@ When prompted:
 
 - **Notification interval**: Set at runtime via user input (in seconds).
 - **States**: Set at runtime via comma-separated input.
-- **Notification icon**: Hardcoded path `./Covid-19_Real-time_Notification/Notify_icon.ico` — may need adjustment depending on working directory.
+- **Notification icon**: Loaded from `Notify_icon.ico` beside `Covid.py`.
 - **Notification timeout**: Hardcoded to 5 seconds.
 
 ## Testing
@@ -82,8 +83,7 @@ No formal test suite present.
 
 ## Limitations
 
-- The data source URL (`medtalks.in`) may no longer be active or may have changed its HTML structure since the script was written.
-- The notification icon path is hardcoded with a relative path that assumes a specific working directory.
+- The configured Medtalks data source currently returns HTTP 404, so live notifications cannot run until a replacement source is selected.
 - State name matching depends on the exact format from the scraped data including Hindi transliteration — mismatches will silently skip states.
 - No graceful shutdown mechanism; must be terminated manually (Ctrl+C).
 

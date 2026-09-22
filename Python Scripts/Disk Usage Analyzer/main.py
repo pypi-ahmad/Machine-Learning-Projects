@@ -102,7 +102,7 @@ def bar(value: int, total: int, width: int = 30) -> str:
     if not total:
         return ""
     filled = int(value / total * width)
-    return "█" * filled + "░" * (width - filled)
+    return "#" * filled + "-" * (width - filled)
 
 
 def print_usage_chart(items: list[tuple[str, int]], title: str) -> None:

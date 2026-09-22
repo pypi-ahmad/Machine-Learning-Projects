@@ -1,0 +1,10 @@
+[project]
+name = "email-sender-from-csv"
+version = "0.1.0"
+description = "Preview-first CSV email sender"
+readme = "Readme.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

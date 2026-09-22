@@ -91,7 +91,7 @@ def flesch_label(score: float) -> str:
 # ---------------------------------------------------------------------------
 
 def display_stats(stats: dict) -> None:
-    print(f"\n  {'─' * 40}")
+    print(f"\n  {'-' * 40}")
     print(f"  Characters      : {stats['characters']:,}")
     print(f"  Chars (no space): {stats['chars_no_spaces']:,}")
     print(f"  Words           : {stats['words']:,}  (unique: {stats['unique_words']:,})")
@@ -106,7 +106,7 @@ def display_stats(stats: dict) -> None:
     if stats["top_words"]:
         top = ", ".join(f"{w}({n})" for w, n in stats["top_words"][:5])
         print(f"  Top words       : {top}")
-    print(f"  {'─' * 40}\n")
+    print(f"  {'-' * 40}\n")
 
 
 # ---------------------------------------------------------------------------

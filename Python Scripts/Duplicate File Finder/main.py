@@ -61,7 +61,9 @@ def find_duplicates(
                 print(f"  Hashed {processed}/{total} candidates...", end="\r")
 
     print(" " * 50, end="\r")  # clear progress line
-    return [files for files in hash_map.values() if len(files) > 1]
+    groups = [sorted(files, key=lambda path: str(path).lower())
+              for files in hash_map.values() if len(files) > 1]
+    return sorted(groups, key=lambda group: str(group[0]).lower())
 
 
 def wasted_space(groups: list[list[Path]]) -> int:
@@ -145,9 +147,9 @@ def main() -> None:
             if choice == "3":
                 confirm = input(
                     f"\n  Delete {sum(len(g)-1 for g in groups)} duplicate files? "
-                    "(type YES to confirm): "
+                    "(type DELETE to confirm permanently): "
                 ).strip()
-                if confirm == "YES":
+                if confirm == "DELETE":
                     deleted, errors = 0, 0
                     for group in groups:
                         for f in group[1:]:  # keep first

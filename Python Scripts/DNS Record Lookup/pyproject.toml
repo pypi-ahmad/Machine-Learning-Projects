@@ -1,0 +1,7 @@
+[project]
+name = "dns-record-lookup"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "dnspython>=2.8.0",
+]

@@ -1,0 +1,10 @@
+[project]
+name = "file-integrity-checker"
+version = "0.1.0"
+description = "SHA-256 manifest generator and verifier"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

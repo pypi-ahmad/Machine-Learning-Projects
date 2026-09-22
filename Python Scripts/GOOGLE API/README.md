@@ -9,7 +9,7 @@ A two-script pipeline that geocodes addresses from a data file into a SQLite dat
 ## Features
 
 - Reads addresses from a `where.data` text file (one address per line)
-- Geocodes addresses via Google Geocoding API or the py4e fallback service
+- Geocodes addresses through the Google Maps Geocoding API
 - Caches results in a SQLite database (`geodata.sqlite`) to avoid redundant API calls
 - Rate-limits API requests (pauses every 10 requests)
 - Exports geocoded coordinates and formatted addresses to `where.js`
@@ -31,17 +31,18 @@ GOOGLE API/
 
 ## Requirements
 
-- Python 3.x
+- Python 3.13 or later
 - No external packages (uses only standard library: `urllib`, `sqlite3`, `json`, `codecs`, `ssl`, `http`, `time`)
 - A `where.data` file containing addresses to geocode (one per line)
 
 ## Installation
 
 ```bash
-cd "GOOGLE API"
+cd "Python Scripts/GOOGLE API"
+uv sync --no-config
 ```
 
-No package installation needed. Create a `where.data` file with addresses:
+No package installation is needed. Set `GOOGLE_API_KEY` in the Windows user environment, relaunch the coding host if it was recently added, then create a `where.data` file with addresses:
 ```
 Ann Arbor, MI
 Tokyo, Japan
@@ -53,7 +54,7 @@ Paris, France
 ### Step 1: Geocode addresses
 
 ```bash
-python geoload.py
+uv run --no-config python geoload.py
 ```
 
 This reads `where.data`, geocodes each address (up to 200 per run), and stores results in `geodata.sqlite`. Run multiple times to process more than 200 addresses.
@@ -61,7 +62,7 @@ This reads `where.data`, geocodes each address (up to 200 per run), and stores r
 ### Step 2: Export to JavaScript
 
 ```bash
-python geodump.py
+uv run --no-config python geodump.py
 ```
 
 This reads `geodata.sqlite` and writes coordinate data to `where.js`.
@@ -88,7 +89,7 @@ Open `where.html` in a web browser to see all geocoded locations plotted on a ma
 
 ## Configuration
 
-- **API Key:** In `geoload.py`, set `api_key` to your Google Places API key to use the official Google Geocoding API. By default, `api_key = False` uses the free py4e fallback at `http://py4e-data.dr-chuck.net/json?`.
+- **API Key:** Set `GOOGLE_API_KEY` in the process environment. Never add it to source code or a committed `.env` file.
 - **Rate Limit:** Hardcoded 200-address limit per run and 5-second pause every 10 requests.
 - **SSL Verification:** Disabled (`ctx.check_hostname = False`, `ctx.verify_mode = ssl.CERT_NONE`).
 
@@ -98,13 +99,12 @@ Open `where.html` in a web browser to see all geocoded locations plotted on a ma
 - **200-address cap per run** — must restart the script to continue processing.
 - **Bare `except` blocks** — errors during JSON parsing and database lookups are silently ignored.
 - **`memoryview` usage** for database storage may cause compatibility issues with some SQLite versions.
-- **py4e fallback service** is an educational endpoint and may be unreliable for production use.
-- **SSL verification disabled** — insecure for production use.
+- Google API access, quotas, billing, and response availability are managed by the account that owns `GOOGLE_API_KEY`.
 
 ## Security Notes
 
-- SSL certificate verification is explicitly disabled in `geoload.py` (`verify_mode = ssl.CERT_NONE`), making connections vulnerable to man-in-the-middle attacks.
-- If using a real Google API key, it should not be hardcoded in the source file. Use environment variables instead.
+- TLS certificate verification remains enabled.
+- The loader reads `GOOGLE_API_KEY` only at runtime and does not print or store it.
 
 ## License
 

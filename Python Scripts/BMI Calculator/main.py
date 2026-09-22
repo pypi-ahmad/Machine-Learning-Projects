@@ -71,6 +71,18 @@ def get_positive_float(prompt: str) -> float:
             print("  Please enter a valid number.")
 
 
+def get_nonnegative_float(prompt: str) -> float:
+    """Read a number that may be zero, such as extra inches."""
+    while True:
+        try:
+            value = float(input(prompt).strip())
+            if value >= 0:
+                return value
+            print("  Value must not be negative.")
+        except ValueError:
+            print("  Please enter a valid number.")
+
+
 def main() -> None:
     print("BMI Calculator")
     print("=" * 40)
@@ -96,14 +108,14 @@ def main() -> None:
                 print(f"\n  BMI             : {bmi:.2f}")
                 print(f"  Category        : {label}")
                 print(f"  Advice          : {advice}")
-                print(f"  Healthy range   : {min_w:.1f} – {max_w:.1f} kg at {height_cm:.0f} cm")
+                print(f"  Healthy range   : {min_w:.1f} - {max_w:.1f} kg at {height_cm:.0f} cm")
             except ValueError as e:
                 print(f"  Error: {e}")
 
         elif choice == "2":
             weight_lb = get_positive_float("  Weight (lb): ")
             feet = get_positive_float("  Height (feet): ")
-            inches_extra = get_positive_float("  Height (extra inches, 0 if none): ")
+            inches_extra = get_nonnegative_float("  Height (extra inches, 0 if none): ")
             total_inches = feet * 12 + inches_extra
             try:
                 bmi = bmi_imperial(weight_lb, total_inches)

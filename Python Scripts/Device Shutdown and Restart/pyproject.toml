@@ -1,0 +1,10 @@
+[project]
+name = "device-shutdown-restart"
+version = "0.1.0"
+description = "Preview-first local device shutdown and restart helper"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

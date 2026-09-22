@@ -1,14 +1,14 @@
-"""File Search Tool — CLI tool.
+"""File Search Tool - CLI tool.
 
 Search for files by name pattern, content (grep), size, date,
-or extension.  Displays results with metadata and supports saving
-search results.
+or extension. Displays results with metadata.
 
 Usage:
     python main.py
 """
 
 import re
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -17,25 +17,41 @@ from pathlib import Path
 # Search engines
 # ---------------------------------------------------------------------------
 
+MAX_CONTENT_FILE_BYTES = 2 * 1024 * 1024
+MAX_CONTENT_MATCHES = 500
+
+
+def iter_files(root: Path, recursive: bool) -> list[Path]:
+    """Return regular non-symlink files below an explicitly chosen root."""
+    files = []
+    if recursive:
+        for directory, _, names in os.walk(root, followlinks=False):
+            for name in names:
+                candidate = Path(directory, name)
+                if candidate.is_file() and not candidate.is_symlink():
+                    files.append(candidate)
+    else:
+        for candidate in root.iterdir():
+            if candidate.is_file() and not candidate.is_symlink():
+                files.append(candidate)
+    return sorted(files)
+
 def search_by_name(
     root: Path,
     pattern: str,
     recursive: bool = True,
     ignore_case: bool = True,
 ) -> list[Path]:
-    glob = root.rglob if recursive else root.glob
     results = []
-    for f in glob("*"):
-        if not f.is_file():
-            continue
-        flags = re.IGNORECASE if ignore_case else 0
-        try:
-            if re.search(pattern, f.name, flags):
-                results.append(f)
-        except re.error:
-            if pattern.lower() in f.name.lower():
-                results.append(f)
-    return sorted(results)
+    flags = re.IGNORECASE if ignore_case else 0
+    try:
+        matcher = re.compile(pattern, flags)
+    except re.error:
+        matcher = re.compile(re.escape(pattern), flags)
+    for file_path in iter_files(root, recursive):
+        if matcher.search(file_path.name):
+            results.append(file_path)
+    return results
 
 
 def search_by_content(
@@ -46,7 +62,6 @@ def search_by_content(
     ignore_case: bool = True,
 ) -> list[tuple[Path, int, str]]:
     """Return (file, line_number, line) for each match."""
-    glob = root.rglob if recursive else root.glob
     matches = []
     flags = re.IGNORECASE if ignore_case else 0
     try:
@@ -54,17 +69,18 @@ def search_by_content(
     except re.error:
         return matches
 
-    for f in glob("*"):
-        if not f.is_file():
-            continue
-        if extensions and f.suffix.lower() not in extensions:
+    for file_path in iter_files(root, recursive):
+        if extensions and file_path.suffix.lower() not in extensions:
             continue
         try:
-            for i, line in enumerate(
-                f.read_text(encoding="utf-8", errors="replace").splitlines(), 1
-            ):
-                if pattern.search(line):
-                    matches.append((f, i, line.strip()[:120]))
+            if file_path.stat().st_size > MAX_CONTENT_FILE_BYTES:
+                continue
+            with file_path.open(encoding="utf-8", errors="replace") as file:
+                for i, line in enumerate(file, 1):
+                    if pattern.search(line):
+                        matches.append((file_path, i, line.strip()[:120]))
+                    if len(matches) >= MAX_CONTENT_MATCHES:
+                        return matches
         except (PermissionError, OSError):
             pass
     return matches
@@ -72,40 +88,38 @@ def search_by_content(
 
 def search_by_extension(root: Path, extensions: set[str],
                          recursive: bool = True) -> list[Path]:
-    glob = root.rglob if recursive else root.glob
-    return sorted(f for f in glob("*") if f.is_file()
-                  and f.suffix.lower() in extensions)
+    return [file_path for file_path in iter_files(root, recursive) if file_path.suffix.lower() in extensions]
 
 
 def search_by_size(root: Path, min_bytes: int = 0, max_bytes: int = 0,
                     recursive: bool = True) -> list[Path]:
-    glob = root.rglob if recursive else root.glob
     results = []
-    for f in glob("*"):
-        if not f.is_file():
+    for file_path in iter_files(root, recursive):
+        try:
+            size = file_path.stat().st_size
+        except OSError:
             continue
-        sz = f.stat().st_size
-        if sz >= min_bytes and (max_bytes == 0 or sz <= max_bytes):
-            results.append(f)
-    return sorted(results, key=lambda f: f.stat().st_size, reverse=True)
+        if size >= min_bytes and (max_bytes == 0 or size <= max_bytes):
+            results.append(file_path)
+    return sorted(results, key=lambda file_path: file_path.stat().st_size, reverse=True)
 
 
 def search_by_date(root: Path, days: int, older: bool = False,
                     recursive: bool = True) -> list[Path]:
     threshold = datetime.now() - timedelta(days=days)
-    glob = root.rglob if recursive else root.glob
     results = []
-    for f in glob("*"):
-        if not f.is_file():
+    for file_path in iter_files(root, recursive):
+        try:
+            mtime = datetime.fromtimestamp(file_path.stat().st_mtime)
+        except OSError:
             continue
-        mtime = datetime.fromtimestamp(f.stat().st_mtime)
         if older:
             if mtime < threshold:
-                results.append(f)
+                results.append(file_path)
         else:
             if mtime >= threshold:
-                results.append(f)
-    return sorted(results, key=lambda f: f.stat().st_mtime, reverse=True)
+                results.append(file_path)
+    return sorted(results, key=lambda file_path: file_path.stat().st_mtime, reverse=True)
 
 
 # ---------------------------------------------------------------------------
@@ -168,7 +182,10 @@ File Search Tool
 
 def get_dir() -> Path | None:
     path_str = input("  Search in: ").strip().strip('"')
-    p = Path(path_str) if path_str else Path(".")
+    if not path_str:
+        print("  A directory path is required.")
+        return None
+    p = Path(path_str)
     if not p.is_dir():
         print(f"  Not a directory: {p}")
         return None

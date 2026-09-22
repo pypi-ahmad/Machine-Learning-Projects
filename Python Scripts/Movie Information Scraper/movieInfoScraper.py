@@ -1,100 +1,123 @@
-from bs4 import BeautifulSoup
+"""Fetch details for the first matching IMDb feature film."""
+
+from __future__ import annotations
+
+import argparse
+import re
+from urllib.parse import urljoin
+
 import requests
+from bs4 import BeautifulSoup
 
-# Function to get Movie Details
+
+IMDB_URL = "https://www.imdb.com"
+REQUEST_TIMEOUT_SECONDS = 20
+USER_AGENT = "Movie-Information-Scraper/0.1"
+NOT_AVAILABLE = "Not available"
 
 
-def getMovieDetails(movieName):
-    # Base URL of IMDB website
-    url = 'https://www.imdb.com'
+def fetch_soup(path: str, params: dict[str, str]) -> BeautifulSoup:
+    """Fetch an IMDb page with a timeout and explicit user agent."""
+    response = requests.get(
+        urljoin(IMDB_URL, path),
+        params=params,
+        headers={"User-Agent": USER_AGENT},
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+    return BeautifulSoup(response.text, "html.parser")
 
-    # Query to find movie title
-    query = '/search/title?title='
 
-    # Empty dictionary to store movie Details
-    movieDetails = {}
+def first_title_url(soup: BeautifulSoup) -> str | None:
+    """Return the first unique IMDb title link from a search result page."""
+    for link in soup.select("a[href*='/title/']"):
+        match = re.search(r"/title/(tt\d+)/", link.get("href", ""))
+        if match:
+            return urljoin(IMDB_URL, match.group())
+    return None
 
-    # Query formed
-    movienamequery = query+'+'.join(movieName.strip().split(' '))
 
-    # WebPage is obtained and parsed
-    html = requests.get(url+movienamequery+'&title_type=feature')
-    bs = BeautifulSoup(html.text, 'html.parser')
+def text_or_default(element: object) -> str:
+    """Return normalized element text or a clear fallback."""
+    return element.get_text(" ", strip=True) if element else NOT_AVAILABLE
 
-    # Gets the first movie that appears in title section
-    result = bs.find('h3', {'class': 'lister-item-header'})
 
-    if result is None:
+def credit_names(soup: BeautifulSoup, label: str) -> list[str]:
+    """Extract visible people from one labeled IMDb credit section."""
+    for section in soup.select("li[data-testid='title-pc-principal-credit']"):
+        heading = section.select_one("span")
+        if heading and heading.get_text(" ", strip=True).lower().startswith(label):
+            return [link.get_text(" ", strip=True) for link in section.select("a")]
+    return []
+
+
+def movie_details(soup: BeautifulSoup, url: str) -> dict[str, object]:
+    """Extract available details from a current IMDb title page."""
+    title = text_or_default(soup.select_one("h1"))
+    year = text_or_default(soup.select_one("a[href*='releaseinfo']"))
+    rating = text_or_default(
+        soup.select_one("[data-testid='hero-rating-bar__aggregate-rating__score'] span")
+    )
+    runtime = text_or_default(soup.select_one("li[data-testid='title-techspec_runtime']"))
+    genres = [genre.get_text(" ", strip=True) for genre in soup.select("a[href*='/search/title/?genres=']")]
+    cast = [actor.get_text(" ", strip=True) for actor in soup.select("a[data-testid='title-cast-item__actor']")]
+    plot = text_or_default(soup.select_one("[data-testid='plot-xl'], [data-testid='plot-l']"))
+    return {
+        "name": title,
+        "year": year,
+        "rating": rating,
+        "runtime": runtime,
+        "release_date": year,
+        "genres": genres,
+        "directors": credit_names(soup, "director"),
+        "writers": credit_names(soup, "writer"),
+        "cast": cast,
+        "plot": plot,
+        "url": url,
+    }
+
+
+def get_movie_details(movie_name: str) -> dict[str, object] | None:
+    """Search IMDb for a feature film and return its available details."""
+    search = fetch_soup("/search/title/", {"title": movie_name, "title_type": "feature"})
+    url = first_title_url(search)
+    if url is None:
         return None
+    return movie_details(fetch_soup(url, {}), url)
 
-    movielink = url+result.a.attrs['href']
-    movieDetails['name'] = result.a.text
 
-    # Gets the page with movie details
-    html = requests.get(movielink)
-    bs = BeautifulSoup(html.text, 'html.parser')
-    # Year
+def names(value: object) -> str:
+    """Format a list field without treating a missing field as iterable text."""
+    return ", ".join(value) if value else NOT_AVAILABLE
+
+
+def print_movie(details: dict[str, object]) -> None:
+    """Print a compact, readable movie report."""
+    print(f"{details['name']} ({details['year']})")
+    print(f"Rating: {details['rating']}")
+    print(f"Runtime: {details['runtime']}")
+    print(f"Release date: {details['release_date']}")
+    print(f"Genres: {names(details['genres'])}")
+    print(f"Directors: {names(details['directors'])}")
+    print(f"Writers: {names(details['writers'])}")
+    print(f"Cast: {names(details['cast'])}")
+    print(f"Plot summary: {details['plot']}")
+    print(f"IMDb: {details['url']}")
+
+
+def main() -> None:
+    """Parse a title query and print details for its first IMDb match."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("movie", nargs="+", help="movie title to search")
+    args = parser.parse_args()
     try:
-        movieDetails['year'] = bs.find('span', {'id': 'titleYear'}).a.text
-    except AttributeError:
-        movieDetails['year'] = 'Not available'
-    subtext = bs.find('div', {'class': 'subtext'})
-
-    # Rating,Genres,Runtime,Release Date,
-
-    movieDetails['genres'] = [
-        i.text for i in subtext.findAll('a', {'title': None})]
-    try:
-        movieDetails['rating'] = bs.find(
-            'div', {'class': 'ratingValue'}).span.text
-        movieDetails['runtime'] = subtext.time.text.strip()
-    except AttributeError:
-        movieDetails['rating'] = 'Not yet rated'
-        movieDetails['runtime'] = 'Not available'
-    movieDetails['release_date'] = subtext.find(
-        'a', {'title': 'See more release dates'}).text.strip()
-
-    # Gets the credit section of the page
-    creditSummary = bs.findAll('div', {'class': 'credit_summary_item'})
-
-    # Directors,Writers and Cast
-    movieDetails['directors'] = [i.text for i in creditSummary[0].findAll('a')]
-    movieDetails['writers'] = [i.text for i in creditSummary[1].findAll(
-        'a') if 'name' in i.attrs['href']]
-    try:
-        movieDetails['cast'] = [i.text for i in creditSummary[2].findAll(
-            'a') if 'name' in i.attrs['href']]
-
-    # For some films, writer details are not provided
-    except IndexError:
-        movieDetails['cast']=movieDetails['writers']
-        movieDetails['writers']='Not found'
-
-    # The plot is seperate AJAX call and does not come in the html page, So one more request to plotsummary page
-    html = requests.get(movielink+'plotsummary')
-    bs = BeautifulSoup(html.text, 'html.parser')
-
-    # Plot
-    movieDetails['plot'] = bs.find(
-        'li', {'class': 'ipl-zebra-list__item'}).p.text.strip()
-
-    # Returns the dictionary with movie details
-    return movieDetails
+        details = get_movie_details(" ".join(args.movie))
+    except requests.RequestException as error:
+        raise SystemExit(f"IMDb request failed: {error}") from error
+    if details is None:
+        raise SystemExit("No matching IMDb feature film was found.")
+    print_movie(details)
 
 
 if __name__ == "__main__":
-    movieName = input('Enter the movie name whose details are to be fetched\n')
-    movieDetails = getMovieDetails(movieName)
-    if movieDetails is None:
-        print('No movie of this name found !!!!!')
-        quit()
-    print('\n{movie} ({year})'.format(
-        movie=movieDetails['name'], year=movieDetails['year']))
-    print('Rating:', movieDetails['rating'])
-    print('Runtime:', movieDetails['runtime'])
-    print('Release Date:', movieDetails['release_date'])
-    print('Genres:', ', '.join(movieDetails['genres']))
-    print('Director:', ', '.join(movieDetails['directors']))
-    print('Writer:', ', '.join(movieDetails['writers']))
-    print('Cast:', ', '.join(movieDetails['cast']))
-    print('Plot Summary:\n', movieDetails['plot'])
+    main()

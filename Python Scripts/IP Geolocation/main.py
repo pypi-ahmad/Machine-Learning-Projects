@@ -5,8 +5,8 @@ an IP address using the ip-api.com free JSON API.
 Falls back to ipinfo.io if primary is unavailable.
 
 Usage:
-    python main.py
-    python main.py 8.8.8.8
+    uv run --no-config python main.py
+    uv run --no-config python main.py 8.8.8.8
 """
 
 import json
@@ -44,13 +44,13 @@ def lookup_ipinfo(ip: str) -> dict | None:
     return None
 
 
-def get_my_ip() -> str:
+def get_my_ip() -> str | None:
     """Fetch public IP."""
     try:
         with urllib.request.urlopen("https://api.ipify.org?format=json", timeout=5) as r:
             return json.loads(r.read())["ip"]
     except Exception:
-        return "8.8.8.8"  # fallback to Google DNS for demo
+        return None
 
 
 def hostname(ip: str) -> str:
@@ -161,7 +161,10 @@ def main() -> None:
 
         elif choice == "2":
             my_ip = get_my_ip()
-            do_lookup(my_ip)
+            if my_ip:
+                do_lookup(my_ip)
+            else:
+                print("  Could not determine your public IP.")
 
         elif choice == "3":
             host = input("  Hostname: ").strip()

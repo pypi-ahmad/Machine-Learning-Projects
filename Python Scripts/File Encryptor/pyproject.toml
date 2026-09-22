@@ -1,0 +1,12 @@
+[project]
+name = "file-encryptor"
+version = "0.1.0"
+description = "Non-destructive authenticated file encryption"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "cryptography>=45",
+]
+
+[tool.uv]
+package = false

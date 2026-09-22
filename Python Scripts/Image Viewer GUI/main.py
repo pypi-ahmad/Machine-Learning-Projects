@@ -5,7 +5,7 @@ Supports JPG, PNG, GIF, BMP, TIFF via Pillow (falls back to
 tkinter's built-in PhotoImage for PNG/GIF if Pillow is absent).
 
 Usage:
-    python main.py [image_path]
+    uv run --no-config python main.py [image_path]
 """
 
 import sys
@@ -207,7 +207,7 @@ class ImageViewer(tk.Tk):
                 img = img.rotate(self._rotation, expand=True)
             nw = max(1, int(img.width  * self._zoom))
             nh = max(1, int(img.height * self._zoom))
-            img = img.resize((nw, nh), Image.LANCZOS)
+            img = img.resize((nw, nh), Image.Resampling.LANCZOS)
             self._photo = ImageTk.PhotoImage(img)
             self.canvas.create_image(cw//2, ch//2, anchor="center", image=self._photo)
         elif hasattr(self, "_tk_img"):

@@ -1,35 +1,51 @@
-import os
-import zipfile
-import sys
+"""Extract a ZIP archive into a directory named after the archive."""
+
 import argparse
+from pathlib import Path
+import zipfile
 
-# Code to add the cli
-parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--zippedfile", required=True, help="Zipped file")
-args = vars(parser.parse_args())
 
-#Catching the user defined zip file
-zip_file = args['zippedfile']
+def destination_for(archive: Path, output_directory: Path | None) -> Path:
+    """Return the requested directory or a folder named after the archive."""
+    if output_directory is not None:
+        return output_directory
+    return Path.cwd() / archive.stem
 
-file_name = zip_file
 
-#To check if the entered zip file is present in the directory
-if os.path.exists(zip_file) == False:
-    sys.exit("No such file present in the directory")
+def extract_archive(archive: Path, destination: Path) -> None:
+    """Extract a ZIP archive into ``destination``."""
+    if archive.suffix.lower() != ".zip":
+        raise ValueError("The input file must have a .zip extension.")
 
-#Function to extract the zip file
-def extract(zip_file):
-    file_name = zip_file.split(".zip")[0]
-    if zip_file.endswith(".zip"):
-        
-        #Will use this to save the unzipped file in the current directory
-        current_working_directory = os.getcwd()
-        new_directory = current_working_directory + "/" + file_name
-        #Logic to unzip the file
-        with zipfile.ZipFile(zip_file, 'r') as zip_object:
-            zip_object.extractall(new_directory)
-        print("Extracted successfully!!!")
-    else:
-        print("Not a zip file")
+    with zipfile.ZipFile(archive) as zip_file:
+        zip_file.extractall(destination)
 
-extract(zip_file) 
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Extract a ZIP archive into a directory named after the archive."
+    )
+    parser.add_argument("-l", "--zippedfile", type=Path, required=True, help="ZIP file to extract")
+    parser.add_argument("-o", "--output", type=Path, help="Destination directory")
+    return parser.parse_args()
+
+
+def main() -> None:
+    """Validate the input archive and extract it."""
+    args = parse_args()
+    archive = args.zippedfile.expanduser()
+    if not archive.is_file():
+        raise SystemExit(f"Archive not found: {archive}")
+
+    destination = destination_for(archive, args.output)
+    try:
+        extract_archive(archive, destination)
+    except (OSError, ValueError, zipfile.BadZipFile) as error:
+        raise SystemExit(f"Extraction failed: {error}") from error
+
+    print(f"Extracted to: {destination}")
+
+
+if __name__ == "__main__":
+    main()

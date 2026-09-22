@@ -5,9 +5,9 @@ Ranks sentences by TF-IDF-like word frequency.
 No external dependencies required.
 
 Usage:
-    python main.py
-    python main.py article.txt
-    python main.py article.txt --sentences 3
+    uv run python main.py
+    uv run python main.py article.txt
+    uv run python main.py article.txt --sentences 3
 """
 
 import argparse
@@ -37,7 +37,17 @@ def sentence_split(text: str) -> list[str]:
     return [s.strip() for s in sents if len(s.split()) > 3]
 
 
+def positive_int(value: str) -> int:
+    """Parse a command-line sentence count greater than zero."""
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be at least 1")
+    return number
+
+
 def summarise(text: str, n_sentences: int = 3) -> tuple[str, dict]:
+    if n_sentences < 1:
+        raise ValueError("Number of sentences must be at least 1.")
     sentences = sentence_split(text)
     if len(sentences) <= n_sentences:
         return text, {}
@@ -80,7 +90,7 @@ def stats(text: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="Text Summarizer")
     parser.add_argument("file",       nargs="?", help="Text file to summarise")
-    parser.add_argument("--sentences","-n", type=int, default=3)
+    parser.add_argument("--sentences", "-n", type=positive_int, default=3)
     args = parser.parse_args()
 
     if args.file:
@@ -90,9 +100,9 @@ def main():
             sys.exit(1)
         text = path.read_text(errors="replace")
         summary, scores = summarise(text, args.sentences)
-        print(f"\n{'─'*60}")
+        print(f"\n{'-'*60}")
         print(f"SUMMARY ({args.sentences} sentences):")
-        print('─'*60)
+        print('-'*60)
         print(summary)
         s = stats(text)
         print(f"\nOriginal: {s['words']} words, {s['sentences']} sentences")
@@ -102,7 +112,7 @@ def main():
         return
 
     print("Text Summarizer")
-    print("──────────────────────────────")
+    print("------------------------------")
     print("Options:  [t] type/paste text  [f] from file  [q] quit\n")
 
     while True:
@@ -127,9 +137,9 @@ def main():
                 continue
             summary, _ = summarise(text, n)
             s = stats(text)
-            print(f"\n  {'─'*50}")
+            print(f"\n  {'-'*50}")
             print(f"  SUMMARY ({n} sentences):")
-            print(f"  {'─'*50}")
+            print(f"  {'-'*50}")
             for sent in sentence_split(summary):
                 print(f"  {sent}")
             print(f"\n  Original: {s['words']} words | Summary: {len(summary.split())} words")

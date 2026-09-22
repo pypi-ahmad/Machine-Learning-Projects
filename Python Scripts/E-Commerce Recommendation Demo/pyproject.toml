@@ -1,0 +1,15 @@
+[project]
+name = "ecommerce-recommendation-demo"
+version = "0.1.0"
+description = "Synthetic collaborative-filtering recommendation demo"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.0.0",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.5.0",
+    "streamlit>=1.57.0",
+]
+
+[tool.uv]
+package = false

@@ -1,61 +1,45 @@
-# Decimal to Binary Converter and Vice Versa
+# Decimal Binary Converter
 
-## Overview
+A dependency-free CLI for converting one signed integer between decimal and binary notation.
 
-A CLI-based number base converter that converts decimal numbers to binary and binary numbers to decimal. Uses Python's built-in `bin()` and `int()` functions for the conversions.
+## Requirements
 
-**Type:** CLI Utility
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/)
 
-## Features
+## Run
 
-- **Decimal to Binary:** Converts a user-supplied decimal integer to its binary representation
-- **Binary to Decimal:** Converts a user-supplied binary string to its decimal equivalent
-- Interactive menu for selecting conversion direction
-- Input validation for menu selection (catches `ValueError` for out-of-range options)
+From this directory:
 
-## Dependencies
-
-No external packages required. Uses only Python built-in functions.
-
-## How It Works
-
-1. The user is presented with a menu: `1. Decimal to binary` or `2. Binary to decimal`.
-2. **Option 1:** The user enters a decimal integer. The script uses `bin(dec)[2:]` to convert it to binary (stripping the `0b` prefix) and prints the result.
-3. **Option 2:** The user enters a binary string. The script uses `int(binary, 2)` to convert it to decimal and prints the result.
-4. If the menu selection is not 1 or 2, a `ValueError` is raised and caught, prompting the user to choose a valid option.
-
-## Project Structure
-
-```
-Decimal_to_binary_convertor_and_vice_versa/
-├── decimal_to_binary.py   # Main script
-├── output.png             # Screenshot of the application
-└── README.md
+```powershell
+uv sync
+uv run python decimal_to_binary.py
 ```
 
-## Setup & Installation
+Choose a conversion direction, then enter an integer. Binary inputs accept only `0` and `1`, with an optional leading `+` or `-`.
 
-1. Ensure Python 3.x is installed on your system.
-2. No additional packages need to be installed.
+## Examples
 
-## How to Run
+```text
+Decimal: -5
+Binary: -101
 
-```bash
-python decimal_to_binary.py
+Binary: 101
+Decimal: 5
 ```
 
-## Configuration
+## Project files
 
-No configuration required.
+```text
+decimal_to_binary.py  # CLI entry point and conversion functions
+output.png            # Existing project screenshot
+pyproject.toml        # uv project definition
+uv.lock               # Resolved Python environment
+```
 
-## Testing
+## Verification
 
-No formal test suite present.
-
-## Limitations
-
-- Only supports integer decimal inputs; floating-point numbers are not handled.
-- No validation that the binary input string contains only `0` and `1` characters (an invalid binary string will raise an unhandled `ValueError` from `int(binary, 2)`).
-- Single conversion per run; the script does not loop for multiple conversions.
-- Negative numbers are accepted for decimal-to-binary but the output includes a `-` prefix (Python behavior of `bin()`).
-
+```powershell
+uv run python -m py_compile decimal_to_binary.py
+uv lock --check
+```

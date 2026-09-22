@@ -1,71 +1,89 @@
-import os
-import sys
-import requests
+"""Save readable text from a public Medium article page."""
+
+from __future__ import annotations
+
+import argparse
 import re
+from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
 from bs4 import BeautifulSoup
 
-# switching to current running python files directory
-os.chdir('\\'.join(__file__.split('/')[:-1]))
 
-# function to get the html of the page
-def get_page():
-	global url
-	url = input('Enter url of a medium article: ')
-	# handling possible error
-	if not re.match(r'https?://medium.com/',url):
-		print('Please enter a valid website, or make sure it is a medium article')
-		sys.exit(1)
-	res = requests.get(url)
-	res.raise_for_status()
-	soup = BeautifulSoup(res.text, 'html.parser')
-	return soup
+REQUEST_TIMEOUT_SECONDS = 20
+DEFAULT_OUTPUT_DIRECTORY = Path(__file__).with_name("scraped_articles")
 
-# function to remove all the html tags and replace some with specific strings
-def purify(text):
-    rep = {"<br>": "\n", "<br/>": "\n", "<li>":  "\n"}
-    rep = dict((re.escape(k), v) for k, v in rep.items()) 
-    pattern = re.compile("|".join(rep.keys()))
-    text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
-    text = re.sub('\<(.*?)\>', '', text)
-    return text
 
-# function to compile all of the scraped text in one string
-def collect_text(soup):
-	fin = f'url: {url}\n\n'
-	main = (soup.head.title.text).split('|')
-	global title
-	title = main[0].strip()
-	fin += f'Title: {title.upper()}\n{main[1].strip()}'
+def medium_url(value: str) -> str:
+    """Accept only HTTPS URLs hosted by Medium."""
+    parsed = urlparse(value)
+    is_medium = parsed.hostname == "medium.com" or (
+        parsed.hostname is not None and parsed.hostname.endswith(".medium.com")
+    )
+    if parsed.scheme != "https" or not is_medium:
+        raise argparse.ArgumentTypeError("URL must be an HTTPS medium.com URL")
+    return value
 
-	header = soup.find_all('h1')
-	j = 1
 
-	try:
-		fin += '\n\nINTRODUCTION\n'
-		for elem in list(header[j].previous_siblings)[::-1]:
-			fin += f'\n{purify(str(elem))}'
-	except:
-		pass
+def fetch_article(url: str) -> BeautifulSoup:
+    """Download an article page with a stable user agent and timeout."""
+    response = requests.get(
+        url,
+        headers={"User-Agent": "Medium-Article-Scraper/0.1"},
+        timeout=REQUEST_TIMEOUT_SECONDS,
+    )
+    response.raise_for_status()
+    return BeautifulSoup(response.text, "html.parser")
 
-	fin += f'\n\n{header[j].text.upper()}'
-	for elem in header[j].next_siblings:
-		if elem.name == 'h1':
-			j+=1
-			fin += f'\n\n{header[j].text.upper()}'
-			continue
-		fin += f'\n{purify(str(elem))}'
-	return fin
 
-# function to save file in the current directory
-def save_file(fin):
-	if not os.path.exists('./scraped_articles'):
-		os.mkdir('./scraped_articles')
-	fname = './scraped_articles/' + '_'.join(title.split()) + '.txt'
-	with open(fname, 'w', encoding='utf8') as outfile:
-		outfile.write(fin)
-	print(f'File saved in directory {fname}')
+def extract_article(soup: BeautifulSoup, source_url: str) -> tuple[str, str]:
+    """Return title and readable text from Medium's article or main element."""
+    title_tag = soup.select_one("meta[property='og:title']") or soup.title
+    title = title_tag.get("content", "").strip() if title_tag else ""
+    if not title and soup.title:
+        title = soup.title.get_text(" ", strip=True)
+    title = title or "Medium article"
 
-# driver code
-if __name__ == '__main__':
-	fin = collect_text(get_page())
-	save_file(fin)
+    content = soup.find("article") or soup.find("main")
+    if content is None:
+        raise ValueError("No readable article content was found on this page.")
+    text = content.get_text("\n", strip=True)
+    if not text:
+        raise ValueError("The article content was empty.")
+    return title, f"Source: {source_url}\n\nTitle: {title}\n\n{text}\n"
+
+
+def output_path(title: str, directory: Path) -> Path:
+    """Build a Windows-safe text-file path from an article title."""
+    filename = re.sub(r"[^A-Za-z0-9._-]+", "_", title).strip("._") or "medium_article"
+    return directory / f"{filename}.txt"
+
+
+def save_article(text: str, destination: Path, overwrite: bool) -> None:
+    """Write UTF-8 text without replacing an existing file by default."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() and not overwrite:
+        raise FileExistsError(f"{destination} already exists; rerun with --overwrite to replace it")
+    destination.write_text(text, encoding="utf-8")
+
+
+def main() -> None:
+    """Parse arguments, extract the article, and save it as text."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("url", type=medium_url, help="HTTPS URL for a public medium.com article")
+    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIRECTORY)
+    parser.add_argument("--overwrite", action="store_true", help="replace an existing title-matched file")
+    args = parser.parse_args()
+
+    try:
+        title, text = extract_article(fetch_article(args.url), args.url)
+        destination = output_path(title, args.output_dir)
+        save_article(text, destination, args.overwrite)
+    except (requests.RequestException, ValueError, FileExistsError) as error:
+        raise SystemExit(f"Error: {error}") from error
+    print(f"Saved article to {destination}")
+
+
+if __name__ == "__main__":
+    main()

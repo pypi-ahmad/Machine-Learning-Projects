@@ -1,10 +1,10 @@
 # Split Folder into Subfolders
 
-> CLI tool that splits the files in a folder into numbered subfolders of a specified size.
+> CLI tool that previews or copies direct files into numbered subfolders of a specified size.
 
 ## Overview
 
-This script takes a source folder and a file count, then distributes the files from the source into newly created subfolders (`data_0`, `data_1`, `data_2`, etc.), each containing up to the specified number of files. Files are copied (not moved) using `shutil.copy2`, which preserves metadata.
+This script takes a source folder and a file count, then plans numbered subfolders (`data_0`, `data_1`, `data_2`, etc.), each containing up to the requested number of files. It previews by default. Copying requires `--apply --confirm COPY` and uses `shutil.copy2` to preserve metadata.
 
 ## Features
 
@@ -17,28 +17,31 @@ This script takes a source folder and a file count, then distributes the files f
 ## Project Structure
 
 ```
-Split_folder_into_subfolders/
+Folder Splitter/
 ├── split_and_copy.py
-└── README.md
+├── Readme.md
+├── pyproject.toml
+└── uv.lock
 ```
 
 ## Requirements
 
-- Python 3.x
-- No external dependencies (uses only `glob`, `os`, `shutil`, `sys` from the standard library)
+- Python 3.13 or later
+- No external dependencies
 
 ## Installation
 
 ```bash
-cd Split_folder_into_subfolders
+cd "Python Scripts/Folder Splitter"
+uv sync --no-config
 ```
 
-No additional installation needed — standard library only.
+No additional installation is needed.
 
 ## Usage
 
 ```bash
-python split_and_copy.py <input_folder_path> <count>
+uv run --no-config python split_and_copy.py <input_folder_path> <count>
 ```
 
 **Arguments:**
@@ -50,18 +53,21 @@ python split_and_copy.py <input_folder_path> <count>
 **Example:**
 
 ```bash
-python split_and_copy.py ./my_images 20
+uv run --no-config python split_and_copy.py .\my_images 20
 ```
 
-This copies files from `./my_images` into `data_0/`, `data_1/`, etc., each holding up to 20 files.
+This only previews the planned groups. To copy into `my_images_split/`, run:
+
+```bash
+uv run --no-config python split_and_copy.py .\my_images 20 --apply --confirm COPY
+```
 
 ## How It Works
 
-1. Validates that exactly two command-line arguments are provided and the path is a valid directory
-2. Uses `glob.glob()` to list all items in the source folder
-3. A `split()` generator yields slices of the file list, each of length `count`
-4. For each slice, creates a destination folder (`data_0`, `data_1`, ...) if it doesn't exist
-5. Copies each file into the corresponding subfolder using `shutil.copy2`
+1. Validates the source, group size, and new output path.
+2. Lists direct regular files only; directories and symbolic links are skipped.
+3. Shows the planned groups without changing files.
+4. Copies only after `--apply --confirm COPY`.
 
 ## Configuration
 
@@ -69,15 +75,13 @@ No configuration files. All parameters are provided via command-line arguments.
 
 ## Limitations
 
-- Output subfolders (`data_0`, `data_1`, ...) are created in the current working directory, not inside the source folder
-- `glob.glob()` matches everything in the folder (including subdirectories), so directories themselves may be "copied" as well
-- The `split()` generator has an off-by-one issue: it starts range at 1, so the first slice starts at index 0 but the logic uses `i-1` — this works but the first subfolder may get `count` files while the generator range starts at 1
-- No progress output or summary of what was copied
-- If destination folders already exist, files are silently overwritten
+- Only direct files are included; nested files are not split.
+- The output folder must not already exist.
+- Copying makes new copies; source files are never moved or deleted.
 
 ## Security Notes
 
-No security concerns identified.
+The tool never changes files without `--apply --confirm COPY`.
 
 ## License
 

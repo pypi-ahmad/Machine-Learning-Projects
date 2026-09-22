@@ -4,9 +4,9 @@ Calculate trig functions, inverse trig, triangle properties,
 unit circle values, and angle conversions.
 
 Usage:
-    python main.py
-    python main.py --angle 45 --unit deg
-    python main.py --triangle --sides 3 4 5
+    uv run python main.py
+    uv run python main.py --angle 45 --unit deg
+    uv run python main.py --triangle --sides 3 4 5
 """
 
 import argparse
@@ -35,8 +35,8 @@ def trig_values(angle: float, unit: str = "deg") -> None:
         rad = angle
         deg = rad_to_deg(angle)
 
-    print(f"\n  Angle: {fmt(deg)}°  =  {fmt(rad)} rad  =  {fmt(deg/400*360)}ᵍ (grad)")
-    print(f"  {'─'*36}")
+    print(f"\n  Angle: {fmt(deg)} deg = {fmt(rad)} rad = {fmt(deg/0.9)} grad")
+    print(f"  {'-'*36}")
 
     funcs = [
         ("sin",  math.sin(rad)),
@@ -48,41 +48,41 @@ def trig_values(angle: float, unit: str = "deg") -> None:
     ]
     for name, val in funcs:
         disp = fmt(val) if val is not None else "undefined"
-        print(f"  {name:>4}({fmt(deg)}°) = {disp}")
+        print(f"  {name:>4}({fmt(deg)} deg) = {disp}")
 
 
 def inverse_trig(value: float) -> None:
     """Compute all inverse trig functions for a value."""
     print(f"\n  Inverse trig for value = {value}")
-    print(f"  {'─'*36}")
+    print(f"  {'-'*36}")
     if -1 <= value <= 1:
         rad = math.asin(value)
-        print(f"  arcsin({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))}°")
+        print(f"  arcsin({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))} deg")
         rad = math.acos(value)
-        print(f"  arccos({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))}°")
+        print(f"  arccos({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))} deg")
     else:
         print("  arcsin/arccos: value out of range [-1, 1]")
     rad = math.atan(value)
-    print(f"  arctan({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))}°")
+    print(f"  arctan({value}) = {fmt(rad)} rad = {fmt(rad_to_deg(rad))} deg")
 
 
 def unit_circle(step: float = 30) -> None:
     """Display standard unit circle values."""
     angles = [0, 30, 45, 60, 90, 120, 135, 150, 180,
               210, 225, 240, 270, 300, 315, 330, 360]
-    print(f"\n  {'Angle°':>8}  {'Radians':>12}  {'sin':>10}  {'cos':>10}  {'tan':>10}")
-    print("  " + "─" * 58)
+    print(f"\n  {'Angle deg':>8}  {'Radians':>12}  {'sin':>10}  {'cos':>10}  {'tan':>10}")
+    print("  " + "-" * 58)
     for deg in angles:
         rad = deg_to_rad(deg)
         s   = math.sin(rad)
         c   = math.cos(rad)
         t   = s/c if abs(c) > 1e-10 else None
-        ts  = fmt(t) if t is not None else "∞"
+        ts  = fmt(t) if t is not None else "undefined"
         # Pretty fractions of pi
-        pi_map = {0:"0", 30:"π/6", 45:"π/4", 60:"π/3", 90:"π/2",
-                  120:"2π/3", 135:"3π/4", 150:"5π/6", 180:"π",
-                  210:"7π/6", 225:"5π/4", 240:"4π/3", 270:"3π/2",
-                  300:"5π/3", 315:"7π/4", 330:"11π/6", 360:"2π"}
+        pi_map = {0:"0", 30:"pi/6", 45:"pi/4", 60:"pi/3", 90:"pi/2",
+                  120:"2pi/3", 135:"3pi/4", 150:"5pi/6", 180:"pi",
+                  210:"7pi/6", 225:"5pi/4", 240:"4pi/3", 270:"3pi/2",
+                  300:"5pi/3", 315:"7pi/4", 330:"11pi/6", 360:"2pi"}
         rad_str = pi_map.get(deg, fmt(rad, 4))
         print(f"  {deg:>8}  {rad_str:>12}  {fmt(s,4):>10}  {fmt(c,4):>10}  {ts:>10}")
 
@@ -90,7 +90,7 @@ def unit_circle(step: float = 30) -> None:
 def triangle_solver(sides=None, angles=None) -> None:
     """Solve a triangle given SSS, SAS, or AAS/ASA."""
     print(f"\n  Triangle Solver")
-    print(f"  {'─'*36}")
+    print(f"  {'-'*36}")
     if sides and len(sides) == 3:
         a, b, c = sides
         # Validate triangle inequality
@@ -103,7 +103,7 @@ def triangle_solver(sides=None, angles=None) -> None:
         area = 0.5 * a * b * math.sin(math.radians(C))
         perim = a + b + c
         print(f"  Sides:   a={fmt(a)}, b={fmt(b)}, c={fmt(c)}")
-        print(f"  Angles:  A={fmt(A)}°, B={fmt(B)}°, C={fmt(C)}°")
+        print(f"  Angles:  A={fmt(A)} deg, B={fmt(B)} deg, C={fmt(C)} deg")
         print(f"  Area:    {fmt(area)}")
         print(f"  Perimeter: {fmt(perim)}")
         s = perim / 2

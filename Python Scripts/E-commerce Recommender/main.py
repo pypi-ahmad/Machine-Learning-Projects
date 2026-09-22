@@ -14,8 +14,8 @@ from collections import Counter
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Product Recommender", layout="wide")
-st.title("🛒 E-commerce Product Recommender")
+st.set_page_config(page_title="Product Recommender", page_icon=":material/recommend:", layout="wide")
+st.title("E-commerce product recommender")
 
 
 # ── Math helpers ──────────────────────────────────────────────────────────────
@@ -67,13 +67,14 @@ PRODUCTS = [
 ]
 
 PROD_BY_ID = {p["id"]: p for p in PRODUCTS}
+PROD_ID_BY_NAME = {p["name"]: p["id"] for p in PRODUCTS}
 
 # ── Synthetic user-item ratings ───────────────────────────────────────────────
 
 def make_ratings(seed: int = 42) -> dict[str, dict[int, float]]:
     rng    = random.Random(seed)
     users  = [f"user_{i:03d}" for i in range(1, 61)]
-    categories = list({p["category"] for p in PRODUCTS})
+    categories = sorted({p["category"] for p in PRODUCTS})
     ratings: dict[str, dict[int, float]] = {}
     for u in users:
         # Each user has 1–2 preferred categories
@@ -88,7 +89,7 @@ def make_ratings(seed: int = 42) -> dict[str, dict[int, float]]:
     return ratings
 
 
-@st.cache_resource
+@st.cache_data
 def build_models():
     ratings   = make_ratings()
     prod_docs = [p["tags"] for p in PRODUCTS]
@@ -142,11 +143,11 @@ def content_recommend(prod_id: int, top_n: int = 5) -> list[tuple[int, float]]:
 
 # ── UI ────────────────────────────────────────────────────────────────────────
 
-tab1, tab2, tab3 = st.tabs(["For You", "Similar Products", "Catalog & Ratings"])
+tab1, tab2, tab3 = st.tabs(["For you", "Similar products", "Catalog and ratings"])
 
 with tab1:
-    st.subheader("Personalized Recommendations")
-    user = st.selectbox("Select User", USERS)
+    st.subheader("Personalized recommendations")
+    user = st.selectbox("Select user", USERS)
     top_n = st.slider("Number of recommendations", 3, 10, 5)
 
     user_rated = ratings.get(user, {})
@@ -157,11 +158,11 @@ with tab1:
              "Your Rating": r, "Price": f"${PROD_BY_ID[pid]['price']}"}
             for pid, r in sorted(user_rated.items(), key=lambda x: -x[1])[:5]
         ])
-        st.dataframe(rated_df, use_container_width=True, hide_index=True)
+        st.dataframe(rated_df, hide_index=True)
 
     recs = collab_recommend(user, top_n)
     if recs:
-        st.subheader("Recommended for You")
+        st.subheader("Recommended for you")
         rec_df = pd.DataFrame([
             {"Product": PROD_BY_ID[pid]["name"],
              "Category": PROD_BY_ID[pid]["category"],
@@ -170,14 +171,14 @@ with tab1:
              "Tags": ", ".join(PROD_BY_ID[pid]["tags"][:3])}
             for pid, score in recs
         ])
-        st.dataframe(rec_df, use_container_width=True, hide_index=True)
+        st.dataframe(rec_df, hide_index=True)
     else:
         st.info("Not enough rating history to generate recommendations.")
 
 with tab2:
-    st.subheader("Find Similar Products")
+    st.subheader("Find similar products")
     prod_name = st.selectbox("Choose a product", [p["name"] for p in PRODUCTS])
-    prod_id   = next(p["id"] for p in PRODUCTS if p["name"] == prod_name)
+    prod_id = PROD_ID_BY_NAME[prod_name]
     top_m     = st.slider("Number of similar products", 3, 8, 4)
 
     base_prod = PROD_BY_ID[prod_id]
@@ -193,10 +194,10 @@ with tab2:
          "Tags": ", ".join(PROD_BY_ID[pid]["tags"][:3])}
         for pid, s in sims
     ])
-    st.dataframe(sim_df, use_container_width=True, hide_index=True)
+    st.dataframe(sim_df, hide_index=True)
 
 with tab3:
-    st.subheader("Product Catalog")
+    st.subheader("Product catalog")
     cat_filter = st.multiselect("Filter by category",
                                  sorted({p["category"] for p in PRODUCTS}))
     filtered = [p for p in PRODUCTS if not cat_filter or p["category"] in cat_filter]
@@ -205,9 +206,9 @@ with tab3:
          "Price": f"${p['price']}", "Tags": ", ".join(p["tags"])}
         for p in filtered
     ])
-    st.dataframe(cat_df, use_container_width=True, hide_index=True)
+    st.dataframe(cat_df, hide_index=True)
 
-    st.subheader("Rating Statistics")
+    st.subheader("Rating statistics")
     all_ratings = [(pid, r) for u_r in ratings.values() for pid, r in u_r.items()]
     r_df = pd.DataFrame(all_ratings, columns=["product_id", "rating"])
     avg_r = r_df.groupby("product_id")["rating"].mean()
@@ -216,5 +217,5 @@ with tab3:
         "Product": [PROD_BY_ID[pid]["name"] for pid in top_prods.index],
         "Avg Rating": top_prods.values.round(2),
     })
-    st.dataframe(top_df, use_container_width=True, hide_index=True)
+    st.dataframe(top_df, hide_index=True)
     st.caption(f"Total ratings in dataset: {len(all_ratings)}")

@@ -1,0 +1,3 @@
+.venv/
+events.json
+__pycache__/

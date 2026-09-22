@@ -1,91 +1,49 @@
-# AES Encrypt and Decrypt Text
+# Text Encryption and Decryption
 
-> A command-line tool that encrypts and decrypts text using AES-128 in CFB mode with PyCryptodome.
+Password-based UTF-8 text encryption using AES-256-GCM authentication and scrypt key derivation.
 
-## Overview
+## Setup
 
-This script takes a plaintext string as a command-line argument, encrypts it using AES-128 in CFB mode with a random initialization vector (IV), immediately decrypts it to verify correctness, saves the ciphertext to a binary file, and prints the key, IV, ciphertext, and decrypted text to the console.
+Requirements: Python 3.13+.
 
-## Features
-
-- **AES-128 encryption** in CFB (Cipher Feedback) mode
-- Generates a **random IV** using `Crypto.Random` for each run
-- Encrypts plaintext provided as a CLI argument
-- Decrypts the ciphertext to verify round-trip correctness
-- Saves encrypted data to `encrypted.bin`
-- Displays key, IV, ciphertext (hex), and decrypted text on the console
-
-## Project Structure
-
-```
-Encrypt_and_decrypt_text/
-├── aes_encode.py
-├── requirements.txt
-├── output.png            # Sample output screenshot
-└── README.md
-```
-
-## Requirements
-
-- Python 3.x
-- `pycryptodome==3.9.8`
-
-## Installation
-
-```bash
-cd Encrypt_and_decrypt_text
-pip install -r requirements.txt
+```powershell
+cd "Text Encryption and Decryption"
+uv sync
 ```
 
 ## Usage
 
-```bash
-python aes_encode.py "hello world"
+Encrypt text interactively:
+
+```powershell
+uv run python aes_encode.py encrypt --output message.txtenc
 ```
 
-Sample output:
+Decrypt and print plaintext:
 
-```
-The key k is:  b'this is a 16 key'
-iv is:  b'a1b2c3d4e5f67890'
-The encrypted data is:  b'...'
-The decrypted data is:  hello world
+```powershell
+uv run python aes_encode.py decrypt message.txtenc
 ```
 
-An `encrypted.bin` file is also generated containing the ciphertext (without the IV).
+Decrypt into a new file instead:
 
-## How It Works
+```powershell
+uv run python aes_encode.py decrypt message.txtenc --output message.txt
+```
 
-1. Reads the plaintext from `sys.argv[1]`.
-2. Uses a 16-byte key (`b'this is a 16 key'`) for AES-128.
-3. Generates a random 16-byte IV using `Random.new().read(AES.block_size)`.
-4. Creates an AES cipher in CFB mode and encrypts the plaintext (encoded to bytes).
-5. Prepends the IV to the ciphertext for transmission/storage: `iv + encrypted_data`.
-6. For decryption, extracts the first 16 bytes as IV and decrypts the remaining bytes.
-7. Writes only the ciphertext (without IV) to `encrypted.bin`.
-8. Prints the key, IV (hex), ciphertext (hex), and decrypted plaintext.
+`encrypt --text "..."` is available for automation, but interactive entry avoids placing plaintext in shell history. Encryption prompts twice for the password; decryption prompts once.
 
-## Configuration
+## Security model
 
-- **AES key**: Hardcoded as `b'this is a 16 key'` (16 bytes = AES-128).
-- **Mode**: AES.MODE_CFB (Cipher Feedback mode).
-- **Output file**: Hardcoded as `encrypted.bin`.
+Each encrypted file stores a format marker, random salt, random nonce, authentication tag, and ciphertext. The password is never written, printed, or passed as a command-line argument. scrypt derives an independent 256-bit key from the password and per-file salt. AES-GCM detects an incorrect password or modified payload.
 
-## Security Notes
+The tool refuses to overwrite existing files. Keep the password safe: it cannot be recovered, and losing it permanently prevents decryption.
 
-- **Hardcoded encryption key** — the key `b'this is a 16 key'` is embedded in the source code. In any real application, keys must be securely generated and stored.
-- The `encrypted.bin` file contains ciphertext **without the IV**, so decryption from the file alone is not possible without also storing the IV.
-- Not suitable for production encryption.
-- The key is printed to the console in plaintext.
+## Project files
 
-## Limitations
-
-- Requires exactly one command-line argument — crashes with `IndexError` if no argument is provided.
-- The encryption key is hardcoded and trivially discoverable.
-- `encrypted.bin` lacks the IV needed for decryption, making the file alone insufficient.
-- No standalone decryption mode — both encryption and decryption happen in a single run.
-- No file-based encryption — only encrypts CLI string arguments.
-
-## License
-
-Not specified.
+```text
+Text Encryption and Decryption/
+├── aes_encode.py
+├── pyproject.toml
+└── uv.lock
+```

@@ -1,69 +1,70 @@
-import pyautogui
-import time
-import webbrowser
-from selenium import webdriver
-from time import sleep
-from webdriver_manager.chrome import ChromeDriverManager
-from getpass import getpass
+"""Plan authorized Facebook group posts or execute them with explicit consent."""
+
+from __future__ import annotations
+
+import argparse
+import getpass
+
+LOGIN_URL = "https://www.facebook.com/login.php"
 
 
-LOGIN_URL = 'https://www.facebook.com/login.php'
-num = str(input("Enter group ids separated by commas: "))
-lists = num.split(",")
-groupid = []
-for i in lists:
-    groupid.append(i)
+def group_urls(group_ids: str) -> list[str]:
+    """Validate comma-separated group identifiers and return their URLs."""
+    identifiers = [group_id.strip() for group_id in group_ids.split(",") if group_id.strip()]
+    if not identifiers or any("/" in group_id or "?" in group_id for group_id in identifiers):
+        raise ValueError("Provide one or more plain group identifiers separated by commas.")
+    return [f"https://www.facebook.com/groups/{group_id}" for group_id in identifiers]
 
 
-message = input("Enter your message: ")
+def post(urls: list[str], message: str, selectors: dict[str, str], timeout: int) -> None:
+    """Log in and post to configured groups using Selenium 4 waits."""
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support import expected_conditions as conditions
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    email = input("Facebook email: ").strip()
+    password = getpass.getpass("Facebook password: ")
+    driver = webdriver.Chrome()
+    try:
+        wait = WebDriverWait(driver, timeout)
+        driver.get(LOGIN_URL)
+        wait.until(conditions.element_to_be_clickable((By.CSS_SELECTOR, selectors["email"]))).send_keys(email)
+        wait.until(conditions.element_to_be_clickable((By.CSS_SELECTOR, selectors["password"]))).send_keys(password)
+        wait.until(conditions.element_to_be_clickable((By.CSS_SELECTOR, selectors["login"]))).click()
+        for url in urls:
+            driver.get(url)
+            wait.until(conditions.element_to_be_clickable((By.CSS_SELECTOR, selectors["composer"]))).click()
+            driver.switch_to.active_element.send_keys(message)
+            wait.until(conditions.element_to_be_clickable((By.CSS_SELECTOR, selectors["post"]))).click()
+    finally:
+        driver.quit()
 
 
-class FacebookLogin():
-    def __init__(self, email, password, browser='Chrome'):
-        # Store credentials for login
-        self.email = email
-        self.password = password
-        if browser == 'Chrome':
-            # Use chrome
-            self.driver = webdriver.Chrome(
-                executable_path=ChromeDriverManager().install())
-        self.driver.get(LOGIN_URL)
-        time.sleep(1)  # Wait for some time to load
-
-    def login(self):
-        email_element = self.driver.find_element_by_id('email')
-        email_element.send_keys(self.email)  # Give keyboard input
-
-        password_element = self.driver.find_element_by_id('pass')
-        password_element.send_keys(self.password)  # Give password as input too
-
-        login_button = self.driver.find_element_by_id('loginbutton')
-        login_button.click()  # Send mouse click
-
-        time.sleep(2)  # Wait for 2 seconds for the page to show up
-
-        for i in range(len(groupid)):
-            link = 'https://facebook.com/groups/'+groupid[i]
-            self.driver.get(link)
-            print("Waiting for few seconds .......")
-            time.sleep(45)
-            self.driver.find_element_by_class_name(
-                'a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7').click()
-            time.sleep(7)
-
-            self.driver.switch_to.active_element.send_keys("message")
-            time.sleep(7)
-
-            self.driver.find_element_by_class_name(
-                'a8c37x1j ni8dbmo4 stjgntxs l9j0dhe7 ltmttdrg g0qnabr5').click()
-            time.sleep(7)
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--groups", required=True, help="comma-separated group identifiers")
+    parser.add_argument("--message", required=True)
+    parser.add_argument("--post", action="store_true", help="perform posts; default is preview")
+    parser.add_argument("--timeout", type=int, default=15)
+    for name in ("email", "password", "login", "composer", "post"):
+        parser.add_argument(f"--{name}-selector")
+    args = parser.parse_args()
+    try:
+        urls = group_urls(args.groups)
+    except ValueError as error:
+        raise SystemExit(f"Error: {error}") from error
+    print("Planned groups:")
+    for url in urls:
+        print(url)
+    if not args.post:
+        print("Preview only. Use --post only for groups you are authorized to manage.")
+        return
+    selectors = {name: getattr(args, f"{name}_selector") for name in ("email", "password", "login", "composer", "post")}
+    if not all(selectors.values()) or args.timeout <= 0:
+        raise SystemExit("Error: --post requires all selector options and a positive timeout.")
+    post(urls, args.message, selectors, args.timeout)
 
 
-if __name__ == '__main__':
-    # Enter your login credentials here
-    usr = input('Enter Email Id:')
-    pwd = getpass('Enter Password:')
-    fb_login = FacebookLogin(email=usr, password=pwd, browser='Chrome')
-    fb_login.login()
-
-# time.sleep(5)
+if __name__ == "__main__":
+    main()

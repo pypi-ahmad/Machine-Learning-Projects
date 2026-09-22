@@ -1,0 +1,10 @@
+[project]
+name = "folder-size-analyzer"
+version = "0.1.0"
+description = "Local command-line folder size analyzer"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

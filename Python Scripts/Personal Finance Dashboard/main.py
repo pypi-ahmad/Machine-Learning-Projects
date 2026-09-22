@@ -17,7 +17,7 @@ import streamlit as st
 st.set_page_config(page_title="Personal Finance", layout="wide")
 st.title("💰 Personal Finance Dashboard")
 
-DATA_FILE = Path("finance.csv")
+DATA_FILE = Path(__file__).with_name("finance.csv")
 
 INCOME_CATS  = ["Salary", "Freelance", "Investment", "Rental", "Gift", "Other Income"]
 EXPENSE_CATS = ["Housing", "Food", "Transport", "Healthcare", "Education",
@@ -109,8 +109,12 @@ with tab1:
         mask &= fin["date"].dt.to_period("M").astype(str) == month_sel
     view = fin[mask].sort_values("date", ascending=False).copy()
     view["date_str"] = view["date"].dt.strftime("%Y-%m-%d")
-    st.dataframe(view[["date_str","type","category","description","amount"]].rename(columns={"date_str":"date"}),
-                 use_container_width=True, hide_index=True)
+    st.dataframe(
+        view[["date_str", "type", "category", "description", "amount"]].rename(
+            columns={"date_str": "date"}
+        ),
+        hide_index=True,
+    )
 
     if st.button("🗑️ Delete last entry"):
         st.session_state.fin = fin.drop(fin.index[-1]).reset_index(drop=True)
@@ -130,7 +134,7 @@ with tab2:
         df_cat = by_cat.reset_index()
         df_cat.columns = ["Category", "Amount"]
         df_cat["Percentage"] = (df_cat["Amount"] / df_cat["Amount"].sum() * 100).round(1)
-        st.dataframe(df_cat, use_container_width=True, hide_index=True)
+        st.dataframe(df_cat, hide_index=True)
 
 with tab3:
     st.subheader("Monthly Income vs Expenses")
@@ -145,10 +149,10 @@ with tab3:
     st.line_chart(monthly[["Income","Expense","Net"]])
 
     st.write("**Monthly Summary Table**")
-    st.dataframe(monthly.round(2), use_container_width=True)
+    st.dataframe(monthly.round(2))
 
 with tab4:
     st.subheader("Export Data")
     csv = fin.to_csv(index=False).encode()
     st.download_button("📥 Download CSV", csv, "finance_export.csv", "text/csv")
-    st.dataframe(fin.sort_values("date", ascending=False), use_container_width=True)
+    st.dataframe(fin.sort_values("date", ascending=False))

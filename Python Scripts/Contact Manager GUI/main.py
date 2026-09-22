@@ -9,24 +9,24 @@ Usage:
 
 import csv
 import json
-import os
 import tkinter as tk
+from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "contacts_manager.json")
+DATA_FILE = Path(__file__).with_name("contacts_manager.json")
 GROUPS    = ["Personal", "Work", "Family", "Friends", "Business", "Other"]
 
 
 def load() -> list[dict]:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
-    return []
+    try:
+        contacts = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (FileNotFoundError, OSError, json.JSONDecodeError):
+        return []
+    return contacts if isinstance(contacts, list) else []
 
 
 def save(data: list[dict]):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 class ContactManager(tk.Tk):

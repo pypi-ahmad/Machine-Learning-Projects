@@ -1,83 +1,46 @@
 # Email Validator
 
-> A Python script that validates email addresses through three checks: syntax verification, DNS MX record lookup, and SMTP server response.
-
-## Overview
-
-This script performs a three-stage validation of an email address: first checking the syntax with a regex pattern, then verifying the domain's MX DNS record exists, and finally connecting to the mail server via SMTP to check if the specific mailbox exists (via RCPT TO response code).
-
-## Features
-
-- **Check 1 — Syntax**: Validates email format using a regex pattern
-- **Check 2 — DNS**: Resolves the domain's MX record to verify the mail server exists
-- **Check 3 — SMTP**: Connects to the mail server and performs HELO, MAIL FROM, and RCPT TO commands to verify the mailbox exists (250 = valid)
-- Step-by-step console output showing pass/fail for each check
-- Graceful handling when SMTP access is restricted
-
-## Project Structure
-
-```
-Email-Validator/
-├── email_verification.py
-└── README.md
-```
+This command-line tool checks email-address syntax and can optionally ask DNS whether the address's domain resolves. It never connects to an SMTP server and cannot prove that a mailbox exists or will accept mail.
 
 ## Requirements
 
-- Python 3.x
-- `dnspython` (imported as `dns.resolver`)
-- `smtplib` (standard library)
-- `socket` (standard library)
-- `re` (standard library)
+- Python 3.13 or later
+- [uv](https://docs.astral.sh/uv/)
 
-## Installation
+## Setup
 
-```bash
-cd Email-Validator
-pip install dnspython
+```powershell
+uv sync --no-config
 ```
 
-## Usage
+There are no third-party dependencies.
 
-```bash
-python email_verification.py
+## Validate one address
+
+```powershell
+uv run --no-config python main.py user@example.com
 ```
 
-When prompted, enter an email address:
+The default check validates the format and performs a DNS-resolution check for the domain. DNS requires network access and may fail because of local network policy or temporary DNS conditions.
 
-```
-Enter your Email id : user@example.com
-```
+## Validate a file
 
-Sample output for a valid email:
+Provide a UTF-8 text file containing one address per line:
 
-```
-Check 1 (Syntax) Passed
-Check 2 (DNS - mail.example.com.) Passed
-Check 3 (SMTP response) Passed
-user@example.com is a VALID email address!
+```powershell
+uv run --no-config python main.py --file emails.txt
 ```
 
-## How It Works
+## Offline syntax-only check
 
-1. **`check_syntax(email)`** — Matches the email against the regex `^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$`. Exits if the pattern doesn't match.
-2. **`check_dns(email, domain)`** — Uses `dns.resolver.resolve(domain, 'MX')` to fetch MX records. Returns the first MX record's exchange hostname. Exits if resolution fails.
-3. **`check_response(email, domain, mxRecord)`** — Opens an SMTP connection to the MX server, sends HELO, MAIL FROM, and RCPT TO commands. If the server responds with status code 250, the mailbox exists. Catches `socket.error` for servers that block external SMTP connections.
+Skip DNS when you only need local validation:
 
-## Configuration
+```powershell
+uv run --no-config python main.py user@example.com --no-dns
+```
 
-No configuration files. The email address is provided interactively at runtime.
+## What the result means
 
-## Limitations
-
-- The regex pattern only supports lowercase letters and 2-3 character TLDs — rejects valid emails with uppercase letters, plus signs, hyphens in the local part, or longer TLDs (e.g., `.info`, `.museum`).
-- Uses a bare `except:` in `check_dns()` — catches all exceptions including `KeyboardInterrupt`.
-- Calls `exit()` on check failure instead of raising exceptions or returning a result.
-- Many mail servers block or rate-limit external SMTP RCPT TO verification, making Check 3 unreliable.
-- The SMTP MAIL FROM uses the email being checked as the sender, which may be rejected.
-- No timeout configured for DNS or SMTP operations.
-- Only checks the first MX record, ignoring backup mail servers.
-
-## License
-
-Not specified.
+- `VALID` means the syntax passed and, unless `--no-dns` was used, the domain resolved in DNS.
+- A disposable-domain or role-address message is a warning, not a delivery failure.
+- The tool does not query MX records, connect to SMTP, or test an individual mailbox. A valid result is not a guarantee that an email can be delivered.

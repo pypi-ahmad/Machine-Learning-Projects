@@ -1,0 +1,7 @@
+[project]
+name = "qr-code-generator"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "qrcode[pil]>=8.2",
+]

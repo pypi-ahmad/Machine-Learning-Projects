@@ -1,101 +1,122 @@
-from bs4 import BeautifulSoup
+"""Look up and display infobox fields from English Wikipedia."""
+
+from __future__ import annotations
+
+import threading
+import tkinter as tk
+from tkinter import messagebox
+from urllib.parse import quote
+
 import requests
-from tkinter import *
-
-info_dict = {}
-
-def error_box():
-    """
-    A function to create a pop-up, in case the code errors out
-    """
-    global mini_pop
-
-    mini_pop = Toplevel()
-    mini_pop.title('Error screen')
-
-    mini_l = Label(mini_pop, text=" !!!\nERROR FETCHING DATA", fg='red', font=('Arial',10,'bold'))
-    mini_l.grid(row=1, column=1, sticky='nsew')
-    entry_str.set("")
+from bs4 import BeautifulSoup
 
 
+WIKIPEDIA_URL = "https://en.wikipedia.org/wiki/{}"
+USER_AGENT = "WikipediaInfoboxScraper/1.0 (local desktop utility)"
 
-def wikiScraper():
-    """
-    Function scrapes the infobox lying under the right tags and displays 
-    the data obtained from it in a new window
-    """
-    global info_dict
 
-    # Modifying the user input to make it suitable for the URL
-    entry = entry_str.get()
-    entry = entry.split()
-    query = '_'.join([i.capitalize() for i in entry])
-    req = requests.get('https://en.wikipedia.org/wiki/'+query)
+def page_url(title: str) -> str:
+    """Build an English Wikipedia page URL from a non-empty title."""
+    cleaned = " ".join(title.split())
+    if not cleaned:
+        raise ValueError("Enter a Wikipedia page title.")
+    return WIKIPEDIA_URL.format(quote(cleaned.replace(" ", "_")))
 
-    # to check for valid URL
-    if req.status_code == 200:
-        # for parsing through the html text
-        soup = BeautifulSoup(req.text, 'html.parser')
 
-        # Finding text within infobox and storing it in a dictionary
-        info_table = soup.find('table', {'class': 'infobox'})
-        
+def parse_infobox(html: str) -> dict[str, str]:
+    """Extract direct infobox header and value cells from page HTML."""
+    soup = BeautifulSoup(html, "html.parser")
+    infobox = soup.select_one("table.infobox")
+    if infobox is None:
+        raise ValueError("This page does not contain an infobox.")
+    fields: dict[str, str] = {}
+    for row in infobox.select("tr"):
+        header = row.find("th", recursive=False)
+        value = row.find("td", recursive=False)
+        if header is None or value is None:
+            continue
+        label = header.get_text(" ", strip=True)
+        text = value.get_text(" ", strip=True)
+        if label and text:
+            fields[label] = text
+    if not fields:
+        raise ValueError("The infobox did not contain readable fields.")
+    return fields
+
+
+def fetch_infobox(title: str, timeout: float = 15) -> tuple[str, dict[str, str]]:
+    """Fetch and parse one English Wikipedia page with a bounded request."""
+    url = page_url(title)
+    response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
+    response.raise_for_status()
+    return url, parse_infobox(response.text)
+
+
+class InfoboxApp:
+    """Small Tkinter interface that keeps requests off the UI thread."""
+
+    def __init__(self, root: tk.Tk) -> None:
+        self.root = root
+        self.root.title("Wikipedia Infobox")
+        self.title_var = tk.StringVar()
+        frame = tk.Frame(root, padx=12, pady=12)
+        frame.pack(fill="both", expand=True)
+        tk.Label(frame, text="Wikipedia page title").pack(anchor="w")
+        self.entry = tk.Entry(frame, textvariable=self.title_var, width=50)
+        self.entry.pack(fill="x", pady=(0, 8))
+        self.entry.focus_set()
+        self.button = tk.Button(frame, text="Fetch infobox", command=self.start_fetch)
+        self.button.pack(anchor="w")
+        self.status = tk.StringVar(value="Enter a page title.")
+        tk.Label(frame, textvariable=self.status).pack(anchor="w", pady=(8, 4))
+        self.output = tk.Text(frame, width=80, height=20, wrap="word", state="disabled")
+        self.output.pack(fill="both", expand=True)
+
+    def start_fetch(self) -> None:
+        """Start one request thread after validating the entered title."""
+        title = self.title_var.get()
         try:
-            for tr in info_table.find_all('tr'):
-                try:
-                    if tr.find('th'):
-                        info_dict[tr.find('th').text] = tr.find('td').text
-                except:
-                    pass
+            page_url(title)
+        except ValueError as error:
+            messagebox.showerror("Wikipedia Infobox", str(error))
+            return
+        self.button.config(state="disabled")
+        self.status.set("Fetching Wikipedia page...")
+        threading.Thread(target=self.fetch_worker, args=(title,), daemon=True).start()
 
-        except:
-            error_box()
-        
-        # Creating a pop up window to show the results
-        global popup
-        popup = Toplevel()
-        popup.title(query)
+    def fetch_worker(self, title: str) -> None:
+        """Fetch data outside the UI thread and send the result back to Tkinter."""
+        try:
+            url, fields = fetch_infobox(title)
+        except (requests.RequestException, ValueError) as error:
+            self.root.after(0, self.show_error, str(error))
+            return
+        self.root.after(0, self.show_fields, url, fields)
 
-        r = 1
+    def show_fields(self, url: str, fields: dict[str, str]) -> None:
+        """Display parsed fields after a successful request."""
+        self.output.config(state="normal")
+        self.output.delete("1.0", tk.END)
+        self.output.insert(tk.END, f"{url}\n\n")
+        for label, value in fields.items():
+            self.output.insert(tk.END, f"{label}: {value}\n")
+        self.output.config(state="disabled")
+        self.status.set(f"Displayed {len(fields)} field(s).")
+        self.button.config(state="normal")
 
-        for k, v in info_dict.items(): 
-            e1 = Label(popup, text=k+" : ", bg='cyan4', font=('Arial',10,'bold'))
-            e1.grid(row=r, column=1, sticky='nsew')
-
-            e2 = Label(popup, text=info_dict[k], bg="cyan2", font=('Arial',10, 'bold'))
-            e2.grid(row=r, column=2, sticky='nsew')
-            
-            r += 1 
-            e3 = Label(popup, text='', font=('Arial',10,'bold')) 
-            e3.grid(row=r, sticky='s') 
-            r += 1
-        
-        entry_str.set("")
-        info_dict = {}
-
-    else:
-        print('Invalid URL')
-        error_box()
+    def show_error(self, message: str) -> None:
+        """Show a fetch or parsing error and re-enable the UI."""
+        self.status.set("No infobox displayed.")
+        self.button.config(state="normal")
+        messagebox.showerror("Wikipedia Infobox", message)
 
 
-# Creating a window to take user search queries
-root = Tk()
-root.title('Wikipedia Infobox')
+def main() -> None:
+    """Launch the local desktop interface."""
+    root = tk.Tk()
+    InfoboxApp(root)
+    root.mainloop()
 
-global entry_str
-entry_str = StringVar()
 
-search_label = LabelFrame(root, text="Search: ", font = ('Century Schoolbook L',17))
-search_label.pack(pady=10, padx=10)
-
-user_entry = Entry(search_label, textvariable = entry_str, font = ('Century Schoolbook L',17))
-user_entry.pack(pady=10, padx=10)
-
-button_frame = Frame(root)
-button_frame.pack(pady=10)
-
-submit_bt = Button(button_frame, text = 'Submit', command = wikiScraper, font = ('Century Schoolbook L',17))
-submit_bt.grid(row=0, column=0)
-
-root.mainloop()
-
+if __name__ == "__main__":
+    main()

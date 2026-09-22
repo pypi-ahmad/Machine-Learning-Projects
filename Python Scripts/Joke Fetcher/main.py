@@ -5,7 +5,7 @@ Supports categories, filtering, and saving favourites locally.
 Falls back to built-in jokes when offline.
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import json
@@ -46,7 +46,7 @@ FALLBACK_JOKES = [
      "delivery": "Because they always take things literally."},
 ]
 
-FAVOURITES_FILE = Path("jokes_favourites.json")
+FAVOURITES_FILE = Path(__file__).resolve().parent / "jokes_favourites.json"
 
 CATEGORIES = ["Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"]
 BASE_URL    = "https://v2.jokeapi.dev/joke"
@@ -67,7 +67,7 @@ def fetch_joke(category: str = "Programming", lang: str = "en",
             data = json.loads(resp.read())
             if not data.get("error"):
                 return data
-    except (urllib.error.URLError, json.JSONDecodeError, Exception):
+    except (urllib.error.URLError, json.JSONDecodeError):
         pass
     return None
 

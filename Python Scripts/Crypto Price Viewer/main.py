@@ -18,7 +18,7 @@ import streamlit as st
 st.set_page_config(page_title="Crypto Price Viewer", layout="wide")
 st.title("₿ Crypto Price Viewer")
 
-DATA_FILE = Path("crypto_portfolio.json")
+DATA_FILE = Path(__file__).with_name("crypto_portfolio.json")
 
 DEFAULT_COINS = ["bitcoin", "ethereum", "binancecoin", "solana", "cardano",
                  "ripple", "polkadot", "dogecoin", "avalanche-2", "chainlink"]
@@ -96,7 +96,7 @@ with tab1:
         df["Price"]       = df["Price"].map(lambda x: f"{x:,.6f}" if x < 1 else f"{x:,.2f}")
         df["24h Change%"] = df["24h Change%"].map(lambda x: f"{x:+.2f}%")
         df["Market Cap"]  = df["Market Cap"].map(lambda x: f"${x/1e9:.2f}B" if x > 1e9 else f"${x/1e6:.2f}M")
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, width="stretch", hide_index=True)
     else:
         st.warning("Could not fetch prices. Check internet connection.")
 

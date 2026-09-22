@@ -5,7 +5,7 @@ Converts text between various case styles:
   snake_case, kebab-case, SCREAMING_SNAKE_CASE, dot.case, alternating.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import re

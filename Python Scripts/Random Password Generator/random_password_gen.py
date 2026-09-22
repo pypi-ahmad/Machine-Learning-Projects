@@ -1,43 +1,33 @@
-import random
-import math
+"""Generate a password with letters, numbers, and special characters."""
 
-alpha = "abcdefghijklmnopqrstuvwxyz"
-num = "0123456789"
-special = "@#$%&*"
-
-# pass_len=random.randint(8,13)  #without User INput
-pass_len = int(input("Enter Password Length"))
-
-# length of password by 50-30-20 formula
-alpha_len = pass_len//2
-num_len = math.ceil(pass_len*30/100)
-special_len = pass_len-(alpha_len+num_len)
+import argparse
+import secrets
+import string
 
 
-password = []
+SPECIAL = "@#$%&*"
 
 
-def generate_pass(length, array, is_alpha=False):
-    for i in range(length):
-        index = random.randint(0, len(array) - 1)
-        character = array[index]
-        if is_alpha:
-            case = random.randint(0, 1)
-            if case == 1:
-                character = character.upper()
-        password.append(character)
+def generate_password(length: int) -> str:
+    """Return a shuffled 50/30/20-style password."""
+    letters = length // 2
+    numbers = round(length * 0.3)
+    symbols = length - letters - numbers
+    characters = list(map(lambda _: secrets.choice(string.ascii_letters), range(letters)))
+    characters += list(map(lambda _: secrets.choice(string.digits), range(numbers)))
+    characters += list(map(lambda _: secrets.choice(SPECIAL), range(symbols)))
+    secrets.SystemRandom().shuffle(characters)
+    return "".join(characters)
 
 
-# alpha password
-generate_pass(alpha_len, alpha, True)
-# numeric password
-generate_pass(num_len, num)
-# special Character password
-generate_pass(special_len, special)
-# suffle the generated password list
-random.shuffle(password)
-# convert List To string
-gen_password = ""
-for i in password:
-    gen_password = gen_password + str(i)
-print(gen_password)
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Generate a mixed-character password.")
+    parser.add_argument("length", type=int, help="Password length")
+    args = parser.parse_args()
+    if args.length < 3:
+        parser.error("length must be at least 3")
+    print(generate_password(args.length))
+
+
+if __name__ == "__main__":
+    main()

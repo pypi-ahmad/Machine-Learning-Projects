@@ -1,4 +1,4 @@
-"""Fraction Calculator — CLI tool.
+"""Fraction Calculator CLI tool.
 
 Perform arithmetic with fractions: add, subtract, multiply, divide.
 Convert between fractions, decimals, and mixed numbers.
@@ -22,8 +22,10 @@ def parse_fraction(s: str) -> Fraction:
     # Mixed number: "1 2/3"
     if " " in s:
         parts = s.split()
+        if len(parts) != 2 or "/" not in parts[1]:
+            raise ValueError("mixed numbers must use the form '1 2/3'")
         whole = int(parts[0])
-        frac  = Fraction(parts[1])
+        frac = Fraction(parts[1])
         return Fraction(whole) + (frac if whole >= 0 else -frac)
     return Fraction(s)
 
@@ -83,7 +85,7 @@ Fraction Calculator
 3. Multiply
 4. Divide
 5. Power (fraction ^ integer)
-6. Convert fraction ↔ decimal
+6. Convert fraction <-> decimal
 7. Simplify fraction
 8. Continued fraction expansion
 9. Best rational approximation
@@ -129,12 +131,12 @@ def main() -> None:
             elif choice == "2":
                 show(a - b, f"{a} - {b}")
             elif choice == "3":
-                show(a * b, f"{a} × {b}")
+                show(a * b, f"{a} * {b}")
             else:
                 if b == 0:
                     print("  Division by zero.")
                     continue
-                show(a / b, f"{a} ÷ {b}")
+                show(a / b, f"{a} / {b}")
 
         elif choice == "5":
             a = read_fraction("  Fraction: ")
@@ -157,8 +159,10 @@ def main() -> None:
                 d_s = input("  Decimal: ").strip()
                 try:
                     d = float(d_s)
+                    if not math.isfinite(d):
+                        raise ValueError("decimal must be finite")
                     f = Fraction(d).limit_denominator(10_000)
-                    show(f, f"≈ {d}")
+                    show(f, f"~ {d}")
                 except ValueError:
                     print("  Invalid decimal.")
 
@@ -188,6 +192,8 @@ def main() -> None:
             try:
                 d = float(d_s)
                 max_d = int(max_d_s)
+                if not math.isfinite(d) or max_d < 1:
+                    raise ValueError("decimal must be finite and denominator must be positive")
                 f = best_rational(d, max_d)
                 print(f"\n  Best rational approx: {f}")
                 print(f"  Error: {abs(d - float(f)):.2e}")

@@ -69,14 +69,14 @@ def ascii_plot(populations: list[float], years: int, title: str,
         col = int(t / years * (width - 1))
         row = int((p_max - p) / p_range * (height - 1))
         row = max(0, min(height - 1, row))
-        grid[row][col] = "●"
+        grid[row][col] = "*"
 
     print(f"\n  {title}")
-    print(f"  {'─'*width}")
+    print(f"  {'-' * width}")
     print(f"  {p_max:>12,.0f}")
     for row in grid:
         print("  |" + "".join(row))
-    print(f"  └{'─'*width}")
+    print(f"  +{'-' * width}")
     print(f"  Year 0{' '*(width-12)}Year {years}")
     print(f"  {p_min:>12,.0f}")
 
@@ -85,13 +85,13 @@ def print_table(populations: list[float], label: str = "Population",
                 every: int = 10) -> None:
     n = len(populations) - 1
     print(f"\n  {'Year':>6}  {label:>16}  {'Growth':>10}  {'Rate':>8}")
-    print("  " + "─" * 46)
+    print("  " + "-" * 46)
     for t in range(0, n + 1, max(1, every)):
         p = populations[t]
         g = p - populations[t - every] if t >= every else 0
         r = g / populations[t - every] if t >= every and populations[t - every] else 0
         g_str = f"+{g:,.0f}" if g >= 0 else f"{g:,.0f}"
-        r_str = f"{r:.2%}" if t else "—"
+        r_str = f"{r:.2%}" if t else "-"
         print(f"  {t:>6}  {p:>16,.1f}  {g_str:>10}  {r_str:>8}")
 
 
@@ -105,7 +105,7 @@ def summarize(populations: list[float], model_name: str,
     print(f"  Initial pop:     {p0:,.0f}")
     print(f"  Final pop:       {final:,.0f}")
     print(f"  Peak pop:        {max_p:,.0f}")
-    print(f"  Total growth:    {total_g:.2f}×")
+    print(f"  Total growth:    {total_g:.2f}x")
     if K:
         print(f"  Carrying cap:    {K:,.0f}")
         print(f"  Saturation:      {final/K:.1%}")

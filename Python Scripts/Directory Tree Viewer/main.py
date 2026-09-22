@@ -35,18 +35,17 @@ def build_tree(
         return lines
 
     entries = [
-        e for e in entries
-        if show_hidden or not e.name.startswith(".")
+        entry for entry in entries
+        if (show_hidden or not entry.name.startswith("."))
+        and (not entry.is_file() or not ext_filter or entry.suffix.lower() in ext_filter)
     ]
 
     for i, entry in enumerate(entries):
         is_last = i == len(entries) - 1
-        connector = "└── " if is_last else "├── "
-        extension = "    " if is_last else "│   "
+        connector = "\\-- " if is_last else "+-- "
+        extension = "    " if is_last else "|   "
 
         if entry.is_file():
-            if ext_filter and entry.suffix.lower() not in ext_filter:
-                continue
             size_str = ""
             if show_size:
                 try:
@@ -166,7 +165,7 @@ def main() -> None:
                 print(f"  Not a directory: {root}")
                 continue
             exts_raw = input("  Extensions (e.g. .py .txt .md): ").strip()
-            ext_filter = {e if e.startswith(".") else "." + e
+            ext_filter = {e.lower() if e.startswith(".") else "." + e.lower()
                           for e in exts_raw.split()} if exts_raw else None
             depth_s = input("  Max depth (0 = unlimited): ").strip()
             depth   = int(depth_s) if depth_s.isdigit() else 0

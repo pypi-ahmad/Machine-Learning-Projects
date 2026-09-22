@@ -4,7 +4,7 @@ Log time entries by project and task, view daily/weekly totals,
 and export timesheets.  Data stored as CSV.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 from datetime import date, datetime, timedelta
@@ -16,7 +16,7 @@ import streamlit as st
 st.set_page_config(page_title="Time Tracker", layout="wide")
 st.title("⏱️ Time Tracker")
 
-DATA_FILE = Path("time_log.csv")
+DATA_FILE = Path(__file__).with_name("time_log.csv")
 
 COLS = ["date", "project", "task", "start", "end", "duration_min", "notes"]
 
@@ -99,7 +99,7 @@ with tab1:
     view = log[mask].sort_values("date", ascending=False).copy()
     view["duration"] = view["duration_min"].apply(lambda m: f"{int(m)//60}h {int(m)%60}m")
     st.dataframe(view[["date", "project", "task", "start", "end", "duration", "notes"]],
-                 use_container_width=True, hide_index=True)
+                 hide_index=True)
 
     total_min = int(view["duration_min"].sum())
     st.metric("Total Time", f"{total_min//60}h {total_min%60}m")
@@ -127,7 +127,7 @@ with tab2:
     log_copy["week"] = log_copy["date"].dt.to_period("W").astype(str)
     weekly = log_copy.groupby(["week", "project"])["duration_min"].sum().unstack(fill_value=0)
     weekly_h = (weekly / 60).round(2)
-    st.dataframe(weekly_h, use_container_width=True)
+    st.dataframe(weekly_h)
 
 with tab3:
     st.subheader("Export Timesheet")
@@ -135,4 +135,4 @@ with tab3:
     export_df["hours"] = (export_df["duration_min"] / 60).round(2)
     csv = export_df.to_csv(index=False).encode()
     st.download_button("📥 Download CSV", csv, "timesheet.csv", "text/csv")
-    st.dataframe(export_df, use_container_width=True)
+    st.dataframe(export_df)

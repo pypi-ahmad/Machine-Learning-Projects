@@ -1,55 +1,56 @@
-import sys
-import os
-import shutil
+"""Split a CSV or whitespace-delimited text file into fixed-row chunks."""
+
+import argparse
+from pathlib import Path
+
 import pandas as pd
 
-class Split_Files:
-    '''
-        Class file for split file program
-    '''
-    def __init__(self, filename, split_number):
-        '''
-            Getting the file name and the split index
-            Initializing the output directory, if present then truncate it.
-            Getting the file extension
-        '''
-        self.file_name = filename
-        self.directory = "file_split"
-        self.split = int(split_number)
-        if os.path.exists(self.directory):
-            shutil.rmtree(self.directory)
-        os.mkdir(self.directory)
-        if self.file_name.endswith('.txt'):
-            self.file_extension = '.txt'
-        else:
-            self.file_extension = '.csv'
-        self.file_number = 1
 
-    def split_data(self):
-        '''
-            spliting the input csv/txt file according to the index provided
-        '''
-        data = pd.read_csv(self.file_name, header=None)
-        data.index += 1
+def split_file(input_path: Path, rows_per_file: int, output_dir: Path) -> int:
+    """Write chunks from input_path into a new directory and return their count."""
+    if input_path.suffix not in {'.csv', '.txt'}:
+        raise ValueError('Input files must use .csv or .txt extensions.')
+    if not input_path.is_file() or input_path.stat().st_size == 0:
+        raise ValueError('Input file must exist and contain at least one row.')
+    if output_dir.exists():
+        raise FileExistsError(f'Refusing to overwrite existing output directory: {output_dir}')
 
-        split_frame = pd.DataFrame()
-        output_file = f"{self.directory}/split_file{self.file_number}{self.file_extension}"
+    output_dir.mkdir(parents=True)
+    separator = r'\s+' if input_path.suffix == '.txt' else ','
+    written = 0
+    for written, chunk in enumerate(
+        pd.read_csv(input_path, header=None, sep=separator, chunksize=rows_per_file), start=1
+    ):
+        output_path = output_dir / f'split_file{written}{input_path.suffix}'
+        chunk.to_csv(
+            output_path,
+            header=False,
+            index=False,
+            sep=' ' if input_path.suffix == '.txt' else ',',
+        )
 
-        for i in range(1, len(data)+1):
-            split_frame = split_frame.append(data.iloc[i-1])
-            if i % self.split == 0:
-                output_file = f"{self.directory}/split_file{self.file_number}{self.file_extension}"
-                if self.file_extension == '.txt':
-                    split_frame.to_csv(output_file, header=False, index=False, sep=' ')
-                else:
-                    split_frame.to_csv(output_file, header=False, index=False)
-                split_frame.drop(split_frame.index, inplace=True)
-                self.file_number += 1
-        if not split_frame.empty:
-            output_file = f"{self.directory}/split_file{self.file_number}{self.file_extension}"
-            split_frame.to_csv(output_file, header=False, index=False)
+    if not written:
+        output_dir.rmdir()
+        raise ValueError('The input file contains no rows.')
+    return written
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description='Split a CSV or TXT file by row count.')
+    parser.add_argument('filename', type=Path, help='Input CSV or TXT file')
+    parser.add_argument('rows', type=int, help='Rows per output file')
+    parser.add_argument('--output-dir', type=Path, help='New directory for split files')
+    args = parser.parse_args()
+    if args.rows < 1:
+        parser.error('rows must be at least 1')
+
+    output_dir = args.output_dir or args.filename.with_name(f'{args.filename.stem}_split')
+    try:
+        count = split_file(args.filename, args.rows, output_dir)
+    except (OSError, ValueError) as error:
+        parser.error(str(error))
+    print(f'Created {count} file(s) in {output_dir}')
+
 
 if __name__ == '__main__':
-    file, split_number = sys.argv[1], sys.argv[2]
-    sp = Split_Files(file, split_number)
-    sp.split_data()
+    main()

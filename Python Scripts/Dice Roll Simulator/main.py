@@ -17,7 +17,6 @@ import sys
 from collections import Counter
 
 
-DICE_FACES = {4: "▲", 6: "⬡", 8: "◆", 10: "●", 12: "✦", 20: "★", 100: "⊙"}
 history: list[str] = []
 
 
@@ -45,6 +44,10 @@ def do_roll(notation: str, advantage: bool = False, disadvantage: bool = False,
             drop_lowest: int = 0) -> dict:
     """Perform a roll and return detailed result."""
     n, sides, mod = parse_notation(notation)
+    if advantage and disadvantage:
+        raise ValueError("Choose advantage or disadvantage, not both.")
+    if drop_lowest < 0 or drop_lowest >= n:
+        raise ValueError("Drop count must be between 0 and the number of dice minus one.")
 
     if advantage or disadvantage:
         # Roll twice, keep best/worst
@@ -82,13 +85,12 @@ def do_roll(notation: str, advantage: bool = False, disadvantage: bool = False,
 
 
 def display_result(res: dict) -> None:
-    face = DICE_FACES.get(res["sides"], "●")
     rolls_str = " ".join(f"[{r}]" for r in res["rolls"])
     if res["dropped"]:
         drops = " ".join(f"~~{r}~~" for r in res["dropped"])
-        print(f"  {face} d{res['sides']}  Rolled: {rolls_str}  Dropped: {drops}")
+        print(f"  d{res['sides']}  Rolled: {rolls_str}  Dropped: {drops}")
     else:
-        print(f"  {face} d{res['sides']}  Rolled: {rolls_str}")
+        print(f"  d{res['sides']}  Rolled: {rolls_str}")
     mod_str = f" {res['mod']:+d}" if res["mod"] else ""
     label   = f"  [{res['label']}]" if res["label"] else ""
     print(f"  Kept: {sum(res['kept'])}{mod_str} = {res['total']}{label}")
@@ -96,13 +98,15 @@ def display_result(res: dict) -> None:
     # Min/max highlight
     if res["sides"] in (20, 100) and res["n"] == 1:
         if res["rolls"][0] == res["sides"]:
-            print("  🎉 CRITICAL HIT!")
+            print("  CRITICAL HIT!")
         elif res["rolls"][0] == 1:
-            print("  💀 CRITICAL FAIL!")
+            print("  CRITICAL FAIL!")
 
 
 def stats_display(sides: int, n_rolls: int = 5000) -> None:
     """Show distribution for a single die over many simulations."""
+    if sides < 2:
+        raise ValueError("Die must have at least 2 sides.")
     rolls = [roll_die(sides) for _ in range(n_rolls)]
     counts = Counter(rolls)
     print(f"\n  d{sides} distribution over {n_rolls:,} rolls:")
@@ -161,7 +165,7 @@ def interactive():
         print()
 
 
-def main():
+def main(arguments: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Dice Roll Simulator")
     parser.add_argument("notation",  nargs="?", help="Dice notation, e.g. '2d6+3'")
     parser.add_argument("--adv",     action="store_true", help="Advantage (roll twice, take higher)")
@@ -170,20 +174,29 @@ def main():
                         help="Drop N lowest dice (e.g. 4d6 --drop 1)")
     parser.add_argument("--stats",   type=int, metavar="SIDES",
                         help="Show distribution statistics for dSIDES")
-    args = parser.parse_args()
+    parser.add_argument("--seed", type=int, help="Seed the random generator for reproducible rolls")
+    args = parser.parse_args(arguments)
 
-    if args.stats:
-        stats_display(args.stats)
+    if args.seed is not None:
+        random.seed(args.seed)
+
+    if args.stats is not None:
+        try:
+            stats_display(args.stats)
+        except ValueError as error:
+            print(f"Error: {error}", file=sys.stderr)
+            return 1
     elif args.notation:
         try:
             res = do_roll(args.notation, args.adv, args.dis, args.drop)
             display_result(res)
-        except ValueError as e:
-            print(f"Error: {e}", file=sys.stderr)
-            sys.exit(1)
+        except ValueError as error:
+            print(f"Error: {error}", file=sys.stderr)
+            return 1
     else:
         interactive()
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

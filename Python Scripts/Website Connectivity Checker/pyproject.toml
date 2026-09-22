@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
 
 [project]
 name = "check-website-connectivity"
@@ -17,9 +17,6 @@ dependencies = [
 
 [project.scripts]
 check_site = "check_website_connectivity.cli:app"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/check_website_connectivity"]
 
 # ---------- ruff -----------------------------------------------------------
 [tool.ruff]

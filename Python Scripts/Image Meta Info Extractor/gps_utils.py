@@ -1,23 +1,37 @@
+"""Extract and optionally reverse-geocode GPS coordinates from image EXIF data."""
+
+from pathlib import Path
+
 import exifread
-import requests
 from geopy.geocoders import Nominatim
 
-def format_lati_long(data):
-	list_tmp=str(data).replace('[', '').replace(']', '').split(',')
-	list=[ele.strip() for ele in list_tmp]
-	if (list[-1].find('/') != -1):
-		data_sec = int(list[-1].split('/')[0]) /(int(list[-1].split('/')[1])*3600)
-	else:
-		data_sec = int(list[-1])/3600
-	data_minute = int(list[1])/60
-	data_degree = int(list[0])
-	result=data_degree + data_minute + data_sec
-	return result
 
-def get_location(filename):
-    img=exifread.process_file(open(filename,'rb'))
-    latitude=format_lati_long(str(img['GPS GPSLatitude']))
-    longitude=format_lati_long(str(img['GPS GPSLongitude']))
-    geolocator = Nominatim(user_agent = "your email")
-    position = geolocator.reverse(str(latitude) + ',' + str(longitude))
-    return position.address
+def _to_decimal(values) -> float:
+    degrees, minutes, seconds = (float(value) for value in values)
+    return degrees + minutes / 60 + seconds / 3600
+
+
+def get_coordinates(filename: Path) -> tuple[float, float]:
+    """Return signed latitude and longitude or raise ValueError when absent."""
+    with filename.open('rb') as image_file:
+        tags = exifread.process_file(image_file, details=False)
+
+    try:
+        latitude = _to_decimal(tags['GPS GPSLatitude'].values)
+        longitude = _to_decimal(tags['GPS GPSLongitude'].values)
+        if str(tags['GPS GPSLatitudeRef']) == 'S':
+            latitude = -latitude
+        if str(tags['GPS GPSLongitudeRef']) == 'W':
+            longitude = -longitude
+    except KeyError as error:
+        raise ValueError('Image does not contain complete GPS metadata.') from error
+    return latitude, longitude
+
+
+def get_location(filename: Path, user_agent: str) -> str:
+    """Reverse-geocode image GPS coordinates through Nominatim."""
+    latitude, longitude = get_coordinates(filename)
+    location = Nominatim(user_agent=user_agent).reverse((latitude, longitude), timeout=15)
+    if location is None:
+        raise ValueError('No address was returned for the image coordinates.')
+    return location.address

@@ -1,17 +1,17 @@
 # Google News Scraper
 
-> Scrape Google News articles by keyword and export results to an Excel spreadsheet.
+> Scrape Google News articles by keyword and export the results to an Excel spreadsheet.
 
 ## Overview
 
-A command-line Python script that queries Google News RSS feed for a user-specified keyword, extracts article titles and links up to a requested count, and saves the results to an Excel (`.xlsx`) file using `pandas` and `openpyxl`.
+A command-line Python script that queries the Google News RSS feed for a keyword, extracts a requested number of article titles and links, and saves the results to an Excel (`.xlsx`) file with `pandas` and `openpyxl`.
 
 ## Features
 
-- Searches Google News via RSS feed (`http://news.google.com/news?q=<term>&output=rss`)
+- Searches Google News via its HTTPS RSS search feed
 - Extracts article titles and links from the XML response
-- User-configurable search keyword and article count via interactive prompts
-- Exports results to an Excel spreadsheet named `<keyword>_news_scrapper.xlsx`
+- User-configurable search keyword and article count through prompts or CLI options
+- Exports results to an Excel spreadsheet named `<keyword>_news_scraper.xlsx`
 
 ## Project Structure
 
@@ -19,35 +19,27 @@ A command-line Python script that queries Google News RSS feed for a user-specif
 Google-News-Scraapper/
 ├── app.py                                  # Main script
 ├── cricket news_news_scrapper.xlsx         # Sample output file
-├── requirements.txt                        # Python dependencies
+├── pyproject.toml                          # Project metadata and dependencies
+├── uv.lock                                 # Locked dependency versions
 └── README.md
 ```
 
 ## Requirements
 
-- Python 3.x
-- `requests`
-- `pandas`
-- `openpyxl`
-
-From `requirements.txt`:
-```
-openpyxl==3.0.5
-pandas==1.0.5
-requests==2.24.0
-```
+- Python 3.13+
+- `requests`, `pandas`, and `openpyxl`, managed by uv in `pyproject.toml`
 
 ## Installation
 
 ```bash
 cd "Google-News-Scraapper"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
 
 ```bash
-python app.py
+uv run python app.py
 ```
 
 Interactive prompts:
@@ -56,25 +48,28 @@ Enter the news title keyword: cricket news
 Enter the number of article count: 10
 ```
 
-This generates a file named `cricket news_news_scrapper.xlsx` with columns `title` and `links`.
+This generates a file named `cricket news_news_scraper.xlsx` with columns `title` and `links`.
 
-## How It Works
+Or provide the term, count, and output directly:
 
-1. **`get_google_news_result(term, count)`** — Sends a GET request to Google News RSS endpoint with the search term. Parses the XML response using `xml.dom.minidom.parseString()`. Iterates over `<item>` elements, extracting `<title>` and `<link>` child node text. Returns two lists (titles, links) limited to the requested `count`.
+```bash
+uv run python app.py "cricket news" --count 10 --output cricket-news.xlsx
+```
 
-2. **Main block** — Prompts user for a keyword and article count. Calls the scraping function, constructs a `pandas.DataFrame`, and exports it to Excel via `df.to_excel()`.
+## How it works
+
+1. **`get_google_news_result(term, count)`** — Sends a bounded HTTPS request to the Google News RSS search endpoint and parses title/link pairs with Python's standard XML parser.
+
+2. **Main block** — Gets a keyword and article count from arguments or prompts, refuses to overwrite existing output, and exports a `pandas.DataFrame` to Excel.
 
 ## Configuration
 
-No configuration files needed. The search keyword and article count are provided interactively at runtime.
+No configuration files needed. Use `--count` and `--output` to control the result count and destination.
 
 ## Limitations
 
-- **Google News RSS may be deprecated or restricted** — the `http://news.google.com/news?q=<term>&output=rss` endpoint may not return results in all regions or may be blocked.
-- **Uses HTTP, not HTTPS** for the Google News URL.
-- **No error handling** for network failures, empty responses, or invalid XML.
-- **No command-line arguments** — only interactive input via `input()`.
-- **XML parsing via `minidom`** — works but is verbose compared to alternatives like `feedparser`.
+- Google News RSS availability and result format can change.
+- The script exports only the title and link supplied by RSS.
 - The sample output file `cricket news_news_scrapper.xlsx` is included in the repo.
 
 ## Security Notes

@@ -33,21 +33,22 @@ Tic_tac_toe_with_ai/
 
 ## Requirements
 
-- Python 3.x
+- Python 3.14+
+- uv
 - No external dependencies (uses only `random` and `time` from the standard library)
 
 ## Installation
 
 ```bash
-cd "Tic_tac_toe_with_ai"
+uv sync
 ```
 
-No package installation required.
+No package installation is needed beyond the uv-managed Python environment.
 
 ## Usage
 
 ```bash
-python tic-tac-toe-AI.py
+uv run python tic-tac-toe-AI.py
 ```
 
 1. Select a game mode (0, 1, or 2).

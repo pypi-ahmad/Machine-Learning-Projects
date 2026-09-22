@@ -14,7 +14,10 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Employee Attrition", layout="wide")
-st.title("👔 Employee Attrition Predictor")
+st.title("Employee attrition predictor")
+st.warning(
+    "Educational synthetic-data demo only. Do not use this score to make, support, or automate employment decisions."
+)
 
 
 # ── Logistic regression (pure Python) ────────────────────────────────────────
@@ -114,7 +117,7 @@ def make_data(n: int = 500, seed: int = 42) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-@st.cache_resource
+@st.cache_data
 def train():
     df   = make_data(600)
     feat = ["age", "tenure_years", "salary_k", "satisfaction", "last_promo_yrs",
@@ -205,6 +208,6 @@ with tab3:
     st.dataframe(
         df_all[["age", "tenure_years", "salary_k", "satisfaction", "dept",
                 "education", "overtime", "monthly_hours", "attrition"]].head(50),
-        use_container_width=True, hide_index=True,
+        hide_index=True,
     )
     st.caption(f"Training set: {len(df_all)} employees")

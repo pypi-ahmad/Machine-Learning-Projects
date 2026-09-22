@@ -5,9 +5,9 @@ Supports generating by paragraphs, sentences, or word count.
 Also supports custom word sets as an alternative.
 
 Usage:
-    python main.py
-    python main.py --words 100
-    python main.py --paragraphs 3
+    uv run --no-config python main.py
+    uv run --no-config python main.py --words 100
+    uv run --no-config python main.py --paragraphs 3
 """
 
 import random

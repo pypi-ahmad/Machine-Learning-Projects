@@ -4,7 +4,7 @@ Convert between common units across multiple categories:
 Length, Weight, Temperature, Volume, Area, Speed, Time, Data.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import tkinter as tk

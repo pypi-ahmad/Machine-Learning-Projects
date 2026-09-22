@@ -11,20 +11,28 @@ root.geometry("500x400")
 dictionary = PyDictionary()
 
 
+def first_meaning(response):
+    """Return the first supported definition from a dictionary response."""
+    if not isinstance(response, dict):
+        return None
+    definitions = response.get('Noun') or response.get('Verb') or response.get('Adjective')
+    return definitions[0] if definitions else None
+
+
 def getMeaning():
-    response = dictionary.meaning(word.get())
-    if(response):
-        if('Noun' in response):
-            meaning = response['Noun'][0]
-        elif('Verb' in response):
-            meaning = response['Verb'][0]
-        elif('Adjective' in response):
-            meaning = response['Adjective'][0]
-        else:
-            meaning = "Invalid word"
-    else:
+    query = word.get().strip()
+    if not query:
+        messagebox.showinfo("Error", "Enter a word to search.")
+        return
+    try:
+        meaning = first_meaning(dictionary.meaning(query))
+    except Exception:
+        messagebox.showinfo("Error", "Could not retrieve a definition. Check your connection and try again.")
+        return
+    if meaning is None:
         messagebox.showinfo(
-            "Error", "Please add a Noun, Pronoun, verb or a valid word.")
+            "Error", "No supported definition was found for that word.")
+        return
     # Show meaning in frame
     meaning_label.config(text=meaning)
 

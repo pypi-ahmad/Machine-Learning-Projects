@@ -42,7 +42,7 @@ def try_barcode_lib(code: str, barcode_type: str, save_path: str = None) -> bool
             print(f"  Saved barcode to: {fname}")
         else:
             import io
-            buf = io.StringIO()
+            buf = io.BytesIO()
             bc.write(buf)
             print(f"  Generated {bc_type.upper()} barcode for: {code}")
             print(f"  To save: python main.py --code '{code}' --type {bc_type} --save output.svg")
@@ -83,7 +83,7 @@ def code39_bits(text: str) -> str:
     return bits
 
 
-def bits_to_ascii(bits: str, height: int = 5, bar_char: str = "█", space_char: str = " ") -> str:
+def bits_to_ascii(bits: str, height: int = 5, bar_char: str = "#", space_char: str = " ") -> str:
     row = "".join(bar_char if b == "1" else space_char for b in bits)
     return "\n".join([row] * height)
 

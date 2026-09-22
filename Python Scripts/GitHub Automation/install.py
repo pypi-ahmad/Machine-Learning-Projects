@@ -47,4 +47,5 @@ def installfiles():
         copyfiles(file, location)
 
 
-installfiles()
+if __name__ == '__main__':
+    installfiles()

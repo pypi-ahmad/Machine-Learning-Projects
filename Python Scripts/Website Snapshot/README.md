@@ -1,93 +1,46 @@
-# Snapshot of Given Website
+# Website snapshot
 
-> A command-line tool that captures a full-page screenshot of any website using Selenium and headless Chrome.
-
-## Overview
-
-This script takes a URL as a command-line argument, opens it in a headless Chrome browser via Selenium, dynamically resizes the browser window to match the full page dimensions, and saves a full-page screenshot as `screenshot.png` in the current directory.
-
-## Features
-
-- Full-page screenshot capture (scrollWidth × scrollHeight)
-- Headless Chrome operation (no visible browser window)
-- Dynamic window resizing to capture the entire page
-- Command-line URL input via `sys.argv`
-- Outputs a `screenshot.png` file in the working directory
-
-## Project Structure
-
-```
-Snapshot_of_given_website/
-├── requirements.txt
-└── snapshot_of_given_website.py
-```
+`snapshot_of_given_website.py` saves a full-page PNG snapshot of an HTTP(S)
+website using headless Chrome and Selenium.
 
 ## Requirements
 
-- Python 3.x
-- `selenium==3.141.0`
-- `chromedriver-binary==85.0.4183.38.0`
-- Google Chrome browser installed
+- Python 3.13 or later
+- Google Chrome installed
 
-## Installation
+Selenium Manager obtains a compatible ChromeDriver when needed. You do not need
+to download or configure a separate driver binary.
 
-```bash
-cd "Snapshot_of_given_website"
-pip install -r requirements.txt
+## Install
+
+```powershell
+cd "Python Scripts/Website Snapshot"
+uv sync
 ```
-
-> **Note:** The `chromedriver-binary` version in `requirements.txt` (`85.0.4183.38.0`) must match your installed Chrome version. Update the version number accordingly.
 
 ## Usage
 
-```bash
-python snapshot_of_given_website.py <URL>
+```powershell
+uv run python snapshot_of_given_website.py https://example.com --output example.png
 ```
 
-**Example:**
+The default output path is `screenshot.png`. The command refuses to replace an
+existing file. Use another `--output` path for a new capture.
 
-```bash
-python snapshot_of_given_website.py https://www.example.com
+Set the page-load timeout when a site needs more or less time:
+
+```powershell
+uv run python snapshot_of_given_website.py https://example.com --output example.png --timeout 45
 ```
 
-If no URL is provided:
+The tool accepts only absolute `http` and `https` URLs. It uses Chrome DevTools
+to capture beyond the visible viewport after the page-load event completes.
 
-```
-Usage: snapshot_of_given_website.py URL
-```
+## Limits
 
-The screenshot is saved as `screenshot.png` in the current working directory.
+Pages that require authentication, user interaction, bot verification, or
+content loaded after the page-load event may produce incomplete snapshots. The
+script does not bypass those restrictions.
 
-## How It Works
-
-1. Parses the URL from `sys.argv[1]`
-2. Creates a headless Chrome WebDriver instance using `chromedriver_binary`
-3. Navigates to the provided URL with `driver.get(url)`
-4. Executes JavaScript to determine the full page dimensions:
-   - `document.body.scrollWidth` for width
-   - `document.body.scrollHeight` for height
-5. Resizes the browser window to match the full page size via `driver.set_window_size()`
-6. Saves the screenshot with `driver.save_screenshot('screenshot.png')`
-7. Quits the driver and prints "SUCCESS"
-
-## Configuration
-
-- **Output filename**: Hardcoded as `screenshot.png` — change the string in `driver.save_screenshot()` to customize
-- **ChromeDriver version**: Must match your Chrome browser version — update `chromedriver-binary` version in `requirements.txt`
-
-## Limitations
-
-- Uses `selenium 3.141.0` and an older `chromedriver-binary` version — may not work with modern Chrome versions
-- The `chromedriver_binary` import approach is deprecated in favor of Selenium Manager (Selenium 4+)
-- Output filename is hardcoded — running twice overwrites the previous screenshot
-- No timeout handling for slow-loading pages
-- Does not wait for dynamic content (JavaScript rendering) to complete before capturing
-- Error handling only catches missing URL argument (`IndexError`), not network or driver errors
-
-## Security Notes
-
-No security concerns.
-
-## License
-
-Not specified.
+Run `uv run python snapshot_of_given_website.py --help` for the command
+reference.

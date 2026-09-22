@@ -1,10 +1,13 @@
 # Automate Facebook Bot
 
-A Selenium-based automation script that logs into Facebook and automates posting to multiple Facebook groups.
+The current CLI previews target group URLs by default. It does not open Chrome,
+request credentials, or post unless `--post` and all required selectors are supplied.
+
+A Selenium-based automation script that logs into Facebook and posts to multiple Facebook groups.
 
 ## Overview
 
-This is a **CLI bot** that uses Selenium WebDriver (Chrome) to automate Facebook login and group posting. The user provides their Facebook credentials, a list of group IDs, and a message, and the script iterates through each group to trigger the post action.
+This **CLI bot** uses Selenium WebDriver with Chrome to automate Facebook login and group posting. The user provides Facebook credentials, group IDs, and a message, and the script visits each group to trigger the post action.
 
 ## Features
 
@@ -22,7 +25,7 @@ This is a **CLI bot** that uses Selenium WebDriver (Chrome) to automate Facebook
 - `selenium`
 - `webdriver_manager`
 
-## How It Works
+## How it works
 
 1. The script prompts the user for comma-separated Facebook group IDs and a message to post.
 2. A `FacebookLogin` class is instantiated with the user's email and password.
@@ -42,16 +45,16 @@ Automate Facebook bot/
 ## Setup & Installation
 
 ```bash
-pip install pyautogui selenium webdriver-manager
+uv sync
 ```
 
-Ensure Google Chrome is installed on your system.
+Ensure Google Chrome is installed; Selenium Manager resolves a compatible driver.
 
 ## How to Run
 
 ```bash
 cd "Automate Facebook bot"
-python script.py
+uv run python script.py --groups group-one,group-two --message "Approved update"
 ```
 
 You will be prompted for:

@@ -17,7 +17,8 @@ def tell_status():
     p1 = list(p1)
     p2 = list(p2)
 
-    Status_field.insert(10, result_flame(p1, p2))
+    Status_field.delete(0, END)
+    Status_field.insert(0, result_flame(p1, p2))
 
 
 def result_flame(x, y):
@@ -35,10 +36,12 @@ def result_flame(x, y):
             result = right + left
         else:
             result = result[:len(result) - 1]
-    return result
+    return result[0]
 
 
-if __name__ == "__main__":
+def main():
+    global Player1_field, Player2_field, Status_field
+
     # Create a GUI window
     root = Tk()
     # Set the background colour of GUI window
@@ -95,3 +98,7 @@ if __name__ == "__main__":
 
     # Start the GUI
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()

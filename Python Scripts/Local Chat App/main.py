@@ -4,7 +4,7 @@ Peer-to-peer chat over a local network using Python sockets.
 Run as server on one machine and client on another (or same machine).
 
 Usage:
-    python main.py
+    uv run --no-config python main.py
 """
 
 import socket

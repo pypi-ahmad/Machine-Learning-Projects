@@ -8,6 +8,7 @@ Usage:
 """
 
 import json
+import uuid
 from datetime import date
 from pathlib import Path
 
@@ -15,9 +16,10 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Goal Tracker", layout="wide")
-st.title("🎯 Goal Tracker")
+st.title("Goal tracker")
+st.caption("Goals are stored locally in this project folder.")
 
-DATA_FILE = Path("goals.json")
+DATA_FILE = Path(__file__).with_name("goals.json")
 
 CATEGORIES = ["Health", "Career", "Finance", "Education", "Personal", "Relationships", "Other"]
 PRIORITIES  = ["High", "Medium", "Low"]
@@ -26,14 +28,17 @@ PRIORITIES  = ["High", "Medium", "Low"]
 def load_goals() -> list[dict]:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
+            data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, list):
+                return data
+            raise ValueError("Goal data must be a list.")
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Invalid goal data: {error}") from error
     return []
 
 
 def save_goals(goals: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(goals, indent=2))
+    DATA_FILE.write_text(json.dumps(goals, indent=2), encoding="utf-8")
 
 
 if "goals" not in st.session_state:
@@ -61,7 +66,7 @@ if add_btn and g_title.strip():
         for m in g_milestones.splitlines() if m.strip()
     ]
     new_goal = {
-        "id":         len(goals),
+        "id":         str(uuid.uuid4()),
         "title":      g_title.strip(),
         "description": g_desc.strip(),
         "category":   g_cat,
@@ -97,8 +102,7 @@ def render_goals(goal_list: list[dict]) -> None:
                                       key=f"prog_{g['id']}")
                 if new_prog != g["progress"]:
                     goals[idx]["progress"] = new_prog
-                    if new_prog == 100:
-                        goals[idx]["status"] = "Completed"
+                    goals[idx]["status"] = "Completed" if new_prog == 100 else "Active"
                     save_goals(goals)
                     st.rerun()
 
@@ -114,8 +118,7 @@ def render_goals(goal_list: list[dict]) -> None:
                         done_count = sum(1 for m in goals[idx]["milestones"] if m["done"])
                         total = len(goals[idx]["milestones"])
                         goals[idx]["progress"] = int(done_count / total * 100)
-                        if goals[idx]["progress"] == 100:
-                            goals[idx]["status"] = "Completed"
+                        goals[idx]["status"] = "Completed" if goals[idx]["progress"] == 100 else "Active"
                         save_goals(goals)
                         st.rerun()
 
@@ -161,7 +164,7 @@ with tab3:
 
         st.subheader("Progress by Goal")
         df = pd.DataFrame(goals)[["title", "progress", "category", "priority", "status"]]
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df)
 
         st.subheader("Goals by Category")
         cat_counts = df["category"].value_counts()

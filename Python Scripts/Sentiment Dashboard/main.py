@@ -4,12 +4,11 @@ Analyze sentiment of text, product reviews, or customer feedback.
 Uses a lexicon-based approach (no external ML dependencies).
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 import re
 from collections import Counter
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
@@ -141,7 +140,7 @@ with tab2:
                 "Confidence": f"{r['confidence']:.0%}",
             })
         df = pd.DataFrame(rows)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df, hide_index=True)
 
         pos = sum(1 for r in rows if "Positive" in r["Sentiment"])
         neg = sum(1 for r in rows if "Negative" in r["Sentiment"])

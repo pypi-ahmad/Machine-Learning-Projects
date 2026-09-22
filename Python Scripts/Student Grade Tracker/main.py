@@ -1,10 +1,10 @@
 """Student Grade Tracker — Streamlit app.
 
-Track student grades per subject, compute GPA, visualise performance
-trends, and export reports.  Data stored locally as CSV.
+Track student grades per subject, compute GPA summaries, and export reports.
+Data is stored locally as CSV.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 from pathlib import Path
@@ -15,7 +15,7 @@ import streamlit as st
 st.set_page_config(page_title="Grade Tracker", layout="wide")
 st.title("🎓 Student Grade Tracker")
 
-DATA_FILE = Path("grades.csv")
+DATA_FILE = Path(__file__).with_name("grades.csv")
 GRADE_SCALE = {
     (90, 100): ("A+", 4.0), (85, 90): ("A",  4.0), (80, 85): ("A-", 3.7),
     (75, 80):  ("B+", 3.3), (70, 75): ("B",  3.0), (65, 70): ("B-", 2.7),
@@ -96,7 +96,7 @@ with tab1:
     students = ["All"] + sorted(df["Student"].unique().tolist())
     sel = st.selectbox("Filter by student", students)
     view = df if sel == "All" else df[df["Student"] == sel]
-    st.dataframe(view.sort_values("Date", ascending=False), use_container_width=True)
+    st.dataframe(view.sort_values("Date", ascending=False))
 
 with tab2:
     st.subheader("Student Summary")
@@ -111,7 +111,7 @@ with tab2:
     c3.metric("Subjects",  sdf["Subject"].nunique())
 
     st.bar_chart(sdf.groupby("Subject")["Score"].mean().sort_values())
-    st.dataframe(sdf, use_container_width=True)
+    st.dataframe(sdf)
 
 with tab3:
     st.subheader("Subject Summary")
@@ -121,8 +121,8 @@ with tab3:
     avg = subdf["Score"].mean()
     top = subdf.loc[subdf["Score"].idxmax()]
     st.metric("Class average", f"{avg:.1f}%")
-    st.write(f"**Top performer:** {top['Student']} — {top['Score']}%")
-    st.dataframe(subdf.sort_values("Score", ascending=False), use_container_width=True)
+    st.write(f"**Top performer:** {top['Student']} - {top['Score']}%")
+    st.dataframe(subdf.sort_values("Score", ascending=False))
 
 with tab4:
     st.subheader("GPA Report — All Students")
@@ -131,7 +131,7 @@ with tab4:
         avg_gpa=("GPA",   "mean") if "GPA" in df else ("Score", "count"),
         total_grades=("Score", "count"),
     ).round(2).sort_values("avg_gpa", ascending=False)
-    st.dataframe(gpa_report, use_container_width=True)
+    st.dataframe(gpa_report)
 
     st.divider()
     if st.button("📥 Export all grades as CSV"):

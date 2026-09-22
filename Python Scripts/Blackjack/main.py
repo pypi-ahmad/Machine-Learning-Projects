@@ -15,9 +15,9 @@ from collections import namedtuple
 # Card / Deck
 # ---------------------------------------------------------------------------
 
-SUITS  = ["♠", "♥", "♦", "♣"]
+SUITS  = ["S", "H", "D", "C"]
 RANKS  = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"]
-COLORS = {"♥": "\033[31m", "♦": "\033[31m", "♠": "", "♣": ""}
+COLORS = {suit: "" for suit in SUITS}
 RESET  = "\033[0m"
 
 
@@ -111,8 +111,6 @@ def play_round(shoe: list, chips: int) -> int:
         options = ["(h)it", "(s)tand"]
         if len(player_hand) == 2:
             options.append("(d)ouble")
-        if len(player_hand) == 2 and player_hand[0][0] == player_hand[1][0]:
-            options.append("(split)")
 
         action = input(f"\n  {' / '.join(options)}: ").strip().lower()
 
@@ -133,14 +131,6 @@ def play_round(shoe: list, chips: int) -> int:
             print(f"  (Doubled down — bet: {bet})")
             break
 
-        elif action.startswith("sp") and len(player_hand) == 2:
-            # Simple split: play two separate hands
-            print("  Split (simplified: playing first hand).")
-            hand2 = [player_hand.pop()]
-            hand2.append(shoe.pop())
-            player_hand.append(shoe.pop())
-            display_hand(player_hand, "You (Hand 1)")
-            display_hand(hand2, "You (Hand 2) — resolved separately next round")
         else:
             print("  Invalid action.")
 
@@ -173,7 +163,7 @@ def play_round(shoe: list, chips: int) -> int:
 
 
 def main() -> None:
-    print("♠ Blackjack ♥")
+    print("Blackjack")
     print("  Beat the dealer to 21 without going bust.")
 
     chips = int(input("\n  Starting chips (default 500): ").strip() or "500")

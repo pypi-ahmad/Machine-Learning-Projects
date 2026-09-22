@@ -1,74 +1,78 @@
-import glob
-import os
+"""Preview or copy a folder's direct files into numbered groups.
+
+Usage:
+    uv run --no-config python split_and_copy.py SOURCE COUNT
+    uv run --no-config python split_and_copy.py SOURCE COUNT --apply --confirm COPY
+"""
+
+import argparse
+from pathlib import Path
 from shutil import copy2
-import sys
 
 
-def get_files(path):
-    '''
-    return a list of files avialable in given folder
-    '''
-    files = glob.glob(f'{path}/*')
-    return files
+def source_files(source: Path) -> list[Path]:
+    """Return direct, regular files only, ordered by name."""
+    return sorted([entry for entry in source.iterdir() if entry.is_file() and not entry.is_symlink()])
 
 
-def getfullpath(path):
-    '''
-    Return absolute path of given file
-    '''
-    return os.path.abspath(path)
+def groups(files: list[Path], count: int) -> list[list[Path]]:
+    """Split files into fixed-size groups."""
+    return [files[index : index + count] for index in range(0, len(files), count)]
 
 
-def copyfiles(src, dst):
-    '''
-    This function copy file from src to dst
-    if dst dir is not there it will create new
-    '''
-    if not os.path.isdir(dst):
-        os.makedirs(dst)
-    copy2(src, dst)
+def show_plan(file_groups: list[list[Path]], destination: Path) -> None:
+    print(f"Source groups: {len(file_groups)}")
+    print(f"Destination: {destination}")
+    for index, group in enumerate(file_groups):
+        print(f"  data_{index}: {len(group)} file(s)")
 
 
-def split(data, count):
-    '''
-    Split Given list of files and return generator
-    '''
-    for i in range(1, len(data), count):
-        if i + count-1 > len(data):
-            start, end = (i-1, len(data))
-        else:
-            start, end = (i-1, i+count-1)
-        yield data[start:end]
+def copy_groups(file_groups: list[list[Path]], destination: Path) -> None:
+    destination.mkdir()
+    for index, group in enumerate(file_groups):
+        group_destination = destination / f"data_{index}"
+        group_destination.mkdir()
+        for source in group:
+            copy2(source, group_destination / source.name)
 
 
-def start_process(path, count):
-    files = get_files(path)
-    splited_data = split(files, count)
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Split direct files into numbered folders.")
+    parser.add_argument("source", type=Path, help="Folder containing files to copy")
+    parser.add_argument("count", type=int, help="Maximum files per output folder")
+    parser.add_argument("--output", type=Path, help="New destination folder (default: SOURCE_split)")
+    parser.add_argument("--apply", action="store_true", help="Copy files after confirmation")
+    parser.add_argument("--confirm", help="Type COPY to allow file copies")
+    args = parser.parse_args()
 
-    for idx, folder in enumerate(splited_data):
-        name = f'data_{idx}'
-        for file in folder:
-            copyfiles(getfullpath(file), getfullpath(name))
+    source = args.source.resolve()
+    if not source.is_dir():
+        parser.error(f"source is not a directory: {source}")
+    if args.count < 1:
+        parser.error("count must be at least 1")
+
+    destination = (args.output or source.with_name(f"{source.name}_split")).resolve()
+    if destination == source or source in destination.parents:
+        parser.error("output must be outside the source folder")
+    if destination.exists():
+        parser.error(f"output already exists: {destination}")
+
+    files = source_files(source)
+    file_groups = groups(files, args.count)
+    if not file_groups:
+        print("No direct regular files found.")
+        return
+
+    show_plan(file_groups, destination)
+    if not args.apply:
+        print("Preview only. Add --apply --confirm COPY to copy files.")
+        return
+    if args.confirm != "COPY":
+        parser.error("--confirm COPY is required with --apply")
+
+    copy_groups(file_groups, destination)
+    print(f"Copied {len(files)} file(s).")
 
 
 if __name__ == "__main__":
-    '''
-    driver code
-    To run this script
-    python split_and_copy.py <input folder path> <20>
-    '''
-
-    if len(sys.argv) != 3:
-        print("Please provide correct parameters \
-        \npython split_and_copy.py <input folder path> <count>")
-        sys.exit(0)
-
-    if len(sys.argv) == 3:
-        path = sys.argv[1]
-        if os.path.isdir(path):
-            count = sys.argv[2]
-            start_process(path, int(count))
-        else:
-            print('Given directory name is not an valid directory')
-    else:
-        print('Wrong paramter are provided')
+    main()

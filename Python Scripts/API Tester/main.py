@@ -1,4 +1,4 @@
-"""API Tester — CLI developer tool.
+"""API Tester - CLI developer tool.
 
 Test REST API endpoints from the command line with support for
 all HTTP methods, custom headers, JSON/form body, and response formatting.
@@ -7,18 +7,16 @@ Usage:
     python main.py
     python main.py GET https://api.example.com/users
     python main.py POST https://api.example.com/users -d '{"name":"Alice"}'
-    python main.py --collection my_collection.json
 """
 
 import argparse
 import json
 import os
-import sys
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timezone
 
 ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
         "yellow": "\033[93m", "red": "\033[91m", "blue": "\033[94m",
@@ -27,7 +25,7 @@ ANSI = {"bold": "\033[1m", "cyan": "\033[96m", "green": "\033[92m",
 HISTORY_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "api_history.json")
 
 
-def c(text, color):
+def c(text: str, color: str) -> str:
     return f"{ANSI.get(color,'')}{text}{ANSI['reset']}"
 
 
@@ -40,18 +38,43 @@ def status_color(code: int) -> str:
 
 def load_history() -> list[dict]:
     if os.path.exists(HISTORY_FILE):
-        with open(HISTORY_FILE) as f:
-            return json.load(f)
+        try:
+            with open(HISTORY_FILE, encoding="utf-8") as history_file:
+                history = json.load(history_file)
+        except (OSError, json.JSONDecodeError):
+            return []
+        return history if isinstance(history, list) else []
     return []
 
 
-def save_history(history: list[dict]):
-    with open(HISTORY_FILE, "w") as f:
-        json.dump(history[-200:], f, indent=2)   # keep last 200
+def history_entry(result: dict) -> dict:
+    """Return the non-sensitive request summary saved in local history."""
+    return {
+        key: result[key]
+        for key in ("method", "url", "timestamp", "status", "elapsed_ms", "error")
+    }
 
 
-def make_request(method: str, url: str, headers: dict = None,
-                 body: str = None, timeout: int = 10) -> dict:
+def save_history(history: list[dict]) -> None:
+    with open(HISTORY_FILE, "w", encoding="utf-8") as history_file:
+        json.dump(history[-200:], history_file, indent=2)
+
+
+def add_to_history(result: dict) -> None:
+    """Store a request summary without response headers or body content."""
+    history = load_history()
+    history.append(history_entry(result))
+    save_history(history)
+
+
+def make_request(method: str, url: str, headers: dict | None = None,
+                 body: str | None = None, timeout: float = 10) -> dict:
+    """Send an HTTP request and return a serializable response summary."""
+    parsed_url = urllib.parse.urlparse(url)
+    if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
+        raise ValueError("URL must include an http:// or https:// scheme and host.")
+    if timeout <= 0:
+        raise ValueError("Timeout must be greater than zero.")
     headers = headers or {}
     data    = body.encode("utf-8") if body else None
 
@@ -65,7 +88,7 @@ def make_request(method: str, url: str, headers: dict = None,
     req    = urllib.request.Request(url, data=data, headers=headers, method=method.upper())
     start  = time.time()
     result = {
-        "method":    method.upper(), "url": url, "timestamp": datetime.now().isoformat(),
+        "method":    method.upper(), "url": url, "timestamp": datetime.now(timezone.utc).isoformat(),
         "status":    None, "headers": {}, "body": "", "elapsed_ms": 0, "error": None,
     }
     try:
@@ -84,21 +107,22 @@ def make_request(method: str, url: str, headers: dict = None,
         result["error"] = str(e)
     except urllib.error.URLError as e:
         result["error"] = str(e)
-    except Exception as e:
+    except OSError as e:
         result["error"] = str(e)
 
     result["elapsed_ms"] = round((time.time() - start) * 1000, 1)
     return result
 
 
-def print_response(result: dict, verbose: bool = False, json_only: bool = False):
+def print_response(result: dict, verbose: bool = False, json_only: bool = False) -> None:
     if result["error"] and not result["status"]:
-        print(c(f"\n  ✗ Error: {result['error']}", "red"))
+        print(c(f"\n  Error: {result['error']}", "red"))
         return
 
     sc   = result["status"] or 0
     col  = status_color(sc)
-    print(f"\n  {c(str(sc), col)} {c(f'{result[\"elapsed_ms\"]} ms', 'dim')}")
+    elapsed = f"{result['elapsed_ms']} ms"
+    print(f"\n  {c(str(sc), col)} {c(elapsed, 'dim')}")
 
     if verbose:
         print(c("  Response Headers:", "dim"))
@@ -129,17 +153,20 @@ def print_response(result: dict, verbose: bool = False, json_only: bool = False)
                 print(c(f"  ... ({len(body.splitlines())-50} more lines)", "dim"))
 
 
-def parse_headers(header_list: list[str]) -> dict:
+def parse_headers(header_list: list[str] | None) -> dict[str, str]:
     headers = {}
     for h in (header_list or []):
-        if ":" in h:
-            k, v = h.split(":", 1)
-            headers[k.strip()] = v.strip()
+        if ":" not in h:
+            raise ValueError(f"Invalid header: {h!r}. Use 'Name: value'.")
+        key, value = h.split(":", 1)
+        if not key.strip():
+            raise ValueError(f"Invalid header: {h!r}. Header name is required.")
+        headers[key.strip()] = value.strip()
     return headers
 
 
-def interactive_mode():
-    print(c("API Tester", "bold") + "  —  test REST APIs from the CLI\n")
+def interactive_mode() -> None:
+    print(c("API Tester", "bold") + " - test REST APIs from the CLI\n")
     print("Commands: GET/POST/PUT/DELETE/PATCH <url>, history, clear, quit")
     print("Examples: GET https://api.github.com/users/torvalds")
     print("          POST https://httpbin.org/post {\"key\":\"value\"}\n")
@@ -162,7 +189,7 @@ def interactive_mode():
         elif cmd == "HISTORY":
             n = min(int(parts[1]) if len(parts) > 1 else 10, len(history))
             for r in history[-n:]:
-                print(f"  {c(r['method'], 'cyan')} {r['url']} → "
+                print(f"  {c(r['method'], 'cyan')} {r['url']} -> "
                       f"{c(str(r.get('status','?')), status_color(r.get('status',0)))} "
                       f"{r.get('elapsed_ms','?')}ms")
         elif cmd == "CLEAR":
@@ -175,40 +202,51 @@ def interactive_mode():
                 continue
             url    = parts[1]
             body   = " ".join(parts[2:]) if len(parts) > 2 else None
-            result = make_request(cmd, url, body=body)
+            try:
+                result = make_request(cmd, url, body=body)
+            except ValueError as error:
+                print(c(f"  Error: {error}", "red"))
+                continue
             print_response(result, verbose=False)
             history.append(result)
-            save_history(history)
+            save_history([history_entry(item) for item in history])
         else:
             # Try treating the whole line as a URL with GET
             if line.startswith("http"):
-                result = make_request("GET", line)
+                try:
+                    result = make_request("GET", line)
+                except ValueError as error:
+                    print(c(f"  Error: {error}", "red"))
+                    continue
                 print_response(result)
                 history.append(result)
-                save_history(history)
+                save_history([history_entry(item) for item in history])
             else:
                 print(c("  Unknown command.", "yellow"))
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="CLI REST API tester")
     parser.add_argument("method",   nargs="?", help="HTTP method (GET, POST, etc.)")
     parser.add_argument("url",      nargs="?", help="Request URL")
     parser.add_argument("-d", "--data",    metavar="BODY",    help="Request body (JSON or form)")
     parser.add_argument("-H", "--header",  metavar="HEADER",  action="append",
                         help="Request header (e.g. 'Authorization: Bearer TOKEN')")
-    parser.add_argument("-t", "--timeout", type=int,          default=10)
+    parser.add_argument("-t", "--timeout", type=float,        default=10)
     parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("--no-history", action="store_true", help="do not save a request summary")
     args = parser.parse_args()
 
     if args.method and args.url:
-        headers = parse_headers(args.header)
-        result  = make_request(args.method, args.url, headers=headers,
-                               body=args.data, timeout=args.timeout)
+        try:
+            headers = parse_headers(args.header)
+            result = make_request(args.method, args.url, headers=headers,
+                                  body=args.data, timeout=args.timeout)
+        except ValueError as error:
+            raise SystemExit(f"Error: {error}") from error
         print_response(result, verbose=args.verbose)
-        history = load_history()
-        history.append(result)
-        save_history(history)
+        if not args.no_history:
+            add_to_history(result)
     else:
         interactive_mode()
 

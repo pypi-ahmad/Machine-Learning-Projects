@@ -4,7 +4,7 @@ Predict loan approval based on applicant details.
 Uses a rule-based scoring model with threshold classification.
 
 Usage:
-    streamlit run main.py
+    uv run --no-config streamlit run main.py
 """
 
 import math
@@ -13,7 +13,8 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Loan Eligibility", layout="wide")
-st.title("🏦 Loan Eligibility Predictor")
+st.title("Loan eligibility predictor")
+st.caption("Synthetic educational demo only. It is not a credit decision, loan offer, or financial advice.")
 
 
 def sigmoid(z: float) -> float:
@@ -179,7 +180,7 @@ with tab2:
 
 with tab3:
     df = make_sample_data()
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, hide_index=True)
     approval_rate = (df["approved"] == "Yes").mean()
     st.metric("Sample Approval Rate", f"{approval_rate:.1%}")
     st.bar_chart(df["approved"].value_counts())

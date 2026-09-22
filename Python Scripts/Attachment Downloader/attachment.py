@@ -1,48 +1,65 @@
+"""Search Gmail for attachments and download confirmed results locally."""
+
 import ezgmail
+import argparse
+from pathlib import Path
 
 
-def attachmentdownload(resulthreads):
-    # Two Objects used in code are GmailThread and GmailMessage
-    # 1.  GmailThread - Represents conversation threads
-    # 2.  GmailMessage - Represents individual emails within Threads
-    countofresults = len(resulthreads)
-    try:
-        for i in range(countofresults):
-            # checks whether the count of messages in threads is greater than 1
-            if len(resulthreads[i].messages) > 1:
-                for j in range(len(resulthreads[i].messages)):
-                    resulthreads[i].messages[
-                        j].downloadAllAttachments()  # downloads attachment(s) for individual messages
-            else:
-                # downloads attachment(s) for single message
-                resulthreads[i].messages[0].downloadAllAttachments()
-        print("Download compelete. Please check your root directory.")
-    except:
-        raise Exception("Error occured while downloading attachment(s).")
+def attachment_query(query: str) -> str:
+    """Ensure a Gmail query only returns messages with attachments."""
+    return query if "has:attachment" in query.casefold() else f"{query} has:attachment"
 
 
-if __name__ == '__main__':
-    query = input("Enter search query: ")
-    # appending to make sure the result threads always has an attachment
-    newquery = query + " + has:attachment"
-    # search functions accepts all the operators described at https://support.google.com/mail/answer/7190?hl=en
-    resulthreads = ezgmail.search(newquery)
+def download_attachments(threads: list, output_dir: Path, overwrite: bool) -> int:
+    """Download every message attachment and return the number of messages handled."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for thread in threads:
+        for message in thread.messages:
+            message.downloadAllAttachments(
+                downloadFolder=str(output_dir), overwrite=overwrite
+            )
+            count += 1
+    return count
 
-    if len(resulthreads) == 0:
-        # Executed if results don't have attachment
-        print("Result has no attachments:")
-    else:
-        print("Result(s) with attachments:")
-        for threads in resulthreads:
-            # prints the subject line of email thread in results
-            print(f"Email Subject: {threads.messages[0].subject}")
-        try:
-            ask = input(
-                "Do you want to download attachment(s) in result(s) (Yes/No)? ")  # Allows user to decide whether they want to download attachment(s) or not
-            if ask == "Yes":
-                # calls the function that downloads attachment(s)
-                attachmentdownload(resulthreads)
-            else:
-                print("Program exited")
-        except:
-            print("Something went wrong")
+
+def print_subjects(threads: list) -> None:
+    """Print the first-message subject for each matching Gmail thread."""
+    for thread in threads:
+        if thread.messages:
+            print(f"Email subject: {thread.messages[0].subject}")
+
+
+def main() -> None:
+    """Search Gmail and download matching attachments after confirmation."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("query", nargs="?", help="Gmail search query")
+    parser.add_argument("--output-dir", type=Path, default=Path("downloads"))
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--yes", action="store_true", help="download without prompting")
+    args = parser.parse_args()
+
+    query = args.query or input("Enter Gmail search query: ").strip()
+    if not query:
+        raise SystemExit("Error: a Gmail search query is required.")
+
+    threads = ezgmail.search(attachment_query(query))
+    if not threads:
+        print("No matching attachments found.")
+        return
+
+    print(f"Found {len(threads)} matching thread(s):")
+    print_subjects(threads)
+    if not args.yes:
+        answer = input("Download these attachments? [y/N]: ").strip().casefold()
+        if answer not in {"y", "yes"}:
+            print("Download cancelled.")
+            return
+
+    output_dir = args.output_dir.expanduser().resolve()
+    message_count = download_attachments(threads, output_dir, args.overwrite)
+    print(f"Downloaded attachments from {message_count} message(s) to {output_dir}")
+
+
+if __name__ == "__main__":
+    main()

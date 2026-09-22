@@ -1,71 +1,34 @@
-# Unzip File
+# File Unzipper
 
-> A script to extract all contents from a ZIP archive to a specified directory.
-
-## Overview
-
-A minimal Python script that takes a path to a ZIP file as user input and extracts all its contents to a `./Unzip file/Unzip files/` directory using the built-in `zipfile` module.
-
-## Features
-
-- Extracts all files from a ZIP archive
-- Prompts user for the ZIP file path at runtime
-- Uses Python's built-in `zipfile` module — no external dependencies
-
-## Project Structure
-
-```
-Unzip file/
-├── script.py
-└── Readme.md
-```
+A preview-first command-line tool for extracting one ZIP archive into a new or empty directory.
 
 ## Requirements
 
-- Python 3.x
-- No external dependencies (uses only `zipfile` from the standard library)
+- Python 3.13 or later
+- [uv](https://docs.astral.sh/uv/)
 
-## Installation
+## Preview an archive
 
-```bash
-cd "Unzip file"
+```powershell
+uv sync --no-config
+uv run --no-config python script.py archive.zip
 ```
 
-No package installation required.
+Preview prints the destination, member count, and declared uncompressed size without creating files. By default, `archive.zip` would extract into an `archive` folder beside it.
 
-## Usage
+## Extract
 
-```bash
-python script.py
+```powershell
+uv run --no-config python script.py archive.zip --destination extracted --extract
 ```
 
-When prompted, enter the path to the ZIP file:
+Type `EXTRACT` when prompted. The destination must be new or empty, so existing files cannot be overwritten by this tool.
 
-```
-Enter file to be unzipped: path/to/archive.zip
-```
+## Safety checks
 
-The extracted files will be placed in `./Unzip file/Unzip files/`.
+- Rejects archive entries that resolve outside the destination directory (zip-slip protection).
+- Rejects symlink entries.
+- Rejects archives with more than 10,000 members or more than 2 GiB of declared uncompressed content.
+- Does not extract anything unless both `--extract` and typed confirmation are provided.
 
-## How It Works
-
-1. Prompts the user for a file path using `input()`.
-2. Opens the ZIP file with `zipfile.ZipFile(target)`.
-3. Calls `extractall("./Unzip file/Unzip files")` to extract all contents.
-4. Closes the ZIP file handle.
-
-## Configuration
-
-- **Extraction directory:** Hardcoded as `./Unzip file/Unzip files`. Change the path in `handle.extractall()` to extract elsewhere.
-
-## Limitations
-
-- The extraction path `./Unzip file/Unzip files` is hardcoded and assumes the script is run from the parent directory.
-- No error handling for invalid file paths, corrupted archives, or non-ZIP files.
-- Does not create the output directory if it doesn't exist (relies on `extractall` behavior).
-- No progress indication for large archives.
-- Does not use a context manager (`with` statement) for the ZIP file — relies on manual `close()`.
-
-## License
-
-Not specified.
+Review archives from untrusted sources before extracting them. These checks reduce common risks but do not make untrusted content safe to open after extraction.

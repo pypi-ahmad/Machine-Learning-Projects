@@ -1,10 +1,10 @@
 """Sticky Notes — Tkinter app.
 
-Create resizable, coloured sticky notes that persist between sessions.
-Drag notes anywhere on screen, double-click to edit, right-click for options.
+Create coloured sticky notes that persist between sessions.
+Drag notes anywhere on screen, edit their text directly, and right-click for options.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json
@@ -12,7 +12,7 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import colorchooser, font as tkfont
 
-DATA_FILE = Path("sticky_notes.json")
+DATA_FILE = Path(__file__).with_name("sticky_notes.json")
 
 NOTE_COLORS = ["#fff176", "#a5d6a7", "#ef9a9a", "#90caf9", "#ffcc80", "#ce93d8", "#80deea"]
 
@@ -22,14 +22,14 @@ DEFAULT_W, DEFAULT_H = 220, 180
 def load_notes() -> list[dict]:
     if DATA_FILE.exists():
         try:
-            return json.loads(DATA_FILE.read_text())
+            return json.loads(DATA_FILE.read_text(encoding="utf-8"))
         except Exception:
             pass
     return []
 
 
 def save_notes(notes: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(notes, indent=2))
+    DATA_FILE.write_text(json.dumps(notes, indent=2), encoding="utf-8")
 
 
 # ---------------------------------------------------------------------------
@@ -170,7 +170,6 @@ class NoteManager:
         return note
 
     def new_note(self):
-        import random
         color = NOTE_COLORS[len(self.notes) % len(NOTE_COLORS)]
         x = 100 + len(self.notes) * 30
         y = 100 + len(self.notes) * 30
@@ -190,7 +189,7 @@ class NoteManager:
         self.root.quit()
 
 
-def main():
+def main() -> None:
     NoteManager()
 
 

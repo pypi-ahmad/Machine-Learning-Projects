@@ -1,11 +1,10 @@
 """Statistics Calculator — CLI tool.
 
-Compute descriptive statistics, z-scores, percentiles, hypothesis
-test helpers (t-test, chi-square approximation), and generate
-ASCII frequency histograms.
+Compute descriptive statistics, z-scores, percentiles, correlation,
+linear regression, and ASCII frequency histograms.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import math
@@ -57,6 +56,8 @@ def _percentile(sorted_data: list[float], p: float) -> float:
     n = len(sorted_data)
     if n == 0:
         return 0.0
+    if not 0 <= p <= 100:
+        raise ValueError("Percentile must be between 0 and 100.")
     idx = p / 100 * (n - 1)
     lo  = int(idx)
     hi  = min(lo + 1, n - 1)
@@ -80,6 +81,8 @@ def _kurtosis(data: list[float], mean: float, std: float) -> float:
 def z_scores(data: list[float]) -> list[float]:
     mean = statistics.mean(data)
     std  = statistics.stdev(data) if len(data) > 1 else 1
+    if std == 0:
+        return [0.0] * len(data)
     return [(x - mean) / std for x in data]
 
 
@@ -110,6 +113,8 @@ def histogram_ascii(data: list[float], bins: int = 10) -> list[str]:
     """Return ASCII histogram lines."""
     if not data:
         return []
+    if bins < 1:
+        raise ValueError("Bins must be at least 1.")
     lo, hi = min(data), max(data)
     if lo == hi:
         return [f"  All values = {lo}"]
@@ -125,7 +130,7 @@ def histogram_ascii(data: list[float], bins: int = 10) -> list[str]:
     for i, c in enumerate(counts):
         lo_b = lo + i * width
         hi_b = lo_b + width
-        bar  = "█" * int(c / max_count * 40) if max_count else ""
+        bar  = "#" * int(c / max_count * 40) if max_count else ""
         lines.append(f"  [{lo_b:>8.2f}, {hi_b:>8.2f})  {bar}  {c}")
     return lines
 
@@ -202,7 +207,11 @@ def main() -> None:
                 continue
             bins_s = input("  Bins (default 10): ").strip()
             bins = int(bins_s) if bins_s.isdigit() else 10
-            lines = histogram_ascii(data, bins)
+            try:
+                lines = histogram_ascii(data, bins)
+            except ValueError as error:
+                print(f"  {error}")
+                continue
             print(f"\n  n={len(data)}, range [{min(data):.4g}, {max(data):.4g}]")
             for line in lines:
                 print(line)

@@ -319,11 +319,7 @@ class Sudoku:
        
   
 ####################################
-master = tk.Tk()
-master.title("PyDoku")
-master.resizable(False, False)
-game=Sudoku(master)
-ex1= [   
+EXAMPLE_PUZZLE = [
     [3, 0, 6, 5, 0, 8, 4, 0, 0], 
     [5, 2, 0, 0, 0, 0, 0, 0, 0], 
     [0, 8, 7, 0, 0, 0, 0, 3, 1], 
@@ -334,18 +330,28 @@ ex1= [
     [0, 0, 0, 0, 0, 0, 0, 7, 4], 
     [0, 0, 5, 2, 0, 6, 3, 0, 0]
     ]
-#Here's an extreme puzzel, ref : https://www.sudokuwiki.org/Daily_Sudoku
-ex2=[
-    [0, 5, 0, 0, 0, 0, 0, 0, 0], 
-    [3, 0, 8, 0, 7, 0, 2, 0, 0], 
-    [0, 0, 9, 3, 0, 6, 8, 0, 0], 
-    [0, 8, 0, 0, 0, 9, 5, 0, 0], 
-    [9, 0, 0, 0, 0, 0, 0, 0, 1], 
-    [0, 0, 3, 8, 0, 0, 0, 9, 0], 
-    [0, 0, 6, 5, 0, 7, 3, 0, 0], 
-    [0, 0, 1, 0, 4, 0, 6, 0, 7], 
-    [0, 0, 0, 0, 0, 0, 0, 4, 0]
-    ]
 
-game.populate(ex1)
-tk.mainloop()
+EXTREME_PUZZLE = [
+    [0, 5, 0, 0, 0, 0, 0, 0, 0],
+    [3, 0, 8, 0, 7, 0, 2, 0, 0],
+    [0, 0, 9, 3, 0, 6, 8, 0, 0],
+    [0, 8, 0, 0, 0, 9, 5, 0, 0],
+    [9, 0, 0, 0, 0, 0, 0, 0, 1],
+    [0, 0, 3, 8, 0, 0, 0, 9, 0],
+    [0, 0, 6, 5, 0, 7, 3, 0, 0],
+    [0, 0, 1, 0, 4, 0, 6, 0, 7],
+    [0, 0, 0, 0, 0, 0, 0, 4, 0],
+]
+
+
+def main() -> None:
+    master = tk.Tk()
+    master.title("PyDoku")
+    master.resizable(False, False)
+    game = Sudoku(master)
+    game.populate(EXAMPLE_PUZZLE)
+    master.mainloop()
+
+
+if __name__ == "__main__":
+    main()

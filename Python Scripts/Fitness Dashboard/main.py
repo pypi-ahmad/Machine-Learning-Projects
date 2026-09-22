@@ -15,24 +15,25 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Fitness Dashboard", layout="wide")
-st.title("🏋️ Fitness Dashboard")
+st.title("Fitness dashboard")
+st.caption("Local personal tracker only. It does not provide medical advice or replace professional guidance.")
 
-DATA_FILE = Path("fitness.json")
+DATA_FILE = Path(__file__).with_name("fitness.json")
 WORKOUT_TYPES = ["Running", "Cycling", "Swimming", "Weight Training",
                  "Yoga", "HIIT", "Walking", "Other"]
 
 
 def load_data() -> dict:
-    if DATA_FILE.exists():
-        try:
-            return json.loads(DATA_FILE.read_text())
-        except Exception:
-            pass
-    return {"workouts": [], "weight_log": [], "goals": {}}
+    if not DATA_FILE.exists():
+        return {"workouts": [], "weight_log": [], "goals": {}}
+    data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or not all(key in data for key in ("workouts", "weight_log", "goals")):
+        raise ValueError(f"{DATA_FILE.name} must contain workouts, weight_log, and goals.")
+    return data
 
 
-def save_data(data: dict):
-    DATA_FILE.write_text(json.dumps(data, indent=2))
+def save_data(data: dict) -> None:
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 if "fit" not in st.session_state:
@@ -81,7 +82,11 @@ with tab2:
 
     if submit2:
         # Update existing entry for same date or add new
-        existing = next((w for w in weight_log if w["date"] == str(w_date)), None)
+        existing = None
+        for entry in weight_log:
+            if entry["date"] == str(w_date):
+                existing = entry
+                break
         if existing:
             existing["weight"] = round(float(weight), 1)
         else:
@@ -156,7 +161,7 @@ with tab3:
                  "Calories": f"{w['calories']} kcal" if w["calories"] else "—",
                  "Distance": f"{w['distance']} km" if w["distance"] else "—"}
                 for w in sorted(workouts, key=lambda x: x["date"], reverse=True)[:20]]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        st.dataframe(pd.DataFrame(rows), hide_index=True)
 
 with tab4:
     st.subheader("Set Fitness Goals")
@@ -170,11 +175,12 @@ with tab4:
         save_g = st.form_submit_button("Save Goals", type="primary")
 
     if save_g:
-        data["goals"] = {
+        goals.clear()
+        goals.update({
             "weekly_workouts": int(weekly_target),
             "target_weight":   round(float(target_weight), 1),
             "weekly_minutes":  int(weekly_minutes),
-        }
+        })
         save_data(data)
         st.success("Goals saved!")
 

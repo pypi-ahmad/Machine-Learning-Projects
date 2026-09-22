@@ -1,0 +1,10 @@
+[project]
+name = "email-gui"
+version = "0.1.0"
+description = "Tkinter Gmail SMTP message composer"
+readme = "Readme.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

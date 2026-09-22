@@ -7,14 +7,16 @@ Usage:
     streamlit run main.py
 """
 
+import io
 import math
 import re
 from collections import Counter
 
 import streamlit as st
+from pypdf import PdfReader
 
-st.set_page_config(page_title="Text Summarizer", layout="wide")
-st.title("📝 Text Summarizer")
+st.set_page_config(page_title="PDF and text summarizer", layout="wide")
+st.title("PDF and text summarizer")
 st.caption("Extractive summarization using TF-IDF sentence scoring — no external ML libraries.")
 
 
@@ -39,6 +41,11 @@ def tokenize(text: str) -> list[str]:
 def split_sentences(text: str) -> list[str]:
     sents = re.split(r"(?<=[.!?])\s+", text.strip())
     return [s.strip() for s in sents if len(s.strip()) > 25]
+
+
+def extract_pdf_text(data: bytes) -> str:
+    """Extract embedded text from an uploaded PDF without OCR."""
+    return "\n".join(map(lambda page: page.extract_text() or "", PdfReader(io.BytesIO(data)).pages))
 
 
 def score_sentences(sentences: list[str]) -> list[float]:
@@ -152,7 +159,7 @@ a debated policy issue in many countries.
 tab1, tab2 = st.tabs(["Summarize", "About"])
 
 with tab1:
-    source = st.radio("Input source", ["Sample Text", "Paste Text", "Upload .txt"])
+    source = st.radio("Input source", ["Sample Text", "Paste Text", "Upload document"])
 
     if source == "Sample Text":
         chosen   = st.selectbox("Choose sample", list(SAMPLES.keys()))
@@ -160,8 +167,11 @@ with tab1:
     elif source == "Paste Text":
         raw_text = st.text_area("Paste text here", height=250)
     else:
-        upl = st.file_uploader("Upload .txt file", type="txt")
-        raw_text = upl.read().decode("utf-8") if upl else ""
+        upl = st.file_uploader("Upload a text file or PDF", type=["txt", "pdf"])
+        if upl and upl.name.lower().endswith(".pdf"):
+            raw_text = extract_pdf_text(upl.read())
+        else:
+            raw_text = upl.read().decode("utf-8") if upl else ""
 
     if source == "Sample Text" or raw_text.strip():
         st.markdown(f"**Input length:** {len(raw_text.split())} words")
@@ -172,7 +182,7 @@ with tab1:
 
     if st.button("✂️ Summarize", type="primary"):
         if not raw_text.strip():
-            st.error("Please provide some text first.")
+            st.error("Please provide extractable text. Scanned PDFs require OCR before summarization.")
         else:
             result = summarize(raw_text, ratio=ratio, max_sentences=max_s)
             if "error" in result:

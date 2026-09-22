@@ -15,7 +15,7 @@ import textwrap
 import time
 from pathlib import Path
 
-SNIPPETS_FILE = Path("code_snippets.json")
+SNIPPETS_FILE = Path(__file__).with_name("code_snippets.json")
 
 SAMPLE_SNIPPETS = {
     "hello": 'print("Hello, World!")',
@@ -92,14 +92,14 @@ def run_file(path: Path, timeout: int = 30) -> tuple[str, str, float]:
 
 
 def print_result(stdout: str, stderr: str, elapsed: float):
-    print(f"\n  ─── Output ({'%.3f' % elapsed}s) ───")
+    print(f"\n  --- Output ({'%.3f' % elapsed}s) ---")
     if stdout:
         for line in stdout.splitlines():
             print(f"  {line}")
     else:
         print("  (no output)")
     if stderr:
-        print("\n  ─── Errors ───")
+        print("\n  --- Errors ---")
         for line in stderr.splitlines():
             print(f"  {line}")
 
@@ -139,7 +139,7 @@ def main():
     if len(sys.argv) > 1:
         path = Path(sys.argv[1])
         if path.exists():
-            print(f"Running {path}…")
+            print(f"Running {path}...")
             stdout, stderr, elapsed = run_file(path)
             print_result(stdout, stderr, elapsed)
         else:

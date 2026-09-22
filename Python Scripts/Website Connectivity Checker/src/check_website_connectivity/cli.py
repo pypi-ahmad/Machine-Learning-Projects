@@ -17,7 +17,7 @@ from check_website_connectivity.core import (
     write_csv,
 )
 
-app = typer.App = typer.Typer(
+app = typer.Typer(
     name="check_site",
     help="Check whether websites are reachable.",
     add_completion=False,

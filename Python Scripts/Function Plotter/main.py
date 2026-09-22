@@ -1,4 +1,4 @@
-"""Function Plotter — CLI tool.
+"""Function Plotter CLI tool.
 
 Plot mathematical functions as ASCII graphs in the terminal.
 Supports standard math functions, multiple curves, and custom ranges.
@@ -10,6 +10,7 @@ Usage:
 """
 
 import argparse
+import ast
 import math
 import sys
 
@@ -17,25 +18,52 @@ import sys
 # Safe math namespace for eval
 SAFE_NS = {k: getattr(math, k) for k in dir(math) if not k.startswith("_")}
 SAFE_NS.update({"abs": abs, "round": round, "min": min, "max": max, "pow": pow})
+ALLOWED_NODES = (
+    ast.Expression, ast.BinOp, ast.UnaryOp, ast.Call, ast.Name, ast.Load,
+    ast.Constant, ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv,
+    ast.Mod, ast.Pow, ast.UAdd, ast.USub,
+)
 
 
-def evaluate(expr: str, x: float) -> float:
-    SAFE_NS["x"] = x
-    return float(eval(expr, {"__builtins__": {}}, SAFE_NS))
+def compile_expression(expr: str) -> object:
+    """Compile an expression containing x, numbers, and approved math functions."""
+    tree = ast.parse(expr, mode="eval")
+    for node in ast.walk(tree):
+        if not isinstance(node, ALLOWED_NODES):
+            raise ValueError("unsupported expression syntax")
+        if isinstance(node, ast.Name) and node.id not in SAFE_NS and node.id != "x":
+            raise ValueError(f"unknown name: {node.id}")
+        if isinstance(node, ast.Call):
+            if not isinstance(node.func, ast.Name) or not callable(SAFE_NS.get(node.func.id)):
+                raise ValueError("only approved math functions may be called")
+            if node.keywords:
+                raise ValueError("keyword arguments are not supported")
+        if isinstance(node, ast.Constant) and not isinstance(node.value, (int, float)):
+            raise ValueError("only numeric constants are supported")
+    return compile(tree, "<expression>", "eval")
+
+
+def evaluate(expression: object, x: float) -> float:
+    return float(eval(expression, {"__builtins__": {}}, SAFE_NS | {"x": x}))
 
 
 def plot(expressions: list[str], x_min: float, x_max: float,
          width: int = 70, height: int = 25, symbols: str = "*#@+") -> None:
     """Render ASCII plot of one or more expressions over [x_min, x_max]."""
+    if x_min >= x_max:
+        raise ValueError("x minimum must be less than x maximum")
+    if width < 2 or height < 2:
+        raise ValueError("width and height must be at least 2")
     xs = [x_min + i / (width - 1) * (x_max - x_min) for i in range(width)]
 
     # Evaluate all functions
     all_series = []
     for expr in expressions:
+        expression = compile_expression(expr)
         ys = []
         for x in xs:
             try:
-                ys.append(evaluate(expr, x))
+                ys.append(evaluate(expression, x))
             except Exception:
                 ys.append(None)
         all_series.append(ys)
@@ -54,11 +82,11 @@ def plot(expressions: list[str], x_min: float, x_max: float,
     zero_col = int(-x_min / (x_max - x_min) * (width - 1)) if x_min <= 0 <= x_max else None
     zero_row = int((y_max - 0) / y_range * (height - 1))    if y_min <= 0 <= y_max else None
     if zero_row is not None:
-        for col in range(width): grid[zero_row][col] = "─"
+        for col in range(width): grid[zero_row][col] = "-"
     if zero_col is not None:
-        for row in range(height): grid[row][zero_col] = "│"
+        for row in range(height): grid[row][zero_col] = "|"
     if zero_row is not None and zero_col is not None:
-        grid[zero_row][zero_col] = "┼"
+        grid[zero_row][zero_col] = "+"
 
     # Plot curves
     for k, (expr, ys) in enumerate(zip(expressions, all_series)):
@@ -74,7 +102,7 @@ def plot(expressions: list[str], x_min: float, x_max: float,
     for row_idx, row in enumerate(grid):
         prefix = "  |"
         print(prefix + "".join(row))
-    print(f"  └{'─'*width}")
+    print(f"  +{'-' * width}")
     mid = width // 2
     x_mid = x_min + (x_max - x_min) / 2
     print(f"  {x_min:<10.4g}{x_mid:^{mid}.4g}{x_max:>10.4g}")
@@ -154,7 +182,7 @@ def interactive():
         print()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="ASCII Function Plotter")
     parser.add_argument("--func",  action="append", dest="funcs", metavar="EXPR",
                         help="Function expression (repeatable for multiple curves)")
@@ -163,6 +191,11 @@ def main():
     parser.add_argument("--width", type=int,   default=70,    help="Plot width (chars)")
     parser.add_argument("--height",type=int,   default=25,    help="Plot height (lines)")
     args = parser.parse_args()
+
+    if args.xmin >= args.xmax:
+        parser.error("--xmin must be less than --xmax")
+    if args.width < 2 or args.height < 2:
+        parser.error("--width and --height must be at least 2")
 
     if args.funcs:
         try:

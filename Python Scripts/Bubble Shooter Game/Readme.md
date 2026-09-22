@@ -1,10 +1,13 @@
 # Bubble Shooter Game
 
-A full-featured bubble shooter game built with Pygame, featuring color-matching bubble popping, score tracking, background music, and a rotatable arrow launcher.
+The project uses `pygame-ce`, the Python 3.14-compatible Pygame distribution,
+while retaining the standard `pygame` import API.
+
+A bubble shooter game built with Pygame, with color-matching bubble popping, score tracking, background music, and a rotatable arrow launcher.
 
 ## Overview
 
-This is a **GUI game** built with Pygame. The player aims and shoots bubbles using a rotatable arrow. When three or more bubbles of the same color connect, they pop and award points. Floating (disconnected) bubbles are also removed. The game is won by clearing all bubbles and lost if bubbles reach the bottom of the screen.
+This is a **GUI game** built with Pygame. The player aims and shoots bubbles with a rotatable arrow. Three or more connected bubbles of the same color pop and award points. Floating bubbles are also removed. The player wins by clearing all bubbles and loses if bubbles reach the bottom of the screen.
 
 ## Features
 
@@ -27,7 +30,7 @@ This is a **GUI game** built with Pygame. The player aims and shoots bubbles usi
 
 - `pygame`
 
-## How It Works
+## How it works
 
 1. **Initialization:** A 940x740 Pygame window is created. A 25x20 grid (`bbarr`) is initialized; the top 5 rows are filled with randomly colored bubbles in a honeycomb pattern (odd rows offset by one bubble radius).
 2. **Arrow (`Ary` class):** Loads `Arrow.png`, rotates based on left/right key input, and displays the aiming direction.
@@ -55,7 +58,7 @@ Bubble Shooter Game/
 ## Setup & Installation
 
 ```bash
-pip install pygame
+uv sync
 ```
 
 Ensure all asset files (`Arrow.png`, `*.ogg`) are in the same directory as the script.
@@ -64,7 +67,7 @@ Ensure all asset files (`Arrow.png`, `*.ogg`) are in the same directory as the s
 
 ```bash
 cd "Bubble Shooter Game"
-python bubbleshooter.py
+uv run python bubbleshooter.py
 ```
 
 ### Controls

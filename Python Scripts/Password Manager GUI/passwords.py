@@ -1,143 +1,148 @@
-from tkinter import *
-from tkinter import messagebox, simpledialog
+"""Local encrypted SQLite password manager with a Tkinter interface."""
+
+import base64
+import secrets
 import sqlite3
-from sqlite3 import Error
-import sys
+import tkinter as tk
+from pathlib import Path
+from tkinter import messagebox, simpledialog, ttk
 
-# Store Master password
-master_password = sys.argv[1]
-
-# Function to connect to the SQL Database
-
-
-def sql_connection():
-    try:
-        con = sqlite3.connect('passwordManager.db')
-        return con
-    except Error:
-        print(Error)
-
-# Function to create table
+from cryptography.fernet import Fernet, InvalidToken
+from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
 
 
-def sql_table(con):
-    cursorObj = con.cursor()
-    cursorObj.execute(
-        "CREATE TABLE IF NOT EXISTS passwords(website text, username text, pass text)")
-    con.commit()
+DATABASE_PATH = Path(__file__).resolve().with_name("password_manager_vault.db")
+LEGACY_DATABASE_PATH = Path(__file__).resolve().with_name("passwordManager.db")
+SALT_BYTES = 16
 
 
-# Call functions to connect to database and create table
-con = sql_connection()
-sql_table(con)
+def derive_key(master_password: str, salt: bytes) -> bytes:
+    """Derive a Fernet key from the supplied master password."""
+    kdf = Scrypt(salt=salt, length=32, n=2**14, r=8, p=1)
+    return base64.urlsafe_b64encode(kdf.derive(master_password.encode("utf-8")))
 
-# Create submit function for database
+
+def open_database() -> sqlite3.Connection:
+    """Open the maintained, project-local SQLite database and its schema."""
+    connection = sqlite3.connect(DATABASE_PATH)
+    connection.execute("CREATE TABLE IF NOT EXISTS vault_meta (salt TEXT NOT NULL, verifier TEXT NOT NULL)")
+    connection.execute(
+        "CREATE TABLE IF NOT EXISTS passwords ("
+        "id INTEGER PRIMARY KEY, website TEXT NOT NULL, username TEXT NOT NULL, password_token TEXT NOT NULL)"
+    )
+    connection.commit()
+    return connection
 
 
-def submit(con):
-    cursor = con.cursor()
-    # Insert Into Table
-    if website.get() != "" and username.get() != "" and password.get() != "":
-        cursor.execute("INSERT INTO passwords VALUES (:website, :username, :password)",
-                       {
-                           'website': website.get(),
-                           'username': username.get(),
-                           'password': password.get()
-                       }
-                       )
-        con.commit()
-        # Message box
-        messagebox.showinfo("Info", "Record Added in Database!")
+def load_metadata(connection: sqlite3.Connection) -> tuple[bytes, str]:
+    """Load or create the per-vault salt and password verifier."""
+    row = connection.execute("SELECT salt, verifier FROM vault_meta LIMIT 1").fetchone()
+    if row:
+        return base64.urlsafe_b64decode(row[0].encode("ascii")), row[1]
+    salt = secrets.token_bytes(SALT_BYTES)
+    connection.execute(
+        "INSERT INTO vault_meta (salt, verifier) VALUES (?, ?)",
+        (base64.urlsafe_b64encode(salt).decode("ascii"), ""),
+    )
+    connection.commit()
+    return salt, ""
 
-        # After data entry clear the text boxes
-        website.delete(0, END)
-        username.delete(0, END)
-        password.delete(0, END)
 
+class PasswordManager(tk.Tk):
+    def __init__(self, connection: sqlite3.Connection, key: bytes) -> None:
+        super().__init__()
+        self.connection = connection
+        self.cipher = Fernet(key)
+        self.title("Password Manager")
+        self.resizable(False, False)
+
+        self.website = tk.StringVar()
+        self.username = tk.StringVar()
+        self.password = tk.StringVar()
+        self._build_ui()
+
+    def _build_ui(self) -> None:
+        frame = ttk.Frame(self, padding=16)
+        frame.grid()
+        ttk.Label(frame, text="Website").grid(row=0, column=0, sticky="w")
+        ttk.Entry(frame, textvariable=self.website, width=42).grid(row=0, column=1, pady=3)
+        ttk.Label(frame, text="Username").grid(row=1, column=0, sticky="w")
+        ttk.Entry(frame, textvariable=self.username, width=42).grid(row=1, column=1, pady=3)
+        ttk.Label(frame, text="Password").grid(row=2, column=0, sticky="w")
+        ttk.Entry(frame, textvariable=self.password, width=42).grid(row=2, column=1, pady=3)
+        ttk.Button(frame, text="Add password", command=self._save).grid(row=3, column=0, pady=(10, 0))
+        ttk.Button(frame, text="View entries", command=self._view).grid(row=3, column=1, pady=(10, 0), sticky="e")
+        if LEGACY_DATABASE_PATH.exists():
+            ttk.Label(frame, text="Legacy passwordManager.db was not imported.").grid(row=4, column=0, columnspan=2, pady=(10, 0))
+
+    def _save(self) -> None:
+        website = self.website.get().strip()
+        username = self.username.get().strip()
+        password = self.password.get()
+        if not website or not username or not password:
+            messagebox.showwarning("Missing fields", "Website, username, and password are required.", parent=self)
+            return
+        token = self.cipher.encrypt(password.encode("utf-8")).decode("ascii")
+        self.connection.execute(
+            "INSERT INTO passwords (website, username, password_token) VALUES (?, ?, ?)",
+            (website, username, token),
+        )
+        self.connection.commit()
+        self.password.set("")
+        messagebox.showinfo("Saved", "Entry saved to the encrypted vault.", parent=self)
+
+    def _view(self) -> None:
+        rows = self.connection.execute("SELECT website, username, password_token FROM passwords ORDER BY id").fetchall()
+        dialog = tk.Toplevel(self)
+        dialog.title("Vault entries")
+        text = tk.Text(dialog, width=72, height=18, wrap="word")
+        text.pack(padx=12, pady=12)
+        text.insert("1.0", "\n\n".join(map(self._format_row, rows)) or "No entries yet.")
+        text.config(state="disabled")
+
+    def _format_row(self, row: tuple[str, str, str]) -> str:
+        website, username, token = row
+        try:
+            password = self.cipher.decrypt(token.encode("ascii")).decode("utf-8")
+        except InvalidToken:
+            password = "[unable to decrypt]"
+        return f"Website: {website}\nUsername: {username}\nPassword: {password}"
+
+
+def prompt_for_master_password(connection: sqlite3.Connection, salt: bytes, verifier: str) -> bytes | None:
+    prompt = tk.Tk()
+    prompt.withdraw()
+    master_password = simpledialog.askstring("Password Manager", "Master password:", show="*", parent=prompt)
+    if not master_password:
+        prompt.destroy()
+        return None
+    key = derive_key(master_password, salt)
+    if verifier:
+        try:
+            if Fernet(key).decrypt(verifier.encode("ascii")) != b"password-manager-vault":
+                raise InvalidToken
+        except InvalidToken:
+            messagebox.showerror("Password Manager", "Unable to open the encrypted vault.", parent=prompt)
+            prompt.destroy()
+            return None
     else:
-        messagebox.showinfo("Alert", "Please fill all details!")
-
-# Create Query Function
-
-
-def query(con):
-
-    password = simpledialog.askstring("Password", "Enter Master Password")
-    if(password == master_password):
-        # set button text
-        query_btn.configure(text="Hide Records", command=hide)
-        cursor = con.cursor()
-        # Query the database
-        cursor.execute("SELECT *, oid FROM passwords")
-        records = cursor.fetchall()
-
-        p_records = 'ID'.ljust(10) + 'Website'.ljust(40) + \
-            'Username'.ljust(70)+'Password'.ljust(100)+'\n'
-
-        for record in records:
-            single_record = ""
-            single_record += (str(record[3]).ljust(10) +
-                              str(record[0]).ljust(40)+str(record[1]).ljust(70)+str(record[2]).ljust(100))
-            single_record += '\n'
-            # print(single_record)
-            p_records += single_record
-        query_label['text'] = p_records
-        # Commit changes
-        con.commit()
-        p_records = ""
-
-    else:
-        messagebox.showinfo("Failed!", "Authentication failed!")
-
-# Create Function to Hide Records
+        confirmation = simpledialog.askstring("Password Manager", "Confirm master password:", show="*", parent=prompt)
+        if confirmation != master_password:
+            messagebox.showerror("Password Manager", "Master passwords did not match.", parent=prompt)
+            prompt.destroy()
+            return None
+        token = Fernet(key).encrypt(b"password-manager-vault").decode("ascii")
+        connection.execute("UPDATE vault_meta SET verifier = ?", (token,))
+        connection.commit()
+    prompt.destroy()
+    return key
 
 
-def hide():
-    query_label['text'] = ""
-    query_btn.configure(text="Show Records", command=lambda: query(con))
-
-
-root = Tk()
-root.title("Password Manager")
-root.geometry("500x400")
-root.minsize(600, 400)
-root.maxsize(600, 400)
-
-frame = Frame(root, bg="#774A9F", bd=5)
-frame.place(relx=0.50, rely=0.50, relwidth=0.98, relheight=0.45, anchor="n")
-
-# Create Text Boxes
-website = Entry(root, width=30)
-website.grid(row=1, column=1, padx=20, pady=5)
-username = Entry(root, width=30)
-username.grid(row=2, column=1, padx=20, pady=5)
-password = Entry(root, width=30)
-password.grid(row=3, column=1, padx=20, pady=5)
-
-# Create Text Box Labels
-website_label = Label(root, text="Website:")
-website_label.grid(row=1, column=0)
-username_label = Label(root, text=" Username:")
-username_label.grid(row=2, column=0)
-password_label = Label(root, text="Password:")
-password_label.grid(row=3, column=0)
-
-
-# Create Buttons
-submit_btn = Button(root, text="Add Password", command=lambda: submit(con))
-submit_btn.grid(row=5, column=1, pady=5, padx=15, ipadx=35)
-query_btn = Button(root, text="Show All", command=lambda: query(con))
-query_btn.grid(row=6, column=1, pady=5, padx=5, ipadx=35)
-
-# Create a Label to show stored passwords
-global query_label
-query_label = Label(frame, anchor="nw", justify="left")
-query_label.place(relwidth=1, relheight=1)
-
-
-def main():
-    root.mainloop()
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    connection = open_database()
+    salt, verifier = load_metadata(connection)
+    key = prompt_for_master_password(connection, salt, verifier)
+    if key:
+        app = PasswordManager(connection, key)
+        app.mainloop()
+    connection.close()

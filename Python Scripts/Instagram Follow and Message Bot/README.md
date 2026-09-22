@@ -1,79 +1,29 @@
-# Insta-Bot Follow & Send Message
+# Instagram Follow and Message Bot
 
-> A Selenium-based Instagram bot that auto-follows users and sends them direct messages.
+This Selenium script previews Instagram follow and direct-message requests by default. It does not open Chrome, ask for credentials, or interact with Instagram unless you use the explicit apply command.
 
-## Overview
+## Preview
 
-This script automates Instagram interactions using Selenium WebDriver. Given a comma-separated list of usernames, it logs into Instagram, navigates to each user's profile, follows them, and sends a direct message.
-
-## Features
-
-- Automated Instagram login via Selenium
-- Batch follow multiple users (comma-separated input)
-- Send direct messages to each followed user
-- ChromeDriver auto-management via `webdriver_manager`
-
-## Project Structure
-
-```
-Insta-Bot-Follow-SendMsg/
-├── instabot.py   # Main bot script
-└── README.md
+```powershell
+uv sync --no-config
+uv run --no-config python instabot.py example_account another_account
 ```
 
-## Requirements
+The preview validates usernames locally and prints the actions that would be requested.
 
-- Python 3.x
-- `selenium`
-- `webdriver-manager`
-- `openpyxl` (imported but not used in the current code)
-- Google Chrome browser
+## Apply actions
 
-## Installation
+Only use this with accounts you are authorized to contact and after reviewing Instagram's current rules. The command requires the exact confirmation phrase:
 
-```bash
-cd Insta-Bot-Follow-SendMsg
-pip install selenium webdriver-manager openpyxl
+```powershell
+uv run --no-config python instabot.py example_account `
+  --apply --confirm FOLLOW_AND_MESSAGE
 ```
 
-## Usage
-
-```bash
-python instabot.py
-```
-
-1. A Chrome browser window opens Instagram.
-2. Enter the target usernames (comma-separated) when prompted.
-3. Enter your Instagram username and password.
-4. The bot logs in, visits each profile, attempts to follow, opens DMs, and prompts you for a message to send to each user.
-
-## How It Works
-
-1. **Login**: Navigates to `instagram.com`, fills in username/password fields, and clicks the submit button.
-2. **Follow loop**: For each username, navigates to `instagram.com/<username>/`, locates the Follow button via XPath, and clicks it.
-3. **Message**: Locates the Message button by class name, clicks it, finds the textarea, types the message provided via `input()`, and sends with ENTER key.
-4. **Error handling**: Uses bare `try/except: pass` blocks — if follow or message elements aren't found, the bot silently continues.
-
-## Configuration
-
-- **Wait timeout**: `WebDriverWait` is set to 120 seconds.
-- **Sleep timers**: Various `time.sleep()` calls (2–10 seconds) between actions.
-- All credentials and target usernames are provided interactively at runtime.
+Chrome opens only after that confirmation. The script prompts for an Instagram username, a hidden password, and one message to send to every listed account. It does not save credentials.
 
 ## Limitations
 
-- Relies on specific CSS class names and XPaths (e.g., `_862NM`, `mt3GC`) that may break when Instagram updates its UI.
-- `openpyxl` is imported but never used.
-- Bare `except: pass` blocks hide all errors silently.
-- The message prompt appears once per user inside the send loop, requiring manual input for each.
-- Instagram credentials are entered in plaintext via `input()` (visible on screen).
-- Instagram may detect and block automated behavior, potentially resulting in account suspension.
-
-## Security Notes
-
-- **Credentials entered in plaintext**: The password is visible in the terminal. Consider using `getpass` instead.
-- **Instagram ToS violation**: Automated interaction with Instagram violates their Terms of Service and may result in account bans.
-
-## License
-
-Not specified.
+- Instagram can change its interface or block automated actions, so selectors may stop working.
+- Following or messaging accounts may have account-policy consequences; use the script only with clear permission.
+- The actual apply action requires Chrome and internet access. It was not exercised during local verification.

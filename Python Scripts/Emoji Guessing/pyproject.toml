@@ -1,0 +1,10 @@
+[project]
+name = "emoji-guessing"
+version = "0.1.0"
+description = "A command-line emoji guessing game"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

@@ -4,7 +4,7 @@ A lightweight plain-text editor with file open/save,
 find & replace, line numbers, word count, and dark theme.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import os

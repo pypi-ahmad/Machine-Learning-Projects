@@ -1,165 +1,103 @@
-"""Email Validator — CLI tool.
+"""Validate email syntax and optionally check whether its domain resolves."""
 
-Validate email addresses with:
- • Regex syntax check
- • MX record lookup (DNS)
- • Common disposable domain detection
- • Bulk validation from file
-
-Usage:
-    python main.py
-    python main.py user@example.com
-    python main.py emails.txt
-"""
-
+import argparse
 import re
 import socket
-import sys
 from pathlib import Path
 
 
-# ---------------------------------------------------------------------------
-# Known disposable domains (sample list)
-# ---------------------------------------------------------------------------
 DISPOSABLE_DOMAINS = {
-    "mailinator.com", "guerrillamail.com", "tempmail.com", "throwam.com",
-    "trashmail.com", "yopmail.com", "sharklasers.com", "guerrillamailblock.com",
-    "grr.la", "guerrillamail.info", "guerrillamail.biz", "guerrillamail.de",
-    "guerrillamail.net", "guerrillamail.org", "spam4.me", "binkmail.com",
-    "bob.email", "clrmail.com", "dispostable.com", "maildrop.cc",
-    "mintemail.com", "mt2015.com", "mt2016.com", "mt2017.com",
-    "spamgourmet.com", "spamgourmet.net", "tempinbox.com", "throwam.com",
-    "fakeinbox.com", "fakemail.net", "filzmail.com", "mytemp.email",
+    "binkmail.com", "bob.email", "clrmail.com", "dispostable.com", "fakeinbox.com",
+    "fakemail.net", "filzmail.com", "grr.la", "guerrillamail.com", "guerrillamailblock.com",
+    "maildrop.cc", "mailinator.com", "mintemail.com", "mytemp.email", "sharklasers.com",
+    "spam4.me", "spamgourmet.com", "spamgourmet.net", "tempinbox.com", "tempmail.com",
+    "throwam.com", "trashmail.com", "yopmail.com",
 }
+ROLE_PREFIXES = {
+    "abuse", "admin", "help", "hostmaster", "info", "no-reply", "noreply", "postmaster",
+    "security", "support", "webmaster",
+}
+EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
 
-ROLE_PREFIXES = {"admin", "webmaster", "postmaster", "hostmaster", "noreply",
-                 "no-reply", "abuse", "security", "support", "info", "help"}
-
-EMAIL_REGEX = re.compile(
-    r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$"
-)
-
-
-# ---------------------------------------------------------------------------
-# Validation functions
-# ---------------------------------------------------------------------------
 
 def check_syntax(email: str) -> tuple[bool, str]:
-    email = email.strip()
+    """Check the basic length and format constraints of an email address."""
     if not email:
-        return False, "Empty string"
-    if email.count("@") != 1:
-        return False, "Must contain exactly one '@'"
-    local, domain = email.rsplit("@", 1)
-    if len(local) > 64:
-        return False, "Local part too long (>64 chars)"
+        return False, "empty address"
     if len(email) > 254:
-        return False, "Email too long (>254 chars)"
-    if ".." in email:
-        return False, "Consecutive dots not allowed"
-    if not EMAIL_REGEX.match(email):
-        return False, "Invalid format"
-    return True, "OK"
+        return False, "address is longer than 254 characters"
+    if email.count("@") != 1 or ".." in email or not EMAIL_PATTERN.fullmatch(email):
+        return False, "invalid email format"
+    local, _ = email.rsplit("@", 1)
+    if len(local) > 64:
+        return False, "local part is longer than 64 characters"
+    return True, "valid syntax"
 
 
-def check_mx(domain: str) -> tuple[bool, str]:
+def check_domain(domain: str) -> tuple[bool, str]:
+    """Check that DNS can resolve the domain; this is not an MX lookup."""
     try:
         socket.getaddrinfo(domain, None)
-        return True, "Domain resolves"
     except socket.gaierror:
-        return False, f"Domain '{domain}' not found"
+        return False, "domain does not resolve"
+    return True, "domain resolves"
 
 
-def check_disposable(domain: str) -> bool:
-    return domain.lower() in DISPOSABLE_DOMAINS
-
-
-def validate(email: str, check_dns: bool = True) -> dict:
-    email = email.strip().lower()
-    result = {"email": email, "valid": False, "issues": [], "warnings": []}
-
-    ok, msg = check_syntax(email)
-    if not ok:
-        result["issues"].append(f"Syntax: {msg}")
+def validate(email: str, check_dns: bool = True) -> dict[str, object]:
+    """Return syntax, domain, and warning results without contacting SMTP servers."""
+    address = email.strip().lower()
+    result: dict[str, object] = {"email": address, "valid": False, "issues": [], "warnings": []}
+    syntax_ok, syntax_message = check_syntax(address)
+    if not syntax_ok:
+        result["issues"] = [syntax_message]
         return result
 
-    local, domain = email.rsplit("@", 1)
-
-    if check_disposable(domain):
-        result["warnings"].append("Disposable email domain")
-
-    if local.split("+")[0] in ROLE_PREFIXES:
-        result["warnings"].append("Role-based address (may not reach a person)")
+    local, domain = address.rsplit("@", 1)
+    warnings: list[str] = result["warnings"]  # type: ignore[assignment]
+    if domain in DISPOSABLE_DOMAINS:
+        warnings.append("disposable email domain")
+    if local.split("+", 1)[0] in ROLE_PREFIXES:
+        warnings.append("role-based address")
 
     if check_dns:
-        mx_ok, mx_msg = check_mx(domain)
-        if not mx_ok:
-            result["issues"].append(f"DNS: {mx_msg}")
+        domain_ok, domain_message = check_domain(domain)
+        if not domain_ok:
+            result["issues"] = [domain_message]
             return result
 
     result["valid"] = True
     return result
 
 
-def format_result(r: dict) -> str:
-    status = "✓ VALID" if r["valid"] else "✗ INVALID"
-    lines  = [f"  {r['email']:40s} {status}"]
-    for issue in r["issues"]:
-        lines.append(f"    ✗ {issue}")
-    for warn in r["warnings"]:
-        lines.append(f"    ⚠ {warn}")
-    return "\n".join(lines)
+def format_result(result: dict[str, object]) -> str:
+    """Render one concise, copyable validation result."""
+    status = "VALID" if result["valid"] else "INVALID"
+    details = list(result["issues"]) + list(result["warnings"])
+    return " | ".join([str(result["email"]), status, *details])
 
 
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("address", nargs="?", help="One email address to validate.")
+    parser.add_argument("--file", type=Path, help="UTF-8 text file with one email address per line.")
+    parser.add_argument("--no-dns", action="store_true", help="Skip the network DNS-resolution check.")
+    return parser.parse_args()
 
-def main():
-    if len(sys.argv) > 1:
-        arg = sys.argv[1]
-        path = Path(arg)
-        if path.exists():
-            # Bulk file mode
-            emails = [e.strip() for e in path.read_text().splitlines() if e.strip()]
-            valid = invalid = 0
-            for email in emails:
-                r = validate(email)
-                print(format_result(r))
-                if r["valid"]: valid += 1
-                else:          invalid += 1
-            print(f"\n  Total: {len(emails)}  Valid: {valid}  Invalid: {invalid}")
-        else:
-            r = validate(arg)
-            print(format_result(r))
-        return
 
-    print("Email Validator")
-    print("──────────────────────────────")
-    print("  Enter an email, a file path (for bulk), or 'q' to quit.\n")
+def main() -> None:
+    args = parse_args()
+    if bool(args.address) == bool(args.file):
+        raise SystemExit("Provide exactly one email address or --file PATH.")
 
-    while True:
-        raw = input("> ").strip()
-        if raw.lower() in ("q", "quit"):
-            print("Bye!")
-            break
-        if not raw:
+    emails = [args.address] if args.address else args.file.read_text(encoding="utf-8").splitlines()
+    valid_count = 0
+    for email in emails:
+        if not email.strip():
             continue
-
-        path = Path(raw)
-        if path.exists():
-            emails = [e.strip() for e in path.read_text().splitlines() if e.strip()]
-            valid = invalid = 0
-            for email in emails:
-                r = validate(email)
-                print(format_result(r))
-                if r["valid"]: valid += 1
-                else:          invalid += 1
-            print(f"\n  Total: {len(emails)}  Valid: {valid}  Invalid: {invalid}\n")
-        else:
-            r = validate(raw)
-            print(format_result(r))
-            print()
+        result = validate(email, check_dns=not args.no_dns)
+        print(format_result(result))
+        valid_count += int(bool(result["valid"]))
+    print(f"Checked {len(emails)} address(es): {valid_count} valid, {len(emails) - valid_count} invalid.")
 
 
 if __name__ == "__main__":

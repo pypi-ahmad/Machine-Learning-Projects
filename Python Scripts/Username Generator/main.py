@@ -5,7 +5,7 @@ or random combinations.  Supports multiple styles and availability
 filtering (length, allowed characters).
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import random
@@ -142,7 +142,6 @@ def filter_usernames(
         pattern_chars += r"\-"
     if not allow_numbers:
         pattern_chars = pattern_chars.replace("0-9", "")
-    pat = re.compile(f"^[{pattern_chars}]{{{{min_len},{max_len}}}}\$")
     pat = re.compile(f"^[{pattern_chars}]{{{min_len},{max_len}}}$")
     return [u for u in usernames if pat.match(u)]
 

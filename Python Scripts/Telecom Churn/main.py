@@ -1,10 +1,10 @@
-"""Telecom Churn Predictor — Streamlit ML demo.
+"""Telecom Churn — Streamlit ML demo using synthetic subscriber data.
 
-Predict whether a telecom customer will churn using
-logistic regression trained on synthetic subscriber data.
+Explore a logistic-regression classification workflow. It is not a customer
+assessment, retention system, or production decision-making tool.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 import math
@@ -14,7 +14,8 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Telecom Churn", layout="wide")
-st.title("📡 Telecom Customer Churn Predictor")
+st.title("📡 Telecom Churn Demo")
+st.caption("Synthetic data only. This educational example is not for real customer assessment or automated action.")
 
 
 # ── Logistic regression (pure Python) ────────────────────────────────────────
@@ -114,7 +115,7 @@ def make_data(n: int = 500, seed: int = 42) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-@st.cache_resource
+@st.cache_data
 def train():
     df   = make_data(600)
     feat = ["tenure", "monthly_fee", "plan_idx", "contract", "payment_idx",
@@ -136,7 +137,7 @@ acc, prec, rec, f1 = mets
 tab1, tab2, tab3 = st.tabs(["Predict Churn", "Churn Analysis", "Dataset"])
 
 with tab1:
-    st.subheader("Customer Profile")
+    st.subheader("Illustrative Subscriber Profile")
     c1, c2    = st.columns(2)
     tenure    = c1.slider("Tenure (months)", 0, 72, 12)
     monthly   = c2.slider("Monthly Fee ($)", 20, 120, 55)
@@ -164,21 +165,21 @@ with tab1:
     st.divider()
     risk = "HIGH" if prob >= 0.6 else "MEDIUM" if prob >= 0.35 else "LOW"
     c1, c2, c3 = st.columns(3)
-    c1.metric("Churn Probability",  f"{prob:.1%}")
-    c2.metric("Churn Risk",         risk)
-    c3.metric("Retention Score",    f"{(1 - prob) * 100:.0f}/100")
+    c1.metric("Illustrative probability", f"{prob:.1%}")
+    c2.metric("Illustrative band",        risk)
+    c3.metric("Illustrative complement",  f"{(1 - prob) * 100:.0f}/100")
     st.progress(prob)
 
     if risk == "HIGH":
-        st.error("High churn risk — proactive retention action recommended.")
+        st.warning("This synthetic example is above its illustrative threshold. It is not a customer-level recommendation.")
         if contract == "Month-to-Month":
-            st.info("Offering a discounted annual contract may reduce churn risk.")
+            st.info("The demo input uses a month-to-month contract.")
         if complaints > 2:
-            st.info("Multiple complaints — resolve issues quickly to restore satisfaction.")
+            st.info("The demo input includes more than two complaints.")
         if tenure < 6:
-            st.info("Early tenure — onboarding support reduces early churn significantly.")
+            st.info("The demo input has tenure below six months.")
     elif risk == "MEDIUM":
-        st.warning("Moderate churn risk — monitor and engage proactively.")
+        st.info("This synthetic example falls in the middle illustrative band.")
 
     st.subheader("Model Performance")
     m1, m2, m3, m4 = st.columns(4)
@@ -193,9 +194,9 @@ with tab2:
     st.bar_chart(cc)
 
     st.subheader("Churn by Tenure Bucket")
-    df_all["tenure_bucket"] = pd.cut(df_all["tenure"], bins=[0, 12, 24, 48, 72],
-                                      labels=["0–12m", "12–24m", "24–48m", "48–72m"])
-    tb = df_all.groupby("tenure_bucket", observed=True)["churn"].mean()
+    tenure_bucket = pd.cut(df_all["tenure"], bins=[0, 12, 24, 48, 72],
+                           labels=["0–12m", "12–24m", "24–48m", "48–72m"])
+    tb = df_all.groupby(tenure_bucket, observed=True)["churn"].mean()
     st.bar_chart(tb)
 
     total = len(df_all)
@@ -209,6 +210,6 @@ with tab3:
     st.dataframe(
         df_all[["tenure", "monthly_fee", "plan", "contract_type",
                 "num_services", "complaints", "churn"]].head(50),
-        use_container_width=True, hide_index=True,
+        hide_index=True,
     )
-    st.caption(f"Training set: {len(df_all)} customers")
+    st.caption(f"Synthetic training rows: {len(df_all)}")

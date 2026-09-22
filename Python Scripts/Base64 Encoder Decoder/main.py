@@ -10,7 +10,6 @@ Usage:
 
 import base64
 import re
-import sys
 from pathlib import Path
 
 
@@ -49,6 +48,10 @@ def encode_file(path: Path, variant: str = "standard") -> str:
     data = path.read_bytes()
     if variant == "urlsafe":
         return base64.urlsafe_b64encode(data).decode("ascii")
+    if variant == "base32":
+        return base64.b32encode(data).decode("ascii")
+    if variant == "base85":
+        return base64.b85encode(data).decode("ascii")
     return base64.b64encode(data).decode("ascii")
 
 
@@ -56,8 +59,12 @@ def decode_file(b64: str, out_path: Path, variant: str = "standard") -> int:
     b64_clean = b64.strip()
     if variant == "urlsafe":
         data = base64.urlsafe_b64decode(b64_clean + "==")
+    elif variant == "base32":
+        data = base64.b32decode(b64_clean.upper())
+    elif variant == "base85":
+        data = base64.b85decode(b64_clean)
     else:
-        data = base64.b64decode(b64_clean + "==")
+        data = base64.b64decode(b64_clean + "==", validate=True)
     out_path.write_bytes(data)
     return len(data)
 

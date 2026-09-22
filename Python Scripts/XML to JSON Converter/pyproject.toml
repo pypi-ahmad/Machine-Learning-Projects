@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
 
 [project]
 name = "convert-xml-to-json"
@@ -17,9 +17,6 @@ dependencies = [
 
 [project.scripts]
 xml2json = "convert_xml_to_json.cli:app"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/convert_xml_to_json"]
 
 # ---------- ruff -----------------------------------------------------------
 [tool.ruff]

@@ -4,9 +4,9 @@ Track the International Space Station's real-time position,
 astronauts aboard, and upcoming passes over a location.
 
 Usage:
-    python main.py
-    python main.py --location "New York"
-    python main.py --watch         # continuous tracking
+    uv run --no-config python main.py
+    uv run --no-config python main.py --location "New York"
+    uv run --no-config python main.py --watch         # continuous tracking
 """
 
 import argparse

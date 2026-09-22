@@ -9,15 +9,15 @@ Usage:
 
 import json
 import random
-from datetime import date
 from pathlib import Path
 
 import streamlit as st
 
 st.set_page_config(page_title="Flashcard App", layout="centered")
-st.title("📚 Flashcard App")
+st.title("Flashcard app")
+st.caption("Cards are stored locally in this project folder.")
 
-DATA_DIR = Path("flashcard_decks")
+DATA_DIR = Path(__file__).with_name("flashcard_decks")
 DATA_DIR.mkdir(exist_ok=True)
 
 SAMPLE_DECK = {
@@ -38,19 +38,28 @@ SAMPLE_DECK = {
 
 
 def list_decks() -> list[str]:
-    return [p.stem for p in DATA_DIR.glob("*.json")]
+    return sorted([path.stem for path in DATA_DIR.iterdir() if path.is_file() and path.suffix == ".json"])
+
+
+def deck_path(name: str) -> Path:
+    if not name or Path(name).name != name:
+        raise ValueError("Deck names cannot include a path.")
+    return DATA_DIR / f"{name}.json"
 
 
 def load_deck(name: str) -> dict:
-    p = DATA_DIR / f"{name}.json"
+    p = deck_path(name)
     if p.exists():
-        return json.loads(p.read_text())
+        deck = json.loads(p.read_text(encoding="utf-8"))
+        if not isinstance(deck, dict) or not isinstance(deck.get("cards"), list):
+            raise ValueError(f"Invalid deck file: {p.name}")
+        return deck
     return {"name": name, "cards": []}
 
 
 def save_deck(deck: dict) -> None:
-    p = DATA_DIR / f"{deck['name']}.json"
-    p.write_text(json.dumps(deck, indent=2))
+    p = deck_path(deck["name"])
+    p.write_text(json.dumps(deck, indent=2), encoding="utf-8")
 
 
 # Ensure sample deck exists
@@ -82,62 +91,61 @@ with tab1:
     cards = deck.get("cards", [])
     if not cards:
         st.info("This deck has no cards yet. Add some in the 'Add Cards' tab.")
-        st.stop()
-
-    # Session state for study
-    if "study_idx" not in st.session_state or st.session_state.get("study_deck") != selected_deck:
-        order = list(range(len(cards)))
-        random.shuffle(order)
-        st.session_state.study_order = order
-        st.session_state.study_pos   = 0
-        st.session_state.study_deck  = selected_deck
-        st.session_state.show_back   = False
-        st.session_state.correct     = 0
-        st.session_state.total       = 0
-
-    pos   = st.session_state.study_pos
-    order = st.session_state.study_order
-
-    if pos >= len(order):
-        st.balloons()
-        st.success(f"🎉 Deck complete!  Score: {st.session_state.correct}/{st.session_state.total}")
-        if st.button("🔄 Restart"):
-            st.session_state.study_pos  = 0
-            st.session_state.show_back  = False
-            st.session_state.correct    = 0
-            st.session_state.total      = 0
-            random.shuffle(st.session_state.study_order)
-            st.rerun()
     else:
-        card = cards[order[pos]]
-        st.write(f"Card **{pos + 1}** of {len(order)}")
-        st.progress(pos / len(order))
+        # Session state for study
+        if "study_order" not in st.session_state or st.session_state.get("study_deck") != selected_deck:
+            order = list(range(len(cards)))
+            random.shuffle(order)
+            st.session_state.study_order = order
+            st.session_state.study_pos = 0
+            st.session_state.study_deck = selected_deck
+            st.session_state.show_back = False
+            st.session_state.correct = 0
+            st.session_state.total = 0
 
-        with st.container(border=True):
-            st.subheader(card["front"])
-            if st.session_state.show_back:
-                st.divider()
-                st.write(card["back"])
+        pos = st.session_state.study_pos
+        order = st.session_state.study_order
 
-        if not st.session_state.show_back:
-            if st.button("Show Answer"):
-                st.session_state.show_back = True
+        if pos >= len(order):
+            st.balloons()
+            st.success(f"Deck complete! Score: {st.session_state.correct}/{st.session_state.total}")
+            if st.button("Restart", icon=":material/restart_alt:"):
+                st.session_state.study_pos = 0
+                st.session_state.show_back = False
+                st.session_state.correct = 0
+                st.session_state.total = 0
+                random.shuffle(st.session_state.study_order)
                 st.rerun()
         else:
-            col1, col2 = st.columns(2)
-            if col1.button("✅ Got it"):
-                st.session_state.correct   += 1
-                st.session_state.total     += 1
-                st.session_state.study_pos += 1
-                st.session_state.show_back  = False
-                st.rerun()
-            if col2.button("❌ Review again"):
-                st.session_state.total     += 1
-                # Move card to end of queue
-                st.session_state.study_order.append(st.session_state.study_order[pos])
-                st.session_state.study_pos += 1
-                st.session_state.show_back  = False
-                st.rerun()
+            card = cards[order[pos]]
+            st.write(f"Card **{pos + 1}** of {len(order)}")
+            st.progress(pos / len(order))
+
+            with st.container(border=True):
+                st.subheader(card["front"])
+                if st.session_state.show_back:
+                    st.divider()
+                    st.write(card["back"])
+
+            if not st.session_state.show_back:
+                if st.button("Show answer"):
+                    st.session_state.show_back = True
+                    st.rerun()
+            else:
+                col1, col2 = st.columns(2)
+                if col1.button("Got it", icon=":material/check:"):
+                    st.session_state.correct += 1
+                    st.session_state.total += 1
+                    st.session_state.study_pos += 1
+                    st.session_state.show_back = False
+                    st.rerun()
+                if col2.button("Review again", icon=":material/replay:"):
+                    st.session_state.total += 1
+                    # Move card to end of queue
+                    st.session_state.study_order.append(st.session_state.study_order[pos])
+                    st.session_state.study_pos += 1
+                    st.session_state.show_back = False
+                    st.rerun()
 
 with tab2:
     st.subheader("Add a New Card")

@@ -1,56 +1,52 @@
-import pdf2image
-import os, sys
-try:
-    from PIL import Image
-except ImportError:
-    import Image
+"""OCR one selected PDF into a local UTF-8 text file."""
+
+import argparse
+import io
+from pathlib import Path
+
+import pymupdf
 import pytesseract
+from PIL import Image
 
-PATH = 'Enter your path'
 
-#initialize the counter that you will use later in your pdf extraction function
-i = 1
+def ocr_page(page: pymupdf.Page, dpi: int) -> str:
+    """Render one PDF page locally and extract text with Tesseract."""
+    pixels = page.get_pixmap(dpi=dpi)
+    with Image.open(io.BytesIO(pixels.tobytes("png"))) as image:
+        return pytesseract.image_to_string(image)
 
-def delete_ppms():
-  for file in os.listdir(PATH):
-    if '.ppm' in file or '.DS_Store' in file:
-      try:
-          os.remove(PATH + file)
-      except FileNotFoundError:
-          pass
 
-pdf_files = []
-docx_files = []
+def extract_pdf(path: Path, dpi: int) -> str:
+    """OCR every page in a PDF without creating intermediate image files."""
+    with pymupdf.open(path) as document:
+        return "\n".join(map(lambda page: ocr_page(page, dpi), document)).strip()
 
-# append document names into the lists by their extension type
-for f in os.listdir(PATH):
-  full_name = os.path.join(PATH, f) 
-  if os.path.isfile(full_name):
-    name = os.path.basename(f)
-    filename, ext = os.path.splitext(name)
-    if ext == '.pdf':
-      pdf_files.append(name)
-    elif ext == ('.docx'):
-      docx_files.append(name)
 
-def pdf_extract(file, i):
-  print("extracting from file:", file)
-  delete_ppms()
-  images = pdf2image.convert_from_path(PATH + file, output_folder=PATH)
-  j = 0
-  for file in sorted (os.listdir(PATH)):
-      if '.ppm' in file and 'image' not in file:
-        os.rename(PATH + file, PATH + 'image' + str(i) + '-' + str(j) + '.ppm')
-        j += 1
-  j = 0
-  f = open(PATH +'result{}.txt'.format(i), 'w')
-  files = [f for f in os.listdir(PATH) if '.ppm' in f]
+def main() -> None:
+    parser = argparse.ArgumentParser(description="OCR a PDF with local Tesseract.")
+    parser.add_argument("input", type=Path, help="PDF file to OCR")
+    parser.add_argument("--output", type=Path, help="Destination text file")
+    parser.add_argument("--dpi", type=int, default=300, help="Render resolution (default: 300)")
+    args = parser.parse_args()
 
-  for file in sorted(files, key=lambda x: int(x[x.index('-') + 1: x.index('.')])):
-      temp = pytesseract.image_to_string(Image.open(PATH + file))
-      f.write(temp)
-  f.close()
+    if not args.input.is_file() or args.input.suffix.lower() != ".pdf":
+        parser.error("input must be an existing PDF file")
+    if args.dpi < 72:
+        parser.error("--dpi must be at least 72")
 
-for i in range(len(pdf_files)):
-  pdf_file = pdf_files[i]
-  pdf_extract(pdf_file, i)
+    try:
+        text = extract_pdf(args.input, args.dpi)
+    except pytesseract.TesseractNotFoundError:
+        parser.exit(1, "Tesseract was not found. Install it and add it to PATH.\n")
+    except pymupdf.FileDataError as error:
+        parser.exit(1, f"Unable to read PDF: {error}\n")
+
+    if not text:
+        parser.exit(1, "No text was extracted from the PDF.\n")
+    output = args.output or args.input.with_suffix(".txt")
+    output.write_text(text, encoding="utf-8")
+    print(f"Extracted text from {args.input} to {output}")
+
+
+if __name__ == "__main__":
+    main()

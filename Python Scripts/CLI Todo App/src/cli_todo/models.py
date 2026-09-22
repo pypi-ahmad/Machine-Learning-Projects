@@ -21,8 +21,15 @@ class Task:
     @classmethod
     def from_dict(cls, data: dict[str, object]) -> Task:
         """Deserialize from a JSON-friendly dict."""
+        raw_id = data.get("id")
+        if isinstance(raw_id, bool) or not isinstance(raw_id, (int, str)):
+            raise ValueError("Task ID must be an integer.")
+        raw_text = data.get("text")
+        if not isinstance(raw_text, str):
+            raise ValueError("Task text must be a string.")
+        raw_created_at = data.get("created_at", "")
         return cls(
-            id=int(data["id"]),  # type: ignore[arg-type]
-            text=str(data["text"]),
-            created_at=str(data.get("created_at", "")),
+            id=int(raw_id),
+            text=raw_text,
+            created_at=raw_created_at if isinstance(raw_created_at, str) else "",
         )

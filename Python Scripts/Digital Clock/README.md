@@ -1,72 +1,41 @@
 # Digital Clock
 
-## Overview
+A small Tkinter desktop clock that shows the local system time in 12-hour format and lets you switch between light and dark themes.
 
-A GUI-based digital clock application built with Python's Tkinter library. Displays the current system time in 12-hour format (`HH:MM:SS AM/PM`) with a selectable Light or Dark theme via a menu bar.
+## Requirements
 
-**Type:** GUI Application
+- Python 3.13+ with Tkinter available
+- [uv](https://docs.astral.sh/uv/)
 
-## Features
+## Run
 
-- Real-time clock display in 12-hour format with AM/PM indicator
-- **Theme switching** via a menu bar:
-  - **Dark theme:** Blue background (`#22478a`) with black text (default)
-  - **Light theme:** White background with black text
-- Large Calibri 40 bold font for readability
-- Canvas-based layout with 400×140 pixel window
-- Refreshes every 1000 milliseconds (1 second)
+From this directory:
 
-## Dependencies
-
-- `tkinter` (Python standard library)
-- `time` (Python standard library — `strftime`)
-
-No external packages required.
-
-## How It Works
-
-1. Creates a Tkinter window titled "Digital-Clock" with a 400×140 canvas.
-2. A frame is placed at relative position (0.1, 0.1) filling 80% of width and height.
-3. A label within the frame displays the current time using `strftime('%I:%M:%S %p')`.
-4. The `time()` function updates the label text and reschedules itself via `lbl.after(1000, time)`.
-5. A menu bar with a "Theme" menu allows switching between Light and Dark themes.
-6. Each theme function creates a new frame with the appropriate background color and starts its own update loop.
-
-## Project Structure
-
-```
-Digital_clock/
-├── digital_clock.py   # Main application script
-├── Digital Clock.PNG   # Screenshot of the application
-└── README.md
+```powershell
+uv sync
+uv run python digital_clock.py
 ```
 
-## Setup & Installation
+Use the **Theme** menu to switch between light and dark modes. Close the window normally to stop the clock.
 
-1. Ensure Python 3.x is installed on your system.
-2. No additional packages need to be installed.
+## Behavior
 
-## How to Run
+- Updates the display every second using the local system time.
+- Uses a single frame, label, and scheduled callback for both themes.
+- Does not collect, save, or send data.
 
-```bash
-python digital_clock.py
+## Project files
+
+```text
+digital_clock.py   # Tkinter application
+Digital Clock.PNG  # Existing project screenshot
+pyproject.toml     # uv project definition
+uv.lock            # Resolved Python environment
 ```
 
-## Configuration
+## Verification
 
-No external configuration. Theme can be changed at runtime via the Theme menu in the application.
-
-## Testing
-
-No formal test suite present.
-
-## Limitations
-
-- Each theme switch creates a new frame and label on top of the old one without destroying the previous widgets, which could accumulate widgets over many switches.
-- The function name `time` shadows the `time` module import (though `strftime` is imported directly, so this works but is confusing).
-- No date display, only time.
-- Window size is fixed at 400×140 via the canvas; resizing the window does not scale the clock.
-- No alarm, timer, or stopwatch functionality.
-
-
-
+```powershell
+uv run python -m py_compile digital_clock.py
+uv lock --check
+```

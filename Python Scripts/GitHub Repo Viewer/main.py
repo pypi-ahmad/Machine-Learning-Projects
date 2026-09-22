@@ -1,4 +1,4 @@
-"""GitHub Repo Viewer — CLI tool.
+"""GitHub Repo Viewer CLI tool.
 
 View details about a GitHub repository: stats, recent commits,
 open issues, contributors, and language breakdown.
@@ -12,28 +12,24 @@ Usage:
 import argparse
 import json
 import sys
-import urllib.request
-import urllib.error
+import subprocess
 from datetime import datetime
 
 
-API     = "https://api.github.com"
-HEADERS = {"Accept": "application/vnd.github.v3+json",
-           "User-Agent": "github-repo-viewer-cli"}
-
-
 def gh_get(path: str) -> dict | list:
-    url = f"{API}{path}"
-    req = urllib.request.Request(url, headers=HEADERS)
+    """Fetch GitHub API JSON through authenticated gh CLI."""
     try:
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as e:
-        if e.code == 404: raise ValueError(f"Not found: {path}")
-        if e.code == 403: raise ValueError("Rate limit exceeded.")
-        raise ValueError(f"HTTP {e.code}")
-    except Exception as e:
-        raise ValueError(f"Network error: {e}")
+        result = subprocess.run(["gh", "api", path], capture_output=True, text=True, timeout=15)
+    except FileNotFoundError as error:
+        raise ValueError("GitHub CLI (gh) is not installed or on PATH.") from error
+    except subprocess.TimeoutExpired as error:
+        raise ValueError("GitHub request timed out.") from error
+    if result.returncode != 0:
+        raise ValueError(result.stderr.strip() or "GitHub request failed.")
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise ValueError("GitHub CLI returned invalid JSON.") from error
 
 
 def fmt_date(s: str) -> str:
@@ -144,7 +140,7 @@ def interactive() -> None:
         print()
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="GitHub Repo Viewer")
     parser.add_argument("--repo",         metavar="OWNER/REPO")
     parser.add_argument("--commits",      action="store_true")
@@ -152,6 +148,9 @@ def main():
     parser.add_argument("--contributors", action="store_true")
     parser.add_argument("--n",            type=int, default=10)
     args = parser.parse_args()
+
+    if args.n < 1:
+        parser.error("--n must be at least 1")
 
     if args.repo:
         parts = args.repo.split("/")

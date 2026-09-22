@@ -1,0 +1,15 @@
+[project]
+name = "data-statistics-dashboard"
+version = "0.1.0"
+description = "Local Streamlit dashboard for exploratory CSV and Excel statistics"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.3",
+    "streamlit>=1.57.0",
+    "xlrd>=2.0.2",
+]
+
+[tool.uv]
+package = false

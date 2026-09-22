@@ -1,193 +1,167 @@
+"""Run a local two-player spaceship battle game."""
+
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
 import pygame
-import utility as util
-
-# for displaying health we need text
-pygame.font.init()
-
-# width, height = 900, 500
-WINDOW = pygame.display.set_mode((util.width, util.height))
-pygame.display.set_caption("Spaceship War Game")
-
-# Creating user event so that we can came to know if the bullet collides, diff number indicates diff events
-YELLOW_HIT = pygame.USEREVENT + 1
-RED_HIT = pygame.USEREVENT + 2
 
 
-def drawWindow(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health,
-               YELLOW_SPACESHIP, RED_SPACESHIP, SPACE, BORDER):
-    """
-    This functions gives displays the graphics of the Game which includes
-    both the spaceship, background space image, bullets, and health of players
-    with 60 Frames per second.
-    :param red: Bounding rectangle of Red Spaceship
-    :param yellow: Bounding rectangle of Yellow Spaceship
-    :param red_bullets: Bullets fired by red spaceship
-    :param yellow_bullets: Bullets fired by Yellow spaceship
-    :param red_health: Health of Red Player
-    :param yellow_health: Health of Yellow Player
-    :param YELLOW_SPACESHIP: Red Spaceship Image
-    :param RED_SPACESHIP: Yellow Spaceship Image
-    :param SPACE: Space Background Image
-    :param BORDER: Center border
-    """
-    # ORDER IN WHICH DRAW THINGS MATTER REMEMBER
-    WINDOW.blit(SPACE, (0, 0))
-
-    # Adding border created above
-    pygame.draw.rect(WINDOW, (255, 255, 255), BORDER)
-
-    # to indicate health
-    HEALTH_FONT = pygame.font.SysFont('comicsans', 40)
-
-    # Displaying Health by font
-    red_health_text = HEALTH_FONT.render("Health: " + str(red_health), True, (255, 255, 255))
-    yellow_health_text = HEALTH_FONT.render("Health: " + str(yellow_health), True, (255, 255, 255))
-    WINDOW.blit(red_health_text, (util.width - red_health_text.get_width() - 10, 10))
-    WINDOW.blit(yellow_health_text, (10, 10))
-
-    # to load surfaces we use blit
-    WINDOW.blit(YELLOW_SPACESHIP, (yellow.x, yellow.y))
-
-    WINDOW.blit(RED_SPACESHIP, (red.x, red.y))
-
-    # Drawing bullets
-    for bullet in red_bullets:
-        pygame.draw.rect(WINDOW, (255, 0, 0), bullet)
-
-    for bullet in yellow_bullets:
-        pygame.draw.rect(WINDOW, (255, 255, 0), bullet)
-
-    pygame.display.update()
+WIDTH, HEIGHT = 900, 500
+SPACESHIP_SIZE = (50, 40)
+FPS = 60
+VELOCITY = 5
+BULLET_VELOCITY = 7
+MAX_BULLETS = 3
+STARTING_HEALTH = 10
+ASSETS = Path(__file__).with_name("Assets")
 
 
-def handle_bullets(yellow_bullets, red_bullets, yellow, red):
-    """
-    This function moves the bullet forward with a specific Bullet velocity
-    and at a time only 3 bullets can be fired by the user.
-    It also checks weather the bullet has hit the spaceship by using collidirect
-    function, so that we can decrease the health of that player.
-    :param yellow_bullets: Bullets fired by red spaceship
-    :param red_bullets: Bullets fired by red spaceship
-    :param yellow: Bounding rectangle of Yellow Spaceship
-    :param red: Bounding rectangle of Red Spaceship
-    """
-    # Bullet velocity
-    BULLET_VEL = 7
+def load_assets() -> tuple[pygame.Surface, pygame.Surface, pygame.Surface, pygame.Rect]:
+    """Load and orient game sprites using paths relative to this file."""
+    yellow = pygame.image.load(ASSETS / "Yellow_Spaceship.png")
+    red = pygame.image.load(ASSETS / "Red_Spaceship.png")
+    space = pygame.image.load(ASSETS / "space.jpg")
+    yellow = pygame.transform.rotate(pygame.transform.scale(yellow, SPACESHIP_SIZE), 90)
+    red = pygame.transform.rotate(pygame.transform.scale(red, SPACESHIP_SIZE), -90)
+    space = pygame.transform.scale(space, (WIDTH, HEIGHT))
+    return yellow, red, space, pygame.Rect(WIDTH // 2 - 5, 0, 10, HEIGHT)
 
-    # To check weather the bullet hit red or yellow spaceship or they fly through the skin
-    for bullet in yellow_bullets:
-        bullet.x += BULLET_VEL
 
-        # colliddirect only works if both are rectangle
+def move_yellow(keys: pygame.key.ScancodeWrapper, ship: pygame.Rect, border: pygame.Rect) -> None:
+    """Move yellow ship while keeping it on the left side of the border."""
+    if keys[pygame.K_a] and ship.left - VELOCITY > 0:
+        ship.x -= VELOCITY
+    if keys[pygame.K_d] and ship.right + VELOCITY < border.left:
+        ship.x += VELOCITY
+    if keys[pygame.K_w] and ship.top - VELOCITY > 0:
+        ship.y -= VELOCITY
+    if keys[pygame.K_s] and ship.bottom + VELOCITY < HEIGHT:
+        ship.y += VELOCITY
+
+
+def move_red(keys: pygame.key.ScancodeWrapper, ship: pygame.Rect, border: pygame.Rect) -> None:
+    """Move red ship while keeping it on the right side of the border."""
+    if keys[pygame.K_LEFT] and ship.left - VELOCITY > border.right:
+        ship.x -= VELOCITY
+    if keys[pygame.K_RIGHT] and ship.right + VELOCITY < WIDTH:
+        ship.x += VELOCITY
+    if keys[pygame.K_UP] and ship.top - VELOCITY > 0:
+        ship.y -= VELOCITY
+    if keys[pygame.K_DOWN] and ship.bottom + VELOCITY < HEIGHT:
+        ship.y += VELOCITY
+
+
+def move_bullets(
+    yellow_bullets: list[pygame.Rect], red_bullets: list[pygame.Rect], yellow: pygame.Rect, red: pygame.Rect
+) -> tuple[int, int]:
+    """Advance bullets and return hits against red and yellow ships."""
+    red_hits = 0
+    yellow_hits = 0
+    for bullet in yellow_bullets[:]:
+        bullet.x += BULLET_VELOCITY
         if red.colliderect(bullet):
-            # Now we are going to post a event then check in the main function for the event
-            # it will indicate us that the bullet hit the spaceship
-            pygame.event.post(pygame.event.Event(RED_HIT))
             yellow_bullets.remove(bullet)
-        elif bullet.x > util.width:
+            red_hits += 1
+        elif bullet.left > WIDTH:
             yellow_bullets.remove(bullet)
-
-    for bullet in red_bullets:
-        bullet.x -= BULLET_VEL
-
-        # colliddirect only works if both are rectangle
+    for bullet in red_bullets[:]:
+        bullet.x -= BULLET_VELOCITY
         if yellow.colliderect(bullet):
-            # Now we are going to post a event then check in the main function for the event
-            # it will indicate us that the bullet hit the spaceship
-            pygame.event.post(pygame.event.Event(YELLOW_HIT))
             red_bullets.remove(bullet)
-        elif bullet.x < 0:
+            yellow_hits += 1
+        elif bullet.right < 0:
             red_bullets.remove(bullet)
+    return red_hits, yellow_hits
 
 
-def main():
-    """
-    Main logic of the game, This function makes everything work together.
-    1. Load the assets
-    2. Reads input from the keyboard
-    3. Making bullets fire
-    4. Handling bullet movements
-    5. Displaying everything together on the screen.
-    6. Showing the winner
-    7. Again restarting the game after 5 sec.
-    """
-    # Loading Assets
-    YELLOW_SPACESHIP, RED_SPACESHIP, SPACE, BORDER = util.load_assests()
+def draw_game(
+    window: pygame.Surface,
+    assets: tuple[pygame.Surface, pygame.Surface, pygame.Surface, pygame.Rect],
+    yellow: pygame.Rect,
+    red: pygame.Rect,
+    yellow_bullets: list[pygame.Rect],
+    red_bullets: list[pygame.Rect],
+    yellow_health: int,
+    red_health: int,
+    health_font: pygame.font.Font,
+) -> None:
+    """Render one game frame."""
+    yellow_sprite, red_sprite, space, border = assets
+    window.blit(space, (0, 0))
+    pygame.draw.rect(window, "white", border)
+    window.blit(yellow_sprite, yellow.topleft)
+    window.blit(red_sprite, red.topleft)
+    for bullet in yellow_bullets:
+        pygame.draw.rect(window, "yellow", bullet)
+    for bullet in red_bullets:
+        pygame.draw.rect(window, "red", bullet)
+    window.blit(health_font.render(f"Health: {yellow_health}", True, "white"), (10, 10))
+    red_label = health_font.render(f"Health: {red_health}", True, "white")
+    window.blit(red_label, (WIDTH - red_label.get_width() - 10, 10))
+    pygame.display.flip()
 
-    # Making two rectangles so that we can control where our spaceship are moving
-    SPACESHIP_WIDTH, SPACESHIP_HEIGHT = (50, 40)
-    red = pygame.Rect(700, 250, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
-    yellow = pygame.Rect(100, 250, SPACESHIP_WIDTH, SPACESHIP_HEIGHT)
 
-    # To making our game refresh at a constant interval
-    clock = pygame.time.Clock()
+def show_winner(window: pygame.Surface, text: str) -> None:
+    """Display a winner for five seconds before the next round."""
+    font = pygame.font.SysFont("comicsans", 80)
+    label = font.render(text, True, "white")
+    window.blit(label, (WIDTH // 2 - label.get_width() // 2, HEIGHT // 2 - label.get_height() // 2))
+    pygame.display.flip()
+    pygame.time.delay(5000)
 
-    # To storing our bullet location in pixels so that we can move it
-    yellow_bullets = []
-    red_bullets = []
 
-    # Healths of our spaceships
-    red_health = 10
-    yellow_health = 10
-
-    run = True
-
-    while run:
-        # Capped frame rate so it remains consistent on diff computers
-        clock.tick(60)
-
+def play_round(window: pygame.Surface, clock: pygame.time.Clock, assets: tuple[pygame.Surface, pygame.Surface, pygame.Surface, pygame.Rect]) -> bool:
+    """Play one round and return whether another round should start."""
+    border = assets[3]
+    yellow = pygame.Rect(100, HEIGHT // 2, *SPACESHIP_SIZE)
+    red = pygame.Rect(700, HEIGHT // 2, *SPACESHIP_SIZE)
+    yellow_bullets: list[pygame.Rect] = []
+    red_bullets: list[pygame.Rect] = []
+    yellow_health = STARTING_HEALTH
+    red_health = STARTING_HEALTH
+    health_font = pygame.font.SysFont("comicsans", 40)
+    running = True
+    while running:
+        clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-                pygame.quit()
+                return False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
+                yellow_bullets.append(pygame.Rect(yellow.right, yellow.centery - 2, 10, 5))
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RCTRL and len(red_bullets) < MAX_BULLETS:
+                red_bullets.append(pygame.Rect(red.left - 10, red.centery - 2, 10, 5))
+        move_yellow(pygame.key.get_pressed(), yellow, border)
+        move_red(pygame.key.get_pressed(), red, border)
+        red_hits, yellow_hits = move_bullets(yellow_bullets, red_bullets, yellow, red)
+        red_health -= red_hits
+        yellow_health -= yellow_hits
+        draw_game(window, assets, yellow, red, yellow_bullets, red_bullets, yellow_health, red_health, health_font)
+        if red_health <= 0 or yellow_health <= 0:
+            show_winner(window, "Yellow wins!" if red_health <= 0 else "Red wins!")
+            running = False
+    return True
 
-            # checking if key pressed for firing bullet
-            if event.type == pygame.KEYDOWN:
 
-                # maximum amount of bullets a spaceship can shoot at a time
-                MAX_BULLETS = 3
-                # CHECKING if we press LCTRL and we have 3 bullets at a time on a screen
-                if event.key == pygame.K_LCTRL and len(yellow_bullets) < MAX_BULLETS:
-                    # 10, 5 width, height of bullet and others are location
-                    bullet = pygame.Rect(yellow.x + yellow.width, yellow.y + yellow.height // 2 - 2, 10, 5)
-                    yellow_bullets.append(bullet)
-
-                if event.key == pygame.K_RCTRL and len(red_bullets) < MAX_BULLETS:
-                    bullet = pygame.Rect(red.x, red.y + red.height // 2 - 2, 10, 5)
-                    red_bullets.append(bullet)
-
-            # If bullets hit red spaceship then decrease health
-            if event.type == RED_HIT:
-                red_health -= 1
-            # If bullets hit yellow spaceship then decrease health
-            if event.type == YELLOW_HIT:
-                yellow_health -= 1
-
-        winner_text = ""
-        if red_health <= 0:
-            winner_text = "Yellow Wins!!"
-        if yellow_health <= 0:
-            winner_text = "Red Wins!!"
-        if winner_text != "":
-            util.winner(winner_text, WINDOW)
-            break
-
-        # Checking which keys are pressed while the game is running it also checks if the
-        # keys are pressed and remain down
-        keys_pressed = pygame.key.get_pressed()
-        # Spaceship velocity
-        VELOCITY = 5
-        # Function that handle key movements of yellow and red spaceship and bullets
-        util.yellow_handle_movement(keys_pressed, yellow, VELOCITY, BORDER)
-        util.red_handle_movement(keys_pressed, red, VELOCITY, BORDER)
-
-        handle_bullets(yellow_bullets, red_bullets, yellow, red)
-
-        # Displaying everything on the screen.
-        drawWindow(red, yellow, red_bullets, yellow_bullets, red_health, yellow_health,
-                   YELLOW_SPACESHIP, RED_SPACESHIP, SPACE, BORDER)
-
-    main()
+def main() -> None:
+    """Initialize Pygame and run rounds until the window is closed."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--smoke", action="store_true", help="load assets, then exit")
+    args = parser.parse_args()
+    pygame.init()
+    try:
+        window = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Spaceship War Game")
+        assets = load_assets()
+        if args.smoke:
+            print("Assets loaded successfully.")
+            return
+        clock = pygame.time.Clock()
+        while play_round(window, clock, assets):
+            pass
+    finally:
+        pygame.quit()
 
 
 if __name__ == "__main__":

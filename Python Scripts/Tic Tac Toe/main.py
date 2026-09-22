@@ -4,9 +4,9 @@ Play against another human or an unbeatable AI (minimax).
 Supports 3×3 classic board.
 
 Usage:
-    python main.py
-    python main.py --ai       # play vs AI
-    python main.py --ai --first cpu
+    uv run python main.py
+    uv run python main.py --ai       # play vs AI
+    uv run python main.py --ai --first cpu
 """
 
 import argparse
@@ -36,9 +36,9 @@ def print_board(board):
             i = row * 3 + col
             c = board[i]
             cells.append(c if c != EMPTY else labels[i])
-        print("  " + " │ ".join(cells))
+        print("  " + " | ".join(cells))
         if row < 2:
-            print("  ──┼───┼──")
+            print("  ---+---+---")
     print()
 
 
@@ -120,14 +120,14 @@ def play_game(vs_ai: bool, human_first: bool) -> None:
         print_board(board)
         w = check_winner(board)
         if w:
-            print(f"  {'You win! 🎉' if vs_ai and w == human else ('AI wins! 🤖' if vs_ai else f'Player {w} wins!')}")
+            print(f"  {'You win!' if vs_ai and w == human else ('AI wins!' if vs_ai else f'Player {w} wins!')}")
             break
         if is_full(board):
-            print("  It's a draw! 🤝")
+            print("  It's a draw!")
             break
 
         if vs_ai and current == ai_sym:
-            print("  AI is thinking…")
+            print("  AI is thinking...")
             idx = ai_move(board)
             board[idx] = current
         else:

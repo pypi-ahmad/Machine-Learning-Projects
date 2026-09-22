@@ -4,12 +4,11 @@ Interactive SQL query editor with an in-memory SQLite database,
 schema explorer, query history, and natural-language-to-SQL hints.
 
 Usage:
-    streamlit run main.py
+    uv run streamlit run main.py
 """
 
 import re
 import sqlite3
-import io
 
 import pandas as pd
 import streamlit as st
@@ -209,7 +208,7 @@ with tab1:
             try:
                 df = pd.read_sql_query(sql_clean, conn)
                 st.success(f"Returned {len(df)} rows.")
-                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.dataframe(df, hide_index=True)
                 st.session_state.history.append(sql_clean)
 
                 if export:
@@ -229,7 +228,7 @@ with tab2:
         with st.expander(f"📋 {table}"):
             info = pd.read_sql_query(f"PRAGMA table_info({table});", conn)
             st.dataframe(info[["name", "type", "notnull", "pk"]],
-                         use_container_width=True, hide_index=True)
+                         hide_index=True)
             count = pd.read_sql_query(f"SELECT COUNT(*) AS rows FROM {table};", conn)
             st.caption(f"Rows: {count.iloc[0, 0]}")
 

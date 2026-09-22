@@ -1,4 +1,4 @@
-"""Color Guessing Game — CLI game.
+"""Color Guessing Game CLI game.
 
 Guess the CSS hex color from RGB values or name clues.
 Multiple game modes: hex-to-name, RGB-to-hex, color mixing.
@@ -50,7 +50,7 @@ COLORS = [
 
 def color_bar(r: int, g: int, b: int, width: int = 20) -> str:
     """ANSI colored bar if terminal supports it."""
-    block = "█" * width
+    block = "#" * width
     return f"\033[38;2;{r};{g};{b}m{block}\033[0m"
 
 
@@ -58,12 +58,20 @@ def hex_distance(c1, c2) -> float:
     return ((c1[2]-c2[2])**2 + (c1[3]-c2[3])**2 + (c1[4]-c2[4])**2) ** 0.5
 
 
+def positive_rounds(value: str) -> int:
+    """Parse a strictly positive round count for argparse."""
+    rounds = int(value)
+    if rounds < 1:
+        raise argparse.ArgumentTypeError("rounds must be at least 1")
+    return rounds
+
+
 # ── Game modes ────────────────────────────────────────────────────────────────
 
 def mode_name_to_hex(n_rounds: int) -> None:
     """Show color name → guess the hex code."""
     score = 0
-    print("\n  Mode: Name → Hex Code\n")
+    print("\n  Mode: Name -> Hex Code\n")
     pool = random.sample(COLORS, min(n_rounds, len(COLORS)))
 
     for i, color in enumerate(pool, 1):
@@ -75,10 +83,10 @@ def mode_name_to_hex(n_rounds: int) -> None:
         except (EOFError, KeyboardInterrupt):
             break
         if ans == correct_hex.lstrip("#").upper():
-            print(f"  ✅ Correct! #{ans}")
+            print(f"  Correct! #{ans}")
             score += 10
         else:
-            print(f"  ❌ Wrong. Correct: {correct_hex}  (RGB: {r},{g},{b})")
+            print(f"  Wrong. Correct: {correct_hex}  (RGB: {r},{g},{b})")
         print()
 
     print(f"  Score: {score}/{len(pool)*10}")
@@ -87,7 +95,7 @@ def mode_name_to_hex(n_rounds: int) -> None:
 def mode_rgb_to_name(n_rounds: int) -> None:
     """Show RGB values → guess the color name from 4 options."""
     score = 0
-    print("\n  Mode: RGB Values → Color Name\n")
+    print("\n  Mode: RGB Values -> Color Name\n")
     pool  = random.sample(COLORS, min(n_rounds, len(COLORS)))
 
     for i, color in enumerate(pool, 1):
@@ -110,10 +118,10 @@ def mode_rgb_to_name(n_rounds: int) -> None:
         except (EOFError, KeyboardInterrupt):
             break
         if ans.isdigit() and int(ans) == correct_idx:
-            print(f"  ✅ Correct! It's {name}")
+            print(f"  Correct! It's {name}")
             score += 10
         else:
-            print(f"  ❌ Wrong. The color was: {name}")
+            print(f"  Wrong. The color was: {name}")
         print()
 
     print(f"  Score: {score}/{len(pool)*10}")
@@ -122,7 +130,7 @@ def mode_rgb_to_name(n_rounds: int) -> None:
 def mode_hex_to_name(n_rounds: int) -> None:
     """Show hex code → guess the color name from 4 options."""
     score = 0
-    print("\n  Mode: Hex Code → Color Name\n")
+    print("\n  Mode: Hex Code -> Color Name\n")
     pool  = random.sample(COLORS, min(n_rounds, len(COLORS)))
 
     for i, color in enumerate(pool, 1):
@@ -144,10 +152,10 @@ def mode_hex_to_name(n_rounds: int) -> None:
         except (EOFError, KeyboardInterrupt):
             break
         if ans.isdigit() and int(ans) == correct_idx:
-            print(f"  ✅ Correct!")
+            print("  Correct!")
             score += 10
         else:
-            print(f"  ❌ Wrong. The color was: {name}")
+            print(f"  Wrong. The color was: {name}")
         print()
 
     print(f"  Score: {score}/{len(pool)*10}")
@@ -156,9 +164,9 @@ def mode_hex_to_name(n_rounds: int) -> None:
 def interactive(n_rounds: int) -> None:
     print("=== Color Guessing Game ===")
     print("Modes:")
-    print("  1. RGB → Name  (see RGB values, pick the name)")
-    print("  2. Hex → Name  (see hex code, pick the name)")
-    print("  3. Name → Hex  (see name, type the hex code)\n")
+    print("  1. RGB -> Name  (see RGB values, pick the name)")
+    print("  2. Hex -> Name  (see hex code, pick the name)")
+    print("  3. Name -> Hex  (see name, type the hex code)\n")
     choice = input("Choose mode (1/2/3): ").strip()
     if   choice == "1": mode_rgb_to_name(n_rounds)
     elif choice == "2": mode_hex_to_name(n_rounds)
@@ -170,8 +178,12 @@ def main():
     modes = {"rgb": mode_rgb_to_name, "hex": mode_hex_to_name, "name": mode_name_to_hex}
     parser = argparse.ArgumentParser(description="Color Guessing Game")
     parser.add_argument("--mode",   choices=list(modes.keys()), default=None)
-    parser.add_argument("--rounds", type=int, default=5)
+    parser.add_argument("--rounds", type=positive_rounds, default=5)
+    parser.add_argument("--seed", type=int, help="Seed for reproducible question order")
     args = parser.parse_args()
+
+    if args.seed is not None:
+        random.seed(args.seed)
 
     if args.mode:
         modes[args.mode](args.rounds)

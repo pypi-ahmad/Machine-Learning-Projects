@@ -1,53 +1,104 @@
-from selenium import webdriver
-import time
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from openpyxl import load_workbook
-from selenium.webdriver.common.action_chains import ActionChains
+"""Preview or explicitly apply Instagram follow and direct-message actions."""
 
-browser = webdriver.Chrome(ChromeDriverManager().install())
-time.sleep(10)
-users = list(map(str, input(
-    "Enter Users Username Comma-Separated Whom You Want to Follow and Send Msg ").split(",")))
-USERNAME = input("Enter Your Username ")
-PASSWORD = input("Enter Your password ")
+from __future__ import annotations
 
-browser.get('https://www.instagram.com/')
-wait = WebDriverWait(browser, 120)
-time.sleep(2)
+import argparse
+from getpass import getpass
 
-username_field = browser.find_element_by_name('username')
-username_field.send_keys(USERNAME)
 
-password_field = browser.find_element_by_name('password')
-password_field.send_keys(PASSWORD)
+CONFIRMATION = "FOLLOW_AND_MESSAGE"
 
-login_btn = browser.find_element_by_css_selector('button[type="submit"]')
-login_btn.click()
-print(users)
-time.sleep(5)
-for user in users:
-    browser.get(f"https://www.instagram.com/{user}/")
-    time.sleep(3)
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Preview Instagram follow and message actions.")
+    parser.add_argument("targets", nargs="+", help="Instagram usernames to process.")
+    parser.add_argument("--apply", action="store_true", help="Open Chrome and perform the requested actions.")
+    parser.add_argument(
+        "--confirm",
+        help=f"Required with --apply. Enter exactly {CONFIRMATION!r}.",
+    )
+    return parser.parse_args()
+
+
+def validate_targets(targets: list[str]) -> list[str]:
+    """Return trimmed usernames after basic local validation."""
+    cleaned = [target.strip().lstrip("@") for target in targets]
+    if any(not target.replace("_", "").replace(".", "").isalnum() for target in cleaned):
+        raise ValueError("Usernames may contain letters, numbers, underscores, and periods only.")
+    return cleaned
+
+
+def preview(targets: list[str]) -> None:
+    print("Preview only. No browser will open and no Instagram action will occur.")
+    print(f"Would request a follow and one direct message for {len(targets)} account(s):")
+    for target in targets:
+        print(f"- @{target}")
+    print(f"To apply, rerun with --apply --confirm {CONFIRMATION}")
+
+
+def apply_actions(targets: list[str]) -> None:
+    """Log in interactively and apply each requested social action."""
+    from selenium import webdriver
+    from selenium.common.exceptions import TimeoutException, WebDriverException
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.common.keys import Keys
+    from selenium.webdriver.support import expected_conditions as EC
+    from selenium.webdriver.support.ui import WebDriverWait
+
+    username = input("Instagram username: ").strip()
+    password = getpass("Instagram password: ")
+    message = input("Message to send to every listed account: ").strip()
+    if not username or not password or not message:
+        raise ValueError("Username, password, and message are all required.")
+
     try:
-        follow = wait.until(EC.presence_of_element_located(
-            (By.XPATH, '//*[@id="react-root"]/section/main/div/header/section/div[1]/div[1]/div/div/div/span/span[1]/button')))
-        follow.click()
-        time.sleep(3)
-    except:
-        pass
+        driver = webdriver.Chrome()
+    except WebDriverException as error:
+        raise RuntimeError(f"Could not start Chrome: {error}") from error
+
     try:
-        message = browser.find_element_by_class_name('_862NM ')
-        message.click()
-        time.sleep(4)
-        browser.find_element_by_class_name('mt3GC').click()
-        time.sleep(5)
-        mbox = browser.find_element_by_tag_name('textarea')
-        mbox.send_keys(input("Write Msg you Want to Send "))
-        mbox.send_keys(Keys.RETURN)
-        time.sleep(5)
-    except:
-        pass
+        wait = WebDriverWait(driver, 30)
+        driver.get("https://www.instagram.com/")
+        wait.until(EC.presence_of_element_located((By.NAME, "username"))).send_keys(username)
+        driver.find_element(By.NAME, "password").send_keys(password)
+        driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+
+        for target in targets:
+            driver.get(f"https://www.instagram.com/{target}/")
+            try:
+                wait.until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Follow']"))
+                ).click()
+                wait.until(
+                    EC.element_to_be_clickable((By.XPATH, "//button[normalize-space()='Message']"))
+                ).click()
+                message_box = wait.until(EC.presence_of_element_located((By.TAG_NAME, "textarea")))
+                message_box.send_keys(message, Keys.ENTER)
+                print(f"Applied requested actions for @{target}")
+            except TimeoutException:
+                print(f"Could not find the required controls for @{target}; no message was sent.")
+    finally:
+        driver.quit()
+
+
+def main() -> None:
+    args = parse_args()
+    try:
+        targets = validate_targets(args.targets)
+    except ValueError as error:
+        raise SystemExit(f"Invalid target: {error}") from error
+
+    if not args.apply:
+        preview(targets)
+        return
+    if args.confirm != CONFIRMATION:
+        raise SystemExit(f"Refusing to act. Use --confirm {CONFIRMATION} with --apply.")
+
+    try:
+        apply_actions(targets)
+    except (RuntimeError, ValueError) as error:
+        raise SystemExit(str(error)) from error
+
+
+if __name__ == "__main__":
+    main()

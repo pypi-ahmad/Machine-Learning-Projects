@@ -13,7 +13,6 @@ Usage:
 import argparse
 import math
 import re
-import sys
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -41,7 +40,7 @@ def solve_quadratic(a: float, b: float, c: float) -> str:
         sq = math.sqrt(disc)
         x1 = (-b + sq) / (2 * a)
         x2 = (-b - sq) / (2 * a)
-        lines.append(f"Two real roots:  x₁ = {fmt(x1)},  x₂ = {fmt(x2)}")
+        lines.append(f"Two real roots:  x1 = {fmt(x1)},  x2 = {fmt(x2)}")
     elif disc == 0:
         x = -b / (2 * a)
         lines.append(f"One real root:   x = {fmt(x)}")
@@ -53,7 +52,7 @@ def solve_quadratic(a: float, b: float, c: float) -> str:
 
 
 def solve_cubic(a: float, b: float, c: float, d: float) -> str:
-    """Solve ax³ + bx² + cx + d = 0 via Cardano / numerical Newton."""
+    """Approximate real roots of ax³ + bx² + cx + d = 0 with Newton iteration."""
     if a == 0:
         return solve_quadratic(b, c, d)
 
@@ -105,6 +104,14 @@ def parse_linear_eq(expr: str):
     return a, b, c
 
 
+def parse_system_row(row: str) -> tuple[float, float, float]:
+    """Parse one 2x2-system row in the form ``a b c``."""
+    values = tuple(map(float, row.split()))
+    if len(values) != 3:
+        raise ValueError("Each system row must contain exactly three numbers: a b c.")
+    return values
+
+
 # ── Interactive mode ──────────────────────────────────────────────────────────
 
 def interactive():
@@ -120,21 +127,21 @@ def interactive():
             try:
                 a, b, c = parse_linear_eq(eq)
                 print(f"  {solve_linear(a, b, c)}\n")
-            except Exception as e:
+            except ValueError as e:
                 print(f"  Error: {e}\n")
         elif cmd == "quadratic":
             print("Enter coefficients a b c for  ax²+bx+c=0")
             try:
                 a, b, c = map(float, input("> ").split())
                 print(f"  {solve_quadratic(a, b, c)}\n")
-            except Exception as e:
+            except ValueError as e:
                 print(f"  Error: {e}\n")
         elif cmd == "cubic":
             print("Enter coefficients a b c d for  ax³+bx²+cx+d=0")
             try:
                 a, b, c, d = map(float, input("> ").split())
                 print(f"  {solve_cubic(a, b, c, d)}\n")
-            except Exception as e:
+            except ValueError as e:
                 print(f"  Error: {e}\n")
         elif cmd == "system":
             print("2×2 system:  a1x+b1y=c1  and  a2x+b2y=c2")
@@ -144,7 +151,7 @@ def interactive():
                 print("Enter row 2 (a2 b2 c2):")
                 a2, b2, c2 = map(float, input("> ").split())
                 print(f"  {solve_2x2(a1, b1, c1, a2, b2, c2)}\n")
-            except Exception as e:
+            except ValueError as e:
                 print(f"  Error: {e}\n")
         else:
             print("  Unknown command.\n")
@@ -164,15 +171,21 @@ def main():
     args = parser.parse_args()
 
     if args.linear:
-        a, b, c = parse_linear_eq(args.linear)
+        try:
+            a, b, c = parse_linear_eq(args.linear)
+        except ValueError as error:
+            parser.error(str(error))
         print(solve_linear(a, b, c))
     elif args.quadratic:
         print(solve_quadratic(*args.quadratic))
     elif args.cubic:
         print(solve_cubic(*args.cubic))
     elif args.system:
-        r1 = list(map(float, args.system[0].split()))
-        r2 = list(map(float, args.system[1].split()))
+        try:
+            r1 = parse_system_row(args.system[0])
+            r2 = parse_system_row(args.system[1])
+        except ValueError as error:
+            parser.error(str(error))
         print(solve_2x2(*r1, *r2))
     else:
         interactive()

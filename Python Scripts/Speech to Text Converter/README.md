@@ -1,92 +1,37 @@
-# Speech-To-Text
+# Speech to Text Converter
 
-> A Python script that captures speech from the microphone, converts it to text using Google Speech Recognition, and saves the result to a file.
+A command-line utility that records one microphone phrase, sends it to Google
+Speech Recognition, and writes a successful transcript to a text file.
 
-## Overview
+## Run
 
-This script uses the `speech_recognition` library to listen to audio input from the microphone, converts it to text via Google's speech recognition API, and writes the transcribed text to `output.txt`. It also initializes a `pyttsx3` text-to-speech engine (configured for Windows SAPI5), though it is not actively used for output in the current code.
-
-## Features
-
-- Captures audio from the system microphone
-- Converts speech to text using Google Speech Recognition (`recognize_google`)
-- Saves transcribed text to `output.txt`
-- Initializes a text-to-speech engine via `pyttsx3` with Windows SAPI5 voice
-
-## Project Structure
-
-```
-Speech-To-Text/
-├── LICENSE
-├── output.txt
-└── speech-to-text.py
+```powershell
+uv sync
+uv run python speech-to-text.py
 ```
 
-## Requirements
+The default output is `output.txt` next to the script.
 
-- Python 3.x
-- `pyttsx3`
-- `SpeechRecognition`
-- `PyAudio` (required by `speech_recognition` for microphone access)
-- A working microphone
-
-## Installation
-
-```bash
-cd "Speech-To-Text"
-pip install pyttsx3 SpeechRecognition PyAudio
+```powershell
+uv run python speech-to-text.py --output transcript.txt --timeout 10 --phrase-time-limit 30
 ```
 
-> **Note:** On some systems, `PyAudio` may require additional steps:
-> - **Windows:** `pip install pyaudio`
-> - **Linux:** `sudo apt-get install python3-pyaudio`
-> - **macOS:** `brew install portaudio && pip install pyaudio`
+The tool calibrates for ambient noise for half a second before listening.
+`--timeout` limits how long it waits for speech, and `--phrase-time-limit`
+limits the recorded phrase duration.
 
-## Usage
+## Privacy and limitations
 
-```bash
-python speech-to-text.py
-```
+- Microphone access and an active internet connection are required.
+- Audio is sent to Google's recognition service. Do not use it for sensitive
+  speech unless that disclosure and data handling are acceptable.
+- A file is written only after a transcript is successfully returned. Failed or
+  unrecognized recordings leave the existing output file unchanged.
+- Recognition quality depends on the microphone, noise, language, accent, and
+  service availability.
 
-**Output:**
+## Dependencies
 
-```
-say something!
-done
-google think you said:
-<your transcribed speech>
-```
-
-The transcribed text is also saved to `output.txt` in the same directory.
-
-## How It Works
-
-1. Initializes a `pyttsx3` engine with the Windows SAPI5 driver and sets the first available voice
-2. Creates a `speech_recognition.Recognizer` instance
-3. Opens the microphone as the audio source and listens for speech
-4. Sends the audio to Google's speech recognition API via `r.recognize_google(audio)`
-5. Prints the recognized text to the console
-6. Writes the text to `output.txt` (overwriting any previous content)
-
-## Configuration
-
-- **Voice selection**: Change `voices[0].id` to `voices[1].id` (or another index) in the `engine.setProperty('voice', ...)` line to switch TTS voices
-- **Output file**: Change `'output.txt'` in the `open()` call to customize the output filename
-- **TTS engine**: Change `'sapi5'` to `'nsss'` (macOS) or `'espeak'` (Linux) for cross-platform TTS support
-
-## Limitations
-
-- The `pyttsx3` engine and `speak()` function are initialized but never called — the TTS functionality is unused
-- No ambient noise adjustment before listening
-- The `text` variable is referenced in the `except` block's `open()` call even if recognition fails, causing a `NameError`
-- The file is opened with `'w'` mode, overwriting previous transcriptions
-- Uses the generic `except Exception` which catches all errors but only prints them
-- Windows-specific TTS driver (`sapi5`) is hardcoded
-
-## Security Notes
-
-- Audio is sent to Google's servers for recognition — not suitable for sensitive/private speech data
-
-## License
-
-MIT License (see LICENSE file). Copyright (c) 2020 Arbaz Khan.
+The project uses SpeechRecognition and PyAudio. It pins Python to the 3.13
+series for the installed Windows microphone dependency, with exact versions
+locked in `uv.lock`.

@@ -1,10 +1,13 @@
 # Automatic FB Login
 
-A Selenium-based script that automates logging into Facebook using Chrome WebDriver.
+The modern CLI previews its target by default. Chrome opens only with `--login`,
+and the password is collected through hidden terminal input.
+
+A Selenium-based script that automates Facebook login with Chrome WebDriver.
 
 ## Overview
 
-This is a **CLI automation script** that uses Selenium WebDriver to open Facebook in a Chrome browser, fill in the user's credentials, and click the login button.
+This **CLI automation script** uses Selenium WebDriver to open Facebook in Chrome, fill in the user's credentials, and click the login button.
 
 ## Features
 
@@ -19,7 +22,7 @@ This is a **CLI automation script** that uses Selenium WebDriver to open Faceboo
 
 - `selenium`
 
-## How It Works
+## How it works
 
 1. The script prompts the user for their Facebook user ID and password via `input()`.
 2. It initializes a Chrome WebDriver using a hardcoded path to `chromedriver.exe`.
@@ -38,17 +41,16 @@ Automatic FB login/
 ## Setup & Installation
 
 ```bash
-pip install selenium
+uv sync
 ```
 
-1. Download [ChromeDriver](https://chromedriver.chromium.org/downloads) matching your Chrome version.
-2. Update the `cd` variable in the script to point to your `chromedriver.exe` path (default: `C:\webdrivers\chromedriver.exe`).
+Selenium Manager resolves a compatible driver when Chrome is installed.
 
 ## How to Run
 
 ```bash
 cd "Automatic FB login"
-python "Project _ Automatic FB login.py"
+uv run python "Project _ Automatic FB login.py"
 ```
 
 You will be prompted for:

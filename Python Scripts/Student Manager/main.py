@@ -4,7 +4,7 @@ Manage student records including grades, subjects, and GPA.
 Supports add/edit/delete, grade calculator, and JSON persistence.
 
 Usage:
-    python main.py
+    uv run python main.py
 """
 
 import json
@@ -22,14 +22,17 @@ SUBJECTS  = ["Math", "Science", "English", "History", "Computer Science",
 
 def load() -> list[dict]:
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
+        try:
+            with open(DATA_FILE, encoding="utf-8") as file:
+                return json.load(file)
+        except (OSError, json.JSONDecodeError):
+            return []
     return []
 
 
-def save(data: list[dict]):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def save(data: list[dict]) -> None:
+    with open(DATA_FILE, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=2)
 
 
 def calc_gpa(grades: dict) -> float:
@@ -269,6 +272,10 @@ class StudentManager(tk.Tk):
         self._stats_text.config(state="disabled")
 
 
-if __name__ == "__main__":
+def main() -> None:
     app = StudentManager()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()

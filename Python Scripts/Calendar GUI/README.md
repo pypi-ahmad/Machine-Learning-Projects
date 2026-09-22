@@ -27,9 +27,9 @@ No `requirements.txt` present. Dependencies inferred from imports:
 
 1. A main `tkinter` window (`gui`) is created with the title "CALENDAR", sized 250×250 with a "misty rose" background.
 2. The user enters a year into the `Entry` widget and clicks "Show Calendar".
-3. The `showCal()` function opens a **new** `Tk()` window (550×600), retrieves the year from the entry field, and calls `calendar.calendar(find_year)` to generate the full-year text calendar.
+3. The `show_calendar()` function validates the year, opens a child window (550×600), and calls `calendar.calendar(year)` to generate the full-year text calendar.
 4. The generated calendar text is displayed in a `Label` widget with monospaced formatting.
-5. The "CLOSE" button calls `exit()` to terminate the application.
+5. The "CLOSE" button closes the main application window.
 
 ## Project Structure
 
@@ -43,18 +43,13 @@ Calendar GUI/
 
 ## Setup & Installation
 
-1. Ensure Python 3.x is installed (tkinter and calendar are included with standard Python distributions).
-2. Clone or download this repository.
-
-```bash
-pip install tk  # Only if tkinter is not bundled with your Python installation
-```
+1. Install [uv](https://docs.astral.sh/uv/).
+2. Run `uv sync` from this directory. `tkinter` and `calendar` are included with standard Python distributions.
 
 ## How to Run
 
 ```bash
-cd "Calendar GUI"
-python Calendar_gui.py
+uv run python Calendar_gui.py
 ```
 
 A small window will appear prompting for a year. Enter a year (e.g., `2026`) and click "Show Calendar".
@@ -65,12 +60,8 @@ No external configuration, environment variables, or secrets required.
 
 ## Testing
 
-No formal test suite present.
+Run a syntax check with `uv run python -m py_compile Calendar_gui.py`.
 
 ## Limitations
 
-- Creates a new `Tk()` instance for the calendar display instead of using a `Toplevel` widget, which can cause issues with multiple Tk root windows.
-- No input validation — entering a non-integer value will cause a `ValueError` crash.
-- The calendar window opens a second `mainloop()`, which is not recommended in tkinter.
 - No option to view a single month — always displays the full year.
-- The "CLOSE" button calls `exit()`, which terminates the entire Python process rather than just closing the window.

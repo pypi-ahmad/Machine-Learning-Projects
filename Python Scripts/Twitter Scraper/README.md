@@ -1,96 +1,59 @@
-# Twitter Scraper without API
+# X post scraper
 
-> Scrape tweets by hashtag using snscrape and store them in a local SQLite database.
-
-## Overview
-
-A two-script project that scrapes Twitter tweets by hashtag without requiring API keys. `fetch_hashtags.py` uses the `snscrape` library to find tweets matching a given hashtag and stores them in a SQLite database. `display_hashtags.py` queries the database to display stored tweets filtered by hashtag.
-
-## Features
-
-- Scrape tweets by hashtag without Twitter API keys
-- Configurable maximum number of tweets to fetch per query
-- Persistent storage in a SQLite database (`TwitterDatabase.db`)
-- Stores hashtag, username, tweet content, and URL for each tweet
-- Search and display tweets from the database by hashtag
-- Interactive loop — fetch or search multiple hashtags in one session
-
-## Project Structure
-
-```
-Twitter_Scraper_without_API/
-├── fetch_hashtags.py
-├── display_hashtags.py
-├── requirements.txt
-└── README.md
-```
+`fetch_hashtags.py` fetches one bounded page of recent X posts through the X API
+v2 and stores them in a local SQLite database. The same command can list posts
+already saved in that database.
 
 ## Requirements
 
-- Python 3.x
-- snscrape 0.3.4
-- beautifulsoup4 4.9.3
-- requests 2.25.1
-- lxml 4.6.2
-- PySocks 1.7.1
-- Additional transitive dependencies in `requirements.txt`
+- Python 3.11 or later
+- An X developer account with access to recent search
+- A bearer token available to the process as `X_BEARER_TOKEN`
 
-## Installation
+The token is read at runtime. It is not stored in source code or the database.
+Set it in your Windows environment, then restart the terminal or editor that
+runs the script.
 
-```bash
-cd "Twitter_Scraper_without_API"
-pip install -r requirements.txt
+## Install
+
+```powershell
+cd "Python Scripts/Twitter Scraper"
+uv sync
 ```
 
-## Usage
+## Fetch posts
 
-### Fetching Tweets
+Use an X API v2 query. Hashtag and language operators belong in that query.
 
-```bash
-python fetch_hashtags.py
+```powershell
+uv run python fetch_hashtags.py fetch "#python lang:en" --limit 10
 ```
 
-1. Enter a hashtag (without `#`).
-2. Enter the maximum number of tweets to fetch.
-3. Tweets are stored in `TwitterDatabase.db`.
-4. Press `y` to search another hashtag or any other key to exit.
+`--limit` must be between 10 and 100 because the script makes one recent-search
+request. Each new post is stored once by post ID in `twitter_posts.db` beside the
+script.
 
-### Displaying Tweets
+Use `--database` before the command to select another local database:
 
-```bash
-python display_hashtags.py
+```powershell
+uv run python fetch_hashtags.py --database D:\data\posts.db fetch "from:example" --limit 25
 ```
 
-1. Enter a hashtag to search (without `#`).
-2. Matching tweets are displayed with username, content, and URL.
-3. Press `y` to search again or any other key to exit.
+## List saved posts
 
-## How It Works
+```powershell
+uv run python fetch_hashtags.py list
+uv run python fetch_hashtags.py list --query "#python lang:en"
+```
 
-1. **`fetch_hashtags.py`:**
-   - Connects to (or creates) `TwitterDatabase.db` using `sqlite3`.
-   - Creates a `tweets` table with columns: `HASHTAG`, `USERNAME`, `CONTENT`, `URL`.
-   - Uses `snscrape.modules.twitter.TwitterSearchScraper` to iterate over tweets matching the hashtag.
-   - Inserts each tweet's data into the database up to the user-specified maximum.
+The optional `--query` filter matches the exact query used when posts were
+saved.
 
-2. **`display_hashtags.py`:**
-   - Connects to the same `TwitterDatabase.db`.
-   - Fetches all rows from the `tweets` table.
-   - Filters rows where the hashtag column matches the user's input.
-   - Prints username, tweet content, and URL for each match.
+## Database notes
 
-## Configuration
+The project writes a `posts` table with the post ID, source query, author ID,
+text, and creation time. Any older `tweets` table is left unchanged; this script
+does not infer a conversion from the old schema.
 
-- **Database path:** Hardcoded as `./Twitter_Scraper_without_API/TwitterDatabase.db` in both scripts. This assumes the scripts are run from the parent directory.
-
-## Limitations
-
-- The database path is relative and assumes execution from the parent directory of the project folder.
-- `display_hashtags.py` fetches all rows and filters in Python instead of using a SQL `WHERE` clause — inefficient for large databases.
-- No deduplication — running `fetch_hashtags.py` multiple times with the same hashtag creates duplicate entries.
-- `snscrape` may break when Twitter changes its web interface.
-- No error handling for network failures, invalid input, or database errors.
-
-## License
-
-Not specified.
+Search availability, historical range, and rate limits depend on the account's
+X API access level. This tool fetches recent results only and does not paginate.

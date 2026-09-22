@@ -14,7 +14,8 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Insurance Estimator", layout="wide")
-st.title("🛡️ Insurance Premium Estimator")
+st.title("Insurance premium estimator")
+st.caption("Synthetic educational demo only. It is not an insurance quote, underwriting decision, or financial advice.")
 
 
 def ols_fit(X, y):
@@ -168,7 +169,11 @@ with tab3:
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Health Premium Distribution")
-        st.bar_chart(pd.cut(df_health["premium"],bins=15).value_counts().sort_index())
+        health_bins = pd.cut(df_health["premium"], bins=15).value_counts().sort_index()
+        health_bins.index = health_bins.index.astype(str)
+        st.bar_chart(health_bins)
     with col2:
         st.subheader("Auto Premium Distribution")
-        st.bar_chart(pd.cut(df_auto["premium"],bins=15).value_counts().sort_index())
+        auto_bins = pd.cut(df_auto["premium"], bins=15).value_counts().sort_index()
+        auto_bins.index = auto_bins.index.astype(str)
+        st.bar_chart(auto_bins)

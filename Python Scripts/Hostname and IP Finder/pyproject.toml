@@ -1,0 +1,10 @@
+[project]
+name = "hostname-ip-finder"
+version = "0.1.0"
+description = "Command-line hostname to IPv4 resolver"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

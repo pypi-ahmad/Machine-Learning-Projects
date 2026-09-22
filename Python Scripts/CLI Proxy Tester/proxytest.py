@@ -9,7 +9,7 @@ from requests.exceptions import ProxyError
 logging.basicConfig(level=logging.INFO)
 
 
-def add_proxies_to_file(csv_path: str, proxies: list):
+def add_proxies_to_file(csv_path: Path, proxies: list[dict[str, str]]) -> None:
     '''This function will add one or multiple proxies to the CSV file.'''
 
     if not csv_path.exists():
@@ -23,7 +23,7 @@ def add_proxies_to_file(csv_path: str, proxies: list):
     for proxy in proxies:
         if len(pr_file) == 0:
             # First proxy in the file
-            pr_file = pr_file.append(proxy, ignore_index=True)
+            pr_file = pd.concat([pr_file, pd.DataFrame([proxy])], ignore_index=True)
         else:
             if len(pr_file.loc[(pr_file['proxy_type'] == proxy['proxy_type']) &
                                (pr_file['proxy_address'] == proxy['proxy_address'])]) > 0:
@@ -33,14 +33,14 @@ def add_proxies_to_file(csv_path: str, proxies: list):
                             ['proxy_status']] = proxy['proxy_status']
             else:
                 # Proxy is not yet in the file
-                pr_file = pr_file.append(proxy, ignore_index=True)
+                pr_file = pd.concat([pr_file, pd.DataFrame([proxy])], ignore_index=True)
 
     pr_file = pr_file.drop_duplicates()
     pr_file.to_csv(csv_path, index=False)
     logging.info('CSV file has been written')
 
 
-def test_proxy(proxy_type: str, proxy_address: str, iptest: str):
+def test_proxy(proxy_type: str, proxy_address: str, iptest: str) -> dict[str, str]:
     '''This function takes a proxy (type, address)
     and tests it against a given iptest adress.'''
 
@@ -75,7 +75,7 @@ def test_proxy(proxy_type: str, proxy_address: str, iptest: str):
             'proxy_status': proxy_status}
 
 
-def test_single_proxy(proxy: str, iptest: str, csv_path: str):
+def test_single_proxy(proxy: str, iptest: str, csv_path: str) -> None:
     '''This function tests an individual proxy and adds it to the CSV file.'''
     proxy_type, proxy_address = proxy.split('://')
     result: dict = test_proxy(proxy_type, proxy_address, iptest)
@@ -83,7 +83,7 @@ def test_single_proxy(proxy: str, iptest: str, csv_path: str):
     add_proxies_to_file(Path(csv_path), [result])
 
 
-def test_csv_file(iptest: str, csv_path: str):
+def test_csv_file(iptest: str, csv_path: str) -> None:
     '''This function (re)tests every proxy in a given CSV file.'''
 
     csv_path: Path = Path(csv_path)
@@ -103,7 +103,7 @@ def test_csv_file(iptest: str, csv_path: str):
     add_proxies_to_file(csv_path, proxies)
 
 
-def add_from_text_file(iptest: str, text_path: str, csv_path: str):
+def add_from_text_file(iptest: str, text_path: str, csv_path: str) -> None:
     ''' This function adds a list of proxies
     from a text file (line by line).'''
     text_path: Path = Path(text_path)

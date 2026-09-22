@@ -1,10 +1,10 @@
 # Racing Bar Chart Animation
 
-> A Jupyter Notebook that creates animated bar chart race visualizations of COVID-19 data across Indian states using matplotlib.
+> A Jupyter Notebook that creates animated bar-chart races of COVID-19 data across Indian states with matplotlib.
 
 ## Overview
 
-This project fetches COVID-19 time-series data from the `api.covid19india.org` API and creates an animated horizontal bar chart race showing state-wise progression of selected metrics (deceased, confirmed, recovered, tested) over time. The animation is rendered using matplotlib's `FuncAnimation` and can be exported as an HTML5 video or MP4 file.
+This project fetches COVID-19 time-series data from `api.covid19india.org` and creates an animated horizontal bar chart showing selected metrics over time. Matplotlib's `FuncAnimation` renders the animation, which can be exported as HTML5 video or MP4.
 
 ## Features
 
@@ -22,7 +22,8 @@ This project fetches COVID-19 time-series data from the `api.covid19india.org` A
 ```
 racing_barchart_animation/
 ├── animated_barchart.ipynb    # Jupyter Notebook with full pipeline
-├── requirements.txt           # Python dependencies
+├── pyproject.toml             # Project metadata and dependencies
+├── uv.lock                    # Locked dependency versions
 ├── images/
 │   └── deceased.gif           # Sample output animation
 └── README.md
@@ -37,13 +38,13 @@ racing_barchart_animation/
 - `numpy==1.19.1`
 - `pandas==1.1.0`
 
-All dependencies are listed in `requirements.txt`. Note: `requirements.txt` also lists `requests==2.24.0`, but the notebook does not use `requests` — data is fetched via `pd.read_json()` directly.
+Direct notebook dependencies are declared in `pyproject.toml` and locked in `uv.lock`. The notebook does not need a separate `requests` dependency because it fetches data through `pd.read_json()`.
 
 ## Installation
 
 ```bash
 cd "racing_barchart_animation"
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Usage
@@ -51,7 +52,7 @@ pip install -r requirements.txt
 1. Launch Jupyter:
 
 ```bash
-jupyter lab
+uv run jupyter lab
 ```
 
 2. Open `animated_barchart.ipynb`
@@ -69,7 +70,7 @@ data_selected = 'deceased'  # Options: 'confirmed', 'deceased', 'recovered', 'te
 anim.save('~/Downloads/covid19.mp4')
 ```
 
-## How It Works
+## How it works
 
 1. **Data Fetching**: Reads JSON time-series data from `https://api.covid19india.org/v4/timeseries.json` into a pandas DataFrame using `pd.read_json()`.
 2. **Data Processing**: Extracts the selected metric for each state at each date using `obtain_data_for_a_date()`, building a new DataFrame.

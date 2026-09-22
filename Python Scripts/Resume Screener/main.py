@@ -1,7 +1,7 @@
 """Resume Screener — Streamlit ML demo.
 
 Upload resumes (text or PDF) and a job description.
-Score and rank candidates using TF-IDF cosine similarity.
+Score and rank candidates using normalized term-frequency cosine similarity.
 
 Usage:
     streamlit run main.py
@@ -152,7 +152,7 @@ with tab1:
         df.index += 1
 
         st.subheader("Ranking Results")
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df)
 
         # Highlight top candidate
         top = df.iloc[0]
@@ -168,7 +168,7 @@ with tab2:
     ### How it works
     1. Tokenizes the job description and each resume
     2. Builds a shared vocabulary
-    3. Computes TF-IDF vectors for each document
+    3. Computes normalized term-frequency vectors for each document
     4. Ranks candidates by cosine similarity to the job description
 
     **Limitations:** This is a keyword-based approach. Real-world ATS systems

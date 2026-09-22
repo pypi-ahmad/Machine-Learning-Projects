@@ -7,18 +7,17 @@ Usage:
     streamlit run main.py
 """
 
+import math
 import random
+
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="Customer Churn Predictor", layout="wide")
-st.title("📉 Customer Churn Predictor")
+st.set_page_config(page_title="Customer Churn Predictor", page_icon=":material/trending_down:", layout="wide")
+st.title("Customer Churn Predictor")
 
 
 # ── Pure-Python logistic regression ──────────────────────────────────────────
-
-import math
-
 
 def sigmoid(z: float) -> float:
     return 1 / (1 + math.exp(-max(-500, min(500, z))))
@@ -97,7 +96,7 @@ def make_dataset(n: int = 500, seed: int = 42) -> pd.DataFrame:
 
 # ── Train on startup ──────────────────────────────────────────────────────────
 
-@st.cache_resource
+@st.cache_data
 def load_model():
     df   = make_dataset(600)
     feat = ["tenure","monthly_charge","support_calls","contract","age","num_products"]
@@ -155,10 +154,10 @@ with tab2:
     c2.metric("Precision", f"{metrics['precision']:.2%}")
     c3.metric("Recall",    f"{metrics['recall']:.2%}")
     c4.metric("F1 Score",  f"{metrics['f1']:.2%}")
-    st.caption("Trained on 600 synthetic customer records.")
+    st.caption("Metrics are calculated on the same 600 synthetic records used for training.")
 
 with tab3:
     df = make_dataset(100)
-    st.dataframe(df, use_container_width=True, hide_index=True)
+    st.dataframe(df, width="stretch", hide_index=True)
     churn_rate = df["churn"].mean()
     st.metric("Sample Churn Rate", f"{churn_rate:.1%}")

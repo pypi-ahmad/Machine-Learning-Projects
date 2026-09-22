@@ -1,18 +1,19 @@
-"""File Browser GUI — Tkinter app.
+"""File Browser GUI - Tkinter app.
 
 Browse the filesystem with a tree view.  Preview text files,
 view file properties, and perform basic operations
-(open, copy path, delete, rename).
+(open, copy path, rename).
 
 Usage:
     python main.py [start_path]
 """
 
+import argparse
 import os
-import shutil
 import subprocess
 import sys
 import tkinter as tk
+from datetime import datetime
 from pathlib import Path
 from tkinter import filedialog, font as tkfont, messagebox, simpledialog, ttk
 
@@ -24,7 +25,8 @@ class FileBrowser(tk.Tk):
         self.geometry("1000x650")
         self.configure(bg="#f0f0f0")
 
-        self._cwd = Path(start_path) if start_path else Path.home()
+        requested_path = Path(start_path).expanduser() if start_path else Path.home()
+        self._cwd = requested_path if requested_path.is_dir() else Path.home()
         self._history: list[Path] = [self._cwd]
         self._hist_idx = 0
 
@@ -60,15 +62,6 @@ class FileBrowser(tk.Tk):
         left = tk.Frame(pane, bg="white")
         pane.add(left, minsize=300)
 
-        self.tree = ttk.Treeview(left, columns=("size", "type"), show="headings",
-                                  selectmode="browse")
-        self.tree.heading("#0",    text="Name")
-        self.tree.heading("size",  text="Size")
-        self.tree.heading("type",  text="Type")
-        self.tree.column("size", width=80,  anchor="e")
-        self.tree.column("type", width=80,  anchor="w")
-
-        # Re-configure to show tree column
         self.tree = ttk.Treeview(left, columns=("size", "modified"), show="tree headings",
                                   selectmode="browse")
         self.tree.heading("#0",       text="Name")
@@ -120,8 +113,8 @@ class FileBrowser(tk.Tk):
         self.tree.delete(*self.tree.get_children())
         try:
             entries = sorted(path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
-        except PermissionError:
-            messagebox.showwarning("Access denied", f"Cannot access: {path}")
+        except OSError as error:
+            messagebox.showwarning("Cannot open folder", f"Cannot access {path}: {error}")
             return
 
         self._cwd = path
@@ -132,16 +125,14 @@ class FileBrowser(tk.Tk):
             try:
                 stat = entry.stat()
                 size = self._human_size(stat.st_size) if entry.is_file() else ""
-                import datetime
-                mod  = datetime.datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
-            except Exception:
+                mod  = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M")
+            except OSError:
                 size, mod = "", ""
             icon = "📁" if entry.is_dir() else "📄"
             self.tree.insert("", "end", iid=str(entry),
                               text=f"{icon} {entry.name}", values=(size, mod))
 
-        count = len(list(path.iterdir()))
-        self.status_var.set(f"{count} items  |  {path}")
+        self.status_var.set(f"{len(entries)} items  |  {path}")
 
     def _human_size(self, n: int) -> str:
         for unit in ("B", "KB", "MB", "GB", "TB"):
@@ -214,15 +205,14 @@ class FileBrowser(tk.Tk):
     def _show_info(self, path: Path):
         try:
             stat = path.stat()
-            import datetime
-            mod = datetime.datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+            mod = datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
             info = (f"Name: {path.name}\n"
                     f"Type: {'Directory' if path.is_dir() else path.suffix or 'File'}\n"
                     f"Size: {self._human_size(stat.st_size) if path.is_file() else '—'}\n"
                     f"Modified: {mod}\n"
                     f"Path: {path}")
-        except Exception as e:
-            info = str(e)
+        except OSError as error:
+            info = f"Cannot read properties: {error}"
         self.info_label.config(text=info)
 
     def _show_preview(self, path: Path):
@@ -264,7 +254,7 @@ class FileBrowser(tk.Tk):
         menu.add_command(label="Copy path",      command=lambda: self._copy_path(path))
         menu.add_separator()
         menu.add_command(label="Rename…",        command=lambda: self._rename(path))
-        menu.add_command(label="Delete",         command=lambda: self._delete(path))
+        menu.add_command(label="Permanent delete unavailable", state="disabled")
         menu.tk_popup(event.x_root, event.y_root)
 
     def _copy_path(self, path: Path):
@@ -276,27 +266,21 @@ class FileBrowser(tk.Tk):
         new_name = simpledialog.askstring("Rename", "New name:", initialvalue=path.name, parent=self)
         if new_name and new_name.strip():
             new_path = path.parent / new_name.strip()
+            if Path(new_name.strip()).name != new_name.strip() or new_name.strip() in {".", ".."}:
+                messagebox.showerror("Rename failed", "Enter a name without a path.")
+                return
             try:
                 path.rename(new_path)
                 self._populate(self._cwd)
-            except Exception as e:
-                messagebox.showerror("Rename failed", str(e))
-
-    def _delete(self, path: Path):
-        if messagebox.askyesno("Delete", f"Delete '{path.name}'?"):
-            try:
-                if path.is_dir():
-                    shutil.rmtree(path)
-                else:
-                    path.unlink()
-                self._populate(self._cwd)
-            except Exception as e:
-                messagebox.showerror("Delete failed", str(e))
+            except OSError as error:
+                messagebox.showerror("Rename failed", str(error))
 
 
-def main():
-    start = sys.argv[1] if len(sys.argv) > 1 else None
-    FileBrowser(start).mainloop()
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("start_path", nargs="?", help="Folder to show initially.")
+    args = parser.parse_args()
+    FileBrowser(args.start_path).mainloop()
 
 
 if __name__ == "__main__":

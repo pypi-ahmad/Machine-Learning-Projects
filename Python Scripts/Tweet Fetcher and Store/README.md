@@ -1,94 +1,55 @@
-# Fetch and Store Tweets
+# Fetch and store X posts
 
-> A Python script that fetches tweets matching a specific hashtag using the Twitter API (via Tweepy) and stores them in a CSV file.
-
-## Overview
-
-This script authenticates with the Twitter API using OAuth credentials, searches for tweets matching a configured hashtag, and appends the results (timestamp and text) to a CSV file called `tweets.csv`.
-
-## Features
-
-- Authenticates with the Twitter API via OAuth 1.0a using Tweepy
-- Searches for tweets by hashtag with configurable parameters
-- Filters tweets by language (English) and start date
-- Handles Twitter API rate limits automatically (`wait_on_rate_limit=True`)
-- Exports tweet timestamp and text to a CSV file
-- Fetches up to 100 tweets per API request page
-
-## Project Structure
-
-```
-Fetch_and_store_tweets/
-├── fetch_store_tweet.py   # Main script for fetching and storing tweets
-├── requirements.txt       # Python dependencies
-└── img/                   # Documentation images for setup guide
-```
+`fetch_store_tweet.py` runs one bounded X API v2 recent-search request and saves
+the returned post ID, creation time, and text to a UTF-8 CSV file.
 
 ## Requirements
 
-- Python 3.x
-- `tweepy==3.9.0`
-- A Twitter Developer account with API keys
+- Python 3.11 or later
+- An X developer account with access to the recent-search endpoint
+- A bearer token available to the process as `X_BEARER_TOKEN`
 
-## Installation
+The token is read at runtime and is never stored in source code. Set it in your
+Windows environment, then restart the terminal or editor that runs the script.
 
-```bash
-cd "Fetch_and_store_tweets"
-pip install -r requirements.txt
+## Install
+
+```powershell
+cd "Python Scripts/Tweet Fetcher and Store"
+uv sync
 ```
 
 ## Usage
 
-1. Configure your Twitter API credentials and hashtag in `fetch_store_tweet.py` (see Configuration below).
-2. Run:
+Pass an X API v2 query. The service accepts its own query operators, so language
+or hashtag filters belong in the query itself.
 
-```bash
-python fetch_store_tweet.py
+```powershell
+uv run python fetch_store_tweet.py "#python lang:en" --limit 10 --output tweets.csv
 ```
 
-3. Tweets will be printed to the console and appended to `tweets.csv` in the same directory.
+`--limit` must be between 10 and 100, which is the supported size of one recent-
+search result page. The script will not replace an existing CSV unless you pass
+`--append`.
 
-## How It Works
+```powershell
+uv run python fetch_store_tweet.py "from:example" --limit 25 --output example.csv --append
+```
 
-1. Creates an OAuth handler with `consumer_key` and `consumer_secret`.
-2. Sets the access token using `access_token` and `access_token_secret`.
-3. Initializes the Tweepy API client with rate-limit waiting enabled.
-4. Opens (or creates) `tweets.csv` in append mode.
-5. Uses `tweepy.Cursor` to paginate through `api.search` results for the configured hashtag.
-6. For each tweet, prints the creation date and text, then writes a row to the CSV (date + UTF-8 encoded text).
+Run `uv run python fetch_store_tweet.py --help` for the full command reference.
 
-## Configuration
+## Output
 
-The following variables must be set in `fetch_store_tweet.py`:
+The CSV has these columns:
 
-| Variable              | Description                          |
-|-----------------------|--------------------------------------|
-| `consumer_key`        | Twitter API consumer key             |
-| `consumer_secret`     | Twitter API consumer secret          |
-| `access_token`        | Twitter API access token             |
-| `access_token_secret` | Twitter API access token secret      |
-| `hastag`              | Hashtag to search for (note: variable is misspelled as `hastag`) |
+```text
+id,created_at,text
+```
 
-Additional hardcoded search parameters:
-- `count=100` — tweets per page
-- `lang="en"` — English tweets only
-- `since="2017-04-03"` — tweets since this date
+An empty result creates no CSV file and reports that zero posts were saved.
 
-## Limitations
+## Notes
 
-- Uses `api.search` which is part of the Twitter v1.1 API — this has been deprecated in favor of the v2 API
-- The `since` date is hardcoded to `"2017-04-03"`
-- The CSV file is opened in append mode (`'a'`), so re-running adds duplicate tweets
-- The variable `hastag` is misspelled (should be `hashtag`)
-- Tweet text is encoded as UTF-8 bytes in the CSV, which may cause display issues
-- No limit on the number of tweets fetched (iterates until exhausted)
-- Tweepy 3.9.0 is outdated; newer versions have breaking changes
-
-## Security Notes
-
-- **Twitter API credentials are stored as empty strings** in the source code — these must be filled in before use and should ideally be stored in environment variables or a separate config file
-- Never commit real API keys to version control
-
-## License
-
-Not specified.
+This project uses X API v2 through current Tweepy releases. Search availability,
+historical range, and rate limits depend on the account's X API access level.
+The script only requests recent results and does not perform pagination.

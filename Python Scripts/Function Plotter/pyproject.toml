@@ -1,0 +1,10 @@
+[project]
+name = "function-plotter"
+version = "0.1.0"
+description = "Terminal ASCII plotter for restricted mathematical expressions"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[tool.uv]
+package = false

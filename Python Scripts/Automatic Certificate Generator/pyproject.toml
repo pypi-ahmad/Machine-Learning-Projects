@@ -1,0 +1,7 @@
+[project]
+name = "automatic-certificate-generator"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pillow>=12.3.0",
+]

@@ -8,24 +8,25 @@ Usage:
 """
 
 import json
-import os
 import random
 import tkinter as tk
+from pathlib import Path
 from tkinter import messagebox, simpledialog, ttk
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "flashcards.json")
+DATA_FILE = Path(__file__).with_name("flashcards.json")
 
 
 def load() -> dict:
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE) as f:
-            return json.load(f)
+    if DATA_FILE.exists():
+        data = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            raise ValueError("Flashcard data must contain a deck mapping.")
+        return data
     return {}
 
 
-def save(data: dict):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def save(data: dict) -> None:
+    DATA_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
 class FlashcardApp(tk.Tk):
@@ -216,7 +217,6 @@ class FlashcardApp(tk.Tk):
     def _mark(self, correct: bool):
         if not self._study_deck:
             return
-        deck = self._deck_var.get()
         card = self._study_deck[self._study_idx]
         if correct:
             card["correct"] = card.get("correct", 0) + 1
@@ -224,10 +224,6 @@ class FlashcardApp(tk.Tk):
         else:
             card["wrong"] = card.get("wrong", 0) + 1
             self._session["wrong"] += 1
-        # Update persistent store
-        for c in self._decks.get(deck, []):
-            if c["q"] == card["q"]:
-                c.update(card)
         save(self._decks)
         self._next_card()
 
@@ -316,6 +312,10 @@ class FlashcardApp(tk.Tk):
                                            card.get("correct", 0), card.get("wrong", 0)))
 
 
-if __name__ == "__main__":
+def main() -> None:
     app = FlashcardApp()
     app.mainloop()
+
+
+if __name__ == "__main__":
+    main()

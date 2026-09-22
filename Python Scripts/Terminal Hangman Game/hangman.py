@@ -1,10 +1,11 @@
 import random
 from json import load
+from pathlib import Path
 
 
 # function to randomly get one word from words.py and convert the word to uppercase
 def get_word():
-    with open('words.json') as json_file:
+    with Path(__file__).with_name("words.json").open(encoding="utf-8") as json_file:
         data = load(json_file)
     wordArray = data["word_list"]
     word = random.choice(wordArray)

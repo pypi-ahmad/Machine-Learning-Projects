@@ -1,0 +1,7 @@
+[project]
+name = "speed-test"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = [
+    "speedtest-cli>=2.1.3",
+]

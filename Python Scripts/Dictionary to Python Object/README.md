@@ -1,64 +1,52 @@
-# Convert Dictionary to Python Object
+# Dictionary to Python Object
 
-## Overview
+A small dependency-free helper that wraps nested dictionaries so their values can be read with attribute syntax.
 
-A utility script that converts a Python dictionary into a Python object, allowing attribute-style access to dictionary keys instead of bracket notation.
+## Requirements
 
-**Type:** Utility
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/)
 
-## Features
+## Run the example
 
-- Converts dictionaries to object instances using `setattr`
-- Supports nested dictionaries (recursively converts inner dicts to objects)
-- Allows attribute-style access (e.g., `ob.a` instead of `data['a']`)
+From this directory:
 
-## Dependencies
-
-- Python 3.x (no external dependencies)
-
-## How It Works
-
-1. A class `obj` is defined that inherits from `object`.
-2. The `__init__` method iterates over all key-value pairs in the provided dictionary.
-3. For each pair, it calls `setattr` to set the key as an attribute on the object.
-4. If a value is itself a dictionary, it recursively wraps it in another `obj` instance, enabling nested attribute access.
-
-## Project Structure
-
-```
-convert_dictionary_to_python_object/
-├── conversion.py    # Main script with the obj class and demo usage
-└── README.md
+```powershell
+uv sync
+uv run python conversion.py
 ```
 
-## Setup & Installation
+The included example prints:
 
-No installation required. Only a working Python 3 interpreter is needed.
-
-## How to Run
-
-```bash
-python conversion.py
+```text
+a=5, c.d=8
 ```
 
-Or import and use in your own code:
+## Use as a helper
 
 ```python
 from conversion import obj
 
-data = {'a': 5, 'b': 7, 'c': {'d': 8}}
-ob = obj(data)
-print(ob.a)    # 5
-print(ob.c.d)  # 8
+data = {"a": 5, "b": 7, "c": {"d": 8}}
+converted = obj(data)
+print(converted.a)
+print(converted.c.d)
 ```
 
-## Testing
+Keys must be non-private, valid Python identifiers. The helper raises `ValueError` for keys that cannot be accessed safely as attributes. It converts nested dictionaries, but intentionally leaves lists and other values unchanged.
 
-No formal test suite present.
+## Project files
 
-## Limitations
+```text
+conversion.py   # Object wrapper and example entry point
+pyproject.toml  # uv project definition
+uv.lock         # Resolved Python environment
+```
 
-- The script includes a hardcoded example dictionary (`{'a':5,'b':7,'c':{'d':8}}`); modify as needed for your data.
-- Does not handle lists of dictionaries — only top-level and nested dictionaries are converted.
-- No validation or error handling for non-string dictionary keys.
+## Verification
 
+```powershell
+uv run python conversion.py
+uv run python -m py_compile conversion.py
+uv lock --check
+```

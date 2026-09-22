@@ -1,0 +1,7 @@
+[project]
+name = "auto-draw"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "pyautogui>=0.9.54",
+]

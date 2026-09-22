@@ -33,19 +33,18 @@ Lyrics_Genius_API/
 
 ## Installation
 
-```bash
-cd "Lyrics_Genius_API"
-pip install lyricsgenius
+```powershell
+uv sync --no-config
 ```
 
 ## Usage
 
 1. **Get a Genius API token:** Sign up at [Genius API Clients](https://genius.com/api-clients) and generate a Client Access Token.
-2. **Add your token:** Replace `'Client_Access_Token_Goes_Here'` in `lyrics.py` with your actual token.
+2. **Set your token:** Set `GENIUS_ACCESS_TOKEN` in your environment. Do not put it in source code.
 3. **Run the script:**
 
-```bash
-python lyrics.py
+```powershell
+uv run --no-config python lyrics.py
 ```
 
 4. **Interactive prompts:**

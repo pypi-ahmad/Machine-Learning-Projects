@@ -1,7 +1,7 @@
 """OCR Tool — Streamlit ML demo.
 
-Extract text from images using Tesseract OCR (pytesseract) if available,
-with a graceful fallback to pixel-based brightness detection for demonstration.
+Extract text from images using Tesseract OCR when its local executable is available.
+The demo tab contains static sample output and does not perform OCR.
 
 Usage:
     streamlit run main.py
@@ -16,7 +16,7 @@ import streamlit as st
 
 st.set_page_config(page_title="OCR Tool", layout="wide")
 st.title("🔍 OCR — Optical Character Recognition")
-st.caption("Extract text from images. Uses Tesseract (pytesseract) when installed.")
+st.caption("Extract text from images with a local Tesseract installation.")
 
 
 # ── Tesseract wrapper ─────────────────────────────────────────────────────────
@@ -181,13 +181,13 @@ tess_ok = tesseract_available()
 if tess_ok:
     st.success("Tesseract OCR is installed and ready.")
 else:
-    st.warning("Tesseract / pytesseract not found. Running in demo mode with sample text.")
+    st.warning("Tesseract is unavailable. The demo tab shows static sample text only.")
 
 tab1, tab2, tab3 = st.tabs(["Extract Text", "Demo Mode", "About"])
 
 with tab1:
     if not tess_ok:
-        st.info("Upload is available when Tesseract is installed. Use Demo Mode below.")
+        st.info("Image extraction requires a local Tesseract installation. Use the demo tab to inspect sample output.")
     else:
         uploaded = st.file_uploader("Upload image (PNG, JPEG, BMP, TIFF)", type=["png", "jpg", "jpeg", "bmp", "tiff"])
         lang     = st.selectbox("OCR Language", ["eng", "fra", "deu", "spa", "ita", "por"], index=0)
